@@ -93,8 +93,8 @@ namespace HcWebApi.Endpoints
                     // The "Who gets it" page: names as the check-in list shows them.
                     return new OkObjectResult(new
                     {
-                        recipients = ctx.Recipients.Select(m => m.ToJson()),
-                        nonRecipients = ctx.NonRecipients.Select(m => m.ToJson()),
+                        recipients = ctx.Recipients.Select(m => m.ToJson(ctx.CallerMaySeeEmails)),
+                        nonRecipients = ctx.NonRecipients.Select(m => m.ToJson(ctx.CallerMaySeeEmails)),
                     });
 
                 case "draft":
@@ -237,7 +237,10 @@ namespace HcWebApi.Endpoints
         /// override for one send (never 6, 7, 8).</summary>
         public sealed record Member(Guid HasherId, string Email, string Name, string MortalName, string Photo, int EmailStatus, int ReasonCode, bool CanMove)
         {
-            public object ToJson() => new { hasherId = HasherId, name = Name, mortalName = MortalName, photo = Photo, emailStatus = EmailStatus, reasonCode = ReasonCode, canMove = CanMove, reason = ReasonText(ReasonCode) };
+            /// <param name="withEmail">The address goes to the client only when the caller
+            /// is a kennel admin / hare raiser (RunContext.CallerMaySeeEmails), never to a
+            /// hare who may only edit this run.</param>
+            public object ToJson(bool withEmail = false) => new { hasherId = HasherId, name = Name, mortalName = MortalName, photo = Photo, email = withEmail ? Email : null, emailStatus = EmailStatus, reasonCode = ReasonCode, canMove = CanMove, reason = ReasonText(ReasonCode) };
             public static string ReasonText(int code) => code switch
             {
                 1 => "On for this run", 2 => "On for the kennel", 9 => "Member", 10 => "Follower", 11 => "RSVP'd to this run",
@@ -250,6 +253,7 @@ namespace HcWebApi.Endpoints
         {
             public Guid EventId, KennelId, PublicEventId, SenderId;
             public int EventNumber, IsCountedRun, EmailSendCount;
+            public bool CallerMaySeeEmails;
             public string EventName = "", Hares = "", Venue = "", Street = "", City = "", PostCode = "", Description = "", EventImage = "";
             public string KennelName = "", KennelShortName = "", KennelSlug = "", KennelLogo = "", SenderName = "", SenderEmail = "", CurrencySymbol = "", Instruction = "";
             public DateTime StartLocal;
@@ -344,6 +348,7 @@ namespace HcWebApi.Endpoints
                 ctx.EmailLastSentAt = r["emailLastSentAt"] is DBNull ? null : (DateTimeOffset)r["emailLastSentAt"];
                 ctx.EmailLastSentCount = r["emailLastSentCount"] is DBNull ? null : Convert.ToInt32(r["emailLastSentCount"]);
                 ctx.RecipientCount = Convert.ToInt32(r["recipientCount"]);
+                ctx.CallerMaySeeEmails = HasColumn(r, "callerMaySeeEmails") && r["callerMaySeeEmails"] is not DBNull && Convert.ToInt32(r["callerMaySeeEmails"]) == 1;
             }
             Member Row() => new(Guid.Parse(S("hasherId")), S("email"), S("hashName"), S("mortalName"), S("photo"),
                 Convert.ToInt32(r["emailStatus"]), Convert.ToInt32(r["reasonCode"]), Convert.ToInt32(r["canMove"]) == 1);

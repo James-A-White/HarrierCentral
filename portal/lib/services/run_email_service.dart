@@ -52,6 +52,7 @@ class RunEmailAudienceEntry {
     required this.hasherId,
     required this.name,
     this.mortalName = '',
+    this.email = '',
     this.photo = '',
     this.reason = '',
     this.reasonCode = 0,
@@ -62,6 +63,10 @@ class RunEmailAudienceEntry {
   final String hasherId;
   final String name;
   final String mortalName;
+
+  /// The address, only when the caller is a kennel admin / hare raiser;
+  /// empty for a hare who may edit just this run (the API leaves it out).
+  final String email;
   final String photo;
   final String reason;
   final int reasonCode;
@@ -71,13 +76,14 @@ class RunEmailAudienceEntry {
   bool get isBlocked => reasonCode == 7;
   bool get isBouncing => reasonCode == 8 || emailStatus == 3;
   bool get isSuspect => emailStatus == 2;
-  String get searchText => '$name $mortalName'.toLowerCase();
+  String get searchText => '$name $mortalName $email'.toLowerCase();
 
   factory RunEmailAudienceEntry.fromJson(Map<String, dynamic> e) =>
       RunEmailAudienceEntry(
         hasherId: normalizeUuid((e['hasherId'] ?? '') as String),
         name: (e['name'] ?? '') as String,
         mortalName: (e['mortalName'] ?? '') as String,
+        email: (e['email'] ?? '') as String,
         photo: (e['photo'] ?? '') as String,
         reason: (e['reason'] ?? '') as String,
         reasonCode: (e['reasonCode'] as num?)?.toInt() ?? 0,

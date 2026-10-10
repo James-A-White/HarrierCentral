@@ -126,7 +126,12 @@ END
 BEGIN TRY
     -- The context and the send list are built in ONE place, shared with the
     -- portal's hcportal_getRunEmailContext.
-    EXEC HC6.nonApi_runEmailContext @eventId = @eventId, @userId = @userId, @includeRecipients = @includeRecipients;
+    -- May the caller see addresses? Only as an admin of the kennel's runs —
+    -- the same permission without the hare-of-this-run exemption.
+    DECLARE @seeEmails SMALLINT = 0;
+    EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'createEditRuns',
+         @isHareOfEvent = 0, @allowed = @seeEmails OUTPUT;
+    EXEC HC6.nonApi_runEmailContext @eventId = @eventId, @userId = @userId, @includeRecipients = @includeRecipients, @callerMaySeeEmails = @seeEmails;
 END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;

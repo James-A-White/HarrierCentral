@@ -1,3 +1,7 @@
+## 2.0.87+758 (2026-10-10)
+### New Features
+- **Who gets the email** shows each hasher's email address (selectable) between their name and the reason — for kennel admins and hare raisers only. Same as the app.
+
 ## 2.0.87+757 (2026-10-10)
 ### New Features
 - **Who gets the email**: a **Clear bounce** button on a hasher whose emails bounced — for when you have checked the address with them. Same as the app. (E19.F4.S5)

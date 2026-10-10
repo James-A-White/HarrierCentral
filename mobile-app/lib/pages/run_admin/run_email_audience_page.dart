@@ -174,8 +174,10 @@ class RunEmailAudiencePage extends StatelessWidget {
   final RunAdminAggregate eventAggregate;
   final RunEmailComposerController composer;
 
-  static const double _rowHeight = 84.0;
-  static const double _leftMargin = 88.0;
+  // Taller since 2026-10-10: the email address sits between the name and
+  // the reason (James), so a row is name / address / reason / badges.
+  static const double _rowHeight = 98.0;
+  static const double _leftMargin = 102.0;
 
   @override
   Widget build(BuildContext context) {
@@ -415,10 +417,29 @@ class RunEmailAudiencePage extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
+          // The address, between the name and the reason (James,
+          // 2026-10-10) — only an admin's list carries it.
+          if (e.email.isNotEmpty)
+            Positioned(
+              left: _leftMargin + 3,
+              right: 120,
+              top: 29,
+              child: Text(
+                e.email,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: 'AvenirNextCondensedMedium',
+                  fontSize: 15,
+                  height: 1.0,
+                  color: e.isBouncing ? Colors.red.shade800 : Colors.black54,
+                ),
+              ),
+            ),
           Positioned(
             left: _leftMargin + 3,
             right: 120,
-            top: 30,
+            top: e.email.isNotEmpty ? 48 : 30,
             child: Text(
               e.reason,
               maxLines: 1,
