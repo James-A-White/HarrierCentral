@@ -751,6 +751,20 @@ Rules:
 python3 tools/id_case_scan.py     # MUST print nothing
 ```
 
+**Generated email addresses are shown in dark red and never sent to (every client):**
+
+An account's email is its key, so a hasher with no address still gets a
+made-up one: `hc-…@noemail.invalid` (import), `URC:…`, `removed_…`,
+`<GUID>@harriercentral.com`, `anonymous …@harriercentral.com`. Wherever an
+address is displayed, a generated one is dark red (`kGeneratedEmailColor`) and
+the page carries `GeneratedEmailNote` ("Dark red email addresses have been
+auto-generated and will not be used for sending emails" — James, 2026-10-10).
+Senders leave them out (`HC6.IsGeneratedEmail`) and both API mailers refuse
+them (`GeneratedEmail.Is`). The rule exists in FOUR copies that must change
+together: `db/schema/functions/HC6.IsGeneratedEmail.Function.sql`,
+`api/Endpoints/HcEmail.cs`, and `lib/util/generated_email.dart` in the portal
+and the app. A new screen that shows an address uses `emailTextStyle()`.
+
 **BIT columns in Flutter/Dart `fromJson` (API serialisation gotcha):**
 
 Some columns in existing tables are `BIT` — these are bugs to fix, but until

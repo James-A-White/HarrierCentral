@@ -1,3 +1,10 @@
+## 2.0.87+761 (2026-10-10)
+### Improvements
+- **Auto-generated email addresses are shown in dark red**, with "Dark red email addresses have been auto-generated and will not be used for sending emails" at the bottom of the page: members grids, member details, the import's same-person review, Who gets the email, Merge accounts and Platform admins. They are never emailed.
+- **Import from file**: a hasher with no email in the file gets a made-up `hc-…@noemail.invalid` address in the grid straight away, which you can replace. (E2.F2.S6)
+### Fixes
+- **Import from file** said "95 will be imported without email addresses" for a 7-row file: it counted the grid's blank rows. It now counts the rows read.
+
 ## 2.0.87+760 (2026-10-10)
 ### New Features
 - **Import from file** asks about lookalikes: a row with the same name (or hash name) as someone already in the kennel but a different email is shown side by side — *same person, use the new email* (only for someone who has never signed in), *same person, keep their email*, or *different people*. People already in the kennel get their previous run counts from the file and nothing else changes; the summary says what happened. (E2.F2.S6)
