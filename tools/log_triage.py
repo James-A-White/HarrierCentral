@@ -372,7 +372,9 @@ def main() -> int:
     known = load_baseline()
     new, regressed, open_, noise, spiking = [], [], [], [], []
     for fp, hs in by_fp.items():
-        k = known.get(fp)
+        # The baseline file is edited by hand, so a fingerprint's trailing space never
+        # survives; compare stripped on both sides.
+        k = known.get(fp.strip())
         if k is None:
             new.append(fp)
         elif k.status.startswith("fixed:"):
@@ -393,7 +395,7 @@ def main() -> int:
     if regressed:
         print(f"== REGRESSED — fixed, but seen at/after the fix ({len(regressed)}) ==")
         for fp, late in sorted(regressed, key=lambda x: -len(x[1])):
-            print(summarise(fp, late) + f"   [{known[fp].status}] {known[fp].note}")
+            print(summarise(fp, late) + f"   [{known[fp.strip()].status}] {known[fp.strip()].note}")
             print("        " + late[-1].sample.replace("\n", "\n        ")[:700] + "\n")
     if new:
         print(f"== NEW — not in the baseline ({len(new)}) ==")
@@ -410,7 +412,7 @@ def main() -> int:
     if open_:
         print(f"== OPEN — known, not yet fixed ({len(open_)}) ==")
         for fp in order(open_):
-            print(summarise(fp, by_fp[fp]) + f"   — {known[fp].note}")
+            print(summarise(fp, by_fp[fp]) + f"   — {known[fp.strip()].note}")
         print()
     total_noise = sum(len(by_fp[f]) for f in noise)
     print(f"== NOISE — {total_noise} hits across {len(noise)} known-noise fingerprints ==")

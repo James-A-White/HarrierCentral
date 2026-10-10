@@ -632,63 +632,8 @@ class RunAndKennelMapController extends GetxController {
   // Kennel marker tap
   // ---------------------------------------------------------------------------
   Future<void> onKennelMarkerTap(String kennelId) async {
-    final bool isHomeKennel =
-        normalizeUuid(kennelId) ==
-        normalizeUuid(getStringPref(StringPrefsEnum.homeKennelId));
-
-    final String hasherId = currentUserId;
-    final List<Map<String, dynamic>> results = await QueryKennels.queryKennels(
-      EnumKennelQueryType.singleKennel,
-      EnumKennelQueryContext.user,
-      hasherId: HcId(hasherId),
-      kennelId: HcId(kennelId),
-    );
-
-    if (results.isEmpty) return;
-
-    double? dist;
-    if (deviceInfo.deviceLat != null && deviceInfo.deviceLon != null) {
-      dist = Geolocator.distanceBetween(
-        deviceInfo.deviceLat!,
-        deviceInfo.deviceLon!,
-        results[0]['cityLat'],
-        results[0]['cityLon'],
-      );
-    }
-
-    final KennelsModel kennelItem = tableModel.kennelsTableHelper.fromMap(
-      results[0],
-    );
-
-    HasherKennelMapModel? hkmItem;
-    if (results[0]['hkmId'] != null) {
-      hkmItem = tableModel.hasherKennelMapTableHelper.fromMap(results[0]);
-    }
-
-    final KennelListQueryExtenstions extensionsItem =
-        KennelListQueryExtenstions.fromMap(results[0]);
-    extensionsItem.distToKennel = dist;
-    extensionsItem.followingRequested = -1;
-    extensionsItem.notificationsRequested = -1;
-    extensionsItem.emailAlertRequested = -1;
-
-    final KennelListAggregate kennelAggregate = KennelListAggregate(
-      kennel: kennelItem,
-      extensions: extensionsItem,
-      hkm: hkmItem,
-      isHomeKennel: isHomeKennel,
-    );
-
-    // Anyone may open a kennel's detail page — it shows logo, description, map
-    // and upcoming runs to everyone; the admin-functions section and its data
-    // sync are gated internally (KennelAdminController._syncAndLoad on isAdmin).
-    if (navigatorKey.currentContext == null) return;
-    await Navigator.of(navigatorKey.currentContext!).push<dynamic>(
-      MaterialPageRoute<dynamic>(
-        builder: (BuildContext context) =>
-            KennelAdminMainPage(kennelAggregateItem: kennelAggregate),
-      ),
-    );
+    // Shared with the hashruns.org/<slug> link (lib/util/open_kennel_page.dart).
+    await openKennelPage(HcId(kennelId));
   }
 
   // ---------------------------------------------------------------------------

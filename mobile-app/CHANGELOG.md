@@ -1,3 +1,8 @@
+## 3.1.9+1461 (2026-10-10)
+All beta testers.
+### Fixes
+- A `hashruns.org/<kennel>` link opens the kennel's page in the app — so Safari's "Open in the Harrier Central app" banner on a kennel page now does something. Needs the site's updated app-link rules (web).
+
 ## 3.1.9+1460 (2026-10-09)
 All beta testers.
 ### Improvements
