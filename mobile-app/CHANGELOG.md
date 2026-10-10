@@ -1,3 +1,7 @@
+## 3.1.9+1462 (unreleased)
+### New Features
+- **Run Admin › Before On Out** has two new buttons: **Post to WhatsApp** (or the kennel's messenger) and **Email hashers** — the two halves of Save and send, without having to edit the run first.
+
 ## 3.1.9+1461 (2026-10-10)
 All beta testers.
 ### Fixes
