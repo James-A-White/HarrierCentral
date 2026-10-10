@@ -140,7 +140,7 @@ namespace HcWebApi.Endpoints
                         string previewHtml = BuildHtml(ctx, subject, prose, unsubSelf);
                         try
                         {
-                            await HcListMail.SendAsync(ctx.SenderEmail, "[Preview] " + subject, previewHtml, PlainText(ctx, prose), unsubSelf, ctx.KennelSlug, ctx.KennelShortName);
+                            await HcListMail.SendAsync(ctx.SenderEmail, "[Preview] " + subject, previewHtml, PlainText(ctx, prose, unsubSelf), unsubSelf, ctx.KennelSlug, ctx.KennelShortName);
                         }
                         catch (Exception ex)
                         {
@@ -210,7 +210,7 @@ namespace HcWebApi.Endpoints
                                 string prefs = requested ? HcListMail.PreferencesUrl(r.HasherId, ctx.KennelId) : "";
                                 await HcListMail.SendAsync(r.Email, subject, BuildHtml(ctx, subject, prose, unsub, requested ? prefs : null),
                                     (requested ? $"{ctx.SenderName} has requested that you receive this email. Your email preferences: {prefs}\n\n" : "") +
-                                    plain + $"\n\nUnsubscribe from {ctx.KennelName} run emails: {unsub}", unsub, ctx.KennelSlug, ctx.KennelShortName);
+                                    PlainText(ctx, prose, unsub), unsub, ctx.KennelSlug, ctx.KennelShortName);
                                 ok++;
                             }
                             catch (Exception ex)
@@ -588,15 +588,26 @@ namespace HcWebApi.Endpoints
             return HcEmail.Layout(subject, sb.ToString(), ctx.KennelLogo, ctx.KennelName, topBar, footerLine);
         }
 
-        private static string PlainText(RunContext ctx, string prose)
+        /// <summary>
+        /// The text/plain part — what a reader with HTML off, a screen reader or an old
+        /// client gets. Same order as the HTML: the unsubscribe line first ("Not
+        /// running with the FILTH?"), the prose, the facts and links, and the
+        /// unsubscribe link again at the end (James, 2026-10-10).
+        /// </summary>
+        private static string PlainText(RunContext ctx, string prose, string? unsubscribeUrl = null)
         {
-            var sb = new StringBuilder(prose).Append("\n\nOn on,\n").Append(ctx.SenderName).Append('\n').Append(ctx.KennelName).Append("\n\n");
+            var sb = new StringBuilder();
+            if (unsubscribeUrl != null)
+                sb.Append("Not running with the ").Append(ctx.KennelShortName).Append("? Unsubscribe: ").Append(unsubscribeUrl).Append("\n\n");
+            sb.Append(prose).Append("\n\nOn on,\n").Append(ctx.SenderName).Append('\n').Append(ctx.KennelName).Append("\n\n");
             sb.Append(ctx.Title).Append('\n').Append("When: ").Append(ctx.When).Append('\n');
             if (ctx.Where.Length > 0) sb.Append("Where: ").Append(ctx.Where).Append('\n');
             if (ctx.Hares.Length > 0) sb.Append("Hares: ").Append(ctx.Hares).Append('\n');
             if (ctx.Price.Length > 0) sb.Append("Price: ").Append(ctx.Price).Append('\n');
             sb.Append("I'm in: ").Append(ctx.RsvpUrl(true)).Append('\n').Append("Can't make it: ").Append(ctx.RsvpUrl(false)).Append('\n').Append("Open the run: ").Append(ctx.Url)
               .Append("\nEmail preference for this run: ").Append(ctx.EmailPrefsUrl("run")).Append("\nEmail preference for the kennel: ").Append(ctx.EmailPrefsUrl("kennel"));
+            if (unsubscribeUrl != null)
+                sb.Append("\n\nUnsubscribe from ").Append(ctx.KennelShortName).Append(" run emails: ").Append(unsubscribeUrl);
             return sb.ToString();
         }
     }
