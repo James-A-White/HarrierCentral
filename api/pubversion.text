@@ -1,3 +1,7 @@
+1.0.61+96
+    • Unsubscribe / email-preferences pages sit on the jungle and carry the kennel's logo
+      (ours when the link names no kennel).
+
 1.0.61+95
     • Run emails arrive from "<kennel> via Harrier Central": each kennel has its own ACS sender
       username runs-<slug>@ (tools/acs_kennel_senders.py); a kennel without one falls back to runs@ for that email and the API creates its
