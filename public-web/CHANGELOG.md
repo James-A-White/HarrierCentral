@@ -1,8 +1,10 @@
-## Unreleased
-### Fixes
-- Apple app-link rules (`apple-app-site-association`): `/<kennel>` now opens the app (3.1.9+1461 or later); the site's own top-level pages (`/me`, `/login`, `/rd`, `/add-kennel`, `/calendar`, assets) are excluded explicitly.
-
 # public-web Changelog
+
+## 0.21.74 (2026-10-10 redeploy — kennel app links)
+
+- Apple app-link rules (`apple-app-site-association`): `/<kennel>` now opens the app
+  (3.1.9+1461 or later); the site's own top-level pages (`/me`, `/login`, `/rd`,
+  `/add-kennel`, `/calendar`, assets) are excluded explicitly.
 
 ## 0.21.74 (2026-10-09 redeploy — quieter map logs)
 
