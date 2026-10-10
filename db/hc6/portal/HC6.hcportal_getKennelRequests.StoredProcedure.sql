@@ -29,6 +29,10 @@ AS
 -- Created: 2026-09-28
 -- HC5 Source: none (replaces EXT.vwOfficeForms_KennelImport, HC3W)
 -- Breaking Changes: none (new)
+-- 2026-10-10 (E12.F1.S10): adds LogoUrl, FoundedOn, RunDayOfWeek,
+--   RunStartTime ('HH:mm'), RunsPageUrl, SocialLinksJson, SourceJson and
+--   RequestSource ('website' when made by New kennel from a website);
+--   SimilarKennels also matches the same website.
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -94,6 +98,14 @@ BEGIN TRY
         ki.ReviewedAt,
         rv.HashName                 AS ReviewedByHashName,
         ki.KennelId,
+        ki.LogoUrl,
+        ki.FoundedOn,
+        ki.RunDayOfWeek,
+        CONVERT(VARCHAR(5), ki.RunStartTime, 108) AS RunStartTime,
+        ki.RunsPageUrl,
+        ki.SocialLinksJson,
+        ki.SourceJson,
+        ki.RequestSource,
         kn.KennelUniqueShortName    AS ApprovedKennelSlug,
         ex.id                       AS ExistingHasherId,
         ex.HashName                 AS ExistingHashName,
@@ -120,7 +132,11 @@ BEGIN TRY
               AND k.deleted = 0 AND k.removed = 0
               AND (k.KennelShortName = ki.KennelShortName
                    OR k.KennelUniqueShortName = ki.KennelShortName
-                   OR k.KennelName = ki.KennelName)
+                   OR k.KennelName = ki.KennelName
+                   -- the same website (http/https, www. and a trailing / aside)
+                   OR (LEN(ISNULL(ki.KennelUrl, N'')) > 8
+                       AND REPLACE(REPLACE(REPLACE(TRIM(N'/' FROM LOWER(k.KennelWebsiteUrl)), N'https://', N''), N'http://', N''), N'www.', N'')
+                         = REPLACE(REPLACE(REPLACE(TRIM(N'/' FROM LOWER(ki.KennelUrl)), N'https://', N''), N'http://', N''), N'www.', N'')))
             ORDER BY CASE WHEN k.CountryId = ki.CountryId THEN 0 ELSE 1 END, k.KennelName
         ) s
     ) sim

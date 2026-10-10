@@ -16,7 +16,15 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_updateKennelRequest]
     @cityId            UNIQUEIDENTIFIER = NULL,
     @hashCash          NVARCHAR(MAX)    = NULL,
     @nonMemberPrice    NVARCHAR(MAX)    = NULL,
-    @reviewNote        NVARCHAR(MAX)    = NULL
+    @reviewNote        NVARCHAR(MAX)    = NULL,
+    -- E12.F1.S10 (2026-10-10): what a website read adds. Text so that ''
+    -- can clear a value (NULL keeps it), as for the fields above.
+    @logoUrl           NVARCHAR(MAX)    = NULL,
+    @foundedOn         NVARCHAR(MAX)    = NULL,
+    @runDayOfWeek      NVARCHAR(MAX)    = NULL,
+    @runStartTime      NVARCHAR(MAX)    = NULL,
+    @runsPageUrl       NVARCHAR(MAX)    = NULL,
+    @socialLinksJson   NVARCHAR(MAX)    = NULL
 AS
 -- =====================================================================
 -- Procedure: HC6.hcportal_updateKennelRequest
@@ -38,6 +46,10 @@ AS
 -- Created: 2026-09-28
 -- HC5 Source: none (replaces trgVwOfficeForms_KennelImport UPDATE, HC3W)
 -- Breaking Changes: none (new)
+-- 2026-10-10 (E12.F1.S10): @logoUrl, @foundedOn ('yyyy'|'yyyy-mm'|
+--   'yyyy-mm-dd'), @runDayOfWeek (1 Mon … 7 Sun), @runStartTime ('HH:mm'),
+--   @runsPageUrl and @socialLinksJson (checked by HC6.SocialLinksProblem);
+--   approval copies them onto the kennel.
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -77,6 +89,12 @@ SET @kennelFacebookUrl = TRIM(@kennelFacebookUrl);
 SET @hashCash          = TRIM(@hashCash);
 SET @nonMemberPrice    = TRIM(@nonMemberPrice);
 SET @reviewNote        = TRIM(@reviewNote);
+SET @logoUrl           = TRIM(@logoUrl);
+SET @foundedOn         = TRIM(@foundedOn);
+SET @runDayOfWeek      = TRIM(@runDayOfWeek);
+SET @runStartTime      = TRIM(@runStartTime);
+SET @runsPageUrl       = TRIM(@runsPageUrl);
+SET @socialLinksJson   = TRIM(@socialLinksJson);
 
 DECLARE @invalid NVARCHAR(500) = CASE
     WHEN @kennelImportId IS NULL                    THEN 'kennelImportId is required'
@@ -99,6 +117,23 @@ DECLARE @invalid NVARCHAR(500) = CASE
     WHEN LEN(@hashCash) > 50 OR LEN(@nonMemberPrice) > 50
                                                     THEN 'The price may be at most 50 characters'
     WHEN LEN(@reviewNote) > 1000                    THEN 'The review note may be at most 1000 characters'
+    WHEN LEN(@logoUrl) > 1000 OR LEN(@runsPageUrl) > 1000
+                                                    THEN 'An address may be at most 1000 characters'
+    WHEN LEN(@logoUrl) > 0 AND @logoUrl NOT LIKE N'https://%'
+                                                    THEN 'The logo must be an https address'
+    WHEN LEN(@runsPageUrl) > 0 AND @runsPageUrl NOT LIKE N'http%://%'
+                                                    THEN 'The runs page must be a web address'
+    WHEN LEN(@foundedOn) > 0 AND NOT (
+            (LEN(@foundedOn) = 4  AND @foundedOn LIKE N'[12][0-9][0-9][0-9]')
+         OR (LEN(@foundedOn) = 7  AND TRY_CAST(@foundedOn + N'-01' AS DATE) IS NOT NULL)
+         OR (LEN(@foundedOn) = 10 AND TRY_CAST(@foundedOn AS DATE) IS NOT NULL))
+                                                    THEN 'Founded must be a year (1984), a month (1984-06) or a date (1984-06-30)'
+    WHEN LEN(@runDayOfWeek) > 0 AND ISNULL(TRY_CAST(@runDayOfWeek AS SMALLINT), 0) NOT BETWEEN 1 AND 7
+                                                    THEN 'The run day must be 1 (Monday) to 7 (Sunday)'
+    WHEN LEN(@runStartTime) > 0 AND TRY_CAST(@runStartTime AS TIME(0)) IS NULL
+                                                    THEN 'The start time must be HH:mm, e.g. 18:30'
+    WHEN LEN(@socialLinksJson) > 0 AND HC6.SocialLinksProblem(@socialLinksJson) IS NOT NULL
+                                                    THEN HC6.SocialLinksProblem(@socialLinksJson)
     WHEN @regionId IS NOT NULL AND NOT EXISTS (
             SELECT 1 FROM HC.Region r WHERE r.id = @regionId
               AND r.CountryId = COALESCE(@countryId,
@@ -149,6 +184,12 @@ BEGIN TRY
         HashCash          = COALESCE(@hashCash, ki.HashCash),
         NonMemberPrice    = CASE WHEN @nonMemberPrice IS NULL THEN ki.NonMemberPrice ELSE NULLIF(@nonMemberPrice, N'') END,
         ReviewNote        = CASE WHEN @reviewNote IS NULL THEN ki.ReviewNote ELSE NULLIF(@reviewNote, N'') END,
+        LogoUrl           = CASE WHEN @logoUrl IS NULL THEN ki.LogoUrl ELSE NULLIF(@logoUrl, N'') END,
+        FoundedOn         = CASE WHEN @foundedOn IS NULL THEN ki.FoundedOn ELSE NULLIF(@foundedOn, N'') END,
+        RunDayOfWeek      = CASE WHEN @runDayOfWeek IS NULL THEN ki.RunDayOfWeek ELSE TRY_CAST(NULLIF(@runDayOfWeek, N'') AS SMALLINT) END,
+        RunStartTime      = CASE WHEN @runStartTime IS NULL THEN ki.RunStartTime ELSE TRY_CAST(NULLIF(@runStartTime, N'') AS TIME(0)) END,
+        RunsPageUrl       = CASE WHEN @runsPageUrl IS NULL THEN ki.RunsPageUrl ELSE NULLIF(@runsPageUrl, N'') END,
+        SocialLinksJson   = CASE WHEN @socialLinksJson IS NULL THEN ki.SocialLinksJson ELSE NULLIF(@socialLinksJson, N'') END,
         CountryId         = COALESCE(@countryId, ki.CountryId),
         RegionId          = CASE WHEN @regionId IS NOT NULL THEN @regionId
                                  WHEN @countryId IS NOT NULL AND @countryId <> COALESCE(ki.CountryId, '00000000-0000-0000-0000-000000000000') THEN NULL

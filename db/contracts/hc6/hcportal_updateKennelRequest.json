@@ -129,6 +129,48 @@
       "nullable": true,
       "mapsToColumn": "OfficeForms_KennelImport.NonMemberPrice",
       "description": "Visitors' run fee, ≤50; '' clears."
+    },
+    {
+      "name": "logoUrl",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.LogoUrl",
+      "description": "https; '' clears"
+    },
+    {
+      "name": "foundedOn",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.FoundedOn",
+      "description": "'yyyy'|'yyyy-mm'|'yyyy-mm-dd'; '' clears"
+    },
+    {
+      "name": "runDayOfWeek",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.RunDayOfWeek",
+      "description": "text '1'..'7'; '' clears"
+    },
+    {
+      "name": "runStartTime",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.RunStartTime",
+      "description": "'HH:mm'; '' clears"
+    },
+    {
+      "name": "runsPageUrl",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.RunsPageUrl",
+      "description": "'' clears"
+    },
+    {
+      "name": "socialLinksJson",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.SocialLinksJson",
+      "description": "checked by HC6.SocialLinksProblem; '' clears"
     }
   ],
   "rowsets": [

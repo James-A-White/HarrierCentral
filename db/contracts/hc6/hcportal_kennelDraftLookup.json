@@ -1,0 +1,199 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_kennelDraftLookup",
+  "version": "1.0.0",
+  "description": "New kennel from a website (E12.F1.S10): the KennelFromWebsite API's gate, plus possible duplicates (live kennels and open requests with the same website, name or short name) and our city rows matching the place the site names. Reads only.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal device auth (HC.Device.id)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal token; standard param string (device secret). Caller must be an HC.PlatformAdmin with CanEditKennel."
+    },
+    {
+      "name": "websiteUrl",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelWebsiteUrl",
+      "description": "Compared as host+path, ignoring http/https, www. and a trailing slash."
+    },
+    {
+      "name": "kennelName",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelName",
+      "description": ""
+    },
+    {
+      "name": "kennelShortName",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelShortName",
+      "description": ""
+    },
+    {
+      "name": "country",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "Country.CountryName",
+      "description": "Name or code."
+    },
+    {
+      "name": "region",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "Region.RegionName",
+      "description": "Name or abbreviation."
+    },
+    {
+      "name": "city",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "City.CityName",
+      "description": "Name or accent-free name; prefix match from 3 letters."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "Success = 0 with ErrorMessage on auth or validation failure (then no further rowsets).",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Duplicates",
+      "description": "At most 10, website matches first.",
+      "columns": [
+        {
+          "name": "kind",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "'kennel' | 'request'"
+        },
+        {
+          "name": "name",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "slug",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "KennelUniqueShortName, or the request's short name"
+        },
+        {
+          "name": "website",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "reason",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "'website' | 'name' | 'short name'"
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "CityCandidates",
+      "description": "At most 8, best first.",
+      "columns": [
+        {
+          "name": "cityId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "cityName",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "regionId",
+          "type": "NVARCHAR(40)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "regionName",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "countryId",
+          "type": "NVARCHAR(40)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "countryName",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "score",
+          "type": "INT",
+          "nullable": false,
+          "description": "100 exact in region+country, 90 exact in country, 70 exact with no country given, 50 prefix in country"
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "name": "Country",
+      "description": "The country alone when it matched (0 or 1 row).",
+      "columns": [
+        {
+          "name": "countryId",
+          "type": "NVARCHAR(40)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "countryName",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

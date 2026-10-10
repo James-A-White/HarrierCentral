@@ -197,6 +197,8 @@ run_file "HC6.ClientLogAppError (function)" \
     "$REPO_ROOT/db/schema/functions/HC6.ClientLogAppError.Function.sql"
 run_file "HC6.IsGeneratedEmail (function)" \
     "$REPO_ROOT/db/schema/functions/HC6.IsGeneratedEmail.Function.sql"
+run_file "HC6.SocialLinksProblem (function)" \
+    "$REPO_ROOT/db/schema/functions/HC6.SocialLinksProblem.Function.sql"
 # ValidatePortalAuth calls this; missed by every glob until the first
 # stamped deploy (2026-09-26) reported it unstamped.
 run_file "HC6.CHECK_PORTAL_ACCESS_TOKEN (function)" \

@@ -26,6 +26,18 @@ class KennelRequestsPage extends StatelessWidget {
             child: const Icon(MaterialCommunityIcons.arrow_left, color: Colors.black),
           ),
           actions: [
+            // E12.F1.S10: the AI reads a club's website into a new request.
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: HcButton.primary(
+                label: 'New kennel from a website',
+                icon: Icons.auto_awesome,
+                onPressed: () async {
+                  await Get.to<void>(KennelFromWebsitePage.new);
+                  await c.load();
+                },
+              ),
+            ),
             IconButton(
               tooltip: 'Refresh',
               icon: const Icon(MaterialCommunityIcons.refresh),

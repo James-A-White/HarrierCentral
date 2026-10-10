@@ -74,6 +74,13 @@ const String BASE_ROSTER_IMPORT_URL =
 const String BASE_INVITE_EMAILS_URL =
     'https://harriercentralpublicapi.azurewebsites.net/api/InviteEmails';
 
+// HC Admin Tools › Kennel requests › New kennel from a website (E12.F1.S10,
+// 2026-10-10): read / chat / save. Tokens: hcportal_kennelDraftLookup (every
+// action) and hcportal_createKennelRequestFromDraft (save), standard
+// deviceSecret tokens.
+const String KENNEL_FROM_WEBSITE_URL =
+    'https://harriercentralpublicapi.azurewebsites.net/api/KennelFromWebsite';
+
 // const String BASE_AF_API_URL = 'http://localhost:7071/api/PortalApi/';
 
 const String PORTAL_REVERSE_GEOCODE_API_URL =

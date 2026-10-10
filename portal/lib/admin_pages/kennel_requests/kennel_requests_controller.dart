@@ -73,6 +73,59 @@ class KennelRequestDetailController extends GetxController {
   late final TextEditingController hashCash = TextEditingController(text: request.hashCash ?? '');
   late final TextEditingController nonMemberPrice = TextEditingController(text: request.nonMemberPrice ?? '');
   late final TextEditingController reviewNote = TextEditingController(text: request.reviewNote ?? '');
+  // E12.F1.S10: logo, founding date, usual run and runs page.
+  late final TextEditingController logoUrl = TextEditingController(text: request.logoUrl ?? '');
+  late final TextEditingController foundedOn = TextEditingController(text: request.foundedOn ?? '');
+  late final TextEditingController runStartTime = TextEditingController(text: request.runStartTime ?? '');
+  late final TextEditingController runsPageUrl = TextEditingController(text: request.runsPageUrl ?? '');
+  late final RxnInt runDay = RxnInt(request.runDayOfWeek);
+
+  /// The social links, each with its own address field.
+  late final RxList<SocialLink> socials = socialLinksFromJson(request.socialLinksJson).obs;
+  late final List<TextEditingController> socialUrls =
+      socials.map((l) => TextEditingController(text: l.url ?? l.handle ?? '')).toList();
+
+  void addSocial() {
+    socials.add(SocialLink(platform: 'facebook'));
+    socialUrls.add(TextEditingController()..addListener(_markDirty));
+    _markDirty();
+  }
+
+  void removeSocial(int i) {
+    socials.removeAt(i);
+    socialUrls.removeAt(i).dispose();
+    _markDirty();
+  }
+
+  void setSocialPlatform(int i, String platform) {
+    socials[i].platform = platform;
+    socials[i].audience = socialMembersByDefault.contains(platform) ? 'members' : 'public';
+    socials.refresh();
+    _markDirty();
+  }
+
+  void toggleSocialAudience(int i) {
+    socials[i].audience = socials[i].audience == 'members' ? 'public' : 'members';
+    socials.refresh();
+    _markDirty();
+  }
+
+  void setRunDay(int? d) {
+    runDay.value = d;
+    _markDirty();
+  }
+
+  List<SocialLink> get _socialsNow => [
+    for (int i = 0; i < socials.length; i++)
+      SocialLink(
+        platform: socials[i].platform,
+        url: socials[i].platform == 'wechat' && !socialUrls[i].text.trim().startsWith('https://') ? null : socialUrls[i].text.trim(),
+        handle: socials[i].platform == 'wechat' && !socialUrls[i].text.trim().startsWith('https://') ? socialUrls[i].text.trim() : null,
+        qrImageUrl: socials[i].qrImageUrl,
+        label: socials[i].label ?? (socials[i].platform == 'other' ? 'Link' : null),
+        audience: socials[i].audience,
+      ),
+  ];
 
   final RxMap<String, String> countryOptions = <String, String>{}.obs;
   final RxMap<String, String> regionOptions = <String, String>{}.obs;
@@ -91,6 +144,7 @@ class KennelRequestDetailController extends GetxController {
   List<TextEditingController> get _fields => [
     firstName, lastName, hashName, email, kennelName, shortName,
     description, kennelUrl, facebookUrl, hashCash, nonMemberPrice, reviewNote,
+    logoUrl, foundedOn, runStartTime, runsPageUrl, ...socialUrls,
   ];
 
   /// Bumped on every keystroke, so an Obx can re-check the fields as they
@@ -111,6 +165,8 @@ class KennelRequestDetailController extends GetxController {
       if (countryId.value == null) 'country': 'Country',
       if (regionId.value == null) 'region': 'Region',
       if (cityId.value == null) 'city': 'City',
+      for (final SocialLink l in _socialsNow)
+        if (l.problem != null) 'socials': 'Social links (${l.problem})',
     };
   }
 
@@ -193,6 +249,12 @@ class KennelRequestDetailController extends GetxController {
       'countryId': countryId.value,
       'regionId': regionId.value,
       'cityId': cityId.value,
+      'logoUrl': logoUrl.text,
+      'foundedOn': foundedOn.text,
+      'runDayOfWeek': runDay.value?.toString() ?? '',
+      'runStartTime': runStartTime.text,
+      'runsPageUrl': runsPageUrl.text,
+      'socialLinksJson': socialLinksToJson(_socialsNow),
     });
     isBusy.value = false;
     if (ok) {
