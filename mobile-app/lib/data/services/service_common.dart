@@ -96,6 +96,21 @@ class ServiceCommon {
 
   /// The failure shapes a suspension produces: our own timeout sentinel, or
   /// the empty-bodied 500 stamped on a transport exception.
+  /// An invalid-token refusal, as the API actually sends it. The shim strips
+  /// `errorTitle` and returns only {errorType, errorUserMessage, errorId}
+  /// (AppApiHC6), so the old `"errorTitle":"Invalid access token"` test
+  /// never matched and the clock-correcting retry (E1.F1.S7) never ran —
+  /// found 2026-10-10: Overdrive on 1435 failed twice with a wrong clock and
+  /// only one correction had ever been logged. Matched on the two messages
+  /// the SPs send: ValidateAppAuth's "The access token is invalid…" and
+  /// approveLogin's errorType 11 "A security check has been activated…".
+  @visibleForTesting
+  static bool isInvalidTokenReply(String body) =>
+      body.contains('"errorTitle":"Invalid access token"') ||
+      body.contains('The access token is invalid') ||
+      (body.contains('"errorType":11') &&
+          body.contains('A security check has been activated'));
+
   static bool _looksLikeSuspendFailure(Response r) =>
       r.statusCode == kLocalTimeoutStatus ||
       (r.statusCode == 500 && r.body.isEmpty);
@@ -236,8 +251,7 @@ class ServiceCommon {
       // transmit time. One shot only — a second rejection means a real auth
       // problem (bad device secret / clock drift), so surface it.
       if (hasErrorId) {
-        if (!tokenRetryUsed &&
-            response.body.contains('"errorTitle":"Invalid access token"')) {
+        if (!tokenRetryUsed && isInvalidTokenReply(response.body)) {
           tokenRetryUsed = true;
           // A wrong phone clock is the other cause: learn the offset from
           // the reply's own Date header so the retry's token is minted at

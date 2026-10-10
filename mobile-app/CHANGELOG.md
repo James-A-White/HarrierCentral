@@ -1,3 +1,12 @@
+## 3.1.9+1463 (2026-10-10)
+All beta testers.
+### New Features
+- **Run Admin › Before On Out** on iPhone: **Post to WhatsApp** and **Email hashers** (1462 reached Android only — Apple never processed it).
+- **Promo decks by build**: a deck uploaded as `build_<N>_1.avif`… shows once to everyone who upgrades past build N, as well as the version deck when the version changes. (E9.F4.S5)
+- **Who gets the email**: a **Clear bounce** button on a hasher whose emails bounced — for when you have checked the address with them. (E19.F4.S5)
+### Fixes
+- **A phone with a wrong clock now corrects itself on the first refused request.** The retry that learns the server's time on an invalid-token reply never ran — it was looking for a field the server no longer sends. (E1.F1.S7)
+
 ## 3.1.9+1462 (2026-10-10)
 All beta testers.
 ### New Features

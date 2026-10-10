@@ -164,6 +164,52 @@ class RunEmailService {
     return (j['sent'] as num?)?.toInt() ?? 0;
   }
 
+  /// Clears a hasher's bounced email status for this run's audience
+  /// (E19.F4.S5, hcportal_clearEmailBounce — parity with the app).
+  Future<void> clearBounce(String publicEventId, String hasherId) async {
+    final box = Hive.box(HIVE_NAME);
+    final String deviceId = (box.get(HIVE_DEVICE_ID) as String?) ?? '';
+    final String deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+    if (deviceId.isEmpty || deviceSecret.isEmpty) {
+      throw const RunEmailException('You are not signed in.');
+    }
+    http.Response response;
+    try {
+      response = await http
+          .post(
+            Uri.parse(BASE_HC6_API_URL),
+            headers: {'content-type': 'application/json'},
+            body: jsonEncode({
+              'queryType': 'clearEmailBounce',
+              'deviceId': deviceId,
+              'accessToken': Utilities.generateToken(
+                deviceId,
+                'hcportal_clearEmailBounce',
+                paramString: deviceSecret,
+              ),
+              'publicEventId': publicEventId,
+              'hasherId': hasherId,
+            }),
+          )
+          .timeout(const Duration(seconds: 20));
+    } catch (_) {
+      throw const RunEmailException(
+        'No connection to Harrier Central. Check your connection and try again.',
+      );
+    }
+    Map<String, dynamic>? row;
+    try {
+      final dynamic j = jsonDecode(response.body);
+      if (j is List && j.isNotEmpty && j[0] is List && (j[0] as List).isNotEmpty) {
+        row = (j[0] as List)[0] as Map<String, dynamic>;
+      }
+    } catch (_) {}
+    if (response.statusCode != 200 || row == null || row['Success'] != 1) {
+      throw RunEmailException((row?['ErrorMessage'] as String?) ??
+          'The bounce could not be cleared just now (${response.statusCode}).');
+    }
+  }
+
   Future<Map<String, dynamic>> _call(
     String publicEventId,
     String action, [

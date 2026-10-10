@@ -228,6 +228,50 @@ class RunEmailService {
     }
   }
 
+  /// Clears a hasher's bounced email status for this run's audience
+  /// (E19.F4.S5, hcapp_clearEmailBounce). Throws [RunEmailException] with the
+  /// server's own words when it is refused.
+  static Future<void> clearBounce(HcId eventId, HcId hasherId) async {
+    final String? deviceId = getStringPref(StringPrefsEnum.deviceId);
+    final String? deviceSecret = getStringPref(StringPrefsEnum.deviceSecret);
+    final String? userId = getStringPref(StringPrefsEnum.userId);
+    if ((userId ?? '').isEmpty || (deviceId ?? '').isEmpty || (deviceSecret ?? '').isEmpty) {
+      throw const RunEmailException('You are not signed in.');
+    }
+    http.Response r;
+    try {
+      r = await http
+          .post(
+            Uri.parse(BASE_AF_API_URL),
+            headers: <String, String>{'content-type': 'application/json'},
+            body: jsonEncode(<String, String>{
+              'queryType': 'clearEmailBounce',
+              'deviceId': deviceId!,
+              'accessToken': Utilities.generateToken(
+                userId!,
+                'hcapp_clearEmailBounce',
+                paramString: deviceSecret!,
+              ),
+              'eventId': eventId,
+              'hasherId': hasherId,
+            }),
+          )
+          .timeout(const Duration(seconds: 20));
+    } catch (_) {
+      throw const RunEmailException(
+        'No connection to Harrier Central. Check your connection and try again.',
+      );
+    }
+    if (r.statusCode != 200) {
+      String msg = 'The bounce could not be cleared just now (${r.statusCode}).';
+      try {
+        final dynamic j = jsonDecode(r.body);
+        if (j is Map && j['errorUserMessage'] is String) msg = j['errorUserMessage'] as String;
+      } catch (_) {}
+      throw RunEmailException(msg);
+    }
+  }
+
   Future<Map<String, dynamic>> _call(
     HcId eventId,
     String action, [

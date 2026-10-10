@@ -570,6 +570,39 @@ class RunEmailAudienceController extends GetxController {
   static int _byName(RunEmailAudienceEntry a, RunEmailAudienceEntry b) =>
       a.name.toLowerCase().compareTo(b.name.toLowerCase());
 
+  /// Clears a bounced address so the next email tries it again (E19.F4.S5,
+  /// parity with the app). Asks first — it is for an address the admin has
+  /// checked with the hasher; a fresh bounce marks it again.
+  Future<void> clearBounce(RunEmailAudienceEntry e) async {
+    final bool? go = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('Clear the bounce?', textAlign: TextAlign.center),
+        content: SizedBox(
+          width: 420,
+          child: Text(
+            'Emails to ${e.name} bounced, so they have stopped. Clear it when you have '
+            'checked the address with them — the next email will try it again. '
+            'If it bounces again, it will be marked again.',
+            textAlign: TextAlign.center,
+          ),
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          HcButton.secondary(label: 'Cancel', onPressed: () => Get.back<bool>(result: false)),
+          HcButton.primary(label: 'Clear bounce', onPressed: () => Get.back<bool>(result: true)),
+        ],
+      ),
+    );
+    if (go != true || isClosed) return;
+    try {
+      await const RunEmailService().clearBounce(publicEventId, e.hasherId);
+      if (isClosed) return;
+      await load();
+    } on RunEmailException catch (err) {
+      error.value = err.message;
+    }
+  }
+
   void toggle(RunEmailAudienceEntry e) {
     if (!e.canMove) return;
     final RunEmailAudience? a = audience.value;
@@ -789,7 +822,11 @@ class RunEmailAudienceDialog extends StatelessWidget {
                   label: inGetList ? 'Don\'t send' : 'Send anyway',
                   onPressed: () => c.toggle(e),
                 ))
-          : null,
+          // A bounced address cannot be moved in, but an admin may clear the
+          // bounce once they have checked it (E19.F4.S5).
+          : (e.isBouncing && !e.isBlocked)
+              ? HcButton.secondary(label: 'Clear bounce', onPressed: () => c.clearBounce(e))
+              : null,
     );
   }
 
