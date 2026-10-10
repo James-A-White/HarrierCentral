@@ -1121,15 +1121,85 @@ class RunEditPageController extends TabUiController
   /// enabled exactly when Save is (James, 2026-10-09). The Rx reads happen
   /// inside the layout's Obx, so it greys and lights with the form.
   @override
-  Widget? buildExtraSaveBarButton() => isAddMode
-      ? null
-      : HcButton.primary(
+  Widget? buildExtraSaveBarButton() {
+    if (isAddMode) return null;
+    final bool dirty = isFormDirty.value;
+    final bool valid = allFieldsAreValid.value;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        HcButton.primary(
           label: 'Save and send',
           icon: Icons.send_rounded,
-          onPressed: (isFormDirty.value && allFieldsAreValid.value)
-              ? saveAndSend
-              : null,
-        );
+          onPressed: (dirty && valid) ? saveAndSend : null,
+        ),
+        const SizedBox(height: 8),
+        // The two halves of Save and send on their own, as the app's Run Admin
+        // has them (James, 2026-10-10). They send what is SAVED, so they wait
+        // while the form is dirty — Save and send is the button for that.
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            HcButton.secondary(
+              label: 'Post to WhatsApp',
+              icon: Icons.chat_bubble_outline,
+              onPressed: dirty ? null : postToWhatsApp,
+            ),
+            HcButton.secondary(
+              label: 'Email hashers',
+              icon: Icons.mail_outline,
+              onPressed: dirty ? null : emailHashers,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  String get _savedPublicEventId => normalizeUuid(originalData.publicEventId ?? '');
+
+  /// The WhatsApp notice for the SAVED run, through wa.me.
+  Future<void> postToWhatsApp() async {
+    if (isAddMode || _savedPublicEventId.length < 10) return;
+    if (originalData.isVisible != 1) {
+      await CoreUtilities.showAlert('Hidden run', 'The run is hidden, so it cannot be posted.', 'OK');
+      return;
+    }
+    final RunAnnouncement announcement = RunAnnouncement(run: originalData, kennel: kennelData);
+    try {
+      await launchUrl(announcement.whatsAppUri, mode: LaunchMode.externalApplication, webOnlyWindowName: '_blank');
+    } catch (_) {
+      await CoreUtilities.showAlert('WhatsApp', 'WhatsApp could not be opened from this browser.', 'OK');
+    }
+  }
+
+  /// The run email composer for the SAVED run.
+  Future<void> emailHashers() async {
+    if (isAddMode || _savedPublicEventId.length < 10) return;
+    if (originalData.isVisible != 1) {
+      await CoreUtilities.showAlert('Hidden run', 'The run is hidden, so it cannot be emailed.', 'OK');
+      return;
+    }
+    final String publicEventId = _savedPublicEventId;
+    final int? sent = await Get.dialog<int>(
+      RunEmailDialog(
+        publicEventId: publicEventId,
+        kennelShortName: kennelData.kennelShortName,
+        runDescription: originalData.eventDescription,
+      ),
+      barrierDismissible: false,
+    );
+    await deleteAfterExit<RunEmailDialogController>(
+      Get.find<RunEmailDialogController>(tag: RunEmailDialog.tagFor(publicEventId)),
+      tag: RunEmailDialog.tagFor(publicEventId),
+    );
+    if (sent != null && sent > 0) {
+      await CoreUtilities.showAlert('Email sent', 'Sent to $sent ${sent == 1 ? 'hasher' : 'hashers'}.', 'OK');
+    }
+  }
 
   /// "Save and send" (E9.F6.S6, parity with the app, 2026-10-09): an unsaved
   /// run is saved first, then two tick boxes — post the notice to WhatsApp
@@ -1218,33 +1288,10 @@ class RunEditPageController extends TabUiController
     );
     if (go != true) return;
 
-    if (doPost) {
-      try {
-        await launchUrl(announcement.whatsAppUri, mode: LaunchMode.externalApplication, webOnlyWindowName: '_blank');
-      } catch (_) {
-        await CoreUtilities.showAlert('WhatsApp', 'WhatsApp could not be opened from this browser.', 'OK');
-      }
-    }
-    if (doEmail && emailContext != null) {
-      final int? sent = await Get.dialog<int>(
-        RunEmailDialog(
-          publicEventId: publicEventId,
-          kennelShortName: kennelData.kennelShortName,
-          runDescription: originalData.eventDescription,
-        ),
-        barrierDismissible: false,
-      );
-      await deleteAfterExit<RunEmailDialogController>(
-        Get.find<RunEmailDialogController>(tag: RunEmailDialog.tagFor(publicEventId)),
-        tag: RunEmailDialog.tagFor(publicEventId),
-      );
-      if (sent != null && sent > 0) {
-        await CoreUtilities.showAlert('Email sent', 'Sent to $sent ${sent == 1 ? 'hasher' : 'hashers'}.', 'OK');
-      }
-    }
+    if (doPost) await postToWhatsApp();
+    if (doEmail && emailContext != null) await emailHashers();
   }
 
-  /// Closes the editor and navigates back.
   @override
   Future<void> close() async {
     if (isFormDirty.value) {
