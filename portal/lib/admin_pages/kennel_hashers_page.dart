@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:http/http.dart' as http;
 import 'package:hcportal/imports.dart';
 import 'package:hcportal/models/new_hasher/new_hasher_model.dart';
 
@@ -826,6 +827,216 @@ class KennelHashersController extends TabUiController
   final List<KennelHashersModel> hashers = <KennelHashersModel>[];
   final List<NewHasherModel> newHashers = <NewHasherModel>[];
 
+  // ── Import from file / Email invite codes (E2.F2.S6, James 2026-10-10) ──
+
+  /// The grid holds rows read from a file: the save then passes
+  /// @fromImport = 1 (rows already in the kennel are left alone, a row with
+  /// no email is kept, every added hasher gets an invite code).
+  bool fromImport = false;
+
+  /// The hashers the last import added (NEW HC USER / NEW MEMBER), for
+  /// "Email invite codes" › the hashers just imported.
+  final List<String> lastImportedPublicHasherIds = <String>[];
+
+  bool isReadingFile = false;
+
+  String _kennelToken(String proc) {
+    final deviceId = box.get(HIVE_DEVICE_ID) as String;
+    final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+    return Utilities.generateToken(
+      deviceId,
+      proc,
+      paramString: '$deviceSecret:${kennel.publicKennelId}',
+    );
+  }
+
+  Future<Map<String, dynamic>> _postJson(String url, Map<String, dynamic> body) async {
+    final http.Response r = await http
+        .post(
+          Uri.parse(url),
+          headers: <String, String>{'content-type': 'application/json'},
+          body: jsonEncode(body),
+        )
+        .timeout(const Duration(seconds: 180));
+    Map<String, dynamic> j;
+    try {
+      j = jsonDecode(r.body) as Map<String, dynamic>;
+    } catch (_) {
+      j = <String, dynamic>{};
+    }
+    if (r.statusCode != 200) {
+      throw Exception((j['errorUserMessage'] as String?) ??
+          'Harrier Central could not do that just now (${r.statusCode}).');
+    }
+    return j;
+  }
+
+  /// Reads a member list (Excel, CSV, Word or PDF) and puts its people in the
+  /// add-hashers grid for the admin to check before saving.
+  Future<void> importFromFile() async {
+    final FilePickerResult? picked = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: <String>['xlsx', 'xlsm', 'csv', 'tsv', 'txt', 'pdf', 'docx', 'xls', 'doc'],
+      withData: true,
+    );
+    final PlatformFile? file = picked?.files.single;
+    if (file == null || file.bytes == null) return;
+    isReadingFile = true;
+    update();
+    try {
+      final Map<String, dynamic> j = await _postJson(BASE_ROSTER_IMPORT_URL, <String, dynamic>{
+        'deviceId': box.get(HIVE_DEVICE_ID) as String,
+        'accessToken': _kennelToken('hcportal_authorizeRosterImport'),
+        'publicKennelId': kennel.publicKennelId,
+        'fileName': file.name,
+        'fileBase64': base64Encode(file.bytes!),
+      });
+      final List<dynamic> found = (j['rows'] as List<dynamic>?) ?? <dynamic>[];
+      if (found.isEmpty) {
+        await Utilities.showAlert('Nobody found', 'No people with a name could be read from ${file.name}.', 'OK');
+        return;
+      }
+      newHashers
+        ..clear()
+        ..addAll(found.map((dynamic e) {
+          final m = e as Map<String, dynamic>;
+          return NewHasherModel(
+            firstName: (m['firstName'] ?? '') as String,
+            lastName: (m['lastName'] ?? '') as String,
+            hashName: (m['hashName'] ?? '') as String,
+            eMail: (m['eMail'] ?? '') as String,
+            historicTotalRuns: (m['historicTotalRuns'] as num?)?.toInt() ?? 0,
+            historicHaring: (m['historicHaring'] as num?)?.toInt() ?? 0,
+          );
+        }));
+      fromImport = true;
+      await setColumnsType(EKennelGridOptions.addNewMembers);
+      final int dropped = (j['dropped'] as num?)?.toInt() ?? 0;
+      final int noEmail = newHashers.where((NewHasherModel h) => (h.eMail ?? '').isEmpty).length;
+      await Utilities.showAlert(
+        'Read ${found.length} ${found.length == 1 ? 'hasher' : 'hashers'}',
+        'Check the grid, correct anything that was misread, then press Save.'
+        '${noEmail > 0 ? '~~$noEmail without an email address will be added without one (they cannot be emailed an invite).' : ''}'
+        '${dropped > 0 ? '~~$dropped ${dropped == 1 ? 'row was' : 'rows were'} left out: neither a hash name nor a first and last name.' : ''}'
+        '${j['truncated'] == true ? '~~The file was very long; only the first part was read.' : ''}',
+        'OK',
+      );
+    } catch (e) {
+      await Utilities.showAlert('Import from file', e.toString().replaceFirst('Exception: ', ''), 'OK');
+    } finally {
+      isReadingFile = false;
+      update();
+    }
+  }
+
+  /// Emails each hasher their invite code from "KENNEL via Harrier
+  /// Central": the hashers just imported, or everyone in the kennel who has
+  /// never signed in. Shows the counts first; sends only on confirm.
+  Future<void> emailInviteCodes() async {
+    String scope = lastImportedPublicHasherIds.isNotEmpty ? 'imported' : 'neverLoggedIn';
+    final String? chosen = await Get.dialog<String>(
+      StatefulBuilder(
+        builder: (BuildContext c, void Function(void Function()) setDialog) => AlertDialog(
+          title: const Text('Email invite codes'),
+          content: SizedBox(
+            width: 480,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                const Text('Each hasher gets their own code, from '
+                    '"Your kennel via Harrier Central", with how to get the app.'),
+                const SizedBox(height: 12),
+                ListTile(
+                  enabled: lastImportedPublicHasherIds.isNotEmpty,
+                  leading: Icon(scope == 'imported' ? Icons.radio_button_checked : Icons.radio_button_unchecked),
+                  onTap: () => setDialog(() => scope = 'imported'),
+                  title: Text('The hashers just imported (${lastImportedPublicHasherIds.length})'),
+                  subtitle: lastImportedPublicHasherIds.isEmpty ? const Text('Nobody has been imported in this session.') : null,
+                ),
+                ListTile(
+                  leading: Icon(scope == 'neverLoggedIn' ? Icons.radio_button_checked : Icons.radio_button_unchecked),
+                  onTap: () => setDialog(() => scope = 'neverLoggedIn'),
+                  title: const Text('Everyone in this kennel who has never signed in to the app'),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            HcButton.secondary(label: 'Cancel', onPressed: () => Get.back<String>()),
+            HcButton.primary(label: 'Next', onPressed: () => Get.back<String>(result: scope)),
+          ],
+        ),
+      ),
+    );
+    if (chosen == null) return;
+
+    Map<String, dynamic> body() => <String, dynamic>{
+      'deviceId': box.get(HIVE_DEVICE_ID) as String,
+      'accessToken': _kennelToken('hcportal_getInviteEmailList'),
+      'publicKennelId': kennel.publicKennelId,
+      'scope': chosen,
+      'publicHasherIds': lastImportedPublicHasherIds,
+    };
+    isMajorUpdate = true;
+    update();
+    Map<String, dynamic> preview;
+    try {
+      preview = await _postJson(BASE_INVITE_EMAILS_URL, <String, dynamic>{...body(), 'send': false});
+    } catch (e) {
+      isMajorUpdate = false;
+      update();
+      await Utilities.showAlert('Email invite codes', e.toString().replaceFirst('Exception: ', ''), 'OK');
+      return;
+    }
+    isMajorUpdate = false;
+    update();
+
+    final int n = (preview['toSend'] as num?)?.toInt() ?? 0;
+    final List<String> skipped = <String>[
+      if (((preview['skippedRecent'] as num?) ?? 0) > 0) '${preview['skippedRecent']} invited in the last 7 days',
+      if (((preview['skippedNoEmail'] as num?) ?? 0) > 0) '${preview['skippedNoEmail']} with no email address',
+      if (((preview['skippedUndeliverable'] as num?) ?? 0) > 0) '${preview['skippedUndeliverable']} whose address cannot receive mail',
+      if (((preview['skippedNoCode'] as num?) ?? 0) > 0) '${preview['skippedNoCode']} without a code',
+    ];
+    if (n == 0) {
+      await Utilities.showAlert('Nobody to email',
+          skipped.isEmpty ? 'There is nobody to send an invite to.' : 'Skipped: ${skipped.join(', ')}.', 'OK');
+      return;
+    }
+    final bool? go = await Get.dialog<bool>(
+      AlertDialog(
+        title: Text('Send $n ${n == 1 ? 'invite' : 'invites'}?'),
+        content: SizedBox(
+          width: 440,
+          child: Text(skipped.isEmpty ? 'Each gets their own invite code.' : 'Skipped: ${skipped.join(', ')}.'),
+        ),
+        actions: <Widget>[
+          HcButton.secondary(label: 'Cancel', onPressed: () => Get.back<bool>(result: false)),
+          HcButton.primary(label: 'Send $n', icon: Icons.send_rounded, onPressed: () => Get.back<bool>(result: true)),
+        ],
+      ),
+    );
+    if (go != true) return;
+    isMajorUpdate = true;
+    update();
+    try {
+      final Map<String, dynamic> done = await _postJson(BASE_INVITE_EMAILS_URL, <String, dynamic>{...body(), 'send': true});
+      final int sent = (done['sent'] as num?)?.toInt() ?? 0;
+      await Utilities.showAlert(
+        'Invites sent',
+        'Sent $sent ${sent == 1 ? 'invite code' : 'invite codes'}.'
+        '${done['stoppedEarly'] == true ? '~~The email service asked us to slow down, so it stopped there. Press Email invite codes again later to send the rest — nobody gets two.' : ''}',
+        'OK',
+      );
+    } catch (e) {
+      await Utilities.showAlert('Email invite codes', e.toString().replaceFirst('Exception: ', ''), 'OK');
+    } finally {
+      isMajorUpdate = false;
+      update();
+    }
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -1136,10 +1347,14 @@ class KennelHashersController extends TabUiController
     }
   }
 
+  /// Rows in the add-hashers grid: 100, or more when an import needs them.
+  int _gridRows = 100;
+
   Future<void> prepareGridForAddingNewMembers() async {
+    _gridRows = newHashers.length > 100 ? newHashers.length + 10 : 100;
     // fill in any empty records to make sure
     // we have a "full deck" to play with
-    while (newHashers.length < 100) {
+    while (newHashers.length < 100 || newHashers.length < _gridRows) {
       final n = NewHasherModel(
         firstName: '',
         lastName: '',
@@ -1151,7 +1366,7 @@ class KennelHashersController extends TabUiController
     }
 
     TrinaRow<dynamic> pr;
-    for (var i = 0; i < 100; i++) {
+    for (var i = 0; i < newHashers.length; i++) {
       pr = TrinaRow(
         cells: <String, TrinaCell>{
           'publicHasherId': TrinaCell(),
@@ -1504,7 +1719,8 @@ class KennelHashersController extends TabUiController
     await Future<void>.delayed(const Duration(seconds: 2));
 
     final newHasherList = <NewHasherModel?>[];
-    for (var i = 0; i < 100; i++) {
+    final Set<String> seenKeys = <String>{};
+    for (var i = 0; i < rows.length; i++) {
       final pr = rows[i];
       final firstName = pr.cells['firstName']?.value?.toString() ?? '';
       final lastName = pr.cells['lastName']?.value?.toString() ?? '';
@@ -1516,13 +1732,20 @@ class KennelHashersController extends TabUiController
 
       //print('first name = ' + firstName + ', row = ' + i.toString());
       //print('email = ' + email + ', row = ' + i.toString());
-      if ((firstName.isEmpty) || (email.isEmpty)) {
+      if (fromImport) {
+        // An import keeps a row with no email (it gets a placeholder) but
+        // needs a hash name or a first and last name.
+        if (hashName.trim().isEmpty && (firstName.trim().isEmpty || lastName.trim().isEmpty)) {
+          continue;
+        }
+      } else if ((firstName.isEmpty) || (email.isEmpty)) {
         continue;
       }
 
       if (hashName.isEmpty) {
         hashName = 'Just $firstName';
       }
+      final String key = email.isNotEmpty ? 'e:${email.toLowerCase()}' : 'n:${hashName.toLowerCase()}|${firstName.toLowerCase()}|${lastName.toLowerCase()}';
 
       final nh = NewHasherModel(
         firstName: firstName,
@@ -1533,12 +1756,9 @@ class KennelHashersController extends TabUiController
         historicTotalRuns: historicTotalRuns,
         historicHaring: historicHaring,
       );
-      // make sure duplicate emails are not sent to the server
-      if (newHasherList.firstWhere(
-            (NewHasherModel? element) => element?.eMail == email,
-            orElse: () => null,
-          ) ==
-          null) {
+      // make sure duplicates are not sent to the server (by email, or by
+      // name for an imported row that has none)
+      if (seenKeys.add(key)) {
         newHasherList.add(nh);
       }
     }
@@ -1561,6 +1781,7 @@ class KennelHashersController extends TabUiController
         'accessToken': accessToken,
         'publicKennelId': kennel.publicKennelId,
         'newHasherJson': newHasherJson,
+        if (fromImport) 'fromImport': 1,
       };
       final bulkResult = await ServiceCommon.sendHttpPostToHC6Api(body);
       if (kDebugMode) {
@@ -1581,6 +1802,40 @@ class KennelHashersController extends TabUiController
       for (final item in jsonGroup) {
         final hasher = NewHasherModel.fromJson(item);
         newHashers.add(hasher);
+      }
+
+      if (fromImport) {
+        // What the import did, and who the invite button should write to.
+        int added = 0, linked = 0, already = 0, noEmail = 0, failed = 0;
+        lastImportedPublicHasherIds.clear();
+        for (final NewHasherModel h in newHashers) {
+          switch (h.addHasherStatus) {
+            case 'NEW HC USER':
+              added++;
+            case 'NEW MEMBER':
+              linked++;
+            case 'ALREADY IN KENNEL':
+              already++;
+            case 'ERROR':
+              failed++;
+          }
+          if ((h.addHasherStatus == 'NEW HC USER' || h.addHasherStatus == 'NEW MEMBER') &&
+              (h.publicHasherId ?? '').isNotEmpty) {
+            lastImportedPublicHasherIds.add(h.publicHasherId!);
+            if ((h.eMail ?? '').endsWith('@noemail.invalid')) noEmail++;
+          }
+        }
+        fromImport = false;
+        unawaited(Utilities.showAlert(
+          'Import saved',
+          '$added new ${added == 1 ? 'hasher' : 'hashers'} added; $linked existing '
+          '${linked == 1 ? 'account' : 'accounts'} linked to ${kennel.kennelShortName}.'
+          '${already > 0 ? '~~$already ${already == 1 ? 'hasher is' : 'hashers are'} already in this kennel and ${already == 1 ? 'was' : 'were'} left as they are.' : ''}'
+          '${noEmail > 0 ? '~~$noEmail without an email address cannot be emailed an invite.' : ''}'
+          '${failed > 0 ? '~~$failed ${failed == 1 ? 'row' : 'rows'} could not be added.' : ''}'
+          '~~Everyone added has an invite code. Press Email invite codes to send them.',
+          'OK',
+        ));
       }
 
       await prepareGridForAddingNewMembers();
@@ -1781,11 +2036,25 @@ class _KennelHashersContent extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   child: OverflowBar(
                     alignment: MainAxisAlignment.end,
+                    spacing: 10,
                     children: <Widget>[
+                      // E2.F2.S6: a member list in any form → the grid, and
+                      // invite codes emailed from the kennel.
+                      HcButton.secondary(
+                        label: c.isReadingFile ? 'Reading the file…' : 'Import from file',
+                        icon: Icons.upload_file,
+                        onPressed: c.isReadingFile ? null : c.importFromFile,
+                      ),
+                      HcButton.secondary(
+                        label: 'Email invite codes',
+                        icon: Icons.forward_to_inbox,
+                        onPressed: c.isReadingFile ? null : c.emailInviteCodes,
+                      ),
                       ElevatedButton(
                         child: const Text(
                           'Save',
                           style: TextStyle(color: Colors.white),
+                          textAlign: TextAlign.center,
                         ),
                         onPressed: () async {
                           await c.saveBulkHashers();

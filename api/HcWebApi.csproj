@@ -22,6 +22,8 @@
     <PackageReference Include="Azure.Communication.Email" Version="1.1.0" />
     <PackageReference Include="Azure.Data.Tables" Version="12.10.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.22.2" />
+    <PackageReference Include="DnsClient" Version="1.8.0" />
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.1.0" />
     <PackageReference Include="Google.Apis.Auth" Version="1.69.0" />
     <!-- Application Insights, enabled 2026-09-18. The Function App emits an
          empty 500 on roughly 1 request in 1,000 (346 of 358,971 over the week
@@ -39,6 +41,7 @@
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.4" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="PdfPig" Version="0.1.16" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" /> 
     <PackageReference Include="SendGrid" Version="9.29.3" />
     <PackageReference Include="EPPlus" Version="5.7.1" />

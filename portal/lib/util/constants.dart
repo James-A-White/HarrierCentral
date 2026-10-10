@@ -66,6 +66,14 @@ const String BASE_GET_PORTAL_UPLOAD_SAS_URL =
 const String BASE_RUN_EMAIL_URL =
     'https://harriercentralpublicapi.azurewebsites.net/api/RunEmail';
 
+// Members › Import from file and Email invite codes (E2.F2.S6, 2026-10-10).
+// Tokens: hcportal_authorizeRosterImport / hcportal_getInviteEmailList, with
+// the kennel-scoped paramString '<deviceSecret>:<publicKennelId>'.
+const String BASE_ROSTER_IMPORT_URL =
+    'https://harriercentralpublicapi.azurewebsites.net/api/RosterImport';
+const String BASE_INVITE_EMAILS_URL =
+    'https://harriercentralpublicapi.azurewebsites.net/api/InviteEmails';
+
 // const String BASE_AF_API_URL = 'http://localhost:7071/api/PortalApi/';
 
 const String PORTAL_REVERSE_GEOCODE_API_URL =
