@@ -65,6 +65,10 @@ class Harness {
   final IntegrationTestWidgetsFlutterBinding binding;
   final ErrorLedger ledger = ErrorLedger();
   int _shotIndex = 0;
+
+  /// Device pixels per logical pixel for screenshots. 1.0 keeps the walk's
+  /// files small; the user-guide walk sets 2.0 for print-quality images.
+  double pixelRatio = 1.0;
   FlutterExceptionHandler? _originalOnError;
   Directory? _shotDir;
 
@@ -181,7 +185,7 @@ class Harness {
       // The whole render tree, overlays and dialogs included.
       final RenderView view = tester.binding.renderViews.first;
       final OffsetLayer layer = view.debugLayer! as OffsetLayer;
-      final ui.Image image = await layer.toImage(view.paintBounds, pixelRatio: 1.0);
+      final ui.Image image = await layer.toImage(view.paintBounds, pixelRatio: pixelRatio);
       final ByteData? png = await image.toByteData(format: ui.ImageByteFormat.png);
       image.dispose();
       if (png == null) throw StateError('no png bytes');

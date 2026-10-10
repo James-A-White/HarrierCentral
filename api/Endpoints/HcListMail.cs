@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Data;
 using System.Security.Cryptography;
 using System.Text;
@@ -43,16 +44,94 @@ namespace HcWebApi.Endpoints
         /// is delivered — that can take minutes and the caller does not wait).
         /// Throws on refusal; the caller logs.
         /// </summary>
-        public static async Task SendAsync(string to, string subject, string html, string plainText, string? unsubscribeUrl)
+        public static async Task SendAsync(string to, string subject, string html, string plainText, string? unsubscribeUrl, string? kennelSlug = null, string? kennelShortName = null)
         {
             var content = new EmailContent(subject) { Html = html, PlainText = plainText };
-            var message = new EmailMessage(From, new EmailRecipients(new[] { new EmailAddress(to) }), content);
+            // The inbox shows the sender's DISPLAY NAME, and ACS keeps that on the
+            // sender username, not in the address (a name in the address is a 400).
+            // So each kennel gets its own username — runs-<slug>@ with the display
+            // name "<KENNEL> via Harrier Central" (tools/acs_kennel_senders.py) — and a
+            // run email goes out from it (James, 2026-10-10). A kennel that has no
+            // username yet is refused with "senderAddress" and falls back to runs@,
+            // so a new kennel's email still goes, just from us.
+            string? kennelFrom = KennelSender(kennelSlug);
+            try
+            {
+                if (kennelFrom != null)
+                {
+                    await client.Value.SendAsync(WaitUntil.Started, Build(kennelFrom, to, content, unsubscribeUrl));
+                    return;
+                }
+            }
+            catch (Azure.RequestFailedException ex) when (ex.Status == 400 && ex.Message.Contains("senderAddress", StringComparison.OrdinalIgnoreCase))
+            {
+                // No sender username for this kennel: fall through to runs@ for THIS
+                // email, and make the username now so the next one is the kennel's.
+                _ = EnsureKennelSenderAsync(kennelSlug!, kennelShortName);
+            }
+            await client.Value.SendAsync(WaitUntil.Started, Build(From, to, content, unsubscribeUrl));
+        }
+
+        /// <summary>
+        /// Creates the kennel's sender username — runs-&lt;slug&gt; with display name
+        /// "&lt;KENNEL&gt; via Harrier Central" — on the ACS email domain, through ARM
+        /// with the Function App's identity (Contributor on the email service only;
+        /// setting HC_ACS_EMAIL_SERVICE_ID is the service's resource id). A new
+        /// kennel therefore names itself from its second email on; the bulk script
+        /// tools/acs_kennel_senders.py does the same for every kennel at once. A
+        /// failure is logged and changes nothing — runs@ keeps working.
+        /// </summary>
+        public static async Task EnsureKennelSenderAsync(string kennelSlug, string? kennelShortName)
+        {
+            string? from = KennelSender(kennelSlug);
+            string? service = Env("HC_ACS_EMAIL_SERVICE_ID");
+            if (from == null || string.IsNullOrEmpty(service)) return;
+            string local = from[..from.IndexOf('@')];
+            string domain = from[(from.IndexOf('@') + 1)..];
+            string name = new string((string.IsNullOrWhiteSpace(kennelShortName) ? kennelSlug : kennelShortName)
+                .Where(c => c != '<' && c != '>' && c != '"' && c != '\r' && c != '\n').ToArray()).Trim();
+            try
+            {
+                string token = await AzureDailyCost.ManagedIdentityTokenAsync("https://management.azure.com/");
+                using var req = new HttpRequestMessage(HttpMethod.Put,
+                    $"https://management.azure.com{service}/domains/{domain}/senderUsernames/{local}?api-version=2023-04-01");
+                req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                req.Content = new StringContent(
+                    Newtonsoft.Json.JsonConvert.SerializeObject(new { properties = new { username = local, displayName = $"{name} via Harrier Central" } }),
+                    System.Text.Encoding.UTF8, "application/json");
+                using var res = await Arm.SendAsync(req);
+                if (!res.IsSuccessStatusCode)
+                {
+                    string text = await res.Content.ReadAsStringAsync();
+                    await LogFailureAsync("AcsKennelSender", from, $"ARM {(int)res.StatusCode}: {text[..Math.Min(300, text.Length)]}", null);
+                }
+            }
+            catch (Exception ex)
+            {
+                await LogFailureAsync("AcsKennelSender", from, ex.Message, null);
+            }
+        }
+
+        private static readonly HttpClient Arm = new() { Timeout = TimeSpan.FromSeconds(30) };
+
+        /// <summary>runs-&lt;slug&gt;@ on our domain, or null when the slug cannot make an address.</summary>
+        public static string? KennelSender(string? kennelSlug)
+        {
+            if (string.IsNullOrWhiteSpace(kennelSlug)) return null;
+            string local = new string(kennelSlug.ToLowerInvariant().Where(c => char.IsAsciiLetterOrDigit(c) || c == '-').ToArray()).Trim('-');
+            int at = From.IndexOf('@');
+            return local.Length == 0 || at < 0 ? null : $"runs-{local}{From[at..]}";
+        }
+
+        private static EmailMessage Build(string from, string to, EmailContent content, string? unsubscribeUrl)
+        {
+            var message = new EmailMessage(from, new EmailRecipients(new[] { new EmailAddress(to) }), content);
             if (unsubscribeUrl != null)
             {
                 message.Headers["List-Unsubscribe"] = $"<{unsubscribeUrl}>";
                 message.Headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click";
             }
-            await client.Value.SendAsync(WaitUntil.Started, message);
+            return message;
         }
 
         // ── Unsubscribe tokens ─────────────────────────────────────────────────
