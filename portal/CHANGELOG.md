@@ -1,3 +1,7 @@
+## 2.0.87+756 (2026-10-10)
+### New Features
+- Run editor: **Post to WhatsApp** and **Email hashers** under Save and send — the two halves on their own, for the saved run, as the app's Run Admin has them. They wait while the form has unsaved changes; Save and send is the button for that.
+
 ## 2.0.87+755 (2026-10-09)
 ### Improvements
 - **Email the run** says *hashers*, not *members*: the audience is members, followers and anyone who RSVP'd, minus anyone who turned emails off.

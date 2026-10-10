@@ -1214,9 +1214,6 @@ class RunEditPageController extends TabUiController
     final String publicEventId = normalizeUuid(originalData.publicEventId ?? '');
     if (publicEventId.length < 10) return;
 
-    final RunAnnouncement announcement =
-        RunAnnouncement(run: originalData, kennel: kennelData);
-
     // The reach, fetched live: the rule lives in one SP, not in the portal.
     RunEmailContext? emailContext;
     String emailUnavailable = '';
