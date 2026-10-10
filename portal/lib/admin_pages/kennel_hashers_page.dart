@@ -851,9 +851,23 @@ class KennelHashersController extends TabUiController
   /// only be replaced for someone who has never signed in and whose home
   /// kennel this is (2026-09-23 rule) — the SP says which, and bulk-add
   /// checks again on save.
+  /// A unique address for a hasher with none, in the same shape the SP
+  /// makes: hc-<12 hex>@noemail.invalid.
+  static String _placeholderEmail() {
+    final Random r = Random.secure();
+    final String hex = List<String>.generate(12, (_) => r.nextInt(16).toRadixString(16)).join();
+    return 'hc-$hex@noemail.invalid';
+  }
+
   Future<void> _reviewNameMatches() async {
     importMatches.clear();
+    // Only up to the last row with a name: the grid pads itself with blank
+    // rows, and the SP numbers rows by their position in this array.
+    final int used = newHashers.lastIndexWhere((NewHasherModel h) =>
+            (h.hashName ?? '').trim().isNotEmpty || (h.firstName ?? '').trim().isNotEmpty || (h.lastName ?? '').trim().isNotEmpty) +
+        1;
     final String rowsJson = jsonEncode(newHashers
+        .take(used)
         .map((NewHasherModel h) => <String, String>{
               'firstName': h.firstName ?? '',
               'lastName': h.lastName ?? '',
@@ -1032,7 +1046,10 @@ class KennelHashersController extends TabUiController
             firstName: (m['firstName'] ?? '') as String,
             lastName: (m['lastName'] ?? '') as String,
             hashName: (m['hashName'] ?? '') as String,
-            eMail: (m['eMail'] ?? '') as String,
+            // No address in the file: a unique made-up one, shown in the
+            // grid (James, 2026-10-10). The email is the account's key, and
+            // .invalid can never be delivered — the invite sender skips it.
+            eMail: ((m['eMail'] ?? '') as String).trim().isEmpty ? _placeholderEmail() : (m['eMail'] as String).trim(),
             historicTotalRuns: (m['historicTotalRuns'] as num?)?.toInt() ?? 0,
             historicHaring: (m['historicHaring'] as num?)?.toInt() ?? 0,
           );
@@ -1041,11 +1058,13 @@ class KennelHashersController extends TabUiController
       await setColumnsType(EKennelGridOptions.addNewMembers);
       await _reviewNameMatches();
       final int dropped = (j['dropped'] as num?)?.toInt() ?? 0;
-      final int noEmail = newHashers.where((NewHasherModel h) => (h.eMail ?? '').isEmpty).length;
+      // Counted on the rows READ, not the grid: the grid pads itself to 100
+      // blank rows, which once made "7 read" say "95 without an email".
+      final int noEmail = found.where((dynamic e) => (((e as Map<String, dynamic>)['eMail'] ?? '') as String).isEmpty).length;
       await Utilities.showAlert(
         'Read ${found.length} ${found.length == 1 ? 'hasher' : 'hashers'}',
         'Check the grid, correct anything that was misread, then press Save.'
-        '${noEmail > 0 ? '~~$noEmail without an email address will be added without one (they cannot be emailed an invite).' : ''}'
+        '${noEmail > 0 ? '~~$noEmail without an email address ${noEmail == 1 ? 'was' : 'were'} given a made-up one ending @noemail.invalid. Replace it if you know the real address; otherwise they are added but cannot be emailed an invite.' : ''}'
         '${dropped > 0 ? '~~$dropped ${dropped == 1 ? 'row was' : 'rows were'} left out: neither a hash name nor a first and last name.' : ''}'
         '${j['truncated'] == true ? '~~The file was very long; only the first part was read.' : ''}',
         'OK',

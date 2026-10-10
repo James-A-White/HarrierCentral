@@ -88,6 +88,7 @@ BEGIN TRY
                    AND LOWER(LTRIM(RTRIM(m.LastName)))  = LOWER(r.lastName))
                OR (r.hashName IS NOT NULL AND LOWER(LTRIM(RTRIM(m.HashName))) = LOWER(r.hashName)))
         WHERE r.email IS NOT NULL
+          AND r.email NOT LIKE '%@noemail.invalid'   -- a made-up address is "no email", never a new one to offer
           AND LOWER(ISNULL(m.Email, '')) <> r.email
           -- the file's address is not already this kennel's member (that row is matched by email)
           AND NOT EXISTS (SELECT 1 FROM members m2 WHERE LOWER(m2.Email) = r.email)

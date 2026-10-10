@@ -226,7 +226,12 @@ BEGIN TRY
             END
         END
 
-        IF (@fromImport = 1 AND @ahStatus IS NULL AND @email IS NULL)
+        -- A made-up address the portal filled in (hc-…@noemail.invalid) that
+        -- no account holds yet counts as "no email" for matching; it is kept
+        -- if the row turns out to be someone new.
+        IF (@fromImport = 1 AND @ahStatus IS NULL
+            AND (@email IS NULL
+                 OR (@email LIKE '%@noemail.invalid' AND NOT EXISTS (SELECT 1 FROM HC.Hasher x WHERE x.Email = @email))))
         BEGIN
             -- No address: is this somebody already in the kennel? Match on hash
             -- name, else on first + last name (re-importing a file must not
@@ -241,7 +246,7 @@ BEGIN TRY
                     AND LOWER(LTRIM(RTRIM(h.LastName))) = LOWER(LTRIM(RTRIM(@lastName)))));
             IF (@newHasherId IS NOT NULL)
                 SET @ahStatus = 'ALREADY IN KENNEL'
-            ELSE
+            ELSE IF (@email IS NULL)
                 SET @email = 'hc-' + LOWER(LEFT(REPLACE(CAST(NEWID() AS NVARCHAR(40)), '-', ''), 12)) + '@noemail.invalid';
         END
 
