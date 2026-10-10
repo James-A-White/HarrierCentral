@@ -142,16 +142,31 @@ class HasherProfilePage extends StatelessWidget {
         ),
         if ((pageType == EnumMyProfilePageType.myProfile) ||
             (pageType == EnumMyProfilePageType.newHasherProfile)) ...<Widget>[
-          TextFormField(
-            autocorrect: false,
-            //initialValue: hasher.email,
-            controller: c.emailController,
-            decoration: const InputDecoration(labelText: 'Email'),
-            keyboardType: TextInputType.emailAddress,
-            validator: Utilities.validateEmail,
-            onSaved: (String? val) {
-              c.email = val ?? '';
-            },
+          // A made-up address (no real one on the account) shows in dark
+          // red with the note under it; it follows the text as it is edited.
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: c.emailController,
+            builder: (BuildContext _, TextEditingValue v, Widget? _) => Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                TextFormField(
+                  autocorrect: false,
+                  //initialValue: hasher.email,
+                  controller: c.emailController,
+                  decoration: const InputDecoration(labelText: 'Email'),
+                  keyboardType: TextInputType.emailAddress,
+                  style: emailTextStyle(v.text),
+                  validator: Utilities.validateEmail,
+                  onSaved: (String? val) {
+                    c.email = val ?? '';
+                  },
+                ),
+                GeneratedEmailNote(
+                  show: isGeneratedEmail(v.text),
+                  padding: const EdgeInsets.only(top: 6),
+                ),
+              ],
+            ),
           ),
         ],
         TextFormField(

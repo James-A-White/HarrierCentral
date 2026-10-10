@@ -22,6 +22,26 @@ namespace HcWebApi.Endpoints
         }
     }
 
+    /// <summary>
+    /// An address Harrier Central made up for an account that has none (James,
+    /// 2026-10-10). It reaches nobody, so neither mailer sends to it. THE SAME
+    /// RULE as HC6.IsGeneratedEmail (db/schema/functions), which senders use to
+    /// leave these out of their lists, and portal/mobile-app
+    /// lib/util/generated_email.dart, which show them in dark red. Change all
+    /// four together.
+    /// </summary>
+    public static class GeneratedEmail
+    {
+        public static bool Is(string? email)
+        {
+            string e = (email ?? "").Trim().ToLowerInvariant();
+            if (e.EndsWith("@noemail.invalid") || e.StartsWith("urc:") || e.StartsWith("removed_")) return true;
+            if (!e.EndsWith("@harriercentral.com")) return false;
+            int at = e.IndexOf('@');
+            return e.StartsWith("anonymous ") || (at == 36 && Guid.TryParse(e[..36], out _));
+        }
+    }
+
     /// <summary>Thrown when an email could not be handed to the mail service. Already logged.</summary>
     public sealed class EmailSendException(string message, Exception? inner = null) : Exception(message, inner);
 
@@ -90,6 +110,9 @@ namespace HcWebApi.Endpoints
         {
             if (string.IsNullOrWhiteSpace(to) || string.IsNullOrWhiteSpace(subject) || string.IsNullOrWhiteSpace(html))
                 throw new ArgumentException("to, subject and html must all be non-empty.");
+            // A made-up address reaches nobody; never send to one (not an error to log).
+            if (GeneratedEmail.Is(to))
+                throw new EmailSendException($"{source}: not sent, the account has no real email address");
 
             const string via = "graph";
             try

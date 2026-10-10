@@ -200,6 +200,11 @@ class MergeHashersPage extends StatelessWidget {
             Obx(() => _results(c)),
             Obx(() => _table(c)),
             Obx(() => _previewSection(c)),
+            // The dark-red note, when an address on the page is one we made up.
+            Obx(() => GeneratedEmailNote(
+                  show: c.candidates.any((MergeCandidate m) => isGeneratedEmail(m.email)) ||
+                      c.previews.any((MergePreview p) => isGeneratedEmail(p.keep.email) || isGeneratedEmail(p.merge.email)),
+                )),
           ],
         ),
       ),
@@ -264,11 +269,11 @@ class MergeHashersPage extends StatelessWidget {
       return d == null ? 'never' : date.format(d.toLocal());
     }
 
-    Widget cell(String? text, {double width = 140, bool bold = false}) => SizedBox(
+    Widget cell(String? text, {double width = 140, bool bold = false, Color? color}) => SizedBox(
       width: width,
       child: Text(
         (text == null || text.isEmpty) ? '—' : text,
-        style: TextStyle(fontSize: 13, fontWeight: bold ? FontWeight.w600 : FontWeight.normal),
+        style: TextStyle(fontSize: 13, fontWeight: bold ? FontWeight.w600 : FontWeight.normal, color: color),
       ),
     );
 
@@ -329,7 +334,7 @@ class MergeHashersPage extends StatelessWidget {
                         width: 150,
                       )),
                       DataCell(cell(m.name, width: 130)),
-                      DataCell(cell(m.email, width: 200)),
+                      DataCell(cell(m.email, width: 200, color: isGeneratedEmail(m.email) ? kGeneratedEmailColor : null)),
                       DataCell(cell(
                         m.n('KennelsFollowed') == 0
                             ? '0'
@@ -501,9 +506,9 @@ class MergeHashersPage extends StatelessWidget {
                 for (final (label, k, m, r) in rows)
                   TableRow(children: [
                     _Cell(label, bold: true),
-                    _Cell(k.isEmpty ? '—' : k),
-                    _Cell(m.isEmpty ? '—' : m),
-                    _Cell(r.isEmpty ? '—' : r, bold: true),
+                    _Cell(k.isEmpty ? '—' : k, generated: label.startsWith('Email') && isGeneratedEmail(k)),
+                    _Cell(m.isEmpty ? '—' : m, generated: label.startsWith('Email') && isGeneratedEmail(m)),
+                    _Cell(r.isEmpty ? '—' : r, bold: true, generated: label.startsWith('Email') && isGeneratedEmail(r)),
                   ]),
               ],
             ),
@@ -555,9 +560,11 @@ class _Head extends StatelessWidget {
 }
 
 class _Cell extends StatelessWidget {
-  const _Cell(this.text, {this.bold = false});
+  const _Cell(this.text, {this.bold = false, this.generated = false});
   final String text;
   final bool bold;
+  /// A made-up email address: dark red (generated_email.dart).
+  final bool generated;
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 6),
@@ -566,7 +573,7 @@ class _Cell extends StatelessWidget {
       style: TextStyle(
         fontSize: 13,
         fontWeight: bold ? FontWeight.w600 : FontWeight.normal,
-        color: bold ? const Color(0xFF374151) : null,
+        color: generated ? kGeneratedEmailColor : bold ? const Color(0xFF374151) : null,
       ),
     ),
   );

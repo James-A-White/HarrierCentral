@@ -107,7 +107,7 @@ BEGIN TRY
            h.Email                                        AS email,
            CASE WHEN h.ResetCode LIKE 'URC:%' THEN SUBSTRING(h.ResetCode, 5, 6) END AS inviteCode,
            h.InviteEmailedAt                              AS inviteEmailedAt,
-           CASE WHEN h.Email LIKE '%@noemail.invalid' THEN 1 ELSE 0 END AS isPlaceholder
+           HC6.IsGeneratedEmail(h.Email)                  AS isPlaceholder
     FROM @who w
     JOIN HC.Hasher h ON h.id = w.hasherId
     ORDER BY LOWER(COALESCE(NULLIF(h.HashName, ''), h.FirstName, ''));

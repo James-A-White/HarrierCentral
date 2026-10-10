@@ -79,7 +79,8 @@ LEFT JOIN HC.HasherKennelMap hkm ON hkm.KennelId = @kennelId AND hkm.UserId = p.
 LEFT JOIN HC.HasherEventMap hem ON hem.EventId = @eventId AND hem.UserId = p.UserId
 CROSS APPLY (SELECT CASE
         WHEN h.EmailBlocked = 1                                          THEN 7
-        WHEN h.Email NOT LIKE '%_@_%.__%'                                THEN 6
+        WHEN h.Email NOT LIKE '%_@_%.__%'
+          OR HC6.IsGeneratedEmail(h.Email) = 1                           THEN 6   -- no address, or one we made up
         WHEN h.EmailStatus = 3                                           THEN 8
         WHEN ISNULL(hem.EventEmailAlertPreference, 0) = 2                THEN 3   -- run OFF beats everything
         WHEN ISNULL(hem.EventEmailAlertPreference, 0) = 1                THEN 1   -- run ON beats kennel OFF

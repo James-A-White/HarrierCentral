@@ -46,6 +46,10 @@ namespace HcWebApi.Endpoints
         /// </summary>
         public static async Task SendAsync(string to, string subject, string html, string plainText, string? unsubscribeUrl, string? kennelSlug = null, string? kennelShortName = null)
         {
+            // A made-up address reaches nobody (GeneratedEmail): never sent to. The
+            // senders' lists already leave these out; this is the backstop.
+            if (GeneratedEmail.Is(to))
+                throw new InvalidOperationException("not sent: a generated address");
             var content = new EmailContent(subject) { Html = html, PlainText = plainText };
             // The inbox shows the sender's DISPLAY NAME, and ACS keeps that on the
             // sender username, not in the address (a name in the address is a 400).

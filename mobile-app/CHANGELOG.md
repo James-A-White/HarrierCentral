@@ -1,3 +1,8 @@
+## 3.1.9+1465 (2026-10-10)
+James, Tuna Melt and Kilty (private).
+### Improvements
+- **Auto-generated email addresses are shown in dark red**, with a note that they will not be used for sending emails — on **Who gets the email** and **My profile**. Such addresses are never emailed.
+
 ## 3.1.9+1464 (2026-10-10)
 All beta testers.
 ### New Features

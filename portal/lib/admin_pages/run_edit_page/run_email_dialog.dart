@@ -770,6 +770,10 @@ class RunEmailAudienceDialog extends StatelessWidget {
                   itemBuilder: (BuildContext context, int i) => _row(c, rows[i], showingGet),
                 ),
         ),
+        GeneratedEmailNote(
+          show: rows.any((RunEmailAudienceEntry e) => isGeneratedEmail(e.email)),
+          padding: const EdgeInsets.only(top: 6),
+        ),
       ],
     );
   }
@@ -815,7 +819,13 @@ class RunEmailAudienceDialog extends StatelessWidget {
             SelectableText(
               e.email,
               maxLines: 1,
-              style: TextStyle(color: e.isBouncing ? Colors.red.shade800 : Colors.black54, fontSize: 13),
+              style: TextStyle(
+                  color: isGeneratedEmail(e.email)
+                      ? kGeneratedEmailColor
+                      : e.isBouncing
+                          ? Colors.red.shade800
+                          : Colors.black54,
+                  fontSize: 13),
             ),
           Wrap(
             spacing: 6,

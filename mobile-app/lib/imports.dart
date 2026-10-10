@@ -378,6 +378,7 @@ export 'package:harrier_central/util/update_ids.dart';
 export 'package:harrier_central/util/utilities_null_safe.dart';
 export 'package:harrier_central/util/uuid_utils.dart';
 export 'package:harrier_central/util/hc_id.dart';
+export 'package:harrier_central/util/generated_email.dart';
 export 'package:harrier_central/util/clock_offset.dart';
 
 // widgets
