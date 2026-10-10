@@ -840,6 +840,134 @@ class KennelHashersController extends TabUiController
 
   bool isReadingFile = false;
 
+  /// The admin's answers to "is this the same person?" for the imported
+  /// rows, by grid row: { matchPublicHasherId, updateEmail }. A row with no
+  /// entry is added as a new hasher.
+  final Map<int, Map<String, dynamic>> importMatches = <int, Map<String, dynamic>>{};
+
+  /// Rows that look like a member of this kennel (same first + last name,
+  /// or hash name) but carry a different email: ask the admin whether each
+  /// is the same person and whether to use the new address. The email can
+  /// only be replaced for someone who has never signed in and whose home
+  /// kennel this is (2026-09-23 rule) — the SP says which, and bulk-add
+  /// checks again on save.
+  Future<void> _reviewNameMatches() async {
+    importMatches.clear();
+    final String rowsJson = jsonEncode(newHashers
+        .map((NewHasherModel h) => <String, String>{
+              'firstName': h.firstName ?? '',
+              'lastName': h.lastName ?? '',
+              'hashName': h.hashName ?? '',
+              'eMail': h.eMail ?? '',
+            })
+        .toList());
+    final ApiResult res = await ServiceCommon.sendHttpPostToHC6Api(<String, dynamic>{
+      'queryType': 'matchImportRows',
+      'deviceId': box.get(HIVE_DEVICE_ID) as String,
+      'accessToken': _kennelToken('hcportal_matchImportRows'),
+      'publicKennelId': kennel.publicKennelId,
+      'rowsJson': rowsJson,
+    });
+    if (res is! ApiSuccess) return;
+    final List<dynamic> sets = json.decode(res.body) as List<dynamic>;
+    if (sets.length < 2 || (sets[0] as List).isEmpty) return;
+    if ((sets[0] as List).first['Success'] != 1) return;
+    final List<Map<String, dynamic>> cands =
+        (sets[1] as List).map((dynamic e) => e as Map<String, dynamic>).toList();
+    if (cands.isEmpty) return;
+
+    // 'new' = same person, use the file's email; 'keep' = same person, keep
+    // theirs; 'different' = add as a new hasher.
+    final Map<int, String> choice = <int, String>{
+      for (final Map<String, dynamic> c in cands)
+        (c['rowNo'] as num).toInt(): c['canChangeEmail'] == 1 ? 'new' : 'keep',
+    };
+    String why(Map<String, dynamic> c) => c['signedIn'] == 1
+        ? 'They have signed in to Harrier Central, so only they can change their email.'
+        : c['emailInUse'] == 1
+            ? 'The new address already belongs to another account.'
+            : 'Another kennel looks after their details.';
+
+    await Get.dialog<void>(
+      StatefulBuilder(
+        builder: (BuildContext ctx, void Function(void Function()) setDialog) => AlertDialog(
+          title: Text('${cands.length} ${cands.length == 1 ? 'hasher looks' : 'hashers look'} like someone already in ${kennel.kennelShortName}'),
+          content: SizedBox(
+            width: 640,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  const Text('Same name, different email. Is each the same person?'),
+                  const SizedBox(height: 12),
+                  for (final Map<String, dynamic> c in cands) ...<Widget>[
+                    Builder(builder: (BuildContext _) {
+                      final int row = (c['rowNo'] as num).toInt();
+                      final NewHasherModel f = newHashers[row];
+                      final bool canChange = c['canChangeEmail'] == 1;
+                      final String member = [
+                        if ((c['hashName'] as String? ?? '').trim().isNotEmpty) (c['hashName'] as String).trim(),
+                        '${(c['firstName'] ?? '').toString().trim()} ${(c['lastName'] ?? '').toString().trim()}'.trim(),
+                      ].join(' · ');
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.black12),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text('In the file: ${[f.hashName, '${f.firstName ?? ''} ${f.lastName ?? ''}'.trim()].where((String? x) => (x ?? '').isNotEmpty).join(' · ')}  —  ${f.eMail}',
+                                style: const TextStyle(fontWeight: FontWeight.w600)),
+                            Text('In ${kennel.kennelShortName}: $member  —  ${c['currentEmail'] ?? ''}'),
+                            if (!canChange)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text(why(c), style: const TextStyle(color: Colors.black54, fontSize: 12)),
+                              ),
+                            const SizedBox(height: 6),
+                            DropdownButton<String>(
+                              value: choice[row],
+                              isExpanded: true,
+                              onChanged: (String? v) => setDialog(() => choice[row] = v!),
+                              items: <DropdownMenuItem<String>>[
+                                if (canChange)
+                                  const DropdownMenuItem<String>(value: 'new', child: Text('Same person — use the new email')),
+                                DropdownMenuItem<String>(value: 'keep', child: Text('Same person — keep ${c['currentEmail'] ?? 'their email'}')),
+                                const DropdownMenuItem<String>(value: 'different', child: Text('Different people — add as a new hasher')),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          actions: <Widget>[
+            HcButton.primary(label: 'Apply', onPressed: () => Get.back<void>()),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+
+    for (final Map<String, dynamic> c in cands) {
+      final int row = (c['rowNo'] as num).toInt();
+      final String pick = choice[row] ?? 'keep';
+      if (pick == 'different') continue;
+      importMatches[row] = <String, dynamic>{
+        'matchPublicHasherId': c['publicHasherId'],
+        'updateEmail': pick == 'new' ? 1 : 0,
+      };
+    }
+  }
+
   String _kennelToken(String proc) {
     final deviceId = box.get(HIVE_DEVICE_ID) as String;
     final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
@@ -911,6 +1039,7 @@ class KennelHashersController extends TabUiController
         }));
       fromImport = true;
       await setColumnsType(EKennelGridOptions.addNewMembers);
+      await _reviewNameMatches();
       final int dropped = (j['dropped'] as num?)?.toInt() ?? 0;
       final int noEmail = newHashers.where((NewHasherModel h) => (h.eMail ?? '').isEmpty).length;
       await Utilities.showAlert(
@@ -1719,6 +1848,8 @@ class KennelHashersController extends TabUiController
     await Future<void>.delayed(const Duration(seconds: 2));
 
     final newHasherList = <NewHasherModel?>[];
+    // An import also sends each row's "same person?" answer.
+    final List<Map<String, dynamic>> importRows = <Map<String, dynamic>>[];
     final Set<String> seenKeys = <String>{};
     for (var i = 0; i < rows.length; i++) {
       final pr = rows[i];
@@ -1760,11 +1891,14 @@ class KennelHashersController extends TabUiController
       // name for an imported row that has none)
       if (seenKeys.add(key)) {
         newHasherList.add(nh);
+        if (fromImport) {
+          importRows.add(<String, dynamic>{...nh.toJson(), ...?importMatches[i]});
+        }
       }
     }
 
     if (newHasherList.isNotEmpty) {
-      final newHasherJson = jsonEncode(newHasherList);
+      final newHasherJson = fromImport ? jsonEncode(importRows) : jsonEncode(newHasherList);
       //print(newHasherJson);
 
       final deviceId = box.get(HIVE_DEVICE_ID) as String;
@@ -1806,7 +1940,7 @@ class KennelHashersController extends TabUiController
 
       if (fromImport) {
         // What the import did, and who the invite button should write to.
-        int added = 0, linked = 0, already = 0, noEmail = 0, failed = 0;
+        int added = 0, linked = 0, already = 0, countsUpdated = 0, emailUpdated = 0, emailKept = 0, noEmail = 0, failed = 0;
         lastImportedPublicHasherIds.clear();
         for (final NewHasherModel h in newHashers) {
           switch (h.addHasherStatus) {
@@ -1816,6 +1950,15 @@ class KennelHashersController extends TabUiController
               linked++;
             case 'ALREADY IN KENNEL':
               already++;
+            case 'RUN COUNTS UPDATED':
+              already++;
+              countsUpdated++;
+            case 'EMAIL UPDATED':
+              already++;
+              emailUpdated++;
+            case 'EMAIL NOT CHANGED':
+              already++;
+              emailKept++;
             case 'ERROR':
               failed++;
           }
@@ -1826,11 +1969,14 @@ class KennelHashersController extends TabUiController
           }
         }
         fromImport = false;
+        importMatches.clear();
         unawaited(Utilities.showAlert(
           'Import saved',
           '$added new ${added == 1 ? 'hasher' : 'hashers'} added; $linked existing '
           '${linked == 1 ? 'account' : 'accounts'} linked to ${kennel.kennelShortName}.'
-          '${already > 0 ? '~~$already ${already == 1 ? 'hasher is' : 'hashers are'} already in this kennel and ${already == 1 ? 'was' : 'were'} left as they are.' : ''}'
+          '${already > 0 ? '~~$already ${already == 1 ? 'hasher is' : 'hashers are'} already in this kennel — nothing changed but their previous run counts${countsUpdated > 0 ? ' (updated for $countsUpdated)' : ''}.' : ''}'
+          '${emailUpdated > 0 ? '~~$emailUpdated email ${emailUpdated == 1 ? 'address' : 'addresses'} updated.' : ''}'
+          '${emailKept > 0 ? '~~$emailKept email ${emailKept == 1 ? 'address was' : 'addresses were'} not changed: they have signed in, or the address belongs to another account.' : ''}'
           '${noEmail > 0 ? '~~$noEmail without an email address cannot be emailed an invite.' : ''}'
           '${failed > 0 ? '~~$failed ${failed == 1 ? 'row' : 'rows'} could not be added.' : ''}'
           '~~Everyone added has an invite code. Press Email invite codes to send them.',

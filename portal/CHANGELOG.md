@@ -1,3 +1,7 @@
+## 2.0.87+760 (2026-10-10)
+### New Features
+- **Import from file** asks about lookalikes: a row with the same name (or hash name) as someone already in the kennel but a different email is shown side by side — *same person, use the new email* (only for someone who has never signed in), *same person, keep their email*, or *different people*. People already in the kennel get their previous run counts from the file and nothing else changes; the summary says what happened. (E2.F2.S6)
+
 ## 2.0.87+759 (2026-10-10)
 ### New Features
 - **Members › Add members › Import from file**: Excel, CSV, Word or PDF in any layout; the AI fills the grid with names, hash names, emails, runs and hares for you to check before saving. People already in the kennel are left alone and counted; accounts from other kennels are linked; everyone added gets an invite code. (E2.F2.S6)
