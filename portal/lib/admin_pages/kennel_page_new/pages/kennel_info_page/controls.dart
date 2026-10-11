@@ -233,6 +233,9 @@ extension KennelInfoControlsExtension on KennelPageFormController {
       label: 'Kennel website URL',
       maxStringLength: 100,
       minStringLength: 5,
+      // Optional: 22 kennels have no website, and a required-but-empty field
+      // left the whole form invalid, so Save never lit (CERN H3, 2026-10-11).
+      allowEmpty: true,
       maxLines: 1,
       includeOverrideButton: false,
       textController: textControllers[fieldKey] = TextEditingController(),

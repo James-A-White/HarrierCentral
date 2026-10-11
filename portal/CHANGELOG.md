@@ -1,3 +1,7 @@
+## 2.0.87+765 (2026-10-11)
+### Fixes
+- **Kennel editor: Save lights up again for a kennel with no website.** The website address was required, so the 22 kennels without one (CERN H3 among them) could never pass the form's checks and Save stayed grey whatever was changed. It is optional now; an address that is entered is still checked.
+
 ## 2.0.87+764 (2026-10-11)
 ### New Features
 - **Usage Data › First Sign-in**: a new row counting people whose first ever sign-in — app, emailed code or web passkey — falls in the period, separate from Account (accounts created, imports included). Tap a cell for who, when, their home kennel, when the account was made and how they signed in.
