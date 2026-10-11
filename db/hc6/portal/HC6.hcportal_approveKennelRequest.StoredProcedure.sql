@@ -48,6 +48,9 @@ AS
 --   runs page. All are copied; a runs page also switches on the runs-page
 --   import (InboundIntegrationId 6, E3.F6.S3), so the club's hareline
 --   flows in from the first timer read.
+-- 2026-10-11: refuses a request that already has a kennel. The old
+--   importer (HC3W.importKennel) set KennelId without moving the status, and
+--   approving such a request would have created the kennel a second time.
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -89,6 +92,7 @@ DECLARE @neverExpires     DATETIME = '2100-01-01';
 BEGIN TRY
     BEGIN TRANSACTION;
 
+    DECLARE @existingKennel NVARCHAR(250);
     DECLARE @status SMALLINT, @kennelName NVARCHAR(250), @shortName NVARCHAR(250),
             @description NVARCHAR(4000), @kennelUrl NVARCHAR(250),
             @countryId UNIQUEIDENTIFIER, @regionId UNIQUEIDENTIFIER, @cityId UNIQUEIDENTIFIER,
@@ -119,8 +123,11 @@ BEGIN TRY
            @runDayOfWeek = CASE WHEN ki.RunDayOfWeek BETWEEN 1 AND 7 THEN ki.RunDayOfWeek END,
            @runStartTime = ki.RunStartTime,
            @runsPageUrl = NULLIF(TRIM(ki.RunsPageUrl), N''),
-           @socialLinksJson = NULLIF(TRIM(ki.SocialLinksJson), N'')
+           @socialLinksJson = NULLIF(TRIM(ki.SocialLinksJson), N''),
+           @existingKennel = CASE WHEN ki.KennelId IS NOT NULL
+                                  THEN COALESCE(ek.KennelName, N'a kennel that no longer exists') END
     FROM EXT.OfficeForms_KennelImport ki WITH (UPDLOCK, HOLDLOCK)
+    LEFT JOIN HC.Kennel ek ON ek.id = ki.KennelId
     WHERE ki.KennelImportId = @kennelImportId;
 
     -- Every refusal happens before anything is written; ROLLBACK first
@@ -128,6 +135,8 @@ BEGIN TRY
     DECLARE @invalid NVARCHAR(500) = CASE
         WHEN @status IS NULL          THEN 'Request not found'
         WHEN @status = 2              THEN 'This request has already been approved'
+        WHEN @existingKennel IS NOT NULL
+                                      THEN 'This request already has a kennel (' + @existingKennel + ') — it was set up outside this queue'
         WHEN @status NOT IN (0, 1)    THEN 'Only an open request can be approved — reopen it first'
         WHEN LEN(COALESCE(@kennelName, N'')) = 0 THEN 'The kennel needs a name'
         WHEN LEN(COALESCE(@shortName, N'')) = 0 THEN 'The kennel needs a short name'
