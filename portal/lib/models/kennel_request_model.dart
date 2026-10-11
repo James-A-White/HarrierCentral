@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 /// A request to add a kennel, as returned by hcportal_getKennelRequests
 /// (E12.F1.S5). Plain Dart class — no Freezed required.
 class KennelRequestModel {
@@ -42,6 +44,14 @@ class KennelRequestModel {
     this.approvedKennelSlug,
     this.existingHashName,
     this.similarKennels,
+    this.logoUrl,
+    this.foundedOn,
+    this.runDayOfWeek,
+    this.runStartTime,
+    this.runsPageUrl,
+    this.socialLinksJson,
+    this.sourceJson,
+    this.requestSource,
   });
 
   factory KennelRequestModel.fromJson(Map<String, dynamic> j) {
@@ -95,6 +105,14 @@ class KennelRequestModel {
       approvedKennelSlug: n('ApprovedKennelSlug'),
       existingHashName: n('ExistingHashName'),
       similarKennels: n('SimilarKennels'),
+      logoUrl: n('LogoUrl'),
+      foundedOn: n('FoundedOn'),
+      runDayOfWeek: (j['RunDayOfWeek'] as num?)?.toInt(),
+      runStartTime: n('RunStartTime'),
+      runsPageUrl: n('RunsPageUrl'),
+      socialLinksJson: n('SocialLinksJson'),
+      sourceJson: n('SourceJson'),
+      requestSource: n('RequestSource'),
     );
   }
 
@@ -165,6 +183,34 @@ class KennelRequestModel {
 
   /// Live kennels with the same name or short name — a possible duplicate.
   final String? similarKennels;
+
+  // E12.F1.S10 (2026-10-10): what a website read adds; approval copies these.
+  final String? logoUrl;
+
+  /// 'yyyy' | 'yyyy-mm' | 'yyyy-mm-dd'.
+  final String? foundedOn;
+
+  /// 1 Monday … 7 Sunday.
+  final int? runDayOfWeek;
+
+  /// 'HH:mm'.
+  final String? runStartTime;
+  final String? runsPageUrl;
+  final String? socialLinksJson;
+
+  /// { field: the words on the website it came from, _website: url }.
+  final String? sourceJson;
+
+  /// 'website' when made by New kennel from a website.
+  final String? requestSource;
+
+  Map<String, dynamic> get sources {
+    try {
+      return (jsonDecode(sourceJson ?? '') as Map<String, dynamic>?) ?? <String, dynamic>{};
+    } on Object {
+      return <String, dynamic>{};
+    }
+  }
 
   bool get isOpen => status == 0 || status == 1;
 

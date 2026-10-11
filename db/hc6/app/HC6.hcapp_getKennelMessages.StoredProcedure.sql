@@ -25,6 +25,8 @@ AS
 --   { removedId } — every removed message in the thread, so a client
 --   that already drew one can drop it (a delta fetch by sequence number
 --   never sees a deletion). Clients find it by its column name. Additive.
+--   2026-10-11 (E9.F1.S30): a full fetch turns a never-chosen kennel bell
+--   (0) on. No rowset change.
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -61,6 +63,19 @@ BEGIN
            @procName AS errorProc;
     RETURN;
 END
+
+-- Opening the chat turns the kennel bell on (James, 2026-10-11, E9.F1.S30)
+-- — only where the hasher already has a HasherKennelMap row and never chose
+-- a setting (0). An explicit Off (2), Silver Bell (3) or On before the run
+-- (4) is theirs and is never overridden; a visitor with no row is left
+-- alone (posting creates the row — see hcapp_sendKennelMessage). The full
+-- fetch is the open; a delta fetch is the same chat already open, and the
+-- web polls this SP, so it is not repeated there. The bell is the KENNEL
+-- bell: it also enables that kennel's RSVP and check-in reminders.
+IF (@sinceSequenceCount IS NULL)
+    UPDATE HC.HasherKennelMap SET KennelNotificationPreference = 1
+     WHERE UserId = @userId AND KennelId = @kennelId
+       AND removed = 0 AND KennelNotificationPreference = 0;
 
 DECLARE @mayModerate SMALLINT;
 EXEC HC6.nonApi_mayModerateChat @userId = @userId, @kennelId = @kennelId, @allowed = @mayModerate OUTPUT;

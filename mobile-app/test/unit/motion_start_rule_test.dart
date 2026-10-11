@@ -6,8 +6,18 @@ import 'package:latlong2/latlong.dart' as latlng;
 /// starts it only away from the start, a vehicle vetoes everything.
 void main() {
   const int t0 = 1000000;
-  int? check(MotionStartRule r, int secs, {bool arrived = true, double? m = 20}) =>
-      r.check(nowMs: t0 + secs * 1000, arrived: arrived, metersFromStart: m);
+  int? check(
+    MotionStartRule r,
+    int secs, {
+    bool arrived = true,
+    double? m = 20,
+    double? closest = 0,
+  }) => r.check(
+    nowMs: t0 + secs * 1000,
+    arrived: arrived,
+    metersFromStart: m,
+    closestMeters: closest,
+  );
 
   test('running for 20 s after arriving starts, backfilled 60 s', () {
     final r = MotionStartRule()..onActivity('running', 90, t0);
@@ -29,6 +39,30 @@ void main() {
   test('walking more than 100 m from the start, for 20 s, starts', () {
     final r = MotionStartRule()..onActivity('walking', 60, t0);
     expect(check(r, 25, m: 120), t0 - 60000);
+  });
+
+  test('walking in from the station is arriving, not setting off', () {
+    // LH3 #2854 (2026-10-10): 400 m out and still closing on the start.
+    final r = MotionStartRule()..onActivity('walking', 90, t0);
+    expect(check(r, 60, m: 400, closest: 400), isNull);
+    expect(check(r, 120, m: 250, closest: 250), isNull);
+  });
+
+  test('walking away from the circle, 100 m past the closest, starts', () {
+    final r = MotionStartRule()..onActivity('walking', 90, t0);
+    expect(check(r, 60, m: 100, closest: 10), isNull);
+    expect(check(r, 60, m: 115, closest: 10), t0 - 60000);
+  });
+
+  test('jogging in late is not setting off; running away is', () {
+    final r = MotionStartRule()..onActivity('running', 90, t0);
+    expect(check(r, 30, m: 200, closest: 200), isNull);
+    expect(check(r, 30, m: 40, closest: 5), t0 - 60000);
+  });
+
+  test('running with no good fix yet (indoors) still starts', () {
+    final r = MotionStartRule()..onActivity('running', 90, t0);
+    expect(check(r, 30, m: null, closest: null), t0 - 60000);
   });
 
   test('a vehicle vetoes, for two minutes', () {

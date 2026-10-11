@@ -148,7 +148,7 @@ class Guide {
     await h.waitFor(find.text('Run Details'));
     await h.settle(const Duration(seconds: 4));
     await h.screen('$kTag run details');
-    for (final String tab in <String>['RSVP', 'Map', 'Photos', 'Chat', 'Stats']) {
+    for (final String tab in <String>['RSVP', 'Map', 'Photos', 'Stats']) {
       // Tap the run's own tab, not the bottom-nav label of the same name.
       final Finder inBar = find.descendant(of: find.byType(TabBar), matching: find.text(tab));
       await h.tap(inBar.evaluate().isNotEmpty ? inBar : find.text(tab), what: 'tab $tab');
@@ -156,6 +156,12 @@ class Guide {
       await h.screen('$kTag run tab $tab');
     }
     await h.tapText('Details');
+    await h.settle(const Duration(seconds: 1));
+    // The chat is the app bar's bubble, not a tab, since 2026-10-11.
+    await h.tap(find.byTooltip('Run chat'), what: 'run chat bubble');
+    await h.settle(const Duration(seconds: 5));
+    await h.screen('$kTag run chat');
+    await h.back();
     await h.settle(const Duration(seconds: 1));
 
     if (find.byIcon(FontAwesome.gear).evaluate().isEmpty) return;

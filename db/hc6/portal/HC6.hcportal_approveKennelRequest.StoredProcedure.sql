@@ -42,6 +42,12 @@ AS
 --   - Helper admins come from HC.PlatformAdmin, not a hard-coded id.
 --   - The requester gets HC admin access only, not every mismanagement role.
 --   - Facebook fields are no longer copied (the integration is retired).
+-- 2026-10-10 (E12.F1.S10): a request read from the club's website also
+--   carries its logo (already in our blob storage — used instead of a
+--   coin), founding date, usual run day and start time, social links and
+--   runs page. All are copied; a runs page also switches on the runs-page
+--   import (InboundIntegrationId 6, E3.F6.S3), so the club's hareline
+--   flows in from the first timer read.
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -88,7 +94,9 @@ BEGIN TRY
             @countryId UNIQUEIDENTIFIER, @regionId UNIQUEIDENTIFIER, @cityId UNIQUEIDENTIFIER,
             @hashCash NVARCHAR(50), @nonMemberPrice NVARCHAR(50), @membershipFee NVARCHAR(50),
             @membershipMode SMALLINT, @email NVARCHAR(250), @firstName NVARCHAR(250),
-            @lastName NVARCHAR(250), @hashName NVARCHAR(250);
+            @lastName NVARCHAR(250), @hashName NVARCHAR(250),
+            @logoUrl NVARCHAR(1000), @foundedOn NVARCHAR(10), @runDayOfWeek SMALLINT,
+            @runStartTime TIME(0), @runsPageUrl NVARCHAR(1000), @socialLinksJson NVARCHAR(MAX);
 
     SELECT @status      = ki.RequestStatus,
            @kennelName  = TRIM(ki.KennelName),
@@ -105,7 +113,13 @@ BEGIN TRY
            @email       = LOWER(TRIM(ki.EmailAddress)),
            @firstName   = TRIM(ki.FirstName),
            @lastName    = TRIM(ki.LastName),
-           @hashName    = TRIM(ki.HashName)
+           @hashName    = TRIM(ki.HashName),
+           @logoUrl     = NULLIF(TRIM(ki.LogoUrl), N''),
+           @foundedOn   = NULLIF(TRIM(ki.FoundedOn), N''),
+           @runDayOfWeek = CASE WHEN ki.RunDayOfWeek BETWEEN 1 AND 7 THEN ki.RunDayOfWeek END,
+           @runStartTime = ki.RunStartTime,
+           @runsPageUrl = NULLIF(TRIM(ki.RunsPageUrl), N''),
+           @socialLinksJson = NULLIF(TRIM(ki.SocialLinksJson), N'')
     FROM EXT.OfficeForms_KennelImport ki WITH (UPDLOCK, HOLDLOCK)
     WHERE ki.KennelImportId = @kennelImportId;
 
@@ -165,9 +179,20 @@ BEGIN TRY
     -- ── 1. The kennel ─────────────────────────────────────────────────
     -- One of the twelve coins C-000 … C-330, uploaded to blob storage on
     -- 2026-09-28 and already used by the 63 kennels repaired that day.
-    DECLARE @logo NVARCHAR(1000) =
+    -- The club's own logo when the request carries one (read from its
+    -- website and copied to our storage, E12.F1.S10); otherwise a coin.
+    DECLARE @logo NVARCHAR(1000) = COALESCE(
+        CASE WHEN @logoUrl LIKE N'https://harriercentral.blob.core.windows.net/%' THEN @logoUrl END,
         N'https://harriercentral.blob.core.windows.net/harrier/generic-logos/C-'
-        + RIGHT(N'00' + CAST((ABS(CHECKSUM(NEWID())) % 12) * 30 AS NVARCHAR(3)), 3) + N'.png';
+        + RIGHT(N'00' + CAST((ABS(CHECKSUM(NEWID())) % 12) * 30 AS NVARCHAR(3)), 3) + N'.png');
+
+    -- 'yyyy' / 'yyyy-mm' / 'yyyy-mm-dd' → a date (a year alone → 1 January).
+    DECLARE @founded DATE = CASE
+        WHEN LEN(@foundedOn) = 4  THEN TRY_CAST(@foundedOn + N'-01-01' AS DATE)
+        WHEN LEN(@foundedOn) = 7  THEN TRY_CAST(@foundedOn + N'-01' AS DATE)
+        WHEN LEN(@foundedOn) = 10 THEN TRY_CAST(@foundedOn AS DATE) END;
+    -- Links that no longer pass the check are left off rather than refused.
+    IF (HC6.SocialLinksProblem(@socialLinksJson) IS NOT NULL) SET @socialLinksJson = NULL;
 
     -- The form's price is free text ("5", "£5", "5 euros"): keep the
     -- number when there is one, else 0 for the admin to set.
@@ -194,13 +219,15 @@ BEGIN TRY
          KennelLogo, KennelWebsiteUrl, DefaultEventPriceForMembers, DefaultEventPriceForNonMembers,
          CityId, ProvinceStateId, CountryId, RunCountStartDate, KennelStatus,
          IntegrationType, InboundIntegrationId, DisseminateHashRunsDotOrg, removed, deleted,
-         MembershipPrice, MembershipRenewalMode)
+         MembershipPrice, MembershipRenewalMode,
+         KennelFoundedOnDate, DefaultRunDayOfWeek, DefaultRunStartTime, RunsPageUrl, SocialLinksJson)
     VALUES
         (@kennelId, @kennelName, @shortName, @uniqueShortName, COALESCE(@description, N''),
          @logo, @kennelUrl, @price, @nonMemberPriceNum,
          @cityId, @regionId, @countryId, SYSDATETIMEOFFSET(), 2,
-         N'None', 0, 5, 0, 0,
-         @membershipPrice, COALESCE(@membershipMode, 1));
+         N'None', CASE WHEN @runsPageUrl IS NULL THEN 0 ELSE 6 END, 5, 0, 0,
+         @membershipPrice, COALESCE(@membershipMode, 1),
+         @founded, @runDayOfWeek, COALESCE(CAST(@runStartTime AS TIME(7)), '12:00:00'), @runsPageUrl, @socialLinksJson);
 
     -- ── 2. The requester as HC admin ──────────────────────────────────
     DECLARE @adminId UNIQUEIDENTIFIER;

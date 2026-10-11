@@ -67,15 +67,17 @@ void main() {
     expect(d.hasStarted, isFalse);
   });
 
-  test('no start point: the first good fix is the anchor (hare arming there)',
-      () {
-    final d = AutoStartDetector();
-    d.add(at(1000, 0));
-    expect(d.hasArrived, isTrue);
-    d.add(at(1100, 30)); // 100 m from the anchor
-    d.add(at(1200, 60));
-    expect(d.add(at(1300, 120)), 0); // crossed at 60 s → start 0 s
-  });
+  test(
+    'no start point: the first good fix is the anchor (hare arming there)',
+    () {
+      final d = AutoStartDetector();
+      d.add(at(1000, 0));
+      expect(d.hasArrived, isTrue);
+      d.add(at(1100, 30)); // 100 m from the anchor
+      d.add(at(1200, 60));
+      expect(d.add(at(1300, 120)), 0); // crossed at 60 s → start 0 s
+    },
+  );
 
   test('ring keeps 15 minutes; pointsFrom gives the backfill', () {
     final d = AutoStartDetector(anchor: start);
@@ -105,7 +107,50 @@ void main() {
     for (int s = 10; s <= 200; s += 10) {
       expect(d.add(at(400, s, acc: 120)), isNull, reason: 'poor fixes');
     }
+    expect(d.add(at(30, 205)), isNull); // first good fix, outside the pub
     expect(d.add(at(200, 210)), isNull);
     expect(d.add(at(260, 270)), 150000); // crossed at 210 s, minus 60 s
   });
+
+  test('walking in from the station never sets off (LH3 #2854)', () {
+    // 2026-10-10: a vague fix off the train counted as arrived 450 m out,
+    // then the eight-minute walk to the start tripped "more than 150 m".
+    final d = AutoStartDetector(anchor: start);
+    expect(d.add(at(450, 0, acc: 280)), isNull);
+    expect(d.hasArrived, isTrue);
+    int s = 10;
+    for (double m = 440; m >= 10; m -= 3, s += 5) {
+      expect(d.add(at(m, s)), isNull, reason: 'walking in, ${m.round()} m');
+    }
+    expect(d.closestMeters, lessThan(15));
+    // Thirty minutes in the circle, wandering up to 60 m.
+    for (int i = 0; i < 360; i++, s += 5) {
+      expect(d.add(at((i % 13) * 5.0, s)), isNull, reason: 'in the circle');
+    }
+    // Pack off.
+    final int crossFrom = s;
+    int? started;
+    for (double m = 20; started == null && m < 2000; m += 12, s += 5) {
+      started = d.add(at(m, s));
+    }
+    expect(started, isNotNull);
+    // Backfilled 60 s before crossing 150 m, i.e. near where they left.
+    expect(started!, greaterThan((crossFrom - 60) * 1000));
+  });
+
+  test(
+    'being far out is not leaving unless further than the closest approach',
+    () {
+      // Arrived on a vague fix; the nearest good fix was 300 m out (the start
+      // pin is wrong, or the gather is elsewhere). Hanging about there for ten
+      // minutes is not setting off; going 100 m further out than that is.
+      final d = AutoStartDetector(anchor: start);
+      d.add(at(350, 0, acc: 250));
+      for (int s = 10; s <= 600; s += 10) {
+        expect(d.add(at(300 + (s % 30), s)), isNull);
+      }
+      expect(d.add(at(420, 610)), isNull);
+      expect(d.add(at(450, 670)), 550000); // crossed 400 m at 610 s
+    },
+  );
 }

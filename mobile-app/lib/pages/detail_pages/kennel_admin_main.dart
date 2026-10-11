@@ -65,6 +65,30 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                 widget.kennelAggregateItem.kennel.kennelShortName,
                 style: ts_appBarTitle,
               ),
+              // The kennel's chat, from the kennel's own page. Open to
+              // anyone, follower or not (James, 2026-10-11). Always shown,
+              // like the run page's; offline it says so rather than
+              // vanishing.
+              actions: <Widget>[
+                IconButton(
+                  tooltip: 'Kennel chat',
+                  icon: HcChatBubble(
+                    threadId: widget.kennelAggregateItem.kennel.publicKennelId,
+                    isKennelThread: true,
+                    onDark: true,
+                  ),
+                  onPressed: () async {
+                    if (!Utilities.isConnected(showDialog: true)) return;
+                    final k = widget.kennelAggregateItem.kennel;
+                    await openChatThread(
+                      title: '${k.kennelShortName} Kennel Chat',
+                      threadId: k.kennelId,
+                      publicThreadId: k.publicKennelId,
+                      isKennelThread: true,
+                    );
+                  },
+                ),
+              ],
             ),
             body: Container(
               height: MediaQuery.sizeOf(context).height,

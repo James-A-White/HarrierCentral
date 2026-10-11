@@ -40,18 +40,25 @@ class KennelRequestDetailPage extends StatelessWidget {
                 const SizedBox(height: 12),
                 ..._warnings(c),
                 _section('The kennel'),
-                _field(c.kennelName, 'Kennel name', enabled: request.isOpen, check: (c, 'kennelName')),
+                _field(c.kennelName, _lbl('Kennel name', 'kennelName'), enabled: request.isOpen, check: (c, 'kennelName')),
                 _field(
                   c.shortName,
-                  'Short name — letters and digits, becomes hashruns.org/<short name>',
+                  _lbl('Short name — letters and digits, becomes hashruns.org/<short name>', 'kennelShortName'),
                   enabled: request.isOpen,
                   check: (c, 'shortName'),
                 ),
-                _field(c.description, 'Description', enabled: request.isOpen, maxLines: 6),
+                _field(c.description, _lbl('Description', 'description'), enabled: request.isOpen, maxLines: 6),
                 _field(c.kennelUrl, 'Website', enabled: request.isOpen),
                 _field(c.facebookUrl, 'Facebook page', enabled: request.isOpen),
-                _field(c.hashCash, 'Run fee — members (the number becomes the default run price)', enabled: request.isOpen),
-                _field(c.nonMemberPrice, 'Run fee — visitors (blank: same as members)', enabled: request.isOpen),
+                _field(c.hashCash, _lbl('Run fee — members (the number becomes the default run price)', 'feeMembers'), enabled: request.isOpen),
+                _field(c.nonMemberPrice, _lbl('Run fee — visitors (blank: same as members)', 'feeVisitors'), enabled: request.isOpen),
+                _section('Logo, usual run and links'),
+                _logo(c),
+                _field(c.foundedOn, _lbl('Founded — a year (1984), a month (1984-06) or a date (1984-06-30)', 'foundedOn'), enabled: request.isOpen),
+                _runDay(c),
+                _field(c.runStartTime, _lbl('Usual start time — HH:mm, e.g. 18:30', 'runTime'), enabled: request.isOpen),
+                _field(c.runsPageUrl, _lbl('Runs page — approval switches on the runs-page import, so runs flow in', 'runsPageUrl'), enabled: request.isOpen),
+                _socials(c),
                 _section('Where'),
                 if (request.countryText != null || request.cityText != null)
                   Padding(
@@ -112,9 +119,119 @@ class KennelRequestDetailPage extends StatelessWidget {
     );
   }
 
+  /// A label marked when the website gave the value (E12.F1.S10).
+  String _lbl(String label, String sourceKey) =>
+      request.sources.containsKey(sourceKey) ? '$label  · from website' : label;
+
+  Widget _logo(KennelRequestDetailController c) {
+    return Column(
+      children: [
+        Obx(() {
+          c.edits.value; // repaint as the address is typed
+          final String u = c.logoUrl.text.trim();
+          return Container(
+            height: 140,
+            alignment: Alignment.center,
+            child: u.isEmpty
+                ? const Text('No logo — the kennel gets a Harrier Central coin', style: TextStyle(color: _muted))
+                : Image.network(u, height: 130, fit: BoxFit.contain, // a kennel logo is never cropped
+                    errorBuilder: (_, _, _) => const Icon(Icons.broken_image_outlined, color: _muted)),
+          );
+        }),
+        _field(c.logoUrl, _lbl('Logo — 800 × 800, transparent background (blank: a coin)', 'logoUrl'), enabled: request.isOpen),
+      ],
+    );
+  }
+
+  Widget _runDay(KennelRequestDetailController c) {
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Obx(() => DropdownButtonFormField<int?>(
+            key: ValueKey('runDay-${c.runDay.value}'),
+            initialValue: c.runDay.value,
+            isExpanded: true,
+            decoration: InputDecoration(labelText: _lbl('Usual run day', 'runDay'), border: const OutlineInputBorder(), isDense: true),
+            items: [
+              const DropdownMenuItem<int?>(value: null, child: Text('—')),
+              for (int i = 0; i < 7; i++) DropdownMenuItem<int?>(value: i + 1, child: Text(days[i])),
+            ],
+            onChanged: request.isOpen ? c.setRunDay : null,
+          )),
+    );
+  }
+
+  Widget _socials(KennelRequestDetailController c) {
+    return Obx(() {
+      final List<SocialLink> links = c.socials.toList();
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(top: 4, bottom: 6),
+            child: Text('Social and chat links', style: TextStyle(fontSize: 13, color: _muted)),
+          ),
+          for (int i = 0; i < links.length; i++)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 150,
+                    child: DropdownButtonFormField<String>(
+                      key: ValueKey('platform-$i-${links[i].platform}'),
+                      initialValue: links[i].platform,
+                      isExpanded: true,
+                      decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true),
+                      items: [
+                        for (final (String id, String label, _) in socialPlatforms)
+                          DropdownMenuItem(value: id, child: Text(label, overflow: TextOverflow.ellipsis)),
+                      ],
+                      onChanged: request.isOpen ? (String? p) => p == null ? null : c.setSocialPlatform(i, p) : null,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: c.socialUrls[i],
+                      enabled: request.isOpen,
+                      decoration: InputDecoration(
+                        hintText: links[i].platform == 'wechat' ? 'WeChat ID, or https:// link' : 'https://…',
+                        border: const OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: request.isOpen ? () => c.toggleSocialAudience(i) : null,
+                    child: Text(links[i].audience == 'members' ? 'Members' : 'Everyone', textAlign: TextAlign.center),
+                  ),
+                  if (request.isOpen)
+                    IconButton(tooltip: 'Remove', icon: const Icon(Icons.close, size: 18), onPressed: () => c.removeSocial(i)),
+                ],
+              ),
+            ),
+          if (request.isOpen)
+            Center(child: HcButton.secondary(label: 'Add a link', icon: Icons.add_link, onPressed: c.addSocial)),
+          const Padding(
+            padding: EdgeInsets.only(top: 6),
+            child: Text(
+              'Chat groups (WhatsApp, Signal, Telegram…) are shown to members only unless you choose Everyone — spammers harvest public invite links.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: _muted),
+            ),
+          ),
+        ],
+      );
+    });
+  }
+
   List<Widget> _warnings(KennelRequestDetailController c) {
     final r = request;
     final items = <String>[
+      if (r.requestSource == 'website')
+        'Read from ${r.sources['_website'] ?? 'the club\'s website'} by AI. Fields marked "from website" came from the site — check them before approving.',
       if (r.similarKennels != null)
         'Kennels with the same name already exist: ${r.similarKennels}. Is this a duplicate?',
       if (r.existingHashName != null)

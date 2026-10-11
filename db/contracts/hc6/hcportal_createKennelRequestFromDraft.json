@@ -1,0 +1,242 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_createKennelRequestFromDraft",
+  "version": "1.0.0",
+  "description": "New kennel from a website (E12.F1.S10): turns the platform admin's finished draft into a kennel request (status 1, confirmed, RequestSource 'website'), reviewed and approved on the request page like any other. Called by the KennelFromWebsite API after it has copied the logo into blob storage.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal device auth (HC.Device.id)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal token; standard param string (device secret). Caller must be an HC.PlatformAdmin with CanEditKennel."
+    },
+    {
+      "name": "kennelName",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.KennelName",
+      "description": "Required; at most 250."
+    },
+    {
+      "name": "kennelShortName",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.KennelShortName",
+      "description": ""
+    },
+    {
+      "name": "kennelDescription",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.KennelDescription",
+      "description": "At most 4000."
+    },
+    {
+      "name": "kennelUrl",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.KennelUrl",
+      "description": ""
+    },
+    {
+      "name": "kennelFacebookUrl",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.KennelFacebookUrl",
+      "description": ""
+    },
+    {
+      "name": "countryId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.CountryId",
+      "description": ""
+    },
+    {
+      "name": "regionId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.RegionId",
+      "description": ""
+    },
+    {
+      "name": "cityId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.CityId",
+      "description": "When given, the place names come from our rows."
+    },
+    {
+      "name": "countryText",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.Country",
+      "description": ""
+    },
+    {
+      "name": "regionText",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.Region",
+      "description": ""
+    },
+    {
+      "name": "cityText",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.City",
+      "description": ""
+    },
+    {
+      "name": "hashCash",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.HashCash",
+      "description": ""
+    },
+    {
+      "name": "nonMemberPrice",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.NonMemberPrice",
+      "description": ""
+    },
+    {
+      "name": "firstName",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.FirstName",
+      "description": "The first admin."
+    },
+    {
+      "name": "lastName",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.LastName",
+      "description": ""
+    },
+    {
+      "name": "hashName",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.HashName",
+      "description": ""
+    },
+    {
+      "name": "emailAddress",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.EmailAddress",
+      "description": "Optional here; approval requires it."
+    },
+    {
+      "name": "logoUrl",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.LogoUrl",
+      "description": "https; our blob copy (800x800 AVIF, PNG twin)."
+    },
+    {
+      "name": "foundedOn",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.FoundedOn",
+      "description": "'yyyy' | 'yyyy-mm' | 'yyyy-mm-dd'."
+    },
+    {
+      "name": "runDayOfWeek",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.RunDayOfWeek",
+      "description": "1 Monday … 7 Sunday."
+    },
+    {
+      "name": "runStartTime",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.RunStartTime",
+      "description": "'HH:mm'."
+    },
+    {
+      "name": "runsPageUrl",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.RunsPageUrl",
+      "description": ""
+    },
+    {
+      "name": "socialLinksJson",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.SocialLinksJson",
+      "description": "Checked by HC6.SocialLinksProblem."
+    },
+    {
+      "name": "sourceJson",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.SourceJson",
+      "description": "{ field: words on the site, _website, _pagesRead }."
+    },
+    {
+      "name": "comments",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.comments",
+      "description": "The site's fee wording."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "Success = 0 with ErrorMessage on auth or validation failure (then no further rowsets).",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Created",
+      "description": "Success only.",
+      "columns": [
+        {
+          "name": "KennelImportId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT EXT.OfficeForms_KennelImport (one row, status 1)"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

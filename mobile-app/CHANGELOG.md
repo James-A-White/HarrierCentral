@@ -1,3 +1,15 @@
+## 3.1.9+1466 (2026-10-11)
+James, Tuna Melt and Kilty (private).
+### New Features
+- **PackTrack Me mode**: a **Me** button in the playback panel keeps you in the centre of the map and the radar. Tap a hasher — their photo, pin or radar dot — to see only the two of you, the trail between you highlighted, how far ahead or behind you are on the trail ("69 m ahead of Tuna Melt") and how far apart as the crow flies. (E5.F4.S10)
+- **Kennel chat from the kennel page**: the chat bubble in the kennel page's app bar, with the unread count. Anyone can post in a kennel's chat; posting or opening it turns that kennel's notifications on if you had never chosen. (E9.F1.S30)
+- **Run chat in the app bar**: Run Details has five tabs; the chat is the bubble at the top right, as on the run cards. A chat notification opens the run, then its chat. (E9.F1.S31)
+### Improvements
+- **One auto-view button in PackTrack**: follow on the map, the automatic range on the radar. Dragging the map stops following; the floating Reset range button is gone. Radar dots can be tapped. (E5.F4.S9)
+### Fixes
+- **Auto start**: a vague GPS fix on the way in no longer starts the track before the pack sets off (LH3 #2854). (E5.F1.S17)
+- **Down downs › Manage** on a run page opened the charges with no app bar or back button, and editing a charge raised an error.
+
 ## 3.1.9+1465 (2026-10-10)
 James, Tuna Melt and Kilty (private).
 ### Improvements

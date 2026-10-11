@@ -7,42 +7,44 @@ import 'package:harrier_central/pages/run_admin/add_down_down_page.dart';
 import 'package:harrier_central/pages/detail_pages/official_trail_page.dart';
 import 'package:harrier_central/pages/live_run_pages/live_run_charges_page.dart';
 import 'package:harrier_central/widgets/run_photo_gallery.dart';
-import 'package:harrier_central/widgets/hc_badges.dart' as badges;
 import 'package:eventide/eventide.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/widgets/run_summary_dialog.dart';
 import 'package:harrier_central/services/export/gpx_export_service.dart';
-import 'package:harrier_central/widgets/beta_ribbon.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:map_launcher/map_launcher.dart' as maps;
 
 // import 'package:manage_calendar_events/manage_calendar_events.dart' as calendar;
 
-/// Chat tabs with their corresponding integer IDs.
+/// The run page's tabs, by position — and [chat], which is NOT a tab. The
+/// run's chat opens over the page from the app bar's chat bubble, as the
+/// kennel and run cards' bubbles open theirs (James, 2026-10-11; it was the
+/// fifth tab until then). A chat notification still asks for [chat]: the
+/// page opens, then the chat over it, so Back lands on the run.
 enum RunTab {
   details(0),
   rsvp(1),
   map(2),
   stats(3),
-  chat(4),
-  photos(5);
+  photos(4),
+  chat(null);
 
-  /// The integer ID associated with this tab.
-  final int id;
+  /// Position in the tab bar; null for [chat].
+  final int? tabIndex;
 
-  const RunTab(this.id);
+  const RunTab(this.tabIndex);
 
-  /// Lookup a ChatTab by its [id]. Throws if not found.
-  factory RunTab.fromId(int id) {
+  /// The tab at [index]. Throws if there is none.
+  factory RunTab.fromIndex(int index) {
     return RunTab.values.firstWhere(
-      (tab) => tab.id == id,
-      orElse: () => throw ArgumentError('No ChatTab with id $id'),
+      (tab) => tab.tabIndex == index,
+      orElse: () => throw ArgumentError('No RunTab at index $index'),
     );
   }
 }
 
-/// The run detail's six tabs. Stateless over [RunTabsController]; the map,
+/// The run detail's five tabs. Stateless over [RunTabsController]; the map,
 /// share sheet, zoomable photo and GPX export keep their BuildContext here.
 class RunTabs extends StatelessWidget {
   const RunTabs({
@@ -1091,90 +1093,6 @@ class RunTabs extends StatelessWidget {
     );
   }
 
-  Widget _buildChatView(RunTabsController c) {
-    // Read here, in the enclosing Obx's build, not inside the Builder below:
-    // a Builder's builder runs later, where these reads would not be tracked.
-    final bool slid = c.slideTopWidget.value;
-    final bool shown = c.showTopWidget.value;
-    // The run header steps aside whenever the tab is too short to hold it
-    // AND a usable chat: with the keyboard up on a small phone it left the
-    // message box under the keyboard, so you could not see what you typed
-    // (2026-09-25). Decided from the space actually available rather than
-    // the keyboard inset, which the nested Scaffolds strip from MediaQuery.
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints box) {
-        // About 490 dp on a 360 x 640 phone with no keyboard, ~210 with one.
-        final bool cramped = box.maxHeight < 420;
-        return ColoredBox(
-          color: Colors.yellow.shade100,
-          child: Column(
-            children: [
-              AnimatedSize(
-                duration: Duration(milliseconds: 500),
-                curve: Curves.easeInOut,
-                alignment: Alignment.topCenter,
-                child: (!slid && !cramped)
-                    ? AnimatedOpacity(
-                        opacity: shown ? 1.0 : 0.0,
-                        duration: Duration(milliseconds: 400),
-                        onEnd: c.onTopWidgetFaded,
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            top: 15,
-                            left: 20,
-                            bottom: 15,
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  KennelLogo(
-                                    kennelLogoUrl: futureRun.kennel.kennelLogo,
-                                    kennelShortName:
-                                        futureRun.kennel.kennelShortName,
-                                    logoHeight: 70,
-                                  ),
-                                  SizedBox(width: 30),
-                                  Expanded(
-                                    child: _getRunDetails(
-                                      themeAppBarBackground,
-                                    ),
-                                  ),
-                                  SizedBox(width: 20),
-                                ],
-                              ),
-                              //   innerColor: Colors.black,
-                              // ),
-                            ],
-                          ),
-                        ),
-                      )
-                    : SizedBox(),
-                //: SizedBox.expand(child: ColoredBox(color: Colors.white)),
-              ), // Collapses cleanly
-
-              Expanded(
-                child: Stack(
-                  children: [
-                    ChatPage(
-                      eventId: futureRun.event.eventId,
-                      publicEventId: futureRun.event.publicEventId,
-                    ),
-                    BetaRibbon(
-                      title: 'Trail Chat',
-                      text:
-                          'Trail Chat is a brand-new feature currently in beta. Over the next few releases, we’ll be continuing to improve and expand it — fixing any bugs and adding new functionality based on your feedback.\r\n\r\nYou may encounter occasional glitches as we refine the experience, but rest assured we’re actively working on updates in each release.\r\n\r\nOnce Trail Chat reaches full stability and feature completeness, this beta label will be removed.\r\n\r\nWe appreciate your patience and support as we make Trail Chat the best way to stay connected on the trail!',
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildMapView(BuildContext context, RunTabsController c) {
     final List<double?> coords = Utilities.getLatLongFromString(<String>[
       futureRun.event.locationOneLineDesc ?? '',
@@ -1771,77 +1689,6 @@ class RunTabs extends StatelessWidget {
                               ),
                             ),
                           ),
-
-                          Builder(
-                            builder: (_) {
-                              // The null check lives OUTSIDE the Obx, on
-                              // purpose. An Obx whose builder returns
-                              // without reading an observable does not
-                              // render nothing — GetX THROWS ("improper use
-                              // of a GetX"), and in release that paints an
-                              // error box. This Builder re-runs on the same
-                              // rebuilds the Obx would, so a service that
-                              // has gone is still caught, just one frame
-                              // up, where returning early is safe.
-                              final ns = notificationServiceOrNull;
-                              if (ns == null) return const SizedBox();
-                              return Obx(() {
-                                final count =
-                                    ns
-                                        .unreadEventCounts[futureRun
-                                            .event
-                                            .publicEventId]
-                                        ?.value ??
-                                    0;
-                                if (count == 0) return const SizedBox();
-                                return badges.Badge(
-                                  position: badges.BadgePosition.topEnd(
-                                    top: -5,
-                                    end: 0,
-                                  ),
-                                  badgeContent: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 2,
-                                    ),
-                                    width: 30,
-                                    height: 13,
-                                    child: AutoSizeText(
-                                      count.toString(),
-                                      textAlign: TextAlign.center,
-                                      maxLines: 1,
-                                      minFontSize: 10,
-                                      maxFontSize: 13,
-                                      style: ts_badge,
-                                    ),
-                                  ),
-                                  badgeStyle: badges.BadgeStyle(
-                                    badgeColor: Colors.red.shade800,
-                                    padding: const EdgeInsets.all(6),
-                                  ),
-                                );
-                              });
-                            },
-                          ),
-
-                          // if ((chatCount > 0) &&
-                          //     (_tabController.index != 4)) ...<Widget>[
-                          //   badges.Badge(
-                          //     position: badges.BadgePosition.topEnd(
-                          //       top: 0,
-                          //       end: 0,
-                          //       //color: Colors.pink,
-                          //       padding: EdgeInsets.symmetric(
-                          //         horizontal: 2,
-                          //       ),
-                          //       width: 30,
-                          //       height: 13,
-                          //         textAlign: TextAlign.center,
-                          //         maxLines: 1,
-                          //         minFontSize: 10,
-                          //         maxFontSize: 13,
-                          //         style: ts_badge,
-                          //       badgeColor: Colors.red.shade800,
-                          // ],
                         ],
                       ),
                     ),
@@ -1870,7 +1717,6 @@ class RunTabs extends StatelessWidget {
                         ),
                         child: Leaderboard(kennelId: futureRun.kennel.kennelId),
                       ),
-                      _buildChatView(c),
                       _buildPhotosView(c),
                     ],
                     //     tab.text,
@@ -2153,15 +1999,27 @@ class _DownDownsHistoryView extends StatelessWidget {
     DownDownsHistoryController c,
   ) async {
     if (!Utilities.isConnected(showDialog: true)) return;
+    // Its own Scaffold and app bar: LiveRunChargesPage is a TAB body in Live
+    // Run, where the shell supplies both. Pushed bare from here it had no
+    // back button and no Material, so its edit buttons threw "No Material
+    // widget found" (screen walk, 2026-10-11).
     await Navigator.push<void>(
       context,
       MaterialPageRoute<void>(
-        builder: (_) => LiveRunChargesPage(
-          kennelId: kennelId,
-          eventId: eventId,
-          eventName: eventName,
-          kennelSlug: kennelSlug,
-          eventNumber: eventNumber,
+        builder: (_) => AppScaffold(
+          appBar: AppBar(
+            centerTitle: true,
+            backgroundColor: themeAppBarBackground,
+            iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
+            title: Text('Charges', style: ts_appBarTitle),
+          ),
+          body: LiveRunChargesPage(
+            kennelId: kennelId,
+            eventId: eventId,
+            eventName: eventName,
+            kennelSlug: kennelSlug,
+            eventNumber: eventNumber,
+          ),
         ),
       ),
     );

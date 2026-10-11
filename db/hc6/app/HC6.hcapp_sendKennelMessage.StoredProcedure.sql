@@ -30,6 +30,9 @@ AS
 -- Created: 2026-07-06
 -- HC5 Source: none (new — kennel chat, design of record)
 -- Breaking Changes: none
+--   2026-10-11 (E9.F1.S30): anyone may post; the follower refusal is
+--   gone. Posting creates a HasherKennelMap row (Following 0, bell on) or
+--   turns a never-chosen bell (0) on. No rowset change.
 --   2026-09-29: optional @messageKind (photo / location). Rowset 0's
 --   MessageContent is now HC6.ChatMessagePreview — it is the push body —
 --   and rowset 0 gains MessageKind. Additive for every caller.
@@ -106,20 +109,10 @@ BEGIN
     RETURN;
 END
 
--- Sender must at least follow the kennel
-IF NOT EXISTS (SELECT 1 FROM HC.HasherKennelMap hkm
-               WHERE hkm.UserId = @userId AND hkm.KennelId = @kennelId)
-BEGIN
-    SET @errorId = NEWID();
-    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not a follower',
-            'Sender has no HKM row for this kennel', @procName, @userId);
-    SELECT @errorId AS errorId, 3 AS errorType, 1902 AS errorCode,
-           'Not following' AS errorTitle,
-           'You must follow this kennel to use its chat.' AS errorUserMessage,
-           @procName AS errorProc;
-    RETURN;
-END
+-- Anyone may post in a kennel's chat (James, 2026-10-11). The sender used to
+-- need a HasherKennelMap row; a visitor or a hasher thinking of joining is
+-- exactly who a kennel chat is for. Who is PUSHED is unchanged: the audience
+-- below is still drawn from HasherKennelMap.
 
 DECLARE @publicKennelId UNIQUEIDENTIFIER, @publicHasherId UNIQUEIDENTIFIER;
 SELECT @publicKennelId = k.PublicKennelId FROM HC.Kennel k WHERE k.id = @kennelId;
@@ -136,6 +129,27 @@ BEGIN TRY
     IF (@replyToMessageId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM HC.EventMessage r
                                                     WHERE r.id = @replyToMessageId AND r.KennelId = @kennelId AND r.EventId IS NULL))
         SET @replyToMessageId = NULL;
+
+    -- Posting joins the kennel's chat (James, 2026-10-11). A hasher with no
+    -- HasherKennelMap row gets one with the bell ON, so the replies reach
+    -- them, and the thread lists in their Chats (HC6.UserUnreadChatThreads
+    -- counts a kennel chat you posted in as yours). Following = 0 explicitly:
+    -- the column DEFAULTS to 1, and following is the hasher's own choice.
+    -- MemberSince NULL for the same reason: they are not a member.
+    -- A row whose bell was never chosen (0) has it turned on; an explicit
+    -- Off (2), Silver Bell (3) or On before the run (4) is never overridden.
+    -- It is the KENNEL bell, so it also enables that kennel's RSVP and
+    -- check-in reminders (James chose this over a chat-only setting).
+    -- (KennelId, UserId) is unique INCLUDING removed rows, so the existence
+    -- test ignores `removed`; a removed row is left alone, never revived.
+    IF NOT EXISTS (SELECT 1 FROM HC.HasherKennelMap WITH (UPDLOCK, HOLDLOCK)
+                   WHERE UserId = @userId AND KennelId = @kennelId)
+        INSERT HC.HasherKennelMap (UserId, KennelId, Following, MemberSince, KennelNotificationPreference)
+        VALUES (@userId, @kennelId, 0, NULL, 1);
+    ELSE
+        UPDATE HC.HasherKennelMap SET KennelNotificationPreference = 1
+         WHERE UserId = @userId AND KennelId = @kennelId
+           AND removed = 0 AND KennelNotificationPreference = 0;
 
     INSERT INTO HC.EventMessage
         ([id], [KennelId], [PublicKennelId], [UserId], [PublicHasherId],

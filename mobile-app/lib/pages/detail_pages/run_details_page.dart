@@ -45,7 +45,6 @@ class RunDetailsPageState extends State<RunDetailsPage> {
   }
 
   bool _isUpdating = false;
-  int _activeTab = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -53,22 +52,24 @@ class RunDetailsPageState extends State<RunDetailsPage> {
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
-          onPressed: () async {
-            final navigator = Navigator.of(context);
-            if (_activeTab == 4) {
-              if (Get.isRegistered<NotificationService>()) {
-                final controller = Get.find<NotificationService>();
-                await controller.markEventMessagesAsViewed(
-                  _futureRun.event.publicEventId,
-                );
-              }
-            }
-            //print('Run details popped');
-            if (!mounted) return;
-            navigator.pop(); // or Get.back();
-          },
+          onPressed: () => Navigator.of(context).pop(),
         ),
         actions: <Widget>[
+          // The run's chat — the same bubble as the run card's, with its
+          // unread count (James, 2026-10-11: it was the Chat tab). Always
+          // shown, as the tab was; offline it says so rather than vanishing.
+          IconButton(
+            tooltip: 'Run chat',
+            icon: HcChatBubble(
+              threadId: _futureRun.event.publicEventId,
+              isKennelThread: false,
+              onDark: true,
+            ),
+            onPressed: () async {
+              if (!Utilities.isConnected(showDialog: true)) return;
+              await RunTabsController.openRunChat(_futureRun);
+            },
+          ),
           // Photos doorway — its own entry (derived), so a photo-only role
           // (e.g. Hash Flash) reaches per-run photo review without needing run
           // admin. Shown to anyone who can act in the photos area.
@@ -76,7 +77,8 @@ class RunDetailsPageState extends State<RunDetailsPage> {
                   !canEnterArea(
                     PermissionArea.photos,
                     appAccessFlags: _futureRun.extensions.appAccessFlags,
-                    mismanagementRoles: _futureRun.extensions.mismanagementRoles,
+                    mismanagementRoles:
+                        _futureRun.extensions.mismanagementRoles,
                     kennelOverrideJson:
                         _futureRun.kennel.permissionOverrideJson,
                   ))
@@ -106,12 +108,12 @@ class RunDetailsPageState extends State<RunDetailsPage> {
           // designated hare of this run (run-scoped admin for their own run).
           // Mirrors the SP gate exactly; see /hc-authorizations.
           (!canEnterArea(
-            PermissionArea.runAdmin,
-            appAccessFlags: _futureRun.extensions.appAccessFlags,
-            mismanagementRoles: _futureRun.extensions.mismanagementRoles,
-            isHareOfEvent: _futureRun.extensions.isHare == 1,
-            kennelOverrideJson: _futureRun.kennel.permissionOverrideJson,
-          ))
+                PermissionArea.runAdmin,
+                appAccessFlags: _futureRun.extensions.appAccessFlags,
+                mismanagementRoles: _futureRun.extensions.mismanagementRoles,
+                isHareOfEvent: _futureRun.extensions.isHare == 1,
+                kennelOverrideJson: _futureRun.kennel.permissionOverrideJson,
+              ))
               ? Container()
               : IconButton(
                   icon: const Icon(FontAwesome.gear, color: Colors.white),
@@ -139,7 +141,11 @@ class RunDetailsPageState extends State<RunDetailsPage> {
                     try {
                       rda = await Future<dynamic>.sync(refresh);
                     } catch (e, s) {
-                      BootLogger.logError('[ERROR][RUN]', 'run details load failed: $e', s);
+                      BootLogger.logError(
+                        '[ERROR][RUN]',
+                        'run details load failed: $e',
+                        s,
+                      );
                       rda = null;
                     }
 
@@ -164,9 +170,7 @@ class RunDetailsPageState extends State<RunDetailsPage> {
             : RunTabs(
                 futureRun: _futureRun,
                 openToTab: widget.openToTab,
-                relayActiveTab: (int activeTab) {
-                  _activeTab = activeTab;
-                },
+                relayActiveTab: (int _) {},
               ),
       ),
     );

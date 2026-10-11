@@ -35,6 +35,16 @@ class RoseBlip {
   final Color color;
 }
 
+/// One point of a path drawn on the rose, relative to the centre — the trail
+/// between the viewer and their Me-mode target (E5.F4.S10).
+class RosePathPoint {
+  const RosePathPoint({required this.bearing, required this.distanceMeters});
+
+  /// Degrees clockwise from true north, centre → point.
+  final double bearing;
+  final double distanceMeters;
+}
+
 /// Shared rose canvas. Used live (blips from the viewer's own GPS, heading from
 /// the compass) and during replay (blips interpolated to the scrub position,
 /// heading from the focus runner's direction of travel).
@@ -46,10 +56,19 @@ class RoseCanvas extends StatelessWidget {
     this.heading,
     this.facingDeg,
     this.imperial = false,
+    this.pairPath = const <RosePathPoint>[],
+    this.onTapBlip,
   });
 
   final List<RoseBlip> blips;
   final double ringMetres;
+
+  /// The trail between the viewer and their target, drawn under the dots
+  /// and clipped to the rim. Empty for none.
+  final List<RosePathPoint> pairPath;
+
+  /// A dot was tapped — its runner's id. Null: the rose takes no taps.
+  final ValueChanged<String>? onTapBlip;
 
   /// Label distances in yards / miles rather than metres / km (the viewer's
   /// units, 2026-09-27).
@@ -68,7 +87,7 @@ class RoseCanvas extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
+    final Widget paint = CustomPaint(
       size: Size.infinite,
       painter: RosePainter(
         blips: blips,
@@ -76,6 +95,25 @@ class RoseCanvas extends StatelessWidget {
         heading: heading,
         facingDeg: facingDeg,
         imperial: imperial,
+        pairPath: pairPath,
+      ),
+    );
+    final ValueChanged<String>? onTap = onTapBlip;
+    if (onTap == null) return paint;
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints box) => GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapUp: (TapUpDetails d) {
+          final String? id = RosePainter.blipAt(
+            box.biggest,
+            d.localPosition,
+            blips,
+            ringMetres,
+            heading,
+          );
+          if (id != null) onTap(id);
+        },
+        child: paint,
       ),
     );
   }
@@ -88,6 +126,7 @@ class RosePainter extends CustomPainter {
     required this.heading,
     this.facingDeg,
     this.imperial = false,
+    this.pairPath = const <RosePathPoint>[],
   });
 
   final List<RoseBlip> blips;
@@ -95,6 +134,49 @@ class RosePainter extends CustomPainter {
   final double? heading;
   final double? facingDeg;
   final bool imperial;
+  final List<RosePathPoint> pairPath;
+
+  /// A finger's reach around a dot, logical pixels.
+  static const double _tapRadius = 28.0;
+
+  /// Where a point at [bearing] / [metres] sits on a rose of [size] — the
+  /// same geometry [paint] uses for the dots. Past the ring it is pinned to
+  /// the rim, as the dots are.
+  static Offset at(
+    Size size,
+    double bearing,
+    double metres,
+    double ringMetres,
+    double? heading,
+  ) {
+    final Offset center = Offset(size.width / 2, size.height / 2);
+    final double r = math.min(size.width, size.height) / 2 - 34;
+    final double frac = metres > ringMetres ? 1.0 : metres / ringMetres;
+    final double a = ((bearing - (heading ?? 0.0)) - 90) * math.pi / 180;
+    return center + Offset(math.cos(a) * r * frac, math.sin(a) * r * frac);
+  }
+
+  /// The runner whose dot is nearest [tap], within a finger's reach.
+  static String? blipAt(
+    Size size,
+    Offset tap,
+    List<RoseBlip> blips,
+    double ringMetres,
+    double? heading,
+  ) {
+    String? best;
+    double bestD = _tapRadius;
+    for (final RoseBlip b in blips) {
+      final double d =
+          (at(size, b.bearing, b.distanceMeters, ringMetres, heading) - tap)
+              .distance;
+      if (d <= bestD) {
+        bestD = d;
+        best = b.userId;
+      }
+    }
+    return best;
+  }
 
   /// Labels are placed nearest-first and skipped when they'd collide, so a
   /// crowded rose degrades into fewer labels rather than unreadable mush.
@@ -146,6 +228,39 @@ class RosePainter extends CustomPainter {
         weight: deg == 0 ? FontWeight.w800 : FontWeight.w500,
         anchor: _Anchor.center,
       );
+    }
+
+    // The trail between the viewer and their target (Me mode): under the
+    // dots, clipped to the face so a stretch past the ring runs off the rim
+    // rather than being bent onto it.
+    if (pairPath.length >= 2) {
+      final Path trail = Path();
+      for (int i = 0; i < pairPath.length; i++) {
+        final RosePathPoint p = pairPath[i];
+        final double frac = p.distanceMeters / ringMetres;
+        final double a = ((p.bearing - rot) - 90) * math.pi / 180;
+        final Offset o =
+            center + Offset(math.cos(a) * R * frac, math.sin(a) * R * frac);
+        if (i == 0) {
+          trail.moveTo(o.dx, o.dy);
+        } else {
+          trail.lineTo(o.dx, o.dy);
+        }
+      }
+      canvas.save();
+      canvas.clipPath(
+        Path()..addOval(Rect.fromCircle(center: center, radius: R)),
+      );
+      canvas.drawPath(
+        trail,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 5
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round
+          ..color = Colors.yellowAccent.withValues(alpha: 0.75),
+      );
+      canvas.restore();
     }
 
     // Viewer: facing wedge + dot. The wedge is drawn at the facing direction
@@ -292,7 +407,8 @@ class RosePainter extends CustomPainter {
       old.heading != heading ||
       old.facingDeg != facingDeg ||
       old.imperial != imperial ||
-      old.blips != blips;
+      old.blips != blips ||
+      old.pairPath != pairPath;
 }
 
 enum _Anchor { topLeft, center }

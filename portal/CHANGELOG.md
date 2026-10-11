@@ -1,3 +1,7 @@
+## 2.0.87+762 (2026-10-11)
+### New Features
+- **New kennel from a website** (HC Admin Tools › Kennel requests): paste a club's website; the AI reads it into a draft kennel, a chat beside the draft asks for what is missing, and **Next** makes an ordinary kennel request that opens on the review page. The review page shows the logo, founded year, run day and time, runs page and social links. (E12.F1.S10)
+
 ## 2.0.87+761 (2026-10-10)
 ### Improvements
 - **Auto-generated email addresses are shown in dark red**, with "Dark red email addresses have been auto-generated and will not be used for sending emails" at the bottom of the page: members grids, member details, the import's same-person review, Who gets the email, Merge accounts and Platform admins. They are never emailed.
