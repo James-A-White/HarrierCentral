@@ -318,12 +318,18 @@ class Walk {
     await h.settle(const Duration(seconds: 3));
     await h.screen('17 run details');
 
-    for (final String tab in ['RSVP', 'Map', 'Stats', 'Chat', 'Photos']) {
+    for (final String tab in ['RSVP', 'Map', 'Stats', 'Photos']) {
       await h.tapText(tab);
       await h.settle(const Duration(seconds: 4));
       await h.screen('17 run tab $tab');
     }
     await h.tapText('Details');
+    await h.settle(const Duration(seconds: 1));
+    // The chat is the app bar's bubble, not a tab, since 2026-10-11.
+    await h.tap(find.byTooltip('Run chat'), what: 'run chat bubble');
+    await h.settle(const Duration(seconds: 4));
+    await h.screen('17 run chat');
+    await h.back();
     await h.settle(const Duration(seconds: 1));
 
     if (find.text('Add Down Down').evaluate().isNotEmpty) {

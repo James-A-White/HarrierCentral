@@ -51,10 +51,10 @@ class RunTabsController extends GetxController
   static const String LABEL_MAP = 'Map';
   static const String LABEL_RSVP = 'RSVP';
   static const String LABEL_STATS = 'Stats';
-  static const String LABEL_CHAT = 'Chat';
   static const String LABEL_PHOTOS = 'Photos';
 
-  /// Six tabs share the width. On a 360 dp phone the selected label (bold,
+  /// Five tabs share the width (six until the chat moved to the app bar,
+  /// 2026-10-11). On a 360 dp phone the selected label (bold,
   /// so wider) was clipped inside its pill: "Detai", "Photo" (2026-09-25).
   /// Each label shrinks only when it cannot fit, so larger phones, where
   /// every label fits, are unchanged.
@@ -63,7 +63,6 @@ class RunTabsController extends GetxController
     Tab(child: _FitLabel(LABEL_RSVP)),
     Tab(child: _FitLabel(LABEL_MAP)),
     Tab(child: _FitLabel(LABEL_STATS)),
-    Tab(child: _FitLabel(LABEL_CHAT)),
     Tab(child: _FitLabel(LABEL_PHOTOS)),
   ];
 
@@ -117,10 +116,11 @@ class RunTabsController extends GetxController
     tabController = TabController(
       vsync: this,
       length: tabs.length,
-      // Opens on the chat tab when a notification was tapped.
-      initialIndex: openToTab.id,
+      // The chat is not a tab: a page asked for it opens on Details and
+      // showTab puts the chat over it once the page is up.
+      initialIndex: openToTab.tabIndex ?? RunTab.details.tabIndex!,
     );
-    tabIndex.value = openToTab.id;
+    tabIndex.value = tabController.index;
     tabController.addListener(_onTab);
     gridListTabController = TabController(vsync: this, length: 2);
     gridListTabController.addListener(
@@ -176,21 +176,55 @@ class RunTabsController extends GetxController
   /// RSVP or chat notification while that run's page is already in the stack
   /// — reuses this controller, and onInit's initialIndex never runs again.
   /// The old State animated to its tab on every instance; this is that.
+  ///
+  /// [RunTab.chat] opens the run's chat over the page instead. Runs after
+  /// the page's first frame (RunTabs' initState), on a fresh page and a
+  /// reused one alike, so it is the one place a chat notification lands.
   void showTab(RunTab tab) {
-    if (isClosed || tabController.index == tab.id) return;
-    tabController.animateTo(tab.id);
-    tabIndex.value = tab.id;
+    if (isClosed) return;
+    final int? index = tab.tabIndex;
+    if (index == null) {
+      unawaited(_openChatOnce());
+      return;
+    }
+    if (tabController.index == index) return;
+    tabController.animateTo(index);
+    tabIndex.value = index;
     unawaited(_onTabSettled());
   }
+
+  bool _chatOpen = false;
+
+  /// One chat at a time: a second notification for the same run while its
+  /// chat is already up must not stack another copy on top.
+  Future<void> _openChatOnce() async {
+    if (_chatOpen) return;
+    _chatOpen = true;
+    try {
+      await openRunChat(futureRun);
+    } finally {
+      _chatOpen = false;
+    }
+  }
+
+  /// The run's chat, standalone over whatever is showing — the Run Details
+  /// app bar's bubble and a chat notification. [openChatThread] refreshes
+  /// the unread counts when it closes.
+  static Future<void> openRunChat(RunDetailsAggregate run) => openChatThread(
+    title: run.event.eventName,
+    threadId: run.event.eventId,
+    publicThreadId: run.event.publicEventId,
+    isKennelThread: false,
+  );
 
   Future<void> _onTabSettled() async {
     FocusManager.instance.primaryFocus?.unfocus();
     // By POSITION, never by label text. This read `tabs[i].text` until
     // 28b89472 (2026-09-25) gave the tabs a `child:` so the labels could
     // shrink on a small phone — `.text` became null for every tab, and the
-    // RSVP tab spun forever (its load never ran), its speed dial never showed
-    // and the chat tab's header never faded. No error, just a spinner.
-    final RunTab tab = RunTab.fromId(tabController.index);
+    // RSVP tab spun forever (its load never ran) and its speed dial never
+    // showed. No error, just a spinner.
+    final RunTab tab = RunTab.fromIndex(tabController.index);
 
     // The speed dial IS the RSVP actions ("I'm coming" / "I might come" /
     // "I'm not coming"), so it goes on a past run too — otherwise hiding
@@ -206,27 +240,6 @@ class RunTabsController extends GetxController
       await Future.delayed(Duration(seconds: DISPLAY_LOGO_IN_RSVP_DURATION));
       if (isClosed) return;
       showTopWidget.value = false;
-    }
-    if (tab == RunTab.chat) {
-      showTopWidget.value = true;
-      slideTopWidget.value = false;
-      unawaited(
-        Future.delayed(Duration(seconds: DISPLAY_LOGO_IN_RSVP_DURATION)).then((
-          _,
-        ) {
-          if (isClosed) return;
-          showTopWidget.value = false;
-        }),
-      );
-    }
-
-    if ((tabController.previousIndex == RunTab.chat.id) ||
-        (tabController.index == RunTab.chat.id)) {
-      if (Get.isRegistered<NotificationService>()) {
-        await Get.find<NotificationService>().markEventMessagesAsViewed(
-          futureRun.event.publicEventId,
-        );
-      }
     }
     if (isClosed) return;
     relayActiveTab(tabController.index);
