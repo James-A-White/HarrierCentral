@@ -10,7 +10,8 @@ AS
 --              distribution, integration job status, usage metrics
 --              across data types (Account, Activity, Event, Kennel,
 --              Login, Payment, Portal, Error, Push, App Error, PackTrack, Email,
---              AI Tokens, Azure Cost [pence] — the last two added 2026-10-05), recent login details,
+--              AI Tokens, Azure Cost [pence] — the last two added 2026-10-05 — and
+--              First Sign-in, 2026-10-11), recent login details,
 --              and recently updated/active events.
 -- Parameters: @deviceId, @accessToken (auth)
 -- Returns: Rowset 1: VersionData (iOS vs Android)
@@ -474,6 +475,44 @@ BEGIN TRY
 		FROM (SELECT 1 AS one) x
 		LEFT JOIN LOG.AzureDailyCost c WITH (NOLOCK)
 			ON c.CostDate <= @costDay AND c.CostDate > DATEADD(DAY, -60, @costDay)
+
+		UNION ALL
+
+		-- First Sign-in (James, 2026-10-11): accounts whose FIRST EVER sign-in
+		-- by the person themselves falls in the period — app or web — as
+		-- opposed to 'Account', which counts accounts created (an imported
+		-- member or a portal-added hasher is an account long before they open
+		-- anything; Sierra H4 imported 147 and invited them the same day).
+		-- Counted from HC.LaunchAndLogin: app launches ('HC Ver: …'), sign-in
+		-- on a device with an emailed code, app or web (authorizeDevice,
+		-- '<no HC version>'), and web passkey sign-in ('<web>'). QR web
+		-- sign-in writes no row and needs a phone already signed in, so it is
+		-- never anyone's first. NOT counted: rows an admin's add-hasher writes
+		-- in the NEW person's name (UserName '+…+', from addEditUser and
+		-- approveKennelRequest), '<portal>', 'probe', and failed logins
+		-- (errorInfo). The table starts 2025-07-10, so someone whose only
+		-- earlier sign-ins predate that counts as new when they return.
+		SELECT
+			'First Sign-in' AS dataType,
+			14 AS id,
+			SUM(CASE WHEN f.firstLoad >= b.hr1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN f.firstLoad >= b.hr2 AND f.firstLoad < b.hr1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN f.firstLoad >= b.d1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN f.firstLoad >= b.d2 AND f.firstLoad < b.d1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN f.firstLoad >= b.w1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN f.firstLoad >= b.w2 AND f.firstLoad < b.w1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN f.firstLoad >= b.m1 THEN 1 ELSE 0 END),
+			SUM(CASE WHEN f.firstLoad >= b.m2 AND f.firstLoad < b.m1 THEN 1 ELSE 0 END)
+		FROM (
+			SELECT l.UserId, MIN(l.LoginDate) AS firstLoad
+			FROM HC.LaunchAndLogin l WITH (NOLOCK)
+			WHERE l.errorInfo IS NULL AND l.UserId IS NOT NULL
+				AND l.UserName NOT LIKE '+%+' AND l.HcVersion NOT IN ('<portal>', 'probe')
+			GROUP BY l.UserId
+		) f
+		CROSS JOIN DateBounds b
+		WHERE f.firstLoad >= b.m2
+			AND NOT EXISTS (SELECT 1 FROM ExcludedUsers eu WHERE eu.UserId = f.UserId)
 	) d
 	ORDER BY d.id;
 
