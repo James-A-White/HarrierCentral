@@ -458,6 +458,13 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     if (kDebugMode) {
       debugPrint("Foreground message received: ${message.payload}");
     }
+    // One line per push that reaches Dart with the app open, so an uploaded
+    // session shows silent ones arriving (3.1.9+1468: iOS now hands them to
+    // the plugin itself instead of the handler it grafted onto AppDelegate).
+    BootLogger.logBreadcrumb(
+      '[PUSH] foreground ${message.notification == null ? 'silent' : 'alert'} '
+      'type=${message.payload['Type'] ?? '-'}',
+    );
 
     // Song notifications bypass badge logic — dispatch immediately so the
     // songbook updates without the badge HTTP round-trip adding latency.
