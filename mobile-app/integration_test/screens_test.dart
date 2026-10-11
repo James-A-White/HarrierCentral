@@ -319,9 +319,22 @@ class Walk {
     await h.screen('17 run details');
 
     for (final String tab in ['RSVP', 'Map', 'Stats', 'Photos']) {
-      await h.tapText(tab);
+      // Within the tab bar: the Map tab's own Map / Radar / List switch also
+      // says "Map", and tapText's offstage-inclusive .first hit that instead,
+      // so this step never opened the map (found 2026-10-11).
+      await h.tap(
+        find.descendant(of: find.byType(TabBar), matching: find.text(tab)),
+        what: 'tab $tab',
+      );
       await h.settle(const Duration(seconds: 4));
       await h.screen('17 run tab $tab');
+      // The radar, with its street-map backdrop (E5.F4.S11) — only offered
+      // when the run has tracks.
+      if (tab == 'Map' && find.text('Radar').evaluate().isNotEmpty) {
+        await h.tap(find.text('Radar').first, what: 'Radar switch');
+        await h.settle(const Duration(seconds: 4));
+        await h.screen('17 run tab Map radar');
+      }
     }
     await h.tapText('Details');
     await h.settle(const Duration(seconds: 1));

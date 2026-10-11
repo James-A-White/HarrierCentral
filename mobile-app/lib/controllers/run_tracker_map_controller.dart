@@ -552,6 +552,55 @@ class RunTrackerMapController extends GetxController
 
   void resetRoseRange() => roseRange.value = null;
 
+  // ── The radar's map backdrop (E5.F4.S11, James 2026-10-11) ──────────────────
+  // The street map behind the radar, clipped to its face and darkened, so the
+  // dots sit on the streets they are in. A second, non-interactive map whose
+  // camera is slaved to the rose: centred where the rose is centred, scaled so
+  // the outer ring spans the face, turned as the rose is turned.
+
+  /// Camera for the radar's backdrop map; never touched by a finger.
+  final MapController roseMapController = MapController();
+  String? _roseCameraKey;
+
+  /// Where the rose is centred: the focus runner at the scrub position. The
+  /// same point [roseBlips] measures from.
+  latlng.LatLng? get roseOrigin {
+    final focus = roseFocusRunner;
+    if (focus == null) return null;
+    final at = _interpolatedPosition(
+      focus,
+      timelineAvailable ? currentTimestampMs.value : null,
+    );
+    return at == null ? null : latlng.LatLng(at.lat, at.lng);
+  }
+
+  /// Web Mercator zoom at which [ringMetres] covers [radiusPx] logical pixels
+  /// at [lat]: 156543.03 m per pixel at zoom 0 on the equator for 256 px
+  /// tiles, halving per level and shrinking with cos(latitude).
+  static double roseZoomFor(double lat, double ringMetres, double radiusPx) {
+    final double cosLat = math.cos(lat * math.pi / 180).abs().clamp(0.01, 1.0);
+    final double z =
+        math.log(156543.03392 * cosLat * radiusPx / ringMetres) / math.ln2;
+    return z.clamp(2.0, 21.0);
+  }
+
+  /// Points the backdrop at the rose's current view. Called after the frame
+  /// that drew the rose, so the map has been built; a map not yet ready (or
+  /// already gone) throws, and simply catches up on the next frame.
+  void syncRoseMap(latlng.LatLng centre, double zoom, double rotationDeg) {
+    final String key =
+        '${centre.latitude.toStringAsFixed(6)},'
+        '${centre.longitude.toStringAsFixed(6)},'
+        '${zoom.toStringAsFixed(3)},${rotationDeg.toStringAsFixed(1)}';
+    if (key == _roseCameraKey) return;
+    try {
+      roseMapController.moveAndRotate(centre, zoom, rotationDeg);
+      _roseCameraKey = key;
+    } catch (_) {
+      _roseCameraKey = null;
+    }
+  }
+
   // ── The automatic view (E5.F4.S9, James 2026-10-11) ─────────────────────────
   // ONE button for "give me the automatic view back": the map following its
   // runner, the radar sizing its rings to the pack. Lit while the canvas is

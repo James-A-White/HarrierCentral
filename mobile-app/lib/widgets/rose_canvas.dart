@@ -58,7 +58,12 @@ class RoseCanvas extends StatelessWidget {
     this.imperial = false,
     this.pairPath = const <RosePathPoint>[],
     this.onTapBlip,
+    this.onMap = false,
   });
+
+  /// A map is drawn behind the face (E5.F4.S11): leave the face clear and
+  /// give the rings and letters the contrast the black face used to.
+  final bool onMap;
 
   final List<RoseBlip> blips;
   final double ringMetres;
@@ -96,6 +101,7 @@ class RoseCanvas extends StatelessWidget {
         facingDeg: facingDeg,
         imperial: imperial,
         pairPath: pairPath,
+        onMap: onMap,
       ),
     );
     final ValueChanged<String>? onTap = onTapBlip;
@@ -127,6 +133,7 @@ class RosePainter extends CustomPainter {
     this.facingDeg,
     this.imperial = false,
     this.pairPath = const <RosePathPoint>[],
+    this.onMap = false,
   });
 
   final List<RoseBlip> blips;
@@ -135,6 +142,12 @@ class RosePainter extends CustomPainter {
   final double? facingDeg;
   final bool imperial;
   final List<RosePathPoint> pairPath;
+  final bool onMap;
+
+  /// Radius of the face for a canvas of [size] — shared with the map behind
+  /// it, which is clipped to exactly this circle.
+  static double faceRadius(Size size) =>
+      math.min(size.width, size.height) / 2 - 34;
 
   /// A finger's reach around a dot, logical pixels.
   static const double _tapRadius = 28.0;
@@ -150,7 +163,7 @@ class RosePainter extends CustomPainter {
     double? heading,
   ) {
     final Offset center = Offset(size.width / 2, size.height / 2);
-    final double r = math.min(size.width, size.height) / 2 - 34;
+    final double r = faceRadius(size);
     final double frac = metres > ringMetres ? 1.0 : metres / ringMetres;
     final double a = ((bearing - (heading ?? 0.0)) - 90) * math.pi / 180;
     return center + Offset(math.cos(a) * r * frac, math.sin(a) * r * frac);
@@ -185,7 +198,7 @@ class RosePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final R = math.min(size.width, size.height) / 2 - 34;
+    final R = faceRadius(size);
     if (R <= 0) return;
 
     final rot = heading ?? 0.0; // heading-up when we have a compass
@@ -194,16 +207,25 @@ class RosePainter extends CustomPainter {
     // Face kept dark and near-opaque so the rose still reads exactly as it
     // did against the old flat scrim. At the previous 0.28 the jungle behind
     // would show straight through the face and swamp the blips.
-    canvas.drawCircle(
-      center,
-      R,
-      Paint()..color = Colors.black.withValues(alpha: 0.82),
-    );
+    // Over a map the face is the map itself, already darkened behind us, so
+    // the rings get a dark underline to stay visible on pale streets.
+    if (!onMap) {
+      canvas.drawCircle(
+        center,
+        R,
+        Paint()..color = Colors.black.withValues(alpha: 0.82),
+      );
+    }
     final ringPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.4
-      ..color = Colors.white.withValues(alpha: 0.28);
+      ..color = Colors.white.withValues(alpha: onMap ? 0.6 : 0.28);
+    final ringShadow = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.4
+      ..color = Colors.black.withValues(alpha: 0.35);
     for (final f in <double>[0.25, 0.5, 0.75]) {
+      if (onMap) canvas.drawCircle(center, R * f, ringShadow);
       canvas.drawCircle(center, R * f, ringPaint);
     }
     canvas.drawCircle(
@@ -227,6 +249,7 @@ class RosePainter extends CustomPainter {
         size: 13,
         weight: deg == 0 ? FontWeight.w800 : FontWeight.w500,
         anchor: _Anchor.center,
+        shadow: onMap,
       );
     }
 
@@ -393,11 +416,20 @@ class RosePainter extends CustomPainter {
     required double size,
     required FontWeight weight,
     _Anchor anchor = _Anchor.topLeft,
+    bool shadow = false,
   }) {
     final tp = _painter(s, size, weight, color);
     final o = anchor == _Anchor.center
         ? at - Offset(tp.width / 2, tp.height / 2)
         : at;
+    if (shadow) {
+      _painter(
+        s,
+        size,
+        weight,
+        Colors.black87,
+      ).paint(canvas, o + const Offset(1, 1));
+    }
     tp.paint(canvas, o);
   }
 
@@ -408,7 +440,8 @@ class RosePainter extends CustomPainter {
       old.facingDeg != facingDeg ||
       old.imperial != imperial ||
       old.blips != blips ||
-      old.pairPath != pairPath;
+      old.pairPath != pairPath ||
+      old.onMap != onMap;
 }
 
 enum _Anchor { topLeft, center }
