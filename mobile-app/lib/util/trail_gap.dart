@@ -145,7 +145,11 @@ class TrailGapCalculator {
         basis: TrailGapBasis.officialTrail,
         trailMeters: to.s - from.s,
         meAhead: meAhead,
-        segment: trail.between(from, to),
+        segment: _tied(
+          meAhead ? theirPos : myPos,
+          trail.between(from, to),
+          meAhead ? myPos : theirPos,
+        ),
       );
     }
 
@@ -173,7 +177,11 @@ class TrailGapCalculator {
         basis: TrailGapBasis.myTrack,
         trailMeters: w.meters,
         meAhead: true,
-        segment: w.points.map(proj.latLng).toList(growable: false),
+        segment: _tied(
+          theirPos,
+          w.points.map(proj.latLng).toList(growable: false),
+          myPos,
+        ),
       );
     }
     if (onTheirs != null) {
@@ -184,13 +192,29 @@ class TrailGapCalculator {
         trailMeters: w.meters,
         meAhead: false,
         // Follower → leader: from the viewer to the other hasher.
-        segment: w.points.map(proj.latLng).toList(growable: false),
+        segment: _tied(
+          myPos,
+          w.points.map(proj.latLng).toList(growable: false),
+          theirPos,
+        ),
       );
     }
 
     // 3. Neither.
     return TrailGap(crowMeters: crow, basis: TrailGapBasis.none);
   }
+
+  /// [segment] with its ends joined to the two hashers' dots. A segment runs
+  /// between where each hasher MEETS the path — up to [onOfficialMeters]
+  /// from where they stand — so without these legs the line drawn between
+  /// you stopped short of both dots (James, 2026-10-11). The legs are drawn,
+  /// never measured: the trail distance is along the path only.
+  static List<LatLng> _tied(LatLng start, List<LatLng> segment, LatLng end) =>
+      <LatLng>[
+        if (segment.isEmpty || segment.first != start) start,
+        ...segment,
+        if (segment.isEmpty || segment.last != end) end,
+      ];
 
   /// The match of [p] on [path] (within [tol]) whose distance along the path
   /// is nearest [expectedS]; null when [p] is nowhere near it.

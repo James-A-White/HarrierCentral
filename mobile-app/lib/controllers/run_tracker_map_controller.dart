@@ -774,12 +774,38 @@ class RunTrackerMapController extends GetxController
     return ageMs <= 60000 ? null : ageMs ~/ 60000;
   }
 
+  /// The trail between you, follower first, its ends pinned to where the two
+  /// dots are drawn THIS frame. The gap is worked out once per second of run
+  /// and from the track's own points, so its ends can trail the dots during
+  /// playback or sit a few metres off them; the line must meet both, and on
+  /// the radar end exactly at the centre (James, 2026-10-11).
+  List<latlng.LatLng> get _pairLine {
+    final TrailGap? g = pairGap;
+    final UserTrack? mine = ownTrack;
+    final UserTrack? target = pairTarget;
+    if (g == null || mine == null || target == null || g.segment.length < 2) {
+      return const <latlng.LatLng>[];
+    }
+    final double? cutoff = timelineAvailable ? currentTimestampMs.value : null;
+    final _InterpolatedPoint? me = _interpolatedPosition(mine, cutoff);
+    final _InterpolatedPoint? them = _interpolatedPosition(target, cutoff);
+    if (me == null || them == null) return g.segment;
+    final latlng.LatLng myDot = latlng.LatLng(me.lat, me.lng);
+    final latlng.LatLng theirDot = latlng.LatLng(them.lat, them.lng);
+    final bool meAhead = g.meAhead ?? false;
+    return <latlng.LatLng>[
+      meAhead ? theirDot : myDot,
+      ...g.segment.sublist(1, g.segment.length - 1),
+      meAhead ? myDot : theirDot,
+    ];
+  }
+
   /// The trail between you, for the map: a wide glow UNDER the two tracks.
   Polyline? get pairSegmentPolyline {
-    final TrailGap? g = pairGap;
-    if (g == null || g.segment.length < 2) return null;
+    final List<latlng.LatLng> line = _pairLine;
+    if (line.length < 2) return null;
     return Polyline(
-      points: g.segment,
+      points: line,
       strokeWidth: 12,
       color: Colors.yellowAccent.withValues(alpha: 0.55),
     );
@@ -787,17 +813,15 @@ class RunTrackerMapController extends GetxController
 
   /// The trail between you, for the radar, relative to you.
   List<RosePathPoint> get rosePairPath {
-    final TrailGap? g = pairGap;
+    final List<latlng.LatLng> line = _pairLine;
     final UserTrack? mine = ownTrack;
-    if (g == null || mine == null || g.segment.length < 2) {
-      return const <RosePathPoint>[];
-    }
+    if (line.length < 2 || mine == null) return const <RosePathPoint>[];
     final double? cutoff = timelineAvailable ? currentTimestampMs.value : null;
     final _InterpolatedPoint? origin = _interpolatedPosition(mine, cutoff);
     if (origin == null) return const <RosePathPoint>[];
     final latlng.LatLng from = latlng.LatLng(origin.lat, origin.lng);
     return <RosePathPoint>[
-      for (final latlng.LatLng p in g.segment)
+      for (final latlng.LatLng p in line)
         RosePathPoint(
           bearing: (_distanceCalculator.bearing(from, p) + 360) % 360,
           distanceMeters: _distanceCalculator.as(
@@ -854,7 +878,10 @@ class RunTrackerMapController extends GetxController
         ) /
         math.ln2;
     final double fit = z.clamp(minZoom, math.min(maxZoom, 19.0)).toDouble();
-    return (fit - mapController.camera.zoom).abs() < 0.25 ? null : fit;
+    // Against where a glide is already heading, not where it has got to:
+    // mid-glide the camera is short of the target by design.
+    final double heading = _targetZoom ?? mapController.camera.zoom;
+    return (fit - heading).abs() < 0.25 ? null : fit;
   }
 
   bool _hasDistressMark(UserTrack track) {
@@ -1480,15 +1507,25 @@ class RunTrackerMapController extends GetxController
               event.source == MapEventSource.onDrag)) {
         followRunner.value = false;
       }
-      final zoom = event.camera.zoom;
-      debugPrint('Map zoom update: $zoom');
+      // Any finger on the map owns the zoom: an automatic glide stops where
+      // it is rather than fighting the pinch.
+      if (_zoomSlewTimer != null &&
+          event.source != MapEventSource.mapController &&
+          event.source != MapEventSource.nonRotatedSizeChange) {
+        _stopZoomSlew();
+      }
       final wasReady = _mapReady;
       _mapReady = true;
+      // Marker sizes follow the zoom in tenths of a level, not every event:
+      // each refresh rebuilds every mark and re-clusters the photos, and a
+      // pinch fires one per frame — that rebuild was the stutter under a
+      // finger. A tenth of a level is under 1% of a mark's size.
+      final double zoom = _markerZoom(event.camera.zoom);
       if (zoom != _lastMarkerZoom) {
         _lastMarkerZoom = zoom;
         update(); // refresh marker sizes when zoom changes
+        _applyPlaybackDurationFromZoom(zoomOverride: zoom);
       }
-      _applyPlaybackDurationFromZoom(zoomOverride: zoom);
       if (!wasReady) {
         _updateCameraForSelection();
       }
@@ -1625,6 +1662,7 @@ class RunTrackerMapController extends GetxController
     _stopAutoUpdateTimer();
     _stalenessTimer?.cancel();
     _stopRotationSlew();
+    _stopZoomSlew();
     unawaited(_tiltSub?.cancel());
     unawaited(_compassSub?.cancel());
     _tiltTicker?.cancel();
@@ -2373,6 +2411,7 @@ class RunTrackerMapController extends GetxController
     final lon = deviceInfo.deviceLon;
     if (lat == null || lon == null) return;
     final target = latlng.LatLng(lat, lon);
+    _stopZoomSlew();
     final z = mapController.camera.zoom < 16.0
         ? 16.0
         : mapController.camera.zoom;
@@ -2862,6 +2901,7 @@ class RunTrackerMapController extends GetxController
     final double? lat = photo.latitude;
     final double? lng = photo.longitude;
     if (lat == null || lng == null || isClosed) return;
+    _stopZoomSlew();
     final double zoom = mapController.camera.zoom;
     mapController.move(latlng.LatLng(lat, lng), zoom < 17 ? 17 : zoom);
   }
@@ -3334,8 +3374,13 @@ class RunTrackerMapController extends GetxController
     return items;
   }
 
+  /// [zoom] in tenths of a level — the step marker sizes change by.
+  static double _markerZoom(double zoom) => (zoom * 10).roundToDouble() / 10;
+
   double _markerScale() {
-    final double zoom = _mapReady ? mapController.camera.zoom : initialZoom;
+    final double zoom = _mapReady
+        ? _markerZoom(mapController.camera.zoom)
+        : initialZoom;
     final double ratio = zoom / initialZoom;
     final double scaled = ratio / 1.5; // reduce size by ~150% relative to zoom
     return scaled.clamp(0.10, 3.0);
@@ -3357,7 +3402,9 @@ class RunTrackerMapController extends GetxController
   static const double _photoZoomSpan = 5.0;
 
   double _photoMarkerPx() {
-    final double zoom = _mapReady ? mapController.camera.zoom : initialZoom;
+    final double zoom = _mapReady
+        ? _markerZoom(mapController.camera.zoom)
+        : initialZoom;
     final double span = (maxZoom - initialZoom).clamp(0.0, _photoZoomSpan);
     if (span <= 0) return _photoMaxPx;
     final double t = ((zoom - initialZoom) / span).clamp(0.0, 1.0);
@@ -3775,7 +3822,8 @@ class RunTrackerMapController extends GetxController
 
   void _animateCameraMove(latlng.LatLng target, {double? zoom}) {
     if (!_mapReady) return;
-    mapController.move(target, zoom ?? mapController.camera.zoom);
+    mapController.move(target, mapController.camera.zoom);
+    if (zoom != null) _glideZoomTo(zoom);
   }
 
   void _applyRunnerRotation(UserTrack runner, double? cutoff) {
@@ -3882,6 +3930,65 @@ class RunTrackerMapController extends GetxController
     _rotationSlewTimer?.cancel();
     _rotationSlewTimer = null;
     _rotationVelDegPerSec = 0.0;
+  }
+
+  // ── Zoom easing (James, 2026-10-11: "quite jumpy") ──────────────────────────
+  // An automatic zoom change — Me mode keeping the target on screen — used to
+  // land in one frame. It now glides there on a critically damped spring:
+  // it starts from rest (ease-in), slows into the target without overshoot
+  // (ease-out), and a new target mid-glide bends the motion rather than
+  // restarting it. The centre is not eased: follow already moves it every
+  // tick, and the glide only ever changes the zoom.
+
+  /// Where the glide is heading; null when no glide is running.
+  double? _targetZoom;
+  double _zoomVel = 0.0;
+  DateTime? _lastZoomAt;
+  Timer? _zoomSlewTimer;
+
+  /// Spring stiffness, rad/s: settles in roughly 4/ω ≈ 0.7 s.
+  static const double _zoomSpringOmega = 6.0;
+  static const Duration _zoomStepInterval = Duration(milliseconds: 16);
+
+  void _glideZoomTo(double zoom) {
+    if (!_mapReady) return;
+    _targetZoom = zoom;
+    _lastZoomAt ??= DateTime.now();
+    _zoomSlewTimer ??= Timer.periodic(_zoomStepInterval, (_) => _stepZoom());
+  }
+
+  void _stepZoom() {
+    final double? target = _targetZoom;
+    if (target == null || !_mapReady || isClosed) {
+      _stopZoomSlew();
+      return;
+    }
+    final DateTime now = DateTime.now();
+    // A stall (backgrounded app, dropped frames) must not integrate into one
+    // giant step.
+    final double dt = (now.difference(_lastZoomAt ?? now).inMicroseconds / 1e6)
+        .clamp(0.0, 0.05);
+    _lastZoomAt = now;
+    final double z = mapController.camera.zoom;
+    final double diff = target - z;
+    if (diff.abs() < 0.003 && _zoomVel.abs() < 0.01) {
+      mapController.move(mapController.camera.center, target);
+      _stopZoomSlew();
+      return;
+    }
+    const double w = _zoomSpringOmega;
+    _zoomVel += (w * w * diff - 2 * w * _zoomVel) * dt;
+    mapController.move(mapController.camera.center, z + _zoomVel * dt);
+  }
+
+  /// Ends any glide where it stands — a finger or an explicit jump owns the
+  /// zoom from here.
+  void _stopZoomSlew() {
+    _zoomSlewTimer?.cancel();
+    _zoomSlewTimer = null;
+    _targetZoom = null;
+    _zoomVel = 0.0;
+    _lastZoomAt = null;
   }
 
   /// Length of track the heading is fitted over. The single dial for how
