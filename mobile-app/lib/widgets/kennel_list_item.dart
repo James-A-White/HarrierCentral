@@ -294,32 +294,30 @@ class KennelListItemState extends State<KennelListItem> {
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          // Kennel-level chat (not bound to a run). Available to
-                          // followers — the SP enforces the HKM requirement.
-                          if (widget.kennelItem.hkm != null)
-                            IconButton(
-                              icon: HcChatBubble(
-                                threadId:
-                                    widget.kennelItem.kennel.publicKennelId,
-                                isKennelThread: true,
-                              ),
-                              iconSize: Theme.of(context).iconTheme.size,
-                              splashColor: Theme.of(context).highlightColor,
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(
-                                minWidth: 40,
-                                minHeight: 40,
-                              ),
-                              onPressed: () async {
-                                final k = widget.kennelItem.kennel;
-                                await openChatThread(
-                                  title: '${k.kennelShortName} Kennel Chat',
-                                  threadId: k.kennelId,
-                                  publicThreadId: k.publicKennelId,
-                                  isKennelThread: true,
-                                );
-                              },
+                          // Kennel-level chat (not bound to a run). Open to
+                          // anyone, follower or not (James, 2026-10-11).
+                          IconButton(
+                            icon: HcChatBubble(
+                              threadId: widget.kennelItem.kennel.publicKennelId,
+                              isKennelThread: true,
                             ),
+                            iconSize: Theme.of(context).iconTheme.size,
+                            splashColor: Theme.of(context).highlightColor,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 40,
+                              minHeight: 40,
+                            ),
+                            onPressed: () async {
+                              final k = widget.kennelItem.kennel;
+                              await openChatThread(
+                                title: '${k.kennelShortName} Kennel Chat',
+                                threadId: k.kennelId,
+                                publicThreadId: k.publicKennelId,
+                                isKennelThread: true,
+                              );
+                            },
+                          ),
                           IconButton(
                             icon: const Icon(
                               MaterialCommunityIcons.dots_vertical,

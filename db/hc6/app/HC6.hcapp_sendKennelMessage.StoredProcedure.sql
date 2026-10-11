@@ -106,20 +106,10 @@ BEGIN
     RETURN;
 END
 
--- Sender must at least follow the kennel
-IF NOT EXISTS (SELECT 1 FROM HC.HasherKennelMap hkm
-               WHERE hkm.UserId = @userId AND hkm.KennelId = @kennelId)
-BEGIN
-    SET @errorId = NEWID();
-    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not a follower',
-            'Sender has no HKM row for this kennel', @procName, @userId);
-    SELECT @errorId AS errorId, 3 AS errorType, 1902 AS errorCode,
-           'Not following' AS errorTitle,
-           'You must follow this kennel to use its chat.' AS errorUserMessage,
-           @procName AS errorProc;
-    RETURN;
-END
+-- Anyone may post in a kennel's chat (James, 2026-10-11). The sender used to
+-- need a HasherKennelMap row; a visitor or a hasher thinking of joining is
+-- exactly who a kennel chat is for. Who is PUSHED is unchanged: the audience
+-- below is still drawn from HasherKennelMap.
 
 DECLARE @publicKennelId UNIQUEIDENTIFIER, @publicHasherId UNIQUEIDENTIFIER;
 SELECT @publicKennelId = k.PublicKennelId FROM HC.Kennel k WHERE k.id = @kennelId;

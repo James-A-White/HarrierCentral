@@ -10,15 +10,22 @@ import 'package:harrier_central/widgets/hc_badges.dart' as badges;
 ///
 /// [threadId] is the publicEventId (run thread) or publicKennelId (kennel
 /// thread); matching is UUID-normalised inside the service.
+///
+/// [onDark] is for an app bar: the read and empty greys are chosen for a
+/// white card and disappear on the maroon bar, so there the bubble is white
+/// (solid when the thread has messages, outline when it has none) and an
+/// unread one keeps its red count badge.
 class HcChatBubble extends StatelessWidget {
   const HcChatBubble({
     required this.threadId,
     required this.isKennelThread,
+    this.onDark = false,
     super.key,
   });
 
   final String threadId;
   final bool isKennelThread;
+  final bool onDark;
 
   @override
   Widget build(BuildContext context) {
@@ -63,14 +70,20 @@ class HcChatBubble extends StatelessWidget {
             badgeColor: Colors.red.shade800,
             padding: const EdgeInsets.all(4),
           ),
-          child: Icon(MaterialCommunityIcons.chat, color: hc_red),
+          child: Icon(
+            MaterialCommunityIcons.chat,
+            color: onDark ? Colors.white : hc_red,
+          ),
         );
       case ChatThreadState.read:
-        return const Icon(MaterialCommunityIcons.chat, color: Colors.black54);
+        return Icon(
+          MaterialCommunityIcons.chat,
+          color: onDark ? Colors.white : Colors.black54,
+        );
       case ChatThreadState.none:
         return Icon(
           MaterialCommunityIcons.chat_outline,
-          color: Colors.grey.shade500,
+          color: onDark ? Colors.white70 : Colors.grey.shade500,
         );
     }
   }
