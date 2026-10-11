@@ -1,12 +1,12 @@
 ## 3.1.9+1468 (2026-10-11)
-James, Tuna Melt and Kilty (private).
+All beta testers (private first, then widened the same day).
 ### Fixes
 - **iOS: a crash when a silent notification arrived.** The notification plugin grafted its handler onto the app and then read its own settings from the wrong place; now and then that crashed the app (twice on James's phone: 1446 and 1467). The app now owns that handler and passes each notification to the plugin properly.
 ### Diagnostics
 - The session log records each notification that arrives while the app is open (`[PUSH] foreground silent|alert type=…`), so the fix can be confirmed from uploaded logs.
 
 ## 3.1.9+1467 (2026-10-11)
-James, Tuna Melt and Kilty (private).
+All beta testers (private first; widened 2026-10-11 as 1468).
 ### New Features
 - **Street map on the radar**: the PackTrack radar shows the streets behind its face, clipped to the circle and darkened by a quarter, with the rings, dots, names and the Me-mode trail on top. It follows the radar's centre, range and heading-up turning. (E5.F4.S11)
 ### Improvements
@@ -15,7 +15,7 @@ James, Tuna Melt and Kilty (private).
 - **Me mode**: the highlighted trail between you and the other hasher now always reaches both dots — on the radar it stopped short of the centre when you were beside the hare's trail. (E5.F4.S10)
 
 ## 3.1.9+1466 (2026-10-11)
-James, Tuna Melt and Kilty (private).
+All beta testers (private first; widened 2026-10-11 as 1468).
 ### New Features
 - **PackTrack Me mode**: a **Me** button in the playback panel keeps you in the centre of the map and the radar. Tap a hasher — their photo, pin or radar dot — to see only the two of you, the trail between you highlighted, how far ahead or behind you are on the trail ("69 m ahead of Tuna Melt") and how far apart as the crow flies. (E5.F4.S10)
 - **Kennel chat from the kennel page**: the chat bubble in the kennel page's app bar, with the unread count. Anyone can post in a kennel's chat; posting or opening it turns that kennel's notifications on if you had never chosen. (E9.F1.S30)
@@ -27,7 +27,7 @@ James, Tuna Melt and Kilty (private).
 - **Down downs › Manage** on a run page opened the charges with no app bar or back button, and editing a charge raised an error.
 
 ## 3.1.9+1465 (2026-10-10)
-James, Tuna Melt and Kilty (private).
+All beta testers (private first; widened 2026-10-11 as 1468).
 ### Improvements
 - **Auto-generated email addresses are shown in dark red**, with a note that they will not be used for sending emails — on **Who gets the email** and **My profile**. Such addresses are never emailed.
 
