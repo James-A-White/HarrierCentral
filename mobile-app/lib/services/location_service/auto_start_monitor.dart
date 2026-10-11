@@ -26,9 +26,11 @@ const Duration kAutoStartPreciseBefore = Duration(minutes: 5);
 ///   T+90, anyone by T+2h.
 /// * The phone's motion sensing (E5.F1.S15, 2026-10-01) can start it sooner:
 ///   after arriving, running for 20 s — or walking for 20 s more than 100 m
-///   from the start — sets off; being in a vehicle vetoes any start, the GPS
-///   rule's too. Permission refused or no sensor: the GPS rule alone, as
-///   before. See [MotionStartRule].
+///   beyond the closest you came to the start — sets off; being in a vehicle
+///   vetoes any start, the GPS rule's too. Permission refused or no sensor:
+///   the GPS rule alone, as before. See [MotionStartRule].
+/// * Both rules need you to be moving AWAY from the start, so the walk in
+///   from a station or car park never starts it (LH3 #2854, 2026-10-10).
 ///
 /// Owned by [LocationService], like the On-Inn auto-stop monitor.
 class AutoStartMonitor {
@@ -207,19 +209,13 @@ class AutoStartMonitor {
     final MotionStartRule? m = _motion;
     final AutoStartDetector? d = _detector;
     if (!armed.value || m == null || d == null) return;
-    final List<AutoStartFix> ring = d.ring;
-    final latlng.LatLng? anchor = d.anchor;
-    final double? meters = (anchor == null || ring.isEmpty)
-        ? null
-        : const latlng.Distance().as(
-            latlng.LengthUnit.Meter,
-            anchor,
-            latlng.LatLng(ring.last.lat, ring.last.lng),
-          );
+    // Good fixes only: a vague fix must not make the runner look further
+    // out than their closest approach.
     final int? startTs = m.check(
       nowMs: nowMs,
       arrived: d.hasArrived,
-      metersFromStart: meters,
+      metersFromStart: d.lastGoodMeters,
+      closestMeters: d.closestMeters,
     );
     if (startTs != null) unawaited(_trigger(startTs, via: 'motion'));
   }
