@@ -48,6 +48,8 @@ class KennelRequestsController extends GetxController {
     if (changed != null) {
       kennelRequestNotice('${changed == 1 ? '1 request' : '$changed requests'} '
           'marked ${KennelRequestStatus.fromCode(newStatus).label.toLowerCase()}.');
+    } else {
+      kennelRequestNotice(lastKennelRequestError ?? 'The requests could not be changed.', isError: true);
     }
     await load();
   }
