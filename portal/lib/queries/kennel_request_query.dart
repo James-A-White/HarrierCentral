@@ -31,11 +31,19 @@ List<dynamic>? _rowsets(ApiResult result, String queryType) {
   }
 }
 
+/// Why the last approve / save / status change was refused, in the SP's own
+/// words (null when it succeeded, or when the call itself failed).
+String? lastKennelRequestError;
+
 bool _succeeded(List<dynamic>? rowsets) {
+  lastKennelRequestError = null;
   if (rowsets == null || rowsets.isEmpty) return false;
   final rows = rowsets[0] as List<dynamic>;
   if (rows.isEmpty) return false;
-  return ((rows[0] as Map<String, dynamic>)['Success'] as num?)?.toInt() == 1;
+  final row = rows[0] as Map<String, dynamic>;
+  if ((row['Success'] as num?)?.toInt() == 1) return true;
+  lastKennelRequestError = row['ErrorMessage'] as String?;
+  return false;
 }
 
 /// The requests with one status, plus the count for every status.

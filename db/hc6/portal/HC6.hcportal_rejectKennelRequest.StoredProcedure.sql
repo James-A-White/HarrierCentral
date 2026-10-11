@@ -27,6 +27,9 @@ AS
 -- Created: 2026-09-28
 -- HC5 Source: none (replaces trgVwOfficeForms_KennelImport DELETE, HC3W)
 -- Breaking Changes: none (new)
+-- 2026-10-11: when nothing changed, says why instead of answering success
+--   with UpdatedCount 0 (the portal then did nothing, silently). A request
+--   that already has a kennel cannot be rejected — it was approved.
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -93,6 +96,19 @@ BEGIN TRY
     DECLARE @updated INT = @@ROWCOUNT;
 
     COMMIT TRANSACTION;
+
+    IF (@updated = 0)
+    BEGIN
+        SELECT 0 AS Success,
+               CASE WHEN EXISTS (SELECT 1 FROM EXT.OfficeForms_KennelImport ki
+                                 JOIN @ids i ON i.id = ki.KennelImportId
+                                 WHERE ki.KennelId IS NOT NULL OR ki.RequestStatus = 2)
+                    THEN 'This request already has a kennel, so it cannot be rejected or reopened'
+                    ELSE 'No request was changed — it may have been closed already' END AS ErrorMessage,
+               0 AS UpdatedCount;
+        RETURN;
+    END
+
     SELECT 1 AS Success, NULL AS ErrorMessage, @updated AS UpdatedCount;
 END TRY
 BEGIN CATCH

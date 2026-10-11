@@ -478,6 +478,8 @@ class KennelRequestDetailPage extends StatelessWidget {
     if (await c.setStatus(status)) {
       Get.back<void>();
       kennelRequestNotice(status == 1 ? 'Request reopened.' : 'Request marked $label.');
+    } else {
+      kennelRequestNotice(lastKennelRequestError ?? 'The request could not be changed.', isError: true);
     }
   }
 
@@ -507,7 +509,10 @@ class KennelRequestDetailPage extends StatelessWidget {
     if (confirmed != true) return;
 
     final made = await c.approve();
-    if (made == null) return;
+    if (made == null) {
+      kennelRequestNotice(lastKennelRequestError ?? 'The kennel could not be approved.', isError: true);
+      return;
+    }
     Get.back<void>();
     unawaited(Get.defaultDialog<void>(
       title: '${made.kennelName} is live',

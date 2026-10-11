@@ -1,3 +1,8 @@
+## 2.0.87+763 (2026-10-11)
+### Fixes
+- **Kennel requests that already have a kennel no longer stick in New.** Opening the queue closes any open request whose kennel already exists as approved, with a note saying so. Four requests set up by the old importer on 28 Sep could not be rejected or cleared. (E12.F1.S5)
+- **Kennel requests say why a tap was refused.** Approve, reject, spam, duplicate and reopen now show the reason ("Pick the country, region and city first", "This request already has a kennel …") instead of doing nothing. Approve also refuses a request whose kennel already exists, rather than making it twice. (E12.F1.S5/S6)
+
 ## 2.0.87+762 (2026-10-11)
 ### New Features
 - **New kennel from a website** (HC Admin Tools › Kennel requests): paste a club's website; the AI reads it into a draft kennel, a chat beside the draft asks for what is missing, and **Next** makes an ordinary kennel request that opens on the review page. The review page shows the logo, founded year, run day and time, runs page and social links. (E12.F1.S10)
