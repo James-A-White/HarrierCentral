@@ -1,3 +1,12 @@
+## 3.1.9+1467 (2026-10-11)
+James, Tuna Melt and Kilty (private).
+### New Features
+- **Street map on the radar**: the PackTrack radar shows the streets behind its face, clipped to the circle and darkened by a quarter, with the rings, dots, names and the Me-mode trail on top. It follows the radar's centre, range and heading-up turning. (E5.F4.S11)
+### Improvements
+- **Smoother zoom on the PackTrack map**: an automatic zoom change (Me mode keeping the other hasher on screen) glides into place instead of jumping, and pinching no longer stutters.
+### Fixes
+- **Me mode**: the highlighted trail between you and the other hasher now always reaches both dots — on the radar it stopped short of the centre when you were beside the hare's trail. (E5.F4.S10)
+
 ## 3.1.9+1466 (2026-10-11)
 James, Tuna Melt and Kilty (private).
 ### New Features
