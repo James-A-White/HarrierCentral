@@ -1,3 +1,7 @@
+1.0.61+101
+    • KennelFromWebsite (read / chat / save): reads a club's website and its main pages into a kennel draft for the portal's New kennel from a website (E12.F1.S10); public-address-only fetching, values kept only when the quoted words are on the page; logo fitted whole into 800x800, AVIF + PNG (Magick.NET).
+    • Packages: Magick.NET-Q8-AnyCPU.
+
 1.0.61+100
     • Generated addresses (hc-…@noemail.invalid, URC:…, removed_…, <GUID>@/anonymous …@harriercentral.com) are never sent to: GeneratedEmail.Is guards HcEmail.SendAsync and HcListMail.SendAsync (same rule as HC6.IsGeneratedEmail); the launch announcement skips them.
 

@@ -1999,15 +1999,27 @@ class _DownDownsHistoryView extends StatelessWidget {
     DownDownsHistoryController c,
   ) async {
     if (!Utilities.isConnected(showDialog: true)) return;
+    // Its own Scaffold and app bar: LiveRunChargesPage is a TAB body in Live
+    // Run, where the shell supplies both. Pushed bare from here it had no
+    // back button and no Material, so its edit buttons threw "No Material
+    // widget found" (screen walk, 2026-10-11).
     await Navigator.push<void>(
       context,
       MaterialPageRoute<void>(
-        builder: (_) => LiveRunChargesPage(
-          kennelId: kennelId,
-          eventId: eventId,
-          eventName: eventName,
-          kennelSlug: kennelSlug,
-          eventNumber: eventNumber,
+        builder: (_) => AppScaffold(
+          appBar: AppBar(
+            centerTitle: true,
+            backgroundColor: themeAppBarBackground,
+            iconTheme: const IconThemeData(color: Colors.white, size: 28.0),
+            title: Text('Charges', style: ts_appBarTitle),
+          ),
+          body: LiveRunChargesPage(
+            kennelId: kennelId,
+            eventId: eventId,
+            eventName: eventName,
+            kennelSlug: kennelSlug,
+            eventNumber: eventNumber,
+          ),
         ),
       ),
     );
