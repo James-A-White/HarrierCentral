@@ -33,6 +33,12 @@ AS
 --   RunStartTime ('HH:mm'), RunsPageUrl, SocialLinksJson, SourceJson and
 --   RequestSource ('website' when made by New kennel from a website);
 --   SimilarKennels also matches the same website.
+-- 2026-10-11: opening the queue first closes, as approved, every open
+--   request that already has a live kennel (KennelId set). A kennel made
+--   outside this queue — HC3W.importKennel on 2026-09-28 — linked the
+--   request but left it New, where reject could not move it. Not done for
+--   a kennel that is merely similar: that may be a different club, and
+--   the reviewer decides from the SimilarKennels warning.
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -60,6 +66,18 @@ BEGIN
 END
 
 BEGIN TRY
+    UPDATE ki SET
+        RequestStatus = 2,
+        removed       = 1,
+        ConfirmCode   = NULL,
+        ReviewedAt    = SYSDATETIMEOFFSET(),
+        ReviewNote    = COALESCE(ki.ReviewNote + N' | ', N'')
+                        + N'Closed automatically: the kennel already exists (' + k.KennelName + N').',
+        updatedAt     = GETDATE()
+    FROM EXT.OfficeForms_KennelImport ki
+    JOIN HC.Kennel k ON k.id = ki.KennelId AND k.deleted = 0 AND k.removed = 0
+    WHERE ki.RequestStatus IN (0, 1);
+
     SELECT TOP (CASE WHEN @status IN (0, 1) THEN 1000 ELSE 200 END)
         ki.KennelImportId,
         ki.RequestStatus,
