@@ -194,6 +194,9 @@ CROSS APPLY (
     -- expired) and followers — plus the home kennel and a kennel the user
     -- pinned, both their own choices. A bare HasherKennelMap row (ran
     -- there once) no longer lists it.
+    -- E9.F1.S30 (2026-10-11): nor does posting need one any more, so a
+    -- kennel chat you POSTED in is yours too — the run-chat rule above
+    -- (posted = yours, no time limit). Posting creates the row this needs.
     SELECT TOP 1 h.KennelNotificationPreference, h.Pinned, h.IsHomeKennel
     FROM HC.HasherKennelMap h
     WHERE h.KennelId = t.KennelId AND h.UserId = @userId
@@ -201,7 +204,10 @@ CROSS APPLY (
       AND (   h.Following = 1
            OR h.MembershipExpirationDate > SYSDATETIMEOFFSET()
            OR h.IsHomeKennel = 1
-           OR h.Pinned = 1)
+           OR h.Pinned = 1
+           OR EXISTS (SELECT 1 FROM HC.EventMessage p
+                      WHERE p.KennelId = t.KennelId AND p.EventId IS NULL
+                        AND p.UserId = @userId AND p.Removed = 0))
     ORDER BY h.Following DESC, h.Pinned DESC
 ) AS hkm
 OUTER APPLY (
