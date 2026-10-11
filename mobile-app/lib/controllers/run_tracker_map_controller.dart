@@ -5,6 +5,7 @@ import 'package:harrier_central/services/location_service/run_summary.dart';
 import 'package:harrier_central/services/location_service/gps_health.dart';
 import 'package:harrier_central/widgets/run_summary_dialog.dart';
 import 'package:harrier_central/util/track_point_filter.dart';
+import 'package:harrier_central/util/trail_gap.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:harrier_central/widgets/camera_photo_marker.dart';
@@ -143,6 +144,7 @@ class RunTrackerMapController extends GetxController
   /// packtrack, strava, garmin … by runner id (2026-10-04).
   final RxMap<String, String> trackSources = <String, String>{}.obs;
   final TrackPointFilter _trackFilter = TrackPointFilter();
+
   /// The run's official (hare's) trail, dashed under the tracks (E5.F6.S6).
   late final OfficialTrailOverlay officialTrail = OfficialTrailOverlay(
     HcId(event.eventId),
@@ -367,9 +369,12 @@ class RunTrackerMapController extends GetxController
         (maxTimestampMs.value != null && cutoff >= maxTimestampMs.value! - 1);
     final bool stalenessApplies = atLiveEdge && isLiveWindow;
 
+    // Me mode with a target: the two of you and nobody else (E5.F4.S10).
+    final String? onlyId = pairTarget?.id;
     final out = <RoseBlip>[];
     for (final user in visibleRunners) {
       if (user.id == focus.id) continue;
+      if (onlyId != null && user.id != onlyId) continue;
       final at = _interpolatedPosition(user, cutoff);
       if (at == null) continue;
       final to = latlng.LatLng(at.lat, at.lng);
@@ -518,6 +523,18 @@ class RunTrackerMapController extends GetxController
   double roseRangeMetres(List<RoseBlip> blips) {
     final manual = roseRange.value;
     if (manual != null) return manual;
+    // A pair (E5.F4.S10) fits the target AND the trail between you, which
+    // can wander further out than the straight line to them.
+    if (pairActive) {
+      double far = 0;
+      for (final RoseBlip b in blips) {
+        far = math.max(far, b.distanceMeters);
+      }
+      for (final RosePathPoint p in rosePairPath) {
+        far = math.max(far, p.distanceMeters);
+      }
+      return math.max(50.0, far * 1.15);
+    }
     if (blips.isEmpty) return 500.0;
     final ds = blips.map((b) => b.distanceMeters).toList()..sort();
     final p90 = ds[(((ds.length - 1) * 0.90).floor()).clamp(0, ds.length - 1)];
@@ -534,6 +551,262 @@ class RunTrackerMapController extends GetxController
   }
 
   void resetRoseRange() => roseRange.value = null;
+
+  // ── The automatic view (E5.F4.S9, James 2026-10-11) ─────────────────────────
+  // ONE button for "give me the automatic view back": the map following its
+  // runner, the radar sizing its rings to the pack. Lit while the canvas is
+  // steering itself; a drag (map) or a pinch (radar) takes over and dims it.
+
+  /// Whether the canvas showing is steering itself.
+  bool get autoViewOn => canvasView.value == PackTrackCanvas.rose
+      ? roseRange.value == null
+      : followRunner.value;
+
+  void toggleAutoView() {
+    if (canvasView.value == PackTrackCanvas.rose) {
+      resetRoseRange();
+      return;
+    }
+    toggleFollow();
+  }
+
+  // ── Me mode (E5.F4.S10, James 2026-10-11) ──────────────────────────────────
+  // "Me" pins the viewer in the centre of the map and the radar. While it is
+  // on, tapping a hasher — their photo, their pin, their dot on the radar,
+  // their row in the list — makes them the TARGET rather than moving the
+  // centre: only the two of you are drawn, with the trail between you, and
+  // the readout says how far ahead or behind you are on the trail
+  // (TrailGapCalculator) and how far apart as the crow flies. Tap the target
+  // again, or yourself, to go back to everyone; tap Me again to leave.
+
+  final RxBool meMode = false.obs;
+  final RxnString pairTargetId = RxnString();
+  Worker? _pairWorker;
+
+  /// Me mode needs a track of the viewer's own on this run — a spectator has
+  /// no "me" to put in the middle.
+  bool get canUseMeMode => ownTrack != null;
+
+  /// The target, while Me mode is on and both of you are on the map.
+  UserTrack? get pairTarget {
+    if (!meMode.value) return null;
+    final String? id = pairTargetId.value;
+    if (id == null || ownTrack == null) return null;
+    final UserTrack? t = _runnerById(id);
+    return t != null && _hasTrack(t) && isRunnerVisible(t) ? t : null;
+  }
+
+  bool get pairActive => pairTarget != null;
+
+  /// The tile the runner strip centres and rings: the target in Me mode,
+  /// otherwise the selection.
+  String? get carouselHighlightId =>
+      (meMode.value ? pairTargetId.value : null) ?? selectedRunnerId.value;
+
+  void toggleMeMode() {
+    final UserTrack? mine = ownTrack;
+    if (meMode.value || mine == null) {
+      meMode.value = false;
+      pairTargetId.value = null;
+      syncRunnerPickerToSelection(animated: true, onlyIfMismatch: true);
+      return;
+    }
+    meMode.value = true;
+    pairTargetId.value = null;
+    roseRange.value = null;
+    followRunner.value = true;
+    // auto: true — the one selection Me mode itself makes, so it is not
+    // taken for a target.
+    selectRunner(mine.id, recenter: true, syncPicker: true, auto: true);
+  }
+
+  /// A hasher tapped in Me mode. Tapping the target again, or yourself,
+  /// goes back to everyone.
+  void _setPairTarget(String? id) {
+    final bool clear =
+        id == null || id == _currentUserId || pairTargetId.value == id;
+    pairTargetId.value = clear ? null : id;
+    // The rings fit the new pair, not the last pinch.
+    roseRange.value = null;
+  }
+
+  /// A rule for "level": closer than this along the trail.
+  static const double _levelMeters = 10.0;
+
+  TrailGap? _pairGapCache;
+  String? _pairGapKey;
+
+  /// How far apart you and the target are, at the playhead.
+  ///
+  /// Worked out once per second of run time (and again when a track grows or
+  /// the official trail loads), not per frame: playback asks for it on every
+  /// tick, and a second of run is a few metres.
+  TrailGap? get pairGap {
+    final UserTrack? target = pairTarget;
+    final UserTrack? mine = ownTrack;
+    if (target == null || mine == null) return null;
+    final double? cutoff = timelineAvailable ? currentTimestampMs.value : null;
+    final List<OfficialTrailLane> lanes = officialTrail.lanes;
+    final String key =
+        '${target.id}|${cutoff == null ? 'live' : (cutoff / 1000).floor()}'
+        '|${mine.positions.length}|${target.positions.length}|${lanes.length}';
+    if (key == _pairGapKey && _pairGapCache != null) return _pairGapCache;
+    // The viewer's own trail type first: a walkers' lane is the wrong
+    // yardstick for two runners.
+    final int myLane = trailValueForRunner(mine);
+    final TrailGap gap = TrailGapCalculator.compute(
+      me: _latLngs(_interpolatedTrackPoints(mine, cutoff)),
+      them: _latLngs(_interpolatedTrackPoints(target, cutoff)),
+      officialLanes: <List<latlng.LatLng>>[
+        for (final OfficialTrailLane l in lanes)
+          if (l.type == myLane) l.points,
+        for (final OfficialTrailLane l in lanes)
+          if (l.type != myLane) l.points,
+      ],
+    );
+    _pairGapKey = key;
+    _pairGapCache = gap;
+    return gap;
+  }
+
+  static List<latlng.LatLng> _latLngs(List<_InterpolatedPoint> points) => points
+      .map((_InterpolatedPoint p) => latlng.LatLng(p.lat, p.lng))
+      .toList(growable: false);
+
+  String _pairName(UserTrack t) {
+    final String n = (userNames[t.id] ?? '').trim();
+    return n.isEmpty ? 'this hasher' : n;
+  }
+
+  /// "69 m ahead of Tuna Melt", "69 m behind Tuna Melt", "Level with Tuna
+  /// Melt", or "Tuna Melt is not on your trail" — never an invented number.
+  String? get pairHeadline {
+    final UserTrack? t = pairTarget;
+    final TrailGap? g = pairGap;
+    if (t == null || g == null) return null;
+    final String name = _pairName(t);
+    final double? m = g.trailMeters;
+    if (m == null) return '$name is not on your trail';
+    if (m < _levelMeters) return 'Level with $name';
+    return '${distanceLabel(m)} ${g.meAhead! ? 'ahead of' : 'behind'} $name';
+  }
+
+  /// "45 m away as the crow flies", with "· by the hare's trail" when it was
+  /// measured on the official trail and "· 2 min ago" when the target's last
+  /// fix is old — a phone in a pocket uploads every 1-3 minutes, so a live
+  /// target can be well behind where they are now. Never extrapolated.
+  String? get pairSubline {
+    final TrailGap? g = pairGap;
+    if (g == null) return null;
+    final StringBuffer out = StringBuffer(
+      '${distanceLabel(g.crowMeters)} away as the crow flies',
+    );
+    if (g.basis == TrailGapBasis.officialTrail) {
+      out.write(" · by the hare's trail");
+    }
+    final int? age = _pairTargetAgeMinutes;
+    if (age != null) out.write(' · $age min ago');
+    return out.toString();
+  }
+
+  /// Minutes since the target's newest point, at the LIVE edge of a live run
+  /// and only past a minute; null otherwise. Same rule as the rose's fading.
+  int? get _pairTargetAgeMinutes {
+    final UserTrack? t = pairTarget;
+    if (t == null || t.positions.isEmpty) return null;
+    stalenessTick.value; // re-evaluate every 15 s
+    final double? cutoff = timelineAvailable ? currentTimestampMs.value : null;
+    final bool atLiveEdge =
+        cutoff == null ||
+        (maxTimestampMs.value != null && cutoff >= maxTimestampMs.value! - 1);
+    if (!atLiveEdge || !isLiveWindow) return null;
+    final int ageMs =
+        DateTime.now().millisecondsSinceEpoch - t.positions.last.timestampMs;
+    return ageMs <= 60000 ? null : ageMs ~/ 60000;
+  }
+
+  /// The trail between you, for the map: a wide glow UNDER the two tracks.
+  Polyline? get pairSegmentPolyline {
+    final TrailGap? g = pairGap;
+    if (g == null || g.segment.length < 2) return null;
+    return Polyline(
+      points: g.segment,
+      strokeWidth: 12,
+      color: Colors.yellowAccent.withValues(alpha: 0.55),
+    );
+  }
+
+  /// The trail between you, for the radar, relative to you.
+  List<RosePathPoint> get rosePairPath {
+    final TrailGap? g = pairGap;
+    final UserTrack? mine = ownTrack;
+    if (g == null || mine == null || g.segment.length < 2) {
+      return const <RosePathPoint>[];
+    }
+    final double? cutoff = timelineAvailable ? currentTimestampMs.value : null;
+    final _InterpolatedPoint? origin = _interpolatedPosition(mine, cutoff);
+    if (origin == null) return const <RosePathPoint>[];
+    final latlng.LatLng from = latlng.LatLng(origin.lat, origin.lng);
+    return <RosePathPoint>[
+      for (final latlng.LatLng p in g.segment)
+        RosePathPoint(
+          bearing: (_distanceCalculator.bearing(from, p) + 360) % 360,
+          distanceMeters: _distanceCalculator.as(
+            latlng.LengthUnit.Meter,
+            from,
+            p,
+          ),
+        ),
+    ];
+  }
+
+  /// Runners drawn on the map: everyone visible, or in a pair just the two
+  /// of you.
+  List<UserTrack> get _drawnRunners {
+    final UserTrack? t = pairTarget;
+    final List<UserTrack> all = visibleRunners;
+    if (t == null) return all;
+    return all
+        .where((UserTrack u) => u.id == t.id || u.id == _currentUserId)
+        .toList(growable: false);
+  }
+
+  /// The zoom that keeps the target on screen with the viewer in the middle,
+  /// or null to leave the zoom alone (no pair, too close to matter, or within
+  /// a quarter of a step of where it is — a zoom that moved every tick would
+  /// make the map breathe).
+  double? _pairFitZoom(latlng.LatLng me, double? cutoff) {
+    final UserTrack? t = pairTarget;
+    if (t == null || selectedRunnerId.value != _currentUserId) return null;
+    final _InterpolatedPoint? at = _interpolatedPosition(t, cutoff);
+    if (at == null) return null;
+    final double d = _distanceCalculator.as(
+      latlng.LengthUnit.Meter,
+      me,
+      latlng.LatLng(at.lat, at.lng),
+    );
+    if (d < 5) return null;
+    final Size size = mapController.camera.nonRotatedSize;
+    if (size.width <= 0 || size.height <= 0) return null;
+    // Heading-up turns the map, so the target can be in any direction: fit
+    // a circle. Room above is under the view switch and pills; below, the
+    // playback panel covers the map.
+    final double halfH = size.height / 2;
+    final double room = <double>[
+      size.width / 2,
+      halfH - 90.0,
+      halfH - playbackPanelHeight.value - 16.0,
+    ].reduce(math.min);
+    final double r = math.max(60.0, room * 0.85);
+    final double metresPerPixel = d / r;
+    final double z =
+        math.log(
+          156543.03392 * math.cos(me.latitude * math.pi / 180) / metresPerPixel,
+        ) /
+        math.ln2;
+    final double fit = z.clamp(minZoom, math.min(maxZoom, 19.0)).toDouble();
+    return (fit - mapController.camera.zoom).abs() < 0.25 ? null : fit;
+  }
 
   bool _hasDistressMark(UserTrack track) {
     for (final p in track.positions) {
@@ -678,9 +951,10 @@ class RunTrackerMapController extends GetxController
     final cutoff = timelineAvailable ? currentTimestampMs.value : null;
     final String? selectedId = selectedRunnerId.value;
     final bool hasSelection = selectedId != null;
-    final double baseAlpha = hasSelection ? 0.6 : 1.0;
+    // A pair is two tracks, both worth seeing at full strength.
+    final double baseAlpha = hasSelection && !pairActive ? 0.6 : 1.0;
 
-    return visibleRunners
+    return _drawnRunners
         .where((user) => !hasSelection || user.id != selectedId)
         .map((user) => _buildPolylineForUser(user, cutoff, alpha: baseAlpha))
         .whereType<Polyline>()
@@ -712,15 +986,16 @@ class RunTrackerMapController extends GetxController
     final highlightedMarkers = <Marker>[];
 
     final hasSelection = selectedId != null;
+    final bool pair = pairActive;
 
-    for (final user in visibleRunners) {
+    for (final user in _drawnRunners) {
       final interpolated = _interpolatedPosition(user, cutoff);
       if (interpolated == null) continue;
       // No skip on a missing photo — avatarImageProvider falls back to a bundled
       // avatar, so photo-less runners still get a marker instead of vanishing.
       final logo = userLogos[user.id];
       final bool isHighlighted = hasSelection ? user.id == selectedId : false;
-      final bool isDimmed = hasSelection && user.id != selectedId;
+      final bool isDimmed = !pair && hasSelection && user.id != selectedId;
       final marker = Marker(
         width: 80,
         height: 90,
@@ -1142,7 +1417,20 @@ class RunTrackerMapController extends GetxController
       // Keep the new runner's showcase photos warm if the camera is armed.
       if (photoShowcaseArmed.value) _precacheShowcasePhotos();
     });
+    _pairWorker = ever<String?>(pairTargetId, (_) {
+      _updateCameraForSelection();
+      syncRunnerPickerToSelection(onlyIfMismatch: true, animated: true);
+    });
     _mapEventsSub = mapController.mapEventStream.listen((event) {
+      // A finger dragging the map takes it over (E5.F4.S9): follow stops and
+      // the auto-view button dims. Before this the next timeline tick or poll
+      // pulled the camera back under the finger. A pinch keeps follow — it
+      // changes the zoom; follow keeps the centre.
+      if (followRunner.value &&
+          (event.source == MapEventSource.dragStart ||
+              event.source == MapEventSource.onDrag)) {
+        followRunner.value = false;
+      }
       final zoom = event.camera.zoom;
       debugPrint('Map zoom update: $zoom');
       final wasReady = _mapReady;
@@ -1211,8 +1499,9 @@ class RunTrackerMapController extends GetxController
   Future<void> promoteSelectedRunner(BuildContext context) async {
     final UserTrack? r = _runnerById(selectedRunnerId.value);
     if (r == null) return;
-    final List<TrackPoint> track =
-        OfficialTrailOverlay.trackForPromotion(r.positions);
+    final List<TrackPoint> track = OfficialTrailOverlay.trackForPromotion(
+      r.positions,
+    );
     final lane = OfficialTrailService.lanePointsFrom(track);
     if (lane.points.length < 2) {
       hcSnack("This runner's track is too short to use.");
@@ -1222,7 +1511,9 @@ class RunTrackerMapController extends GetxController
     final int? type = await pickOfficialTrailType(
       context,
       types: TrailType.resolveVisible(trailTypesConfigJson.value),
-      taken: <int>{for (final OfficialTrailLane l in officialTrail.lanes) l.type},
+      taken: <int>{
+        for (final OfficialTrailLane l in officialTrail.lanes) l.type,
+      },
       title: "Make $name's track the official trail for…",
     );
     if (type == null || isClosed) return;
@@ -1291,6 +1582,7 @@ class RunTrackerMapController extends GetxController
     _cancelShowcaseFrame();
     _timelineWorker?.dispose();
     _selectionWorker?.dispose();
+    _pairWorker?.dispose();
     unawaited(_mapEventsSub?.cancel());
     runnerCarouselController.dispose();
     _playbackController.dispose();
@@ -1855,6 +2147,15 @@ class RunTrackerMapController extends GetxController
   /// If the selected runner is filtered out, moves selection to the first
   /// still-visible runner so follow/camera never points at a hidden track.
   void _ensureSelectionVisible() {
+    // Me mode cannot outlive your own track being filtered away, and a
+    // filtered-out target leaves the pair.
+    final UserTrack? mine = ownTrack;
+    if (meMode.value && (mine == null || !isRunnerVisible(mine))) {
+      meMode.value = false;
+      pairTargetId.value = null;
+    }
+    final UserTrack? target = _runnerById(pairTargetId.value);
+    if (target != null && !isRunnerVisible(target)) pairTargetId.value = null;
     final sel = selectedRunnerId.value;
     if (sel != null) {
       final runner = _runnerById(sel);
@@ -2522,6 +2823,12 @@ class RunTrackerMapController extends GetxController
     bool syncPicker = false,
     bool auto = false,
   }) {
+    // Me mode: a hasher the user picks becomes the target; the centre stays
+    // on them (E5.F4.S10). Automatic selections pass through.
+    if (meMode.value && !auto) {
+      _setPairTarget(userId);
+      return;
+    }
     if (selectedRunnerId.value == userId) {
       if (recenter && userId != null) {
         _moveToRunner(userId);
@@ -3328,7 +3635,7 @@ class RunTrackerMapController extends GetxController
     bool animated = false,
     bool onlyIfMismatch = false,
   }) {
-    final selectedId = selectedRunnerId.value;
+    final selectedId = carouselHighlightId;
     if (selectedId == null) return;
     final index = _runnerIndex(selectedId);
     if (index == null) return;
@@ -3391,7 +3698,7 @@ class RunTrackerMapController extends GetxController
       );
     }
     final id = list[idx].id;
-    if (selectedRunnerId.value != id) {
+    if (carouselHighlightId != id) {
       selectRunner(id, recenter: true, syncPicker: false);
     }
   }
@@ -3413,14 +3720,13 @@ class RunTrackerMapController extends GetxController
     if (currentPoint == null) return;
     final target = latlng.LatLng(currentPoint.lat, currentPoint.lng);
 
-    _animateCameraMove(target);
+    _animateCameraMove(target, zoom: _pairFitZoom(target, cutoff));
     _applyRunnerRotation(runner, cutoff);
   }
 
-  void _animateCameraMove(latlng.LatLng target) {
+  void _animateCameraMove(latlng.LatLng target, {double? zoom}) {
     if (!_mapReady) return;
-    final zoom = mapController.camera.zoom;
-    mapController.move(target, zoom);
+    mapController.move(target, zoom ?? mapController.camera.zoom);
   }
 
   void _applyRunnerRotation(UserTrack runner, double? cutoff) {

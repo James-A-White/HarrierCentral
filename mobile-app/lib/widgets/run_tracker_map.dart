@@ -214,6 +214,15 @@ class RunTrackerMap extends StatelessWidget {
                           heading: controller.roseHeading,
                           facingDeg: controller.roseFacingDeg,
                           imperial: controller.imperialUnits.value,
+                          pairPath: controller.rosePairPath,
+                          // A dot is picked as a photo in the strip is: it
+                          // re-centres the rose on them, or in Me mode makes
+                          // them the target (E5.F4.S10).
+                          onTapBlip: (String id) => controller.selectRunner(
+                            id,
+                            recenter: false,
+                            syncPicker: true,
+                          ),
                         ),
                       ),
                     ),
@@ -267,20 +276,13 @@ class RunTrackerMap extends StatelessWidget {
                           ),
                         ),
                       ),
+                      _pairReadout(controller),
                     ],
                   ),
                 ),
-                // Long-press anywhere on the readout resets the pinch range —
-                // the switch no longer carries that gesture.
-                Positioned(
-                  bottom: 96,
-                  right: 12,
-                  child: MapOverlayButton(
-                    icon: Icons.center_focus_strong,
-                    tooltip: 'Reset range',
-                    onTap: controller.resetRoseRange,
-                  ),
-                ),
+                // No floating Reset range any more: the panel's auto-view
+                // button gives the radar its automatic range back, as it
+                // gives the map its follow (E5.F4.S9).
                 _hostControls(context, topInset, PackTrackCanvas.rose),
               ],
             );
@@ -317,6 +319,12 @@ class RunTrackerMap extends StatelessWidget {
                   // tracks (E5.F6.S6).
                   PolylineLayer(polylines: controller.officialTrailPolylines),
                   MarkerLayer(markers: controller.officialTrailMarkers),
+                  // Me mode: the trail between you and your target, a wide
+                  // glow under the two tracks (E5.F4.S10).
+                  if (controller.pairSegmentPolyline != null)
+                    PolylineLayer(
+                      polylines: <Polyline>[controller.pairSegmentPolyline!],
+                    ),
                   PolylineLayer(polylines: controller.dimmedPolylines),
                   if (controller.highlightedPolyline != null)
                     PolylineLayer(polylines: [controller.highlightedPolyline!]),
@@ -432,7 +440,14 @@ class RunTrackerMap extends StatelessWidget {
                 left: 0,
                 right: 0,
                 child: IgnorePointer(
-                  child: Center(child: _tracksUpdatedPill(controller)),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Center(child: _tracksUpdatedPill(controller)),
+                      _pairReadout(controller),
+                    ],
+                  ),
                 ),
               ),
               // In-map photo showcase — grows a photo out of its pin to centre
@@ -612,6 +627,58 @@ class RunTrackerMap extends StatelessWidget {
   /// positions fetch. Neutral under a minute; amber once the feed is two
   /// missed polls behind — the situation (coverage hole) where knowing the
   /// pack picture is stale actually changes what a runner does.
+  /// The Me-mode comparison (E5.F4.S10): the trail gap on top — "69 m ahead
+  /// of Tuna Melt" — and the straight line beneath. Nothing outside a pair.
+  Widget _pairReadout(RunTrackerMapController controller) {
+    final String? head = controller.pairHeadline;
+    if (head == null) return const SizedBox.shrink();
+    final String? sub = controller.pairSubline;
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 320.0),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.72),
+            borderRadius: BorderRadius.circular(14.0),
+            border: Border.all(color: Colors.yellow.withValues(alpha: 0.55)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 14.0,
+              vertical: 6.0,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  head,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.yellow,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                if (sub != null)
+                  Text(
+                    sub,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _tracksUpdatedPill(RunTrackerMapController controller) {
     return Obx(() {
       controller.stalenessTick.value; // re-evaluate every 15 s
@@ -951,16 +1018,36 @@ class RunTrackerMap extends StatelessWidget {
               : 'Tilt to control playback speed',
           onPressed: controller.toggleTilt,
         ),
-        _iconBtn(
-          icon: Icons.my_location,
-          color: controller.followRunner.value
-              ? Colors.lightBlueAccent
-              : Colors.white54,
-          tooltip: controller.followRunner.value
-              ? 'Following runner'
-              : 'Follow runner',
-          onPressed: controller.toggleFollow,
-        ),
+        // ONE automatic-view button (E5.F4.S9): follow on the map, auto range
+        // on the radar — lit while the canvas steers itself. Nothing to steer
+        // on the list.
+        if (controller.canvasView.value != PackTrackCanvas.list)
+          _iconBtn(
+            icon: Icons.my_location,
+            color: controller.autoViewOn
+                ? Colors.lightBlueAccent
+                : Colors.white54,
+            tooltip: controller.canvasView.value == PackTrackCanvas.rose
+                ? (controller.autoViewOn
+                      ? 'Rings fit the pack'
+                      : 'Back to the automatic range')
+                : (controller.autoViewOn
+                      ? 'Following — drag the map to look around'
+                      : 'Follow again'),
+            onPressed: controller.toggleAutoView,
+          ),
+        // Me (E5.F4.S10): only for a hasher with a track of their own here.
+        if (controller.canUseMeMode)
+          _iconBtn(
+            icon: Icons.person_pin_circle,
+            color: controller.meMode.value
+                ? Colors.lightBlueAccent
+                : Colors.white54,
+            tooltip: controller.meMode.value
+                ? 'Me — tap a hasher to compare; tap here to leave'
+                : 'Me — keep me in the centre',
+            onPressed: controller.toggleMeMode,
+          ),
       ],
     );
   }
@@ -1166,7 +1253,8 @@ class RunTrackerMap extends StatelessWidget {
     RunTrackerMapController controller,
     UserTrack runner,
   ) {
-    final bool selected = controller.selectedRunnerId.value == runner.id;
+    // In Me mode the strip rings the TARGET (you are always the centre).
+    final bool selected = controller.carouselHighlightId == runner.id;
     final color = controller.runnerColor(runner.id);
     final logo = controller.userLogos[runner.id];
     final emoji = controller
