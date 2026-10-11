@@ -97,6 +97,42 @@ import app_links
     IncomingFileBridge.shared.sweepSharedInbox()
   }
 
+  // Silent (data-only) pushes. FlutterAppDelegate has no method of its own
+  // for this, so firebase_messaging copied ITS handler onto this class
+  // (class_addMethod in FLTFirebaseMessagingPlugin). iOS then ran the plugin's
+  // code with this AppDelegate as `self`, reading the plugin's fields
+  // (`_channel`, `_initialNotification`) from whatever sat at those offsets
+  // in the wrong object. A foreground silent push could go nowhere, and now
+  // and then the stray read crashed the app (SIGSEGV at 0x80 in objc_msgSend
+  // under PushKit — 1446 on 2026-10-04, 1467 on 2026-10-11, James's phone). Having our own method stops the copy;
+  // this hands the push to the plugins the way FlutterAppDelegate forwards
+  // its other delegate calls, so the plugin runs as itself.
+  override func application(
+    _ application: UIApplication,
+    didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+    fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+  ) {
+    // iOS must hear back exactly once. The plugin answers for an FCM message
+    // (sometimes later, from another queue); the plugin list answers nothing
+    // when no plugin takes the push, so anything else is answered here.
+    let lock = NSLock()
+    var answered = false
+    let answerOnce: (UIBackgroundFetchResult) -> Void = { result in
+      lock.lock()
+      let first = !answered
+      answered = true
+      lock.unlock()
+      if first { completionHandler(result) }
+    }
+    let selector = #selector(UIApplicationDelegate.application(_:didReceiveRemoteNotification:fetchCompletionHandler:))
+    if let plugins = forwardingTarget(for: selector) as? FlutterPluginAppLifeCycleDelegate {
+      plugins.application(application, didReceiveRemoteNotification: userInfo,
+                          fetchCompletionHandler: answerOnce)
+      if userInfo["gcm.message_id"] != nil { return }
+    }
+    answerOnce(.noData)
+  }
+
   // A file opened in the app while it is running (or from cold via the
   // launch URL above), and the share extension's harriercentral:// hand-off.
   override func application(

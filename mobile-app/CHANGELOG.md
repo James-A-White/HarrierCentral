@@ -1,3 +1,8 @@
+## 3.1.9+1468 (2026-10-11)
+James, Tuna Melt and Kilty (private).
+### Fixes
+- **iOS: a crash when a silent notification arrived.** The notification plugin grafted its handler onto the app and then read its own settings from the wrong place; now and then that crashed the app (twice on James's phone: 1446 and 1467). The app now owns that handler and passes each notification to the plugin properly.
+
 ## 3.1.9+1467 (2026-10-11)
 James, Tuna Melt and Kilty (private).
 ### New Features
