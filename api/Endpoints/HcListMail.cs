@@ -44,7 +44,10 @@ namespace HcWebApi.Endpoints
         /// is delivered — that can take minutes and the caller does not wait).
         /// Throws on refusal; the caller logs.
         /// </summary>
-        public static async Task SendAsync(string to, string subject, string html, string plainText, string? unsubscribeUrl, string? kennelSlug = null, string? kennelShortName = null)
+        /// <param name="ct">Cancels the send, including the SDK's own wait on a 429:
+        /// it honours the quota's Retry-After, which can be most of an hour, so a
+        /// caller with someone waiting passes a short deadline (InviteEmails).</param>
+        public static async Task SendAsync(string to, string subject, string html, string plainText, string? unsubscribeUrl, string? kennelSlug = null, string? kennelShortName = null, CancellationToken ct = default)
         {
             // A made-up address reaches nobody (GeneratedEmail): never sent to. The
             // senders' lists already leave these out; this is the backstop.
@@ -63,7 +66,7 @@ namespace HcWebApi.Endpoints
             {
                 if (kennelFrom != null)
                 {
-                    await client.Value.SendAsync(WaitUntil.Started, Build(kennelFrom, to, content, unsubscribeUrl));
+                    await client.Value.SendAsync(WaitUntil.Started, Build(kennelFrom, to, content, unsubscribeUrl), ct);
                     return;
                 }
             }
@@ -73,7 +76,7 @@ namespace HcWebApi.Endpoints
                 // email, and make the username now so the next one is the kennel's.
                 _ = EnsureKennelSenderAsync(kennelSlug!, kennelShortName);
             }
-            await client.Value.SendAsync(WaitUntil.Started, Build(From, to, content, unsubscribeUrl));
+            await client.Value.SendAsync(WaitUntil.Started, Build(From, to, content, unsubscribeUrl), ct);
         }
 
         /// <summary>

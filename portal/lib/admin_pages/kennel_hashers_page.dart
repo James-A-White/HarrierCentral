@@ -1195,17 +1195,33 @@ class KennelHashersController extends TabUiController
     if (go != true) return;
     isMajorUpdate = true;
     update();
+    // The server sends in rounds of about a minute and stamps each hasher as
+    // their email goes, so a big kennel is several calls (more = true), and a
+    // round that fails part-way loses nobody: everyone sent is already marked
+    // and the next press skips them (Sierra H4, 147 invites, 2026-10-11).
+    int sent = 0;
+    bool stoppedEarly = false;
     try {
-      final Map<String, dynamic> done = await _postJson(BASE_INVITE_EMAILS_URL, <String, dynamic>{...body(), 'send': true});
-      final int sent = (done['sent'] as num?)?.toInt() ?? 0;
+      for (int round = 0; round < 30; round++) {
+        final Map<String, dynamic> done = await _postJson(BASE_INVITE_EMAILS_URL, <String, dynamic>{...body(), 'send': true});
+        final int roundSent = (done['sent'] as num?)?.toInt() ?? 0;
+        sent += roundSent;
+        stoppedEarly = done['stoppedEarly'] == true;
+        if (done['more'] != true || stoppedEarly || roundSent == 0) break;
+      }
       await Utilities.showAlert(
         'Invites sent',
         'Sent $sent ${sent == 1 ? 'invite code' : 'invite codes'}.'
-        '${done['stoppedEarly'] == true ? '~~The email service asked us to slow down, so it stopped there. Press Email invite codes again later to send the rest — nobody gets two.' : ''}',
+        '${stoppedEarly ? '~~The email service asked us to slow down, so it stopped there. Press Email invite codes again later to send the rest — nobody gets two.' : ''}',
         'OK',
       );
     } catch (e) {
-      await Utilities.showAlert('Email invite codes', e.toString().replaceFirst('Exception: ', ''), 'OK');
+      await Utilities.showAlert(
+        'Email invite codes',
+        '${e.toString().replaceFirst('Exception: ', '')}'
+        '${sent > 0 ? '~~$sent ${sent == 1 ? 'invite was' : 'invites were'} sent before that. Press Email invite codes again to send the rest — nobody gets two.' : '~~Press Email invite codes again to try the rest — anyone already sent to is skipped.'}',
+        'OK',
+      );
     } finally {
       isMajorUpdate = false;
       update();

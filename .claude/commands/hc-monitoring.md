@@ -25,6 +25,7 @@ drilled into by `hcportal_getCategoryDetail2`. Open it before running anything.
 | Error drill-down (tap the row) | Every server-side error in the period with the app build (`hcVersion`), proc name and the hasher it resolved to | `HC.ErrorLog` |
 | **App Error** row (after Push) | Client sessions whose uploaded log holds an app error as defined by `HC6.ClientLogAppError`: an uncaught Dart exception, a Flutter framework error that is not a transport exception, or a MetricKit crash/hang. Network timeouts and avatar 404s are excluded on purpose | `HC.ClientErrorLog` |
 | App Error drill-down | One row per session: when, which build wrote the log, who, the first qualifying error line, how many `[ERROR]` lines the session had | `HC.ClientErrorLog` |
+| **First Sign-in** row (last) | Accounts whose first ever sign-in BY THE PERSON — app launch, emailed code (app or web), web passkey — is in the period. Unlike Account (rows created, imports included) it is people who actually turned up. Drill-down: when, who, home kennel, when the account was made, how they signed in. Admin add-hasher rows (`UserName` `+…+`) do not count | `HC.LaunchAndLogin` |
 | Login list (left) | Most recent logins, with old→new version and platform | `HC.LaunchAndLogin` |
 | Integration cards | External data jobs (read / errors / kennels nice / naughty) | `HC.IntegrationJob` |
 

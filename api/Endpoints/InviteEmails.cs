@@ -30,10 +30,12 @@ namespace HcWebApi.Endpoints
     ///   hcportal_getInviteEmailList), publicKennelId, scope,
     ///   publicHasherIds: [...], send: false | true }
     /// send = false: the counts only, for the confirm dialog.
-    /// send = true: sends, stamps InviteEmailedAt for those sent, and keeps an
-    ///   audit copy with the codes masked.
+    /// send = true: sends ONE ROUND (up to a minute), stamping InviteEmailedAt
+    ///   for each hasher as ACS accepts theirs, and keeps an audit copy of the
+    ///   round with the codes masked. more = true: time ran out with people
+    ///   left — call again (they are now the only ones not stamped).
     /// Reply: 200 { toSend, sent, skippedRecent, skippedNoEmail,
-    ///   skippedUndeliverable, skippedNoCode, stoppedEarly } or 4xx { errorUserMessage }.
+    ///   skippedUndeliverable, skippedNoCode, stoppedEarly, more } or 4xx { errorUserMessage }.
     /// </summary>
     public class InviteEmails
     {
@@ -42,6 +44,10 @@ namespace HcWebApi.Endpoints
 
         private static readonly Regex EmailRx = new(@"^[^@\s]+@[^@\s]+\.[^@\s]{2,}$", RegexOptions.Compiled);
         private static readonly TimeSpan RecentWindow = TimeSpan.FromDays(7);
+        // A round must answer well inside the portal's 3-minute wait and Azure's
+        // 230-second HTTP limit; one send gets 20 s before it counts as the quota.
+        private static readonly TimeSpan RoundBudget = TimeSpan.FromSeconds(60);
+        private static readonly TimeSpan SendDeadline = TimeSpan.FromSeconds(20);
         private static readonly LookupClient Dns = new(new LookupClientOptions { Timeout = TimeSpan.FromSeconds(4), Retries = 1, UseCache = true });
 
         private sealed record Recipient(Guid HasherId, string FirstName, string HashName, string Email, string? Code, DateTimeOffset? InvitedAt, bool Placeholder);
@@ -117,19 +123,32 @@ namespace HcWebApi.Endpoints
             string slug = kennel.Value<string>("kennelSlug") ?? "";
             string logo = await HcEmail.EmailLogoAsync(kennel.Value<string>("kennelLogo"));
             string subject = $"{kennelName} has set you up on Harrier Central";
+            // A round, not the whole list (Sierra H4, 2026-10-11): 147 invites sent
+            // one by one outlasted the portal's 3-minute wait, ACS's quota then
+            // parked the SDK on a Retry-After until the 10-minute function limit
+            // killed it, and the stamps written at the end never were — 103 people
+            // were emailed and none recorded, so the next press would have emailed
+            // them again. So each hasher is stamped the moment ACS accepts theirs,
+            // a round stops after RoundBudget and the portal calls again for the
+            // rest (more = true), and one send may not wait longer than SendDeadline.
             var sentIds = new List<Guid>();
-            bool stoppedEarly = false;
+            bool stoppedEarly = false, more = false;
+            var round = System.Diagnostics.Stopwatch.StartNew();
             foreach (var p in toSend)
             {
+                if (round.Elapsed > RoundBudget) { more = true; break; }
                 try
                 {
                     string greet = p.HashName.Length > 0 ? p.HashName : p.FirstName.Length > 0 ? p.FirstName : "there";
-                    await HcListMail.SendAsync(p.Email, subject, Html(kennelName, greet, p.Code!, logo), Plain(kennelName, greet, p.Code!), null, slug, shortName);
+                    using var deadline = new CancellationTokenSource(SendDeadline);
+                    await HcListMail.SendAsync(p.Email, subject, Html(kennelName, greet, p.Code!, logo), Plain(kennelName, greet, p.Code!), null, slug, shortName, deadline.Token);
                     sentIds.Add(p.HasherId);
+                    await RecordAsync(cs, kennel, new List<Guid> { p.HasherId });
                 }
-                catch (Azure.RequestFailedException ex) when (ex.Status == 429)
+                catch (Exception ex) when (ex is OperationCanceledException || ex is Azure.RequestFailedException { Status: 429 })
                 {
-                    // The sending quota: stop here. Nobody unsent is stamped, so the
+                    // The sending quota (a 429, or the SDK still waiting out one at the
+                    // deadline): stop here. Everyone sent is already stamped, so the
                     // next press picks up exactly where this one stopped.
                     stoppedEarly = true;
                     break;
@@ -140,8 +159,7 @@ namespace HcWebApi.Endpoints
                 }
             }
 
-            await RecordAsync(cs, kennel, sentIds);
-            await EmailAudit.WriteAsync(new EmailAudit.Record
+            if (sentIds.Count > 0) await EmailAudit.WriteAsync(new EmailAudit.Record
             {
                 Kind = "invite",
                 KennelId = Guid.TryParse(kennel.Value<string>("kennelId"), out Guid kid) ? kid : null,
@@ -154,7 +172,7 @@ namespace HcWebApi.Endpoints
                 Recipients = toSend.Where(p => sentIds.Contains(p.HasherId)).Select(p => (object)new { hasherId = p.HasherId, email = p.Email }).ToList(),
             });
 
-            return new OkObjectResult(new { toSend = toSend.Count, sent = sentIds.Count, skippedRecent = recent, skippedNoEmail = noEmail, skippedUndeliverable = undeliverable, skippedNoCode = noCode, stoppedEarly });
+            return new OkObjectResult(new { toSend = toSend.Count, sent = sentIds.Count, skippedRecent = recent, skippedNoEmail = noEmail, skippedUndeliverable = undeliverable, skippedNoCode = noCode, stoppedEarly, more });
         }
 
         private static ObjectResult Bad(string m) => new BadRequestObjectResult(new { errorUserMessage = m });

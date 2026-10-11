@@ -1,3 +1,7 @@
+1.0.61+102
+    • InviteEmails: each hasher is stamped InviteEmailedAt as ACS accepts their email (not at the end); sends in rounds of ~60 s with more=true for the portal to call again; a send waiting over 20 s (the SDK sitting on a quota Retry-After) stops the round as the quota. Sierra H4's 147 ran past the portal's 3-minute wait and the end-of-send stamps were lost (E2.F2.S6).
+    • HcListMail.SendAsync takes an optional CancellationToken.
+
 1.0.61+101
     • KennelFromWebsite (read / chat / save): reads a club's website and its main pages into a kennel draft for the portal's New kennel from a website (E12.F1.S10); public-address-only fetching, values kept only when the quoted words are on the page; logo fitted whole into 800x800, AVIF + PNG (Magick.NET).
     • Packages: Magick.NET-Q8-AnyCPU.

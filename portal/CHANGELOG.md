@@ -1,3 +1,9 @@
+## 2.0.87+764 (2026-10-11)
+### New Features
+- **Usage Data › First Sign-in**: a new row counting people whose first ever sign-in — app, emailed code or web passkey — falls in the period, separate from Account (accounts created, imports included). Tap a cell for who, when, their home kennel, when the account was made and how they signed in.
+### Fixes
+- **Email invite codes** no longer times out on a big kennel. It sends round by round until everyone is done, and each hasher is marked invited the moment their email goes, so a press that stops part-way never sends anyone a second one. Sierra H4's 147 hit the 3-minute limit. (E2.F2.S6)
+
 ## 2.0.87+763 (2026-10-11)
 ### Fixes
 - **Kennel requests that already have a kennel no longer stick in New.** Opening the queue closes any open request whose kennel already exists as approved, with a note saying so. Four requests set up by the old importer on 28 Sep could not be rejected or cleared. (E12.F1.S5)

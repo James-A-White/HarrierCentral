@@ -18,7 +18,8 @@ AS
 --              categories: 0=New Hashers, 1=Event RSVPs, 2=New Events,
 --              3=New Kennels, 4=App Logins, 5=Payments, 6=Portal Access,
 --              7=Errors, 8=Push Notification Log, 9=App Errors (client
---              session logs), 100=Version Adoption.
+--              session logs), 14=First Sign-in (2026-10-11),
+--              100=Version Adoption.
 --              Each category returns typed columns specific to its data.
 --              Portal is responsible for all presentation formatting.
 -- Parameters: @deviceId, @accessToken (auth)
@@ -482,6 +483,42 @@ BEGIN TRY
 		ORDER BY cur.CostDate DESC,
 		         CASE WHEN cur.ServiceName = '(all services)' THEN 0 ELSE 1 END,
 		         cur.Cost DESC;
+	END
+
+	-- =============================================
+	-- CATEGORY 14: First Sign-in — each account whose first ever sign-in by
+	-- the person themselves, app or web, is in the window (same rule as the
+	-- getUsageData row), with where and when the account was made, so an
+	-- import that took weeks to sign in shows.
+	-- =============================================
+	IF (@categoryId = 14)
+	BEGIN
+		;WITH f AS (
+			SELECT l.UserId, MIN(l.idx) AS firstIdx, MIN(l.LoginDate) AS firstLoad
+			FROM HC.LaunchAndLogin l WITH (NOLOCK)
+			WHERE l.errorInfo IS NULL AND l.UserId IS NOT NULL
+				AND l.UserName NOT LIKE '+%+' AND l.HcVersion NOT IN ('<portal>', 'probe')
+			GROUP BY l.UserId
+			HAVING MIN(l.LoginDate) > @cutoffDate
+		)
+		SELECT
+			f.firstLoad AS firstSignInAt,
+			h.displayName,
+			k.KennelName AS homeKennelName,
+			h.createdAt AS accountCreatedAt,
+			CASE WHEN ll.HcVersion = '<web>' THEN 'Web (passkey)'
+			     WHEN ll.HcVersion LIKE 'HC Ver:%' AND ll.SystemName = 'iOS' THEN 'iOS app'
+			     WHEN ll.HcVersion LIKE 'HC Ver:%' THEN 'Android app'
+			     ELSE 'Emailed code (app or web)' END AS signedInWith,
+			REPLACE(REPLACE(ll.HcVersion, 'HC Ver: ', ''), ', Bld: ', '+') AS hcVersion
+		FROM f
+		JOIN HC.Hasher h WITH (NOLOCK) ON h.id = f.UserId
+		LEFT JOIN HC.Kennel k WITH (NOLOCK) ON k.id = h.HomeKennelId
+		LEFT JOIN HC.LaunchAndLogin ll WITH (NOLOCK) ON ll.idx = f.firstIdx
+		WHERE f.UserId <> '0CDBB109-215E-4B5F-A405-F6C9FBCB18EC'
+			AND f.UserId <> 'D0B7EF01-C6E3-4723-9D2F-2AE864A59F1A'
+		ORDER BY f.firstLoad DESC
+		OPTION (RECOMPILE)
 	END
 
 	-- =============================================
