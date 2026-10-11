@@ -46,7 +46,9 @@ void main() {
       expect(g.meAhead, isTrue);
       expect(g.trailMeters, closeTo(69, 2));
       expect(g.crowMeters, closeTo(69, 2));
-      expect(g.segment, isNotEmpty);
+      // Follower → leader: from their dot to mine.
+      expect(g.segment.first, _at(931, 0));
+      expect(g.segment.last, _at(1000, 0));
     });
 
     test('me behind them on their track: they are ahead', () {
@@ -215,6 +217,34 @@ void main() {
       expect(g.meAhead, isTrue);
       expect(g.trailMeters, closeTo(1000, 3));
       expect(g.crowMeters, lessThan(2));
+    });
+
+    test('the line joins both dots when the pair runs beside the trail', () {
+      // Both 30 m south of the hare's line — inside the 40 m it allows — so
+      // the measure is along the line, but the line drawn must still run
+      // from one dot to the other, not stop where each meets the trail
+      // (James, 2026-10-11: it ended short of the radar's centre).
+      final List<LatLng> lane = _track(<List<double>>[
+        <double>[0, 0],
+        <double>[2000, 0],
+      ]);
+      final TrailGap g = TrailGapCalculator.compute(
+        me: _track(<List<double>>[
+          <double>[0, -30],
+          <double>[800, -30],
+        ]),
+        them: _track(<List<double>>[
+          <double>[0, -30],
+          <double>[600, -30],
+        ]),
+        officialLanes: <List<LatLng>>[lane],
+      );
+      expect(g.basis, TrailGapBasis.officialTrail);
+      expect(g.meAhead, isTrue);
+      // The legs to the dots are drawn, never measured.
+      expect(g.trailMeters, closeTo(200, 2));
+      expect(g.segment.first, _at(600, -30));
+      expect(g.segment.last, _at(800, -30));
     });
 
     test('a runner off the official trail falls back to the tracks', () {

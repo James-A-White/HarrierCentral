@@ -207,23 +207,48 @@ class RunTrackerMap extends StatelessWidget {
                       // in the rose's top-level Obx) means a facing change
                       // repaints only this canvas — never the timeline,
                       // legend or playback panel around it.
-                      child: Obx(
-                        () => RoseCanvas(
-                          blips: blips,
-                          ringMetres: range,
-                          heading: controller.roseHeading,
-                          facingDeg: controller.roseFacingDeg,
-                          imperial: controller.imperialUnits.value,
-                          pairPath: controller.rosePairPath,
-                          // A dot is picked as a photo in the strip is: it
-                          // re-centres the rose on them, or in Me mode makes
-                          // them the target (E5.F4.S10).
-                          onTapBlip: (String id) => controller.selectRunner(
-                            id,
-                            recenter: false,
-                            syncPicker: true,
-                          ),
-                        ),
+                      //
+                      // The street map sits under the face, clipped to it
+                      // (E5.F4.S11); LayoutBuilder outside the Obx so the face
+                      // radius is known before any Rx is read.
+                      child: LayoutBuilder(
+                        builder: (BuildContext context, BoxConstraints box) =>
+                            Obx(() {
+                              final double? heading = controller.roseHeading;
+                              final latlng.LatLng? origin =
+                                  controller.roseOrigin;
+                              final Widget rose = RoseCanvas(
+                                blips: blips,
+                                ringMetres: range,
+                                heading: heading,
+                                facingDeg: controller.roseFacingDeg,
+                                imperial: controller.imperialUnits.value,
+                                pairPath: controller.rosePairPath,
+                                onMap: origin != null,
+                                // A dot is picked as a photo in the strip is:
+                                // it re-centres the rose on them, or in Me
+                                // mode makes them the target (E5.F4.S10).
+                                onTapBlip: (String id) =>
+                                    controller.selectRunner(
+                                      id,
+                                      recenter: false,
+                                      syncPicker: true,
+                                    ),
+                              );
+                              if (origin == null) return rose;
+                              return Stack(
+                                children: <Widget>[
+                                  _roseBackdrop(
+                                    controller,
+                                    box.biggest,
+                                    origin,
+                                    range,
+                                    heading,
+                                  ),
+                                  Positioned.fill(child: rose),
+                                ],
+                              );
+                            }),
                       ),
                     ),
                   ),
@@ -296,11 +321,7 @@ class RunTrackerMap extends StatelessWidget {
                     ? _lockedMapOptions(controller)
                     : _unlockedMapOptions(controller),
                 children: <Widget>[
-                  TileLayer(
-                    urlTemplate:
-                        'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-                    subdomains: const <String>['mt0', 'mt1', 'mt2', 'mt3'],
-                  ),
+                  _streetTiles(),
 
                   // Trail marks go UNDER the tracks, matching the web wall: a
                   // 72px mark tile sitting on top hid the very polyline it
@@ -629,6 +650,77 @@ class RunTrackerMap extends StatelessWidget {
   /// pack picture is stale actually changes what a runner does.
   /// The Me-mode comparison (E5.F4.S10): the trail gap on top — "69 m ahead
   /// of Tuna Melt" — and the straight line beneath. Nothing outside a pair.
+  /// The street tiles the map draws, shared with the radar's backdrop so the
+  /// two never show different maps.
+  static Widget _streetTiles() => TileLayer(
+    urlTemplate: 'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+    subdomains: const <String>['mt0', 'mt1', 'mt2', 'mt3'],
+    // Past 19 the tiles are enlarged rather than fetched: a tight ring on a
+    // small group asks for zooms the server does not draw.
+    maxNativeZoom: 19,
+  );
+
+  /// The radar's map backdrop (E5.F4.S11): the streets under the face,
+  /// clipped to its circle and darkened by a quarter so the dots and rings
+  /// stay the brightest thing on it. Its camera follows the rose — centre,
+  /// range and rotation — and no finger reaches it: taps and pinches belong
+  /// to the radar on top.
+  Widget _roseBackdrop(
+    RunTrackerMapController controller,
+    Size size,
+    latlng.LatLng origin,
+    double ringMetres,
+    double? heading,
+  ) {
+    final double r = RosePainter.faceRadius(size);
+    if (r <= 0) return const SizedBox.shrink();
+    final double zoom = RunTrackerMapController.roseZoomFor(
+      origin.latitude,
+      ringMetres,
+      r,
+    );
+    final double rotation = -(heading ?? 0.0);
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => controller.syncRoseMap(origin, zoom, rotation),
+    );
+    return Center(
+      child: SizedBox.square(
+        dimension: r * 2,
+        child: ClipOval(
+          child: IgnorePointer(
+            child: Stack(
+              children: <Widget>[
+                FlutterMap(
+                  mapController: controller.roseMapController,
+                  options: MapOptions(
+                    initialCenter: origin,
+                    initialZoom: zoom,
+                    initialRotation: rotation,
+                    minZoom: 2,
+                    maxZoom: 21,
+                    // What shows while tiles load or with no signal: the
+                    // radar's old near-black face.
+                    backgroundColor: const Color(0xFF151515),
+                    interactionOptions: const InteractionOptions(
+                      flags: InteractiveFlag.none,
+                    ),
+                  ),
+                  children: <Widget>[_streetTiles()],
+                ),
+                // Darkened by 25% (James, 2026-10-11).
+                Positioned.fill(
+                  child: ColoredBox(
+                    color: Colors.black.withValues(alpha: 0.25),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _pairReadout(RunTrackerMapController controller) {
     final String? head = controller.pairHeadline;
     if (head == null) return const SizedBox.shrink();
