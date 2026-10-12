@@ -192,7 +192,7 @@ namespace HcWebApi.Endpoints
 
             try
             {
-                List<List<Dictionary<string, object>>> multipleResults = [];
+                List<List<Dictionary<string, object?>>> multipleResults = [];
 
                 using (SqlConnection conn = new(connectionString))
                 {
@@ -221,10 +221,10 @@ namespace HcWebApi.Endpoints
                     {
                         do
                         {
-                            List<Dictionary<string, object>> resultSet = [];
+                            List<Dictionary<string, object?>> resultSet = [];
                             while (await reader.ReadAsync())
                             {
-                                Dictionary<string, object> row = [];
+                                Dictionary<string, object?> row = [];
                                 for (int i = 0; i < reader.FieldCount; i++)
                                 {
                                     string? name = reader.GetName(i);
