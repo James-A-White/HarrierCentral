@@ -1,3 +1,7 @@
+## 2.0.87+766 (2026-10-12)
+### Improvements
+- **Tabbed editors: a tab with an empty required field turns red.** Such a field already kept Save grey, but its tab showed only "in progress", so nothing said why Save would not light. Now the tab in the bar and in the tab-name dropdown is marked invalid. A new run shows red tabs until its required fields are filled.
+
 ## 2.0.87+765 (2026-10-11)
 ### Fixes
 - **Kennel editor: Save lights up again for a kennel with no website.** The website address was required, so the 22 kennels without one (CERN H3 among them) could never pass the form's checks and Save stayed grey whatever was changed. It is optional now; an address that is entered is still checked.
