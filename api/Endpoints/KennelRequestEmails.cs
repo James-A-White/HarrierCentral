@@ -24,17 +24,22 @@ namespace HcWebApi.Endpoints
 
         private static string H(object? value) => WebUtility.HtmlEncode(value?.ToString() ?? string.Empty);
 
+        // The list helpers are generic over the value type and the row helpers take
+        // IReadOnlyDictionary<string, object?>, so a caller whose rows hold `object`
+        // (PublicWebAdminApi) and one whose rows hold `object?` (PortalApiHC6, which
+        // keeps NULL columns on request since 1.0.61+103) both pass without a
+        // nullability warning; TryGetValue is all the row helpers use.
         /// Rowset 1 row 0 of an SP reply, or null.
-        internal static Dictionary<string, object>? FirstRow(List<List<Dictionary<string, object>>> results, int rowset)
+        internal static Dictionary<string, T>? FirstRow<T>(List<List<Dictionary<string, T>>> results, int rowset)
             => results.Count > rowset && results[rowset].Count > 0 ? results[rowset][0] : null;
 
         /// Lower-case `success` envelope in rowset 0 (the publicWeb_ write shape).
-        internal static bool Succeeded(List<List<Dictionary<string, object>>> results)
+        internal static bool Succeeded<T>(List<List<Dictionary<string, T>>> results)
             => FirstRow(results, 0) is { } row
                && row.TryGetValue("success", out var s)
                && Convert.ToInt32(s) == 1;
 
-        internal static async Task<bool> SendConfirmCodeAsync(Dictionary<string, object> row, ILogger log)
+        internal static async Task<bool> SendConfirmCodeAsync(IReadOnlyDictionary<string, object?> row, ILogger log)
         {
             if (!row.TryGetValue("confirmCode", out var code) || code is null) return false;
             string email = row.TryGetValue("email", out var e) ? e?.ToString() ?? "" : "";
@@ -64,7 +69,7 @@ namespace HcWebApi.Endpoints
         }
 
         internal static async Task SendReviewerNoticeAsync(
-            Dictionary<string, object> row, IEnumerable<string> reviewers, ILogger log)
+            IReadOnlyDictionary<string, object?> row, IEnumerable<string> reviewers, ILogger log)
         {
             foreach (string to in reviewers.Where(r => r.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase))
             {
@@ -86,7 +91,7 @@ namespace HcWebApi.Endpoints
             }
         }
 
-        internal static async Task<bool> SendWelcomeAsync(Dictionary<string, object> row, ILogger log)
+        internal static async Task<bool> SendWelcomeAsync(IReadOnlyDictionary<string, object?> row, ILogger log)
         {
             string email = row.GetValueOrDefault("AdminEmail")?.ToString() ?? "";
             string code = row.GetValueOrDefault("InviteCode")?.ToString() ?? "";

@@ -1,3 +1,6 @@
+1.0.61+104
+    • Nullability of the result-set helpers matches rows that may carry NULL columns (PortalApiHC6, KennelRequestEmails, PublicWebAdminApi); no behaviour change, zero warnings.
+
 1.0.61+103
     • PortalApiHC6: `includeNulls` (true / "true") keeps NULL columns in each row as JSON nulls, as AppApiHC6 already can. Off by default. The Usage Data drill-downs send it so a column that is NULL in the newest row (First Sign-in's home kennel, 2026-10-12) stays in the table, in the procedure's column order.
 

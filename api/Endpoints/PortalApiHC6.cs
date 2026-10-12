@@ -256,7 +256,7 @@ namespace HcWebApi.Endpoints
             }
         }
 
-        public async Task SendNotifications(List<List<Dictionary<string, object>>> multipleResults, ILogger logger)
+        public async Task SendNotifications(List<List<Dictionary<string, object?>>> multipleResults, ILogger logger)
         {
             try
             {
@@ -435,7 +435,7 @@ namespace HcWebApi.Endpoints
         }
 
         private async Task SendReadSyncAsync(
-            List<List<Dictionary<string, object>>> multipleResults,
+            List<List<Dictionary<string, object?>>> multipleResults,
             string publicEventId,
             ILogger logger)
         {
