@@ -20,30 +20,14 @@ class ApproveLoginService {
     final String version = p.version;
     final String buildNumber = p.buildNumber;
 
-    final DeviceInfoPlugin deviceInfoPlugIn = DeviceInfoPlugin();
-
-    String deviceType = 'unknown';
-    String deviceName = 'unknown';
-    String systemName = 'unknown';
-    String systemVersion = 'unknown';
-    String manufacturer = 'unknown';
-
-    if (Platform.isAndroid) {
-      final AndroidDeviceInfo androidInfo = await deviceInfoPlugIn.androidInfo;
-      deviceType = '${androidInfo.model} / device: ${androidInfo.device}';
-      deviceName = '<unknown>';
-      systemName = androidInfo.host;
-      systemVersion =
-          '${androidInfo.version.sdkInt} / release: ${androidInfo.version.release} / security patch: ${androidInfo.version.securityPatch ?? '<no Android security patch'}';
-      manufacturer = androidInfo.brand;
-    } else if (Platform.isIOS) {
-      final IosDeviceInfo iosInfo = await deviceInfoPlugIn.iosInfo;
-      deviceType = iosInfo.model;
-      deviceName = iosInfo.name;
-      systemName = iosInfo.systemName;
-      systemVersion = iosInfo.systemVersion;
-      manufacturer = 'Apple';
-    }
+    // One reading, shared with hcapp_authorizeDevice (DeviceDescriptor), so
+    // the first login row a new account writes matches every later one.
+    final DeviceDescriptor device = await DeviceDescriptor.read();
+    final String deviceType = device.deviceType;
+    final String deviceName = device.deviceName;
+    final String systemName = device.systemName;
+    final String systemVersion = device.systemVersion;
+    final String manufacturer = device.manufacturer;
 
     // Collect the device's public IP and coarse geo info for server-side analytics.
     // IP lookup is performed server-side via the HC API shim — no API token on the client.

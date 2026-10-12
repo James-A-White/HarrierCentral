@@ -17,20 +17,14 @@ class AuthorizeDeviceService {
       deviceDataJson = jsonEncode(iosInfo.data);
     }
 
-    final String hcVersion =
-        getStringPref(StringPrefsEnum.harrierCentralVersionAndBuild) ??
-        '<no HC version>';
-
-    if (hcVersion.isEmpty) {
-      final PackageInfo p = await PackageInfo.fromPlatform();
-      final String hcVersion =
-          'AppName: ${p.appName}, Version: ${p.version}, Build: ${p.buildNumber}';
-
-      await setStringPref(
-        StringPrefsEnum.harrierCentralVersionAndBuild,
-        hcVersion,
-      );
-    }
+    // The version comes from the package, not from a preference: on a fresh
+    // install the preference is not written until the first full launch,
+    // and this call IS the first thing a new account does. The old code
+    // fell back to the literal '<no HC version>' — and then tested that
+    // non-empty string for isEmpty, so the PackageInfo branch below it never
+    // ran. Every first sign-in since 3.0 is stamped '<no HC version>'.
+    final PackageInfo p = await PackageInfo.fromPlatform();
+    final DeviceDescriptor device = await DeviceDescriptor.read();
 
     final deviceIdUuid = Uuid();
     final String deviceId = deviceIdUuid.v4();
@@ -38,10 +32,11 @@ class AuthorizeDeviceService {
     Map<String, String> params = (<String, String>{
       'queryType': 'authorizeDevice',
       'deviceId': deviceId,
-      'hcVersion':
-          getStringPref(StringPrefsEnum.harrierCentralVersionAndBuild) ??
-          '<no HC version>',
+      'hcVersion': p.version,
+      'buildNumber': p.buildNumber,
       'deviceData': deviceDataJson,
+      'locale': Get.deviceLocale?.toString() ?? '',
+      ...device.toParams(),
     });
 
     if (scanText != null) {

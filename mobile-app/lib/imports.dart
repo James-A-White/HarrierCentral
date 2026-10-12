@@ -157,6 +157,7 @@ export 'package:harrier_central/util/track_archive_codec.dart';
 export 'package:harrier_central/util/track_index.dart';
 export 'package:harrier_central/data/services/authenticate_web_portal_service.dart';
 export 'package:harrier_central/data/services/authorize_device_service.dart';
+export 'package:harrier_central/data/services/device_descriptor.dart';
 export 'package:harrier_central/data/services/email_reports_service.dart';
 export 'package:harrier_central/data/services/find_my_account_service.dart';
 export 'package:harrier_central/data/services/get_reset_code_service.dart';
