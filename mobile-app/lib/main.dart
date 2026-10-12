@@ -111,7 +111,13 @@ Future<void> main() async {
       SystemUiOverlayStyle(
         systemNavigationBarColor: themeAppBarBackground,
         systemNavigationBarIconBrightness: Brightness.light,
-        systemNavigationBarContrastEnforced: false, // avoids auto-darkening
+        // Android 15+ (target SDK 35+) ignores the colour above: the bar is
+        // transparent and the app shows through it. With button navigation
+        // that left our always-light icons on white wherever a light screen
+        // reached the bottom (Samsung, Android 16, 2026-10-12). Letting the
+        // system enforce contrast adds its translucent backing only when the
+        // bar is transparent, so older Android keeps the solid red bar.
+        systemNavigationBarContrastEnforced: true,
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: Brightness.light,
       ),
