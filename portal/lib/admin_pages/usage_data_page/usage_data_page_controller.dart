@@ -137,6 +137,9 @@ class UsageDataPageController extends GetxController {
         'accessToken': accessToken,
         'categoryId': categoryId.toString(),
         'days': days.toString(),
+        // Keep NULL columns in every row, so the table's columns come in the
+        // procedure's order even when the newest row is blank in one of them.
+        'includeNulls': 'true',
       };
 
       final result = await ServiceCommon.sendHttpPostToHC6Api(body);
@@ -183,6 +186,7 @@ class UsageDataPageController extends GetxController {
         'days': '14',
         'hcVersion': version,
         'hcBuild': buildNumber,
+        'includeNulls': 'true',
       };
 
       final result = await ServiceCommon.sendHttpPostToHC6Api(body);

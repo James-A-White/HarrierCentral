@@ -53,6 +53,18 @@ namespace HcWebApi.Endpoints
             string queryType = (string)data.queryType;
             string deviceId = (string)data.deviceId;
 
+            // Send NULL columns as JSON nulls rather than leaving them out of
+            // the row. Off by default (every existing caller expects absent
+            // keys); the Usage Data drill-downs ask for it, because a table
+            // that takes its columns from the rows cannot know about a column
+            // the first row lacks — First Sign-in lost its home kennel column
+            // when the newest account had none (2026-10-12). The portal sends
+            // its body as strings, so "true" must count as well as true.
+            string? includeNullsRaw = data.includeNulls == null ? null : (string)data.includeNulls.ToString();
+            bool includeNulls = includeNullsRaw != null
+                && bool.TryParse(includeNullsRaw, out bool parsedIncludeNulls)
+                && parsedIncludeNulls;
+
             // Block the internal auth helper from being called directly
             if (string.Equals(queryType, "ValidatePortalAuth", StringComparison.OrdinalIgnoreCase))
             {
@@ -64,7 +76,7 @@ namespace HcWebApi.Endpoints
 
             try
             {
-                List<List<Dictionary<string, object>>> multipleResults = [];
+                List<List<Dictionary<string, object?>>> multipleResults = [];
 
                 using (SqlConnection conn = new(connectionString))
                 {
@@ -79,7 +91,7 @@ namespace HcWebApi.Endpoints
 
                     foreach (var property in jsonData.Properties())
                     {
-                        if (property.Name == "queryType") continue;
+                        if (property.Name == "queryType" || property.Name == "includeNulls") continue;
 
                         string parameterName = "@" + property.Name;
                         object? parameterValue = (property.Value == null || property.Value.Type == JTokenType.Null)
@@ -95,15 +107,15 @@ namespace HcWebApi.Endpoints
                     {
                         do
                         {
-                            List<Dictionary<string, object>> resultSet = [];
+                            List<Dictionary<string, object?>> resultSet = [];
                             while (await reader.ReadAsync())
                             {
-                                Dictionary<string, object> row = [];
+                                Dictionary<string, object?> row = [];
                                 for (int i = 0; i < reader.FieldCount; i++)
                                 {
                                     string? name = reader.GetName(i);
                                     object? value = reader.IsDBNull(i) ? null : reader.GetValue(i);
-                                    if (name != null && value != null)
+                                    if (name != null && (value != null || includeNulls))
                                         row[name] = value;
                                 }
                                 resultSet.Add(row);
