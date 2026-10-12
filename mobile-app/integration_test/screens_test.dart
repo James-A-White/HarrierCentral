@@ -54,6 +54,7 @@ void main() {
       await w.step('14 support', w.support);
       await w.step('16a my account', w.myAccount);
       await w.step('11 global leaderboard', w.globalLeaderboard);
+      await w.step('18 chats (Groups / Friends pills)', w.chats);
       await w.step('17 run tabs (+02 photos, 11b stats, 15a add)', w.runTabs);
       await w.step('10 kennel members (+16b, 07b, 16c)', w.kennelAdmin);
       if (!w.runAdminDone) {
@@ -290,6 +291,20 @@ class Walk {
     await h.tapText('Total');
     await h.settle(const Duration(seconds: 3));
     await h.screen('11 global leaderboard total');
+  }
+
+  /// Chats from the app-bar bubble, on both pills (E9.F1.S29).
+  Future<void> chats() async {
+    await h.tapIcon(Icons.chat_bubble_outline);
+    await h.waitFor(find.text('Groups'), timeout: const Duration(seconds: 20));
+    await h.settle(const Duration(seconds: 2));
+    await h.screen('18 chats groups');
+    await h.tapText('Friends');
+    await h.waitFor(find.text('Find a hasher'));
+    await h.settle(const Duration(seconds: 1));
+    await h.screen('18 chats friends');
+    await h.tapText('Groups');
+    await h.settle(const Duration(seconds: 1));
   }
 
   /// Opens a run (the configured past run if it is listed, else the first

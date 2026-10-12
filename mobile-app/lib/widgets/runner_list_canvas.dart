@@ -291,6 +291,12 @@ class RunnerListCanvas extends StatelessWidget {
                     ),
                   ],
                 ),
+                // Message this runner (E9.F1.S32); nothing on my own row.
+                HasherDmBubble(
+                  hasherId: e.userId,
+                  displayName: e.name,
+                  size: 22,
+                ),
               ],
             ),
           ),

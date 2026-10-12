@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_startDirectMessage",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "The door to a DM from 'Message <name>'. Outcome open (thread ready), requested (friends-only target, or blocked/declined — silent), refused (target accepts nobody), blocked (caller blocked the target). E9.F1.S19.",
   "parameters": [
     {
@@ -21,9 +21,16 @@
     {
       "name": "targetPublicHasherId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Hasher.PublicHasherId",
-      "description": ""
+      "description": "The hasher to message, by public id. Wins when both ids are given."
+    },
+    {
+      "name": "targetHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Hasher.id",
+      "description": "Or the hasher's internal id, used when @targetPublicHasherId is NULL: the phone's hasher lists (RSVP, members) hold only the user sync's hasherId (E9.F1.S32, 2026-10-12). Additive; older callers unaffected."
     }
   ],
   "rowsets": [

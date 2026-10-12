@@ -1,3 +1,9 @@
+## 3.1.9+1469 (2026-10-12)
+James, Tuna Melt and Kilty (private).
+### New Features
+- **Chats: Groups and Friends.** A pill at the top of Chats splits run, kennel and room chats (Groups) from the hashers you message (Friends), each with its own unread count — the two add up to the chat bubble. Friends lists everyone who has accepted a direct message, even before anything is said, with requests to message you on top and **Find a hasher** beside them. Chats opens on Friends when only Friends has something unread; a message request opens Friends. (E9.F1.S29)
+- **Message a hasher from any list.** A chat bubble on the run's RSVP list, the PackTrack runner list, the leaderboards, Find a hasher, Run Counts › By Hasher and kennel members: **solid** when you have talked, **outline** when you are friends but have not, **dashed** when you are not friends yet. A friend's bubble opens the chat; anyone else's asks them, or opens at once if they accept messages from anyone. (E9.F1.S32)
+
 ## 3.1.9+1468 (2026-10-11)
 All beta testers (private first, then widened the same day).
 ### Fixes

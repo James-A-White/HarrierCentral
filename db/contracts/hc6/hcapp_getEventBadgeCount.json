@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_getEventBadgeCount",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Returns unread event message badge counts for the authenticated user. Three modes controlled by parameters: (1) reset all badge counts across all events and return a zero sentinel row; (2) query (and optionally reset) the badge count for a specific event; (3) return badge counts for all events where the user has a badge count row. Read SP — no success envelope; always returns a data or error rowset. Mode 3's query now lives in HC6.UserUnreadChatThreads (2026-09-28), the one definition of unread chat shared with the app-icon total HC6.UserUnreadChatTotal; output unchanged (verified row-for-row for three accounts).",
   "parameters": [
     {
@@ -198,6 +198,60 @@
           "type": "INT",
           "nullable": true,
           "description": "Total non-removed messages in the thread (always > 0 — threads with no messages produce no row). Added v1.1.0."
+        },
+        {
+          "name": "LastMessageAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "When the thread last had a message (a DM with none: when the friendship began)."
+        },
+        {
+          "name": "Pinned",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "The hasher's own pin (E9.F1.S8 / S25)."
+        },
+        {
+          "name": "RoomType",
+          "type": "INT",
+          "nullable": true,
+          "description": "Platform-wide room (rooms only)."
+        },
+        {
+          "name": "RoomIcon",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "The room's coin art (rooms only)."
+        },
+        {
+          "name": "ThreadId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "Direct-message thread (DMs only; builds >= HC6.MinBuildForDmPush and browsers)."
+        },
+        {
+          "name": "OtherPublicHasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "DMs only: the other hasher's public id."
+        },
+        {
+          "name": "OtherDisplayName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "DMs only: the other hasher's display name."
+        },
+        {
+          "name": "OtherPhoto",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "DMs only: the other hasher's photo."
+        },
+        {
+          "name": "OtherHasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "DMs only: the other hasher's INTERNAL id, for the phone's hasher lists (E9.F1.S32, 2026-10-12). NULL for a browser."
         }
       ]
     }

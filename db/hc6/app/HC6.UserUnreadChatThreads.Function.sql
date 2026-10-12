@@ -64,7 +64,8 @@ SELECT
     CAST(NULL AS UNIQUEIDENTIFIER) AS ThreadId,
     CAST(NULL AS UNIQUEIDENTIFIER) AS OtherPublicHasherId,
     CAST(NULL AS NVARCHAR(250))    AS OtherDisplayName,
-    CAST(NULL AS NVARCHAR(500))    AS OtherPhoto
+    CAST(NULL AS NVARCHAR(500))    AS OtherPhoto,
+    CAST(NULL AS UNIQUEIDENTIFIER) AS OtherHasherId
 FROM (
     SELECT em.EventId,
            MAX(em.MessageSequenceCount) AS MaxSeq,
@@ -175,7 +176,8 @@ SELECT
     CAST(NULL AS UNIQUEIDENTIFIER) AS ThreadId,
     CAST(NULL AS UNIQUEIDENTIFIER) AS OtherPublicHasherId,
     CAST(NULL AS NVARCHAR(250))    AS OtherDisplayName,
-    CAST(NULL AS NVARCHAR(500))    AS OtherPhoto
+    CAST(NULL AS NVARCHAR(500))    AS OtherPhoto,
+    CAST(NULL AS UNIQUEIDENTIFIER) AS OtherHasherId
 FROM (
     SELECT em.KennelId,
            MAX(em.MessageSequenceCount) AS MaxSeq,
@@ -267,7 +269,8 @@ SELECT
     CAST(NULL AS UNIQUEIDENTIFIER) AS ThreadId,
     CAST(NULL AS UNIQUEIDENTIFIER) AS OtherPublicHasherId,
     CAST(NULL AS NVARCHAR(250))    AS OtherDisplayName,
-    CAST(NULL AS NVARCHAR(500))    AS OtherPhoto
+    CAST(NULL AS NVARCHAR(500))    AS OtherPhoto,
+    CAST(NULL AS UNIQUEIDENTIFIER) AS OtherHasherId
 FROM HC.Kennel k
 CROSS APPLY (
     -- TOP 1 for the same reason as above: HasherKennelMap is not guaranteed
@@ -327,7 +330,8 @@ SELECT
     CAST(NULL AS UNIQUEIDENTIFIER) AS ThreadId,
     CAST(NULL AS UNIQUEIDENTIFIER) AS OtherPublicHasherId,
     CAST(NULL AS NVARCHAR(250))    AS OtherDisplayName,
-    CAST(NULL AS NVARCHAR(500))    AS OtherPhoto
+    CAST(NULL AS NVARCHAR(500))    AS OtherPhoto,
+    CAST(NULL AS UNIQUEIDENTIFIER) AS OtherHasherId
 FROM HC6.ChatRoomCatalog() c
 LEFT JOIN HC.Hasher hs ON hs.id = @userId
 OUTER APPLY (
@@ -395,7 +399,12 @@ SELECT
     f.ThreadId                                     AS ThreadId,
     o.PublicHasherId                               AS OtherPublicHasherId,
     o.DisplayName                                  AS OtherDisplayName,
-    o.Photo                                        AS OtherPhoto
+    o.Photo                                        AS OtherPhoto,
+    -- The other hasher's INTERNAL id (2026-10-12, E9.F1.S32): every list of
+    -- hashers on the phone is keyed by it (the user sync's hasherId), so the
+    -- DM bubble on those rows can say friend / talked / not yet. The web is
+    -- never sent it (hcapp_getEventBadgeCount blanks it for a browser).
+    o.id                                           AS OtherHasherId
 FROM HC.HasherFriendMap f
 INNER JOIN HC.Hasher o ON o.id = f.Friend_UserId AND o.Removed = 0
 OUTER APPLY (

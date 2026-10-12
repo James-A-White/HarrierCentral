@@ -178,7 +178,12 @@ abstract class TabUiController extends GetxController {
               isSubmittable = false;
               break;
             case ControlValidity.invalidEmpty:
+              // A required field left empty blocks Save, so the tab says so
+              // too. It used to count only as empty, so the tab showed "in
+              // progress" while Save stayed grey with no clue why (a kennel
+              // with no website, James 2026-10-11).
               emptyStatus++;
+              invalidStatus++;
               isSubmittable = false;
               break;
             case ControlValidity.unknown:
@@ -189,10 +194,9 @@ abstract class TabUiController extends GetxController {
 
       TabStatus newStatus = TabStatus.unknown;
 
+      // Invalid is checked before empty: anything that stops Save shows red.
       if (validStatus == total) {
         newStatus = TabStatus.isCompleteAndValid;
-      } else if (emptyStatus == total) {
-        newStatus = TabStatus.isEmpty;
       } else if (invalidStatus > 0) {
         newStatus = TabStatus.isInvalid;
       } else if (emptyStatus == total) {

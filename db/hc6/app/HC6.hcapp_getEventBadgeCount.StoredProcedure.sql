@@ -317,7 +317,10 @@ SELECT BadgeCount, PublicEventId, EventId, EventName, EventNumber,
        EventStartDatetimeGmt, EventImage, KennelId, PublicKennelId,
        KennelShortName, KennelLogo, MessageCount, LastMessageAt, Pinned,
        RoomType, RoomIcon,
-       ThreadId, OtherPublicHasherId, OtherDisplayName, OtherPhoto
+       ThreadId, OtherPublicHasherId, OtherDisplayName, OtherPhoto,
+       -- Internal id, for the phone's hasher lists (E9.F1.S32). A browser
+       -- holds only public ids and never gets it.
+       CASE WHEN @isWeb = 1 THEN NULL ELSE OtherHasherId END AS OtherHasherId
 FROM HC6.UserUnreadChatThreads(@userId)
 WHERE ThreadId IS NULL OR @isWeb = 1 OR @dmBuild >= HC6.MinBuildForDmPush();
 

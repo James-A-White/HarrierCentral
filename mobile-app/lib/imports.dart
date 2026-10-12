@@ -403,6 +403,7 @@ export 'package:harrier_central/widgets/hc_speed_dial.dart';
 export 'package:harrier_central/widgets/keep_alive_tab.dart';
 export 'package:harrier_central/widgets/kennel_filter_cell.dart';
 export 'package:harrier_central/widgets/hc_chat_bubble.dart';
+export 'package:harrier_central/widgets/hasher_dm_bubble.dart';
 export 'package:harrier_central/widgets/kennel_list_item.dart';
 export 'package:harrier_central/util/sp_reply.dart';
 export 'package:harrier_central/util/route_tag.dart';

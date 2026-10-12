@@ -145,7 +145,18 @@ class KennelMemberListItem extends StatelessWidget {
                                 textAlign: TextAlign.left,
                               ),
                             ),
-                            const SizedBox(width: 10.0),
+                            // Message this member (E9.F1.S32): beside the
+                            // name, as the row's end is the email switch
+                            // and the membership menu. A white card.
+                            HasherDmBubble(
+                              hasherId: kennelMember.hasherId,
+                              displayName: kennelMember.dispName,
+                              photo: kennelMember.photo,
+                              onDark: false,
+                              size: 22,
+                              dense: true,
+                            ),
+                            const SizedBox(width: 6.0),
                             if (AppAccess(
                               kennelMember.appAccessFlags,
                             ).isAdmin) ...<Widget>[
