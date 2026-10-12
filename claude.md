@@ -93,6 +93,7 @@ or reviewing any code.** These are non-negotiable — do not skip them even for
 | `/packtrack` | Working on any part of the live run tracking feature (GPS sending, map display, position retrieval). |
 | `/hc-api-endpoints` | Adding a new SP, adding a new service method, or any work that touches the API shim. Prevents unnecessary API changes — new HC6 SPs are callable immediately after deploy with no API modification. |
 | `/hc-monitoring` | James asks how a rollout is looking, "any errors?", or before a release is called healthy. Runs `tools/log_sweep.sh` and reads `HC.ErrorLog` / `HC.ClientErrorLog` / `HC.Device` with the interpretation rules (599 = local stall, empty 500 = shim, `HC.Device.Version` is *current* not at-time-of-log). |
+| `/hc-primary-keys` | Designing a table or column, writing an SP that takes or returns an id, or putting an id somewhere new (URL, QR, push, browser). Every PK is a GUID unless James agreed and it is documented there; `Public*Id` (Hasher, Kennel, Event) is identification only — never a foreign key, a join or a copy in another table — so it can be rotated if compromised. |
 | `/hc-event-datetimes` | Any work that filters, sorts, groups, or displays a run/event start time — SPs, public-web feeds, portal views, or mobile queries. Choosing the wrong datetime column is silently wrong (instant ⇒ `EventStartDateTimeGmt`; local clock ⇒ `EventStartLocal`/`EventStartLocalDate`; raw `EventStartDatetime` has a spurious `+00:00` on ~67% of rows). |
 
 ---
