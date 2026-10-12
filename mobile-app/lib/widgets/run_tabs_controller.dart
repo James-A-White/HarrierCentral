@@ -98,6 +98,19 @@ class RunTabsController extends GetxController
   final RxInt thisUserIndex = (-1).obs;
   final Rx<EnumRsvpState> rsvpRequested = rsvpUnknown.obs;
 
+  /// This hasher's own attendance on the run, so the past-run "I was at this
+  /// run" button goes away once they have said so (E4.F4.S3).
+  late final RxInt myAttendence = futureRun.extensions.attendenceState.obs;
+  final RxBool myAttendenceSaving = false.obs;
+
+  /// The kennel lets hashers mark their own attendance after the fact —
+  /// the run's own setting, else the kennel's, as Run History reads it
+  /// ("User can edit run attendance" in the portal).
+  bool get canMarkOwnAttendence =>
+      (futureRun.event.canEditRunAttendence ??
+          futureRun.kennel.canEditRunAttendence) !=
+      0;
+
   late final TabController tabController;
   late final TabController gridListTabController;
   final RxInt tabIndex = 0.obs;
@@ -418,6 +431,49 @@ class RunTabsController extends GetxController
     final String serverMessage = firstRow(adHocData)?['serverMessage'] ?? '';
     if (serverMessage.isNotEmpty) {
       await Utilities.showAlert('RSVP Result', serverMessage, 'OK');
+    }
+  }
+
+  /// "I was at this run" on a past run (E4.F4.S3), or its Undo. The same
+  /// call Run History's swipe makes. At the Hash also makes the RSVP Yes
+  /// server-side, so the hasher joins the roster, and recounts their runs.
+  /// The server's reply message is about paying at the start, so it is not
+  /// shown here.
+  Future<void> setOwnAttendence(EnumAttendenceState state) async {
+    if (myAttendenceSaving.value) return;
+    myAttendenceSaving.value = true;
+    try {
+      final List<dynamic> reply = await tableModel.hasherEventMapService
+          .setEventAttendence(
+            _eventId,
+            userId,
+            AppDomainType.user,
+            state.value,
+            // Keep a hare a hare: the SP writes whatever comes here.
+            isHare: futureRun.extensions.isHare == 1 ? 1 : 0,
+          );
+      if (isClosed) return;
+      // Empty = offline, a dropped socket or an error envelope (whose
+      // dialog has already been shown).
+      if (firstRow(reply) == null) return;
+      myAttendence.value = state.value;
+      futureRun.extensions = futureRun.extensions.copyWith(
+        attendenceState: state.value,
+      );
+      update(); // Details' Add Down Down follows attendance.
+      await refreshHemTableFromBackend(false);
+      if (isClosed) return;
+      if (state.value >= attendenceAtHash.value) {
+        hcSnack(
+          "You're marked as at this run.",
+          actionLabel: 'Undo',
+          onAction: () => unawaited(setOwnAttendence(attendenceNo)),
+        );
+      } else {
+        hcSnack('Removed — you were not at this run.');
+      }
+    } finally {
+      if (!isClosed) myAttendenceSaving.value = false;
     }
   }
 

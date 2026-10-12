@@ -1,3 +1,29 @@
+## 3.1.9+1470 (2026-10-12)
+
+### New Features
+
+- **I was at this run**: on a past run, a hasher can mark their own
+  attendance where the kennel allows it (E4.F4.S3).
+
+### Fixes
+
+- **Chat badges after returning to the app**: a message that arrived while the
+  app was in the background now updates the bubble, the run cards and the
+  Chats pills on return, not only when a chat screen is opened.
+- **Android navigation bar**: readable on Android 15 and 16 — the system now
+  adds contrast behind the buttons and the window behind the app is dark.
+- **First sign-in record**: redeeming an invite code now records the app
+  version and the phone, so a new member's first sign-in no longer reads as a
+  web sign-in in the portal.
+
+### Improvements
+
+- **Direct-message bubble**: green for friends (solid once you have talked),
+  grey dashed for hashers you are not friends with yet; removed from the
+  leaderboards, where it was too small to hit.
+
+---
+
 ## 3.1.9+1469 (2026-10-12)
 James, Tuna Melt and Kilty (private).
 ### New Features

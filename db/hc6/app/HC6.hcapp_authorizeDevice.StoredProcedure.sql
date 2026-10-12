@@ -8,7 +8,16 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_authorizeDevice]
     @deviceData  NVARCHAR(MAX),
     @apnsToken   NVARCHAR(500)  = NULL,
     @fcmToken    NVARCHAR(500)  = NULL,
-    @isMobile    SMALLINT       = 1
+    @isMobile    SMALLINT       = 1,
+    -- What the phone is, for the login row (2026-10-12). All optional: an
+    -- older app sends none of them and the row is filled from @deviceData.
+    @buildNumber   NVARCHAR(25)  = NULL,
+    @deviceType    NVARCHAR(100) = NULL,
+    @deviceName    NVARCHAR(100) = NULL,
+    @systemName    NVARCHAR(100) = NULL,
+    @systemVersion NVARCHAR(100) = NULL,
+    @manufacturer  NVARCHAR(100) = NULL,
+    @locale        NVARCHAR(50)  = NULL
 
 AS
 -- =====================================================================
@@ -34,6 +43,12 @@ AS
 --   @deviceData  - JSON blob of device metadata stored in HC.Device
 --   @apnsToken   - Apple Push Notification token (NULL for Android)
 --   @fcmToken    - Firebase Cloud Messaging token
+--   @buildNumber, @deviceType, @deviceName, @systemName, @systemVersion,
+--   @manufacturer, @locale
+--                - What the phone is (2026-10-12), the same five fields and
+--                  build hcapp_approveLogin takes, so the first login row a
+--                  new account writes reads like every later one. All
+--                  optional; an older app's row is filled from @deviceData.
 -- Returns:
 --   Write SP success envelope (rowset 0): success, errorCode, errorType
 --   On success (rowset 1): hasher profile + device credentials
@@ -51,6 +66,10 @@ AS
 --   Removed-user returns errorType 4 (was 5 in HC5).
 --   Not-found returns errorType 3 (was 5 in HC5).
 --   All writes wrapped in transaction with TRY/CATCH.
+--   2026-10-12: LaunchAndLogin row gains DeviceId and the five device
+--     columns, and HcVersion is 'HC Ver: x, Bld: n' when @buildNumber is
+--     sent; HC.Device gets Version/BuildNumber/Locale on insert. Additive —
+--     no parameter or rowset changed.
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -172,16 +191,53 @@ BEGIN TRY
             updatedAt         = GETDATE()
         WHERE id = @userId;
 
-        INSERT HC.LaunchAndLogin (HcVersion, UserId, UserName)
-        VALUES (@hcVersion, @userId, '~' + @hasherName + '~');
+        -- The first login row a new account writes. It used to carry the
+        -- version string alone, so a member who had just redeemed an invite
+        -- code showed as '<no HC version>' with no device, indistinguishable
+        -- from a browser sign-in in the portal's login list (Sierra H4's
+        -- invites, 2026-10-12). Now the same shape hcapp_approveLogin writes
+        -- on every launch: 'HC Ver: x, Bld: n' and the five device fields.
+        -- An app that sends none of them still gets a device from the JSON
+        -- it has always sent — the iOS and Android key names differ, hence
+        -- the pairs — and a browser (@isMobile = 0) gets its browser name.
+        INSERT HC.LaunchAndLogin
+            (HcVersion, UserId, UserName, DeviceId,
+             DeviceType, DeviceName, SystemName, SystemVersion, Manufacturer)
+        VALUES
+            (CASE WHEN @buildNumber IS NOT NULL
+                  THEN 'HC Ver: ' + @hcVersion + ', Bld: ' + @buildNumber
+                  ELSE @hcVersion END,
+             @userId, '~' + @hasherName + '~', CAST(@deviceId AS NVARCHAR(100)),
+             COALESCE(@deviceType,
+                      JSON_VALUE(@deviceData, '$.model'),
+                      JSON_VALUE(@deviceData, '$.browserName')),
+             COALESCE(@deviceName,
+                      JSON_VALUE(@deviceData, '$.name'),
+                      JSON_VALUE(@deviceData, '$.platform')),
+             COALESCE(@systemName,
+                      JSON_VALUE(@deviceData, '$.systemName'),
+                      CASE WHEN JSON_VALUE(@deviceData, '$.manufacturer') IS NOT NULL THEN 'Android' END),
+             COALESCE(@systemVersion,
+                      JSON_VALUE(@deviceData, '$.systemVersion'),
+                      JSON_VALUE(@deviceData, '$.version.release')),
+             COALESCE(@manufacturer,
+                      JSON_VALUE(@deviceData, '$.manufacturer'),
+                      CASE WHEN JSON_VALUE(@deviceData, '$.systemName') = 'iOS' THEN 'Apple' END));
 
         -- Remove the old device record for this deviceId (idempotent re-registration)
         DELETE FROM HC.Device WHERE id = @deviceId;
 
+        -- Version and build on the device row from the first call, so the
+        -- Usage Data tiles count a new phone on the build it is actually on
+        -- rather than '<unknown>' until its next launch.
         INSERT INTO HC.Device
-            ([id], [DeviceSecret], [TimeWindow], [DeviceData], [UserId], [ApnsToken], [FcmToken], [IsMobile])
+            ([id], [DeviceSecret], [TimeWindow], [DeviceData], [UserId], [ApnsToken], [FcmToken], [IsMobile],
+             [Version], [BuildNumber], [Locale])
         VALUES
-            (@deviceId, @deviceSecret, @timeWindow, @deviceData, @userId, @apnsToken, @fcmToken, COALESCE(@isMobile, 1));
+            (@deviceId, @deviceSecret, @timeWindow, @deviceData, @userId, @apnsToken, @fcmToken, COALESCE(@isMobile, 1),
+             CASE WHEN @buildNumber IS NOT NULL THEN LEFT(@hcVersion, 25) ELSE N'<unknown>' END,
+             COALESCE(@buildNumber, N'<unknown>'),
+             COALESCE(@locale, ''));
 
     COMMIT TRANSACTION;
 

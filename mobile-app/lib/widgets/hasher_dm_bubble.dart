@@ -22,9 +22,12 @@ enum HasherDmState {
 /// message with them"). Three looks, read reactively off the DM rows the
 /// Chats list already holds:
 ///
-///   talked     → solid bubble (with the red unread count, as on a card)
-///   friends    → outline bubble
-///   notFriends → DASHED outline bubble
+///   talked     → solid GREEN bubble (with the red unread count, as on a card)
+///   friends    → GREEN outline bubble
+///   notFriends → GREY dashed outline bubble
+///
+/// Green = friend, grey = not yet (James, 2026-10-12: the all-white looks
+/// were too alike to tell apart at a glance).
 ///
 /// A tap on a friend opens the thread straight from the row's data; anyone
 /// else goes through `messageHasher`, so the server's rules — their DM
@@ -108,13 +111,16 @@ class HasherDmBubble extends StatelessWidget {
   }
 
   Widget _icon(HasherDmState state, int unread) {
-    final Color strong = onDark ? Colors.white : Colors.black54;
-    final Color soft = onDark ? Colors.white70 : Colors.grey.shade600;
+    // Bright enough to read on the jungle; deeper on a white card.
+    final Color friend = onDark
+        ? Colors.lightGreenAccent.shade400
+        : Colors.green.shade700;
+    final Color stranger = onDark ? Colors.grey.shade400 : Colors.grey.shade600;
     switch (state) {
       case HasherDmState.talked:
         final Icon solid = Icon(
           MaterialCommunityIcons.chat,
-          color: unread > 0 && !onDark ? hc_red : strong,
+          color: friend,
           size: size,
         );
         if (unread <= 0) return solid;
@@ -142,13 +148,13 @@ class HasherDmBubble extends StatelessWidget {
       case HasherDmState.friends:
         return Icon(
           MaterialCommunityIcons.chat_outline,
-          color: soft,
+          color: friend,
           size: size,
         );
       case HasherDmState.notFriends:
         return CustomPaint(
           size: Size.square(size),
-          painter: _DashedChatBubblePainter(color: soft),
+          painter: _DashedChatBubblePainter(color: stranger),
         );
     }
   }

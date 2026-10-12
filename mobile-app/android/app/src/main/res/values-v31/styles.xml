@@ -13,7 +13,11 @@
          running.
          
          This Theme is only used starting with V2 of Flutter's Android embedding. -->
-    <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
+    <!-- Dark even when the phone is in light mode: from Android 15 the app
+         draws behind a transparent navigation bar, and a light window showing
+         through there put our light nav icons on white (Samsung S24+,
+         Android 16, 2026-10-12). Every Flutter screen paints over it anyway. -->
+    <style name="NormalTheme" parent="@android:style/Theme.Black.NoTitleBar">
         <item name="android:windowBackground">?android:colorBackground</item>
     </style>
 </resources>
