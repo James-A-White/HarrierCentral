@@ -1,3 +1,6 @@
+1.0.61+103
+    • PortalApiHC6: `includeNulls` (true / "true") keeps NULL columns in each row as JSON nulls, as AppApiHC6 already can. Off by default. The Usage Data drill-downs send it so a column that is NULL in the newest row (First Sign-in's home kennel, 2026-10-12) stays in the table, in the procedure's column order.
+
 1.0.61+102
     • InviteEmails: each hasher is stamped InviteEmailedAt as ACS accepts their email (not at the end); sends in rounds of ~60 s with more=true for the portal to call again; a send waiting over 20 s (the SDK sitting on a quota Retry-After) stops the round as the quota. Sierra H4's 147 ran past the portal's 3-minute wait and the end-of-send stamps were lost (E2.F2.S6).
     • HcListMail.SendAsync takes an optional CancellationToken.

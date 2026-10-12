@@ -1,3 +1,7 @@
+## 2.0.87+767 (2026-10-12)
+### Fixes
+- **Usage Data drill-downs no longer lose a column.** A column that was empty in the newest row — First Sign-in's home kennel, when the newest account had none — vanished from the whole table, because the table took its columns from the first row and the API left empty columns out. The dialog now asks the API to keep empty columns (API 1.0.61+103) and, as a backstop, shows every column any row has.
+
 ## 2.0.87+766 (2026-10-12)
 ### Improvements
 - **Tabbed editors: a tab with an empty required field turns red.** Such a field already kept Save grey, but its tab showed only "in progress", so nothing said why Save would not light. Now the tab in the bar and in the tab-name dropdown is marked invalid. A new run shows red tabs until its required fields are filled.

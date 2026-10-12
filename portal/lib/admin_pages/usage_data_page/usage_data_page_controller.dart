@@ -137,6 +137,9 @@ class UsageDataPageController extends GetxController {
         'accessToken': accessToken,
         'categoryId': categoryId.toString(),
         'days': days.toString(),
+        // Keep NULL columns in every row, so the table's columns come in the
+        // procedure's order even when the newest row is blank in one of them.
+        'includeNulls': 'true',
       };
 
       final result = await ServiceCommon.sendHttpPostToHC6Api(body);
@@ -183,6 +186,7 @@ class UsageDataPageController extends GetxController {
         'days': '14',
         'hcVersion': version,
         'hcBuild': buildNumber,
+        'includeNulls': 'true',
       };
 
       final result = await ServiceCommon.sendHttpPostToHC6Api(body);
@@ -211,8 +215,21 @@ class UsageDataPageController extends GetxController {
     final dataSet = outer[0] as List<dynamic>;
     if (dataSet.isEmpty) return;
 
-    final firstRow = dataSet.first as Map<String, dynamic>;
-    final headers = firstRow.keys.toList();
+    // Every column any row has, in order of first appearance — NOT the first
+    // row's keys. PortalApiHC6 leaves a NULL column out of the row's JSON
+    // altogether, so a column that happens to be NULL in the newest row
+    // vanished from the whole table: First Sign-in lost its home kennel for
+    // all seven rows because the newest account had none (James,
+    // 2026-10-12). A column NULL in the first row now lands after that row's
+    // columns rather than in the procedure's order, which is the price of
+    // the shim not sending nulls; every value is still shown.
+    final List<String> headers = <String>[];
+    final Set<String> seen = <String>{};
+    for (final item in dataSet) {
+      for (final String key in (item as Map<String, dynamic>).keys) {
+        if (seen.add(key)) headers.add(key);
+      }
+    }
 
     final rows = <List<String>>[];
     for (final item in dataSet) {
