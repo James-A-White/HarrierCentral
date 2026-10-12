@@ -114,6 +114,7 @@ class RunTabs extends StatelessWidget {
       bottomExtension: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _iWasThereButton(c),
           _HashTrashView(
             kennelId: futureRun.kennel.kennelId,
             eventId: futureRun.event.eventId,
@@ -185,6 +186,49 @@ class RunTabs extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// "I was at this run" (E4.F4.S3): on a past run the hasher has not been
+  /// marked at, when the kennel (or the run) lets hashers mark their own
+  /// attendance. Shown on Details and on RSVP, where the RSVP buttons stood
+  /// before the run. Gone once they are marked; the toast offers Undo.
+  Widget _iWasThereButton(RunTabsController c) {
+    final bool isLoggedIn =
+        (getStringPref(StringPrefsEnum.userId) ?? '').isNotEmpty;
+    if (!isLoggedIn || !isRunPast(futureRun) || !c.canMarkOwnAttendence) {
+      return const SizedBox.shrink();
+    }
+    return Obx(() {
+      // Both Rx read before any branch (an Obx that can skip its read throws).
+      final int attendence = c.myAttendence.value;
+      final bool saving = c.myAttendenceSaving.value;
+      if (attendence >= attendenceAtHash.value) return const SizedBox.shrink();
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        child: Center(
+          child: ElevatedButton.icon(
+            icon: saving
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : const Icon(FontAwesome.check_circle, color: Colors.white),
+            label: Text(
+              'I was at this run',
+              style: ts_button,
+              textAlign: TextAlign.center,
+            ),
+            onPressed: saving
+                ? null
+                : () => unawaited(c.setOwnAttendence(attendenceAtHash)),
+          ),
+        ),
+      );
+    });
   }
 
   /// A count's heading ("Going", "Maybe", "Not go", "Hares"). Each sits in a
@@ -1547,7 +1591,7 @@ class RunTabs extends StatelessWidget {
     // above the attendee list. The counts and the roster stay — those are the
     // interesting part of a run that has happened.
     if (isRunPast(futureRun)) {
-      return const <Widget>[SizedBox(height: 12.0)];
+      return <Widget>[const SizedBox(height: 12.0), _iWasThereButton(c)];
     }
 
     if (c.rsvpRequested.value != rsvpUnknown) {

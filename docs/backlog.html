@@ -294,7 +294,7 @@
   <div class="meta-strip">
     <div><b>19</b> epics</div>
     <div><b>99</b> features</div>
-    <div><b>434</b> stories</div>
+    <div><b>435</b> stories</div>
     <div><b>50</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -321,7 +321,7 @@
   <a class="idx" href="#e1"><span class="idx-id">E1</span><span class="idx-name">Identity &amp; Account Access</span><span class="idx-count">6 features · 25 stories</span></a>
   <a class="idx" href="#e2"><span class="idx-id">E2</span><span class="idx-name">Kennels, Membership &amp; Permissions</span><span class="idx-count">5 features · 19 stories</span></a>
   <a class="idx" href="#e3"><span class="idx-id">E3</span><span class="idx-name">Runs &amp; the Calendar</span><span class="idx-count">6 features · 30 stories</span></a>
-  <a class="idx" href="#e4"><span class="idx-id">E4</span><span class="idx-name">Attendance &amp; Check-In</span><span class="idx-count">4 features · 15 stories</span></a>
+  <a class="idx" href="#e4"><span class="idx-id">E4</span><span class="idx-name">Attendance &amp; Check-In</span><span class="idx-count">4 features · 16 stories</span></a>
   <a class="idx" href="#e5"><span class="idx-id">E5</span><span class="idx-name">PackTrack Live Tracking</span><span class="idx-count">6 features · 55 stories</span></a>
   <a class="idx" href="#e6"><span class="idx-id">E6</span><span class="idx-name">Photos &amp; Hash Flash</span><span class="idx-count">5 features · 20 stories</span></a>
   <a class="idx" href="#e7"><span class="idx-id">E7</span><span class="idx-name">Circle, Down Downs &amp; Songs</span><span class="idx-count">4 features · 17 stories</span></a>
@@ -608,6 +608,7 @@
     <ul class="stories">
       <li class="story"><span class="s-id">E4.F4.S1</span><span class="s-text">As a <em>Hasher</em> who forgot to check in, I want to claim I was there so that my run count is right.</span><span class="chip c-next">Next</span></li>
       <li class="story"><span class="s-id">E4.F4.S2</span><span class="s-text">As a <em>Kennel HC Admin</em>, I want to be prompted to approve or decline a claim so that run counts cannot be inflated unilaterally.</span><span class="chip c-next">Next</span></li>
+      <li class="story"><span class="s-id">E4.F4.S3</span><span class="s-text">As a <em>Hasher</em> at a kennel that lets hashers mark their own attendance, I want an <em>I was at this run</em> button on a past run's page so that I can put myself on it without finding the run in my history (James, 2026-10-12). Shown when signed in, the run is past and I am not already at it, and the setting allows it — the run's <code>CanEditRunAttendence</code>, else the kennel's ("User can edit run attendance" in the portal), the same rule as Run History's swipe. On Details and on the RSVP tab, where the RSVP buttons stood. The same <code>hcapp_setEventAttendence</code> call as the swipe: At the Hash also makes the RSVP Yes, so I join the roster, and recounts my runs; a hare stays a hare. The toast offers Undo. Unlike <code>S1</code>, nothing waits for an admin — that is what the kennel's setting means. App only. ⚠ Known gap: the setting is enforced in the app only — <code>hcapp_setEventAttendence</code> lets anyone mark themselves at any run, because self check-in at the start uses the same call (the swipe has the same gap); not device-tested.</span><span class="chip c-build">Building</span></li>
     </ul>
   </div>
 </section>

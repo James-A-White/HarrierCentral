@@ -301,6 +301,7 @@ Who said they were coming, who actually turned up, and how the Hash Cash records
 |---|---|---|
 | `E4.F4.S1` | As a **Hasher** who forgot to check in, I want to claim I was there so that my run count is right. | `Next` |
 | `E4.F4.S2` | As a **Kennel HC Admin**, I want to be prompted to approve or decline a claim so that run counts cannot be inflated unilaterally. | `Next` |
+| `E4.F4.S3` | As a **Hasher** at a kennel that lets hashers mark their own attendance, I want an **I was at this run** button on a past run's page so that I can put myself on it without finding the run in my history (James, 2026-10-12). Shown when signed in, the run is past and I am not already at it, and the setting allows it — the run's `CanEditRunAttendence`, else the kennel's ("User can edit run attendance" in the portal), the same rule as Run History's swipe. On Details and on the RSVP tab, where the RSVP buttons stood. The same `hcapp_setEventAttendence` call as the swipe: At the Hash also makes the RSVP Yes, so I join the roster, and recounts my runs; a hare stays a hare. The toast offers Undo. Unlike `S1`, nothing waits for an admin — that is what the kennel's setting means. App only. ⚠ Known gap: the setting is enforced in the app only — `hcapp_setEventAttendence` lets anyone mark themselves at any run, because self check-in at the start uses the same call (the swipe has the same gap); not device-tested. | `Building` |
 
 ---
 
