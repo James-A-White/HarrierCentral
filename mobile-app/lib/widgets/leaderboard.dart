@@ -513,6 +513,13 @@ class Leaderboard extends StatelessWidget {
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
+                                            // Message this hasher (E9.F1.S32).
+                                            HasherDmBubble(
+                                              hasherId: e.hasherId,
+                                              displayName: e.displayName,
+                                              size: 20,
+                                              dense: true,
+                                            ),
                                           ],
                                         ),
                                       ],

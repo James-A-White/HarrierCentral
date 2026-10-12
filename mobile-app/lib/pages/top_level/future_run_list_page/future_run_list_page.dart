@@ -1488,6 +1488,11 @@ class EventChatSummary {
   /// person, not a kennel logo.
   final String? otherPhoto;
 
+  /// The other party's INTERNAL id — the user sync's hasherId, which is what
+  /// every hasher list on the phone holds — so a list row can find its DM
+  /// state (E9.F1.S32, 2026-10-12). Null before that server change.
+  final HcId? otherHasherId;
+
   EventChatSummary({
     required this.publicEventId,
     required this.badgeCount,
@@ -1498,6 +1503,7 @@ class EventChatSummary {
     this.otherPublicHasherId,
     this.otherDisplayName,
     this.otherPhoto,
+    this.otherHasherId,
     this.eventId,
     this.eventName,
     this.eventNumber,
@@ -1545,6 +1551,7 @@ class EventChatSummary {
     otherPublicHasherId: otherPublicHasherId,
     otherDisplayName: otherDisplayName,
     otherPhoto: otherPhoto,
+    otherHasherId: otherHasherId,
   );
 
   factory EventChatSummary.fromJson(Map<String, dynamic> json) {
@@ -1572,6 +1579,7 @@ class EventChatSummary {
       otherPublicHasherId: HcId.tryParse(json['OtherPublicHasherId']),
       otherDisplayName: json['OtherDisplayName'] as String?,
       otherPhoto: json['OtherPhoto'] as String?,
+      otherHasherId: HcId.tryParse(json['OtherHasherId']),
     );
   }
 

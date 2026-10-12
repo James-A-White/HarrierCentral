@@ -276,8 +276,15 @@ class DirectMessageService {
 
   /// "Message `<name>`": open, ask, or be refused. The server's own refusal
   /// (yourself, not found) comes back as [refusal] on a null result.
+  ///
+  /// The hasher is named by [targetPublicHasherId] (a chat message, the
+  /// hasher page) or, from a hasher list on the phone, by [targetHasherId]
+  /// — the internal id the user sync holds (E9.F1.S32). Only the one given
+  /// is sent: a build that sent `targetHasherId` to an SP without the
+  /// parameter would be refused outright.
   static Future<DmStartResult?> start(
-    HcId targetPublicHasherId, {
+    HcId? targetPublicHasherId, {
+    HcId? targetHasherId,
     void Function(String? refusal)? onRefused,
   }) async {
     final _Creds? c = _Creds.current();
@@ -292,7 +299,10 @@ class DirectMessageService {
           'hcapp_startDirectMessage',
           paramString: c.deviceSecret,
         ),
-        'targetPublicHasherId': targetPublicHasherId,
+        if (targetPublicHasherId != null)
+          'targetPublicHasherId': targetPublicHasherId
+        else
+          'targetHasherId': targetHasherId,
       }),
       errorCallback: (DbErrorModel e) async {
         onRefused?.call(e.errorUserMessage);

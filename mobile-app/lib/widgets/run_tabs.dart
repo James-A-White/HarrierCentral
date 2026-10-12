@@ -851,6 +851,16 @@ class RunTabs extends StatelessWidget {
                                                       ),
                                                     ),
                                                   ),
+                                                  // Message them (E9.F1.S32):
+                                                  // solid = talked, outline =
+                                                  // friends, dashed = not yet.
+                                                  HasherDmBubble(
+                                                    hasherId: e.hasher.hasherId,
+                                                    displayName:
+                                                        e.hem.hemKennelHashName ??
+                                                        e.displayName,
+                                                    photo: e.hasher.photo,
+                                                  ),
                                                 ],
                                               ),
                                             );

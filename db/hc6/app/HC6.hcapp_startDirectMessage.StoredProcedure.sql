@@ -1,7 +1,11 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcapp_startDirectMessage]
     @deviceId             UNIQUEIDENTIFIER = NULL,
     @accessToken          NVARCHAR(1000)   = NULL,
-    @targetPublicHasherId UNIQUEIDENTIFIER = NULL
+    @targetPublicHasherId UNIQUEIDENTIFIER = NULL,
+    -- OR the internal id, which is all the phone's hasher lists hold (the
+    -- user sync's hasherId) — the chat bubble on an RSVP row, a member list
+    -- (E9.F1.S32, 2026-10-12). The public id wins when both are given.
+    @targetHasherId       UNIQUEIDENTIFIER = NULL
 AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_startDirectMessage
@@ -18,6 +22,8 @@ AS
 --   Two rows in HC.HasherFriendMap carry the pair; FriendSince NULL is a
 --   pending request; both set = friends; a shared ThreadId is the thread.
 --   Two hashers who request each other are friends on the second tap.
+--   The target is named by @targetPublicHasherId or, from a hasher list on
+--   the phone, by its internal @targetHasherId (2026-10-12).
 -- Returns: rowset 0 — { success, errorMessage }
 --          rowset 1 — { Outcome, ThreadId, OtherPublicHasherId,
 --                       OtherDisplayName, OtherPhoto }
@@ -55,10 +61,15 @@ END
 DECLARE @targetId UNIQUEIDENTIFIER, @targetPrefs INT;
 SELECT @targetId = h.id, @targetPrefs = h.Preferences
 FROM HC.Hasher h WHERE h.PublicHasherId = @targetPublicHasherId AND h.Removed = 0;
+-- Two lookups, not one OR: each is a seek on its own index.
+IF (@targetPublicHasherId IS NULL)
+    SELECT @targetId = h.id, @targetPrefs = h.Preferences
+    FROM HC.Hasher h WHERE h.id = @targetHasherId AND h.Removed = 0;
 
 IF (@targetId IS NULL OR @targetId = @userId)
 BEGIN
-    DECLARE @detail NVARCHAR(200) = CONCAT('target=', COALESCE(CAST(@targetPublicHasherId AS NVARCHAR(40)), 'null'));
+    DECLARE @detail NVARCHAR(200) = CONCAT('target=', COALESCE(CAST(@targetPublicHasherId AS NVARCHAR(40)), 'null'),
+                                          ' id=', COALESCE(CAST(@targetHasherId AS NVARCHAR(40)), 'null'));
     SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Cannot message', @detail, @procName, @userId);

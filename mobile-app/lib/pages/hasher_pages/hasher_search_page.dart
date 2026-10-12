@@ -226,6 +226,14 @@ class HasherRow extends StatelessWidget {
                 ],
               ),
             ),
+            // Message them from the list (E9.F1.S32); the row still
+            // opens their page.
+            HasherDmBubble(
+              publicHasherId: hasher.publicHasherId,
+              displayName: hasher.displayName,
+              photo: hasher.photo,
+              onDark: onDark,
+            ),
             Icon(Icons.chevron_right, color: soft),
           ],
         ),
@@ -337,6 +345,16 @@ class HasherRunCountListItem extends StatelessWidget {
                         ),
                 ),
               ],
+            ),
+          ),
+          // Message them (E9.F1.S32). Run Counts is a light page.
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: HasherDmBubble(
+              publicHasherId: hasher.publicHasherId,
+              displayName: hasher.displayName,
+              photo: hasher.photo,
+              onDark: false,
             ),
           ),
         ],

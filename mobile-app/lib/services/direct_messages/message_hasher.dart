@@ -8,14 +8,19 @@ import 'package:harrier_central/imports.dart';
 ///
 /// [onUnblocked] runs after an Unblock from the toast succeeds (the chat
 /// re-fetches its threads; other callers have nothing to refresh).
+///
+/// [publicHasherId] may be null when the caller is a hasher list on the
+/// phone, which knows only the internal [hasherId] (E9.F1.S32).
 Future<void> messageHasher(
-  HcId publicHasherId,
+  HcId? publicHasherId,
   String name, {
+  HcId? hasherId,
   void Function()? onUnblocked,
 }) async {
   String? refusal;
   final DmStartResult? result = await DirectMessageService.start(
     publicHasherId,
+    targetHasherId: hasherId,
     onRefused: (String? why) => refusal = why,
   );
 
