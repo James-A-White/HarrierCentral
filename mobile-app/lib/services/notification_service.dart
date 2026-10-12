@@ -37,6 +37,30 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   /// publicEventId only in theory; the prefix removes the theory.
   static String dmBadgeKey(HcId threadId) => 'dm:$threadId';
 
+  /// The Chats pills' two counts (E9.F1.S29). Folded from the same map and
+  /// the same request list as [globalTotalBadgeCount], with the same
+  /// never-below-zero rule, so Groups + Friends always equals the bubble.
+  /// Friends is every direct message plus every request to message this
+  /// hasher; Groups is everything else — runs, kennels and rooms. Reads
+  /// each Rx, so an Obx that calls these follows every change.
+  int get unreadFriendsCount =>
+      unreadEventCounts.entries
+          .where((MapEntry<String, RxInt> e) => e.key.startsWith('dm:'))
+          .fold<int>(
+            0,
+            (int sum, MapEntry<String, RxInt> e) =>
+                sum + (e.value.value > 0 ? e.value.value : 0),
+          ) +
+      dmRequests.length;
+
+  int get unreadGroupsCount => unreadEventCounts.entries
+      .where((MapEntry<String, RxInt> e) => !e.key.startsWith('dm:'))
+      .fold<int>(
+        0,
+        (int sum, MapEntry<String, RxInt> e) =>
+            sum + (e.value.value > 0 ? e.value.value : 0),
+      );
+
   /// Hashers asking to message this one (E9.F1.S19), newest first, from
   /// hcapp_getDirectMessageRequests. Refreshed with the badge counts, so a
   /// request push and a resume both bring it up to date.
@@ -896,7 +920,11 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
         actionLabel: 'View',
         onAction: () {
           if (Get.isRegistered<FutureRunListPageController>()) {
-            unawaited(Get.find<FutureRunListPageController>().openChatsView());
+            unawaited(
+              Get.find<FutureRunListPageController>().openChatsView(
+                pill: ChatsPill.friends,
+              ),
+            );
           }
         },
       );

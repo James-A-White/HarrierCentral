@@ -15,9 +15,28 @@ import 'package:intl/intl.dart';
 /// the hasher was, and the Runs list cannot show chats at all.
 ///
 /// The rows are the ones the Runs list drew, moved here unchanged.
+///
+/// Split by a pill at the top into Groups (run, kennel and room chats) and
+/// Friends (every hasher who has accepted a direct message, and the requests
+/// to become one), each pill carrying its own unread count (James,
+/// 2026-10-12; E9.F1.S29).
+enum ChatsPill { groups, friends }
+
 class ChatsPageController extends GetxController {
+  ChatsPageController({this.initialPill});
+
+  /// The pill to open on, when whoever opened Chats knows (a message request
+  /// opens Friends). Null lets the counts choose — see [onInit].
+  final ChatsPill? initialPill;
+
+  /// The open page's controller, so a second ask to open Chats on a given
+  /// pill can switch it rather than do nothing. Null when Chats is closed.
+  static ChatsPageController? _open;
+
   final TextEditingController searchText = TextEditingController();
   final RxString query = ''.obs;
+
+  final Rx<ChatsPill> pill = ChatsPill.groups.obs;
 
   /// Requests first, then threads — what the page draws.
   final RxList<dynamic> items = <dynamic>[].obs;
@@ -37,19 +56,31 @@ class ChatsPageController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _open = this;
     final NotificationService? n = _n;
+    // Open where the news is: Friends when only Friends has something
+    // unread, Groups otherwise. Chosen once from the counts already held,
+    // never switched under the hasher when a later fetch lands.
+    pill.value =
+        initialPill ??
+        ((n != null && n.unreadGroupsCount == 0 && n.unreadFriendsCount > 0)
+            ? ChatsPill.friends
+            : ChatsPill.groups);
     if (n != null) {
       _workers
         ..add(ever(n.unreadChatRuns, (_) => _rebuild()))
         ..add(ever(n.dmRequests, (_) => _rebuild()));
       unawaited(n.getEventChatMessageCounts());
     }
-    _workers.add(ever(query, (_) => _rebuild()));
+    _workers
+      ..add(ever(query, (_) => _rebuild()))
+      ..add(ever(pill, (_) => _rebuild()));
     _rebuild();
   }
 
   @override
   void onClose() {
+    if (identical(_open, this)) _open = null;
     for (final Worker w in _workers) {
       w.dispose();
     }
@@ -60,10 +91,15 @@ class ChatsPageController extends GetxController {
   void _rebuild() {
     if (isClosed) return;
     final NotificationService? n = _n;
+    final bool friends = pill.value == ChatsPill.friends;
     final List<EventChatSummary> all =
-        n?.unreadChatRuns.toList() ?? <EventChatSummary>[];
-    final List<DirectMessageRequest> requests =
-        n?.dmRequests.toList() ?? <DirectMessageRequest>[];
+        (n?.unreadChatRuns.toList() ?? <EventChatSummary>[])
+            .where((EventChatSummary s) => s.isDmThread == friends)
+            .toList();
+    // Requests are people, so they belong to Friends.
+    final List<DirectMessageRequest> requests = friends
+        ? (n?.dmRequests.toList() ?? <DirectMessageRequest>[])
+        : <DirectMessageRequest>[];
     final String q = query.value.trim().toLowerCase();
     final List<EventChatSummary> list = q.isEmpty
         ? all
@@ -150,26 +186,36 @@ class ChatsPageController extends GetxController {
 }
 
 /// Open Chats over whatever is on screen — the bubble, a DM-request push and
-/// its toast all come here. A second ask while it is open does nothing.
+/// its toast all come here. A second ask while it is open does not push
+/// another page; it only switches to [pill] when one is given.
 ///
 /// "Open" is whether the Chats ROUTE is on the stack, asked of the navigator
 /// each time — not a flag. 1430 kept a flag on the controller and cleared it
 /// in onClose, which a page-local GetBuilder never calls on pop, so after the
 /// first visit the bubble did nothing (James, 2026-10-01).
-Future<void> openChatsPage() async {
-  if (Get.currentRoute == ChatsPage.routeName) return;
-  await Get.to<void>(() => const ChatsPage(), routeName: ChatsPage.routeName);
+Future<void> openChatsPage({ChatsPill? pill}) async {
+  if (Get.currentRoute == ChatsPage.routeName) {
+    final ChatsPageController? open = ChatsPageController._open;
+    if (pill != null && open != null && !open.isClosed) open.pill.value = pill;
+    return;
+  }
+  await Get.to<void>(
+    () => ChatsPage(initialPill: pill),
+    routeName: ChatsPage.routeName,
+  );
 }
 
 class ChatsPage extends StatelessWidget {
-  const ChatsPage({super.key});
+  const ChatsPage({super.key, this.initialPill});
+
+  final ChatsPill? initialPill;
 
   static const String routeName = '/chats';
 
   @override
   Widget build(BuildContext context) {
     return GetBuilder<ChatsPageController>(
-      init: ChatsPageController(),
+      init: ChatsPageController(initialPill: initialPill),
       global: false,
       // A page-local GetBuilder does not close its controller on pop; do it
       // here, or its workers outlive the page (as in chat_page.dart).
@@ -185,16 +231,8 @@ class ChatsPage extends StatelessWidget {
           ),
           title: Text('Chats', style: ts_appBarTitle),
           centerTitle: true,
+          // Find a hasher lives on the Friends pill now (E9.F1.S29).
           actions: <Widget>[
-            // Find a hasher to message (E9.F1.S26).
-            IconButton(
-              icon: const Icon(Icons.person_search, color: Colors.white),
-              tooltip: 'Find a hasher',
-              onPressed: () => unawaited(
-                Get.to<void>(() => const HasherSearchPage()) ??
-                    Future<void>.value(),
-              ),
-            ),
             Padding(
               padding: const EdgeInsets.only(right: 8),
               child: _ChatsResetButton(controller: controller),
@@ -205,27 +243,34 @@ class ChatsPage extends StatelessWidget {
           decoration: Backgrounds.defaultHcBackground(),
           child: Column(
             children: <Widget>[
+              _ChatsPills(controller: controller),
               Container(
                 color: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: TextField(
-                  // A tap or scroll anywhere else puts the keyboard away (James,
-                  // 2026-10-04): rows claim their own taps, so the app-wide
-                  // empty-space dismiss never heard them.
-                  onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
-                  textInputAction: TextInputAction.done,
-                  controller: controller.searchText,
-                  onChanged: (String v) => controller.query.value = v,
-                  decoration: InputDecoration(
-                    hintText: 'Search chats...',
-                    border: InputBorder.none,
-                    prefixIcon: const Icon(Icons.search, color: Colors.black),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.close, color: Colors.black54),
-                      onPressed: () {
-                        controller.searchText.clear();
-                        controller.query.value = '';
-                      },
+                // The hint names the pill being searched.
+                child: Obx(
+                  () => TextField(
+                    // A tap or scroll anywhere else puts the keyboard away (James,
+                    // 2026-10-04): rows claim their own taps, so the app-wide
+                    // empty-space dismiss never heard them.
+                    onTapOutside: (_) =>
+                        FocusManager.instance.primaryFocus?.unfocus(),
+                    textInputAction: TextInputAction.done,
+                    controller: controller.searchText,
+                    onChanged: (String v) => controller.query.value = v,
+                    decoration: InputDecoration(
+                      hintText: controller.pill.value == ChatsPill.friends
+                          ? 'Search friends...'
+                          : 'Search groups...',
+                      border: InputBorder.none,
+                      prefixIcon: const Icon(Icons.search, color: Colors.black),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.close, color: Colors.black54),
+                        onPressed: () {
+                          controller.searchText.clear();
+                          controller.query.value = '';
+                        },
+                      ),
                     ),
                   ),
                 ),
@@ -237,28 +282,52 @@ class ChatsPage extends StatelessWidget {
                             .getEventChatMessageCounts()
                       : null,
                   child: Obx(() {
+                    // Every Rx read first, before any branch can skip one.
                     final List<dynamic> items = controller.items.toList();
                     final String busyId = controller.dmRequestBusyId.value;
+                    final bool friends =
+                        controller.pill.value == ChatsPill.friends;
+                    final bool searching = controller.query.value.isNotEmpty;
+                    // Friends opens with the way to find someone to message,
+                    // which used to sit in the Chats header (E9.F1.S29).
+                    final int lead = friends ? 1 : 0;
                     if (items.isEmpty) {
                       return ListView(
                         physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                         children: <Widget>[
-                          const SizedBox(height: 60),
+                          if (friends) const _FindHasherButton(),
+                          const SizedBox(height: 48),
                           Text(
-                            controller.query.value.isEmpty
-                                ? "You're up to date!"
-                                : 'No chats match your search.',
+                            searching
+                                ? 'No chats match your search.'
+                                : friends
+                                ? 'No friends yet'
+                                : "You're up to date!",
                             style: ts_headingLarge,
                             textAlign: TextAlign.center,
                           ),
+                          if (friends && !searching) ...<Widget>[
+                            const SizedBox(height: 12),
+                            Text(
+                              'To message someone, long-press one of their '
+                              'messages in any chat and choose Message, or '
+                              'use Find a hasher. They appear here once they '
+                              'accept.',
+                              style: ts_body,
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ],
                       );
                     }
                     return ListView.builder(
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.fromLTRB(8, 0, 8, 24),
-                      itemCount: items.length,
-                      itemBuilder: (BuildContext context, int index) {
+                      itemCount: items.length + lead,
+                      itemBuilder: (BuildContext context, int i) {
+                        if (i < lead) return const _FindHasherButton();
+                        final int index = i - lead;
                         final dynamic item = items[index];
                         if (item is DirectMessageRequest) {
                           final bool first =
@@ -279,6 +348,140 @@ class ChatsPage extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Groups | Friends, each with its unread count (E9.F1.S29). The counts are
+/// NotificationService's own, folded from the map the chat bubble sums, so
+/// the two pills always add up to the bubble.
+class _ChatsPills extends StatelessWidget {
+  const _ChatsPills({required this.controller});
+  final ChatsPageController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Obx(() {
+            final ChatsPill selected = controller.pill.value;
+            final NotificationService? n =
+                Get.isRegistered<NotificationService>()
+                ? Get.find<NotificationService>()
+                : null;
+            final int groups = n?.unreadGroupsCount ?? 0;
+            final int friends = n?.unreadFriendsCount ?? 0;
+            return SegmentedButton<ChatsPill>(
+              // Fills the width, so the two halves are the same size.
+              expandedInsets: EdgeInsets.zero,
+              showSelectedIcon: false,
+              segments: <ButtonSegment<ChatsPill>>[
+                ButtonSegment<ChatsPill>(
+                  value: ChatsPill.groups,
+                  label: _label(
+                    'Groups',
+                    groups,
+                    selected: selected == ChatsPill.groups,
+                  ),
+                ),
+                ButtonSegment<ChatsPill>(
+                  value: ChatsPill.friends,
+                  label: _label(
+                    'Friends',
+                    friends,
+                    selected: selected == ChatsPill.friends,
+                  ),
+                ),
+              ],
+              selected: <ChatsPill>{selected},
+              onSelectionChanged: (Set<ChatsPill> s) =>
+                  controller.pill.value = s.first,
+              // The same colours as the email audience pills: red selected,
+              // white otherwise.
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.resolveWith(
+                  (Set<WidgetState> states) =>
+                      states.contains(WidgetState.selected)
+                      ? hc_red
+                      : Colors.white,
+                ),
+                foregroundColor: WidgetStateProperty.resolveWith(
+                  (Set<WidgetState> states) =>
+                      states.contains(WidgetState.selected)
+                      ? Colors.white
+                      : Colors.black87,
+                ),
+              ),
+            );
+          }),
+        ),
+      ),
+    );
+  }
+
+  /// A pill's name and, when it has any, its unread count — red on the
+  /// white pill, white on the red one, so it reads on both.
+  static Widget _label(String text, int count, {required bool selected}) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Flexible(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
+        if (count > 0) ...<Widget>[
+          const SizedBox(width: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+            decoration: BoxDecoration(
+              color: selected ? Colors.white : Colors.red,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              count > 99 ? '99+' : '$count',
+              style: TextStyle(
+                color: selected ? hc_red : Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Find a hasher to message (E9.F1.S26), at the top of Friends.
+class _FindHasherButton extends StatelessWidget {
+  const _FindHasherButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Center(
+        child: ElevatedButton.icon(
+          icon: const Icon(Icons.person_search, color: Colors.white),
+          label: Text(
+            'Find a hasher',
+            style: ts_button,
+            textAlign: TextAlign.center,
+          ),
+          onPressed: () => unawaited(
+            Get.to<void>(() => const HasherSearchPage()) ??
+                Future<void>.value(),
           ),
         ),
       ),

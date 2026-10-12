@@ -482,7 +482,7 @@ class FutureRunListPageController extends GetxController {
     await _processMessage(message.payload);
   }
 
-  Future<void> openChatsView() => openChatsPage();
+  Future<void> openChatsView({ChatsPill? pill}) => openChatsPage(pill: pill);
 
   Future<void> _processMessage(Map<String, dynamic> data) async {
     // Kennel chat and the role rooms carry a ThreadKind and NO event, so they
@@ -495,7 +495,8 @@ class FutureRunListPageController extends GetxController {
       // Ids arrive lowercased through message.payload and are HcIds here.
       final String dmEvent = '${data['DmEvent'] ?? ''}';
       if (dmEvent == 'request') {
-        await openChatsView();
+        // Requests are on the Friends pill (E9.F1.S29).
+        await openChatsView(pill: ChatsPill.friends);
         return;
       }
       final HcId? threadId = HcId.tryParse(data['ThreadId']);
