@@ -188,16 +188,28 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     }, errorCallback: (_) async => true);
 
     if (!responseBody.startsWith(ERROR_PREFIX)) {
+      _lastBadgeRefresh = DateTime.now();
       final decoded = json.decode(responseBody) as List;
-      List<EventChatSummary> serverChatSummary = decoded
-          .map<List<EventChatSummary>>((innerList) {
-            return (innerList as List)
-                .map<EventChatSummary>(
-                  (item) => EventChatSummary.fromJson(item),
-                )
-                .toList();
-          })
-          .toList()[0];
+      // An EMPTY reply (a dropped socket, a local timeout) is a list with no
+      // rowset in it, and `[0]` on that is a RangeError that kills the whole
+      // refresh — same shape as the adHocData reads guarded on 2026-09-18.
+      // No rowset means nothing to update; keep what the app already shows.
+      final List<EventChatSummary> serverChatSummary =
+          decoded
+              .map<List<EventChatSummary>>((innerList) {
+                return (innerList as List)
+                    .map<EventChatSummary>(
+                      (item) => EventChatSummary.fromJson(item),
+                    )
+                    .toList();
+              })
+              .toList()
+              .firstOrNull ??
+          <EventChatSummary>[];
+      if (decoded.isEmpty) {
+        await requests;
+        return;
+      }
 
       //     summary.publicEventId: summary.eventChatMessageCount,
       // });
@@ -353,10 +365,32 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     await _ensureFcmListener();
   }
 
+  /// When the badges were last rebuilt from the server, so a resume that
+  /// lands on top of a boot (or a push that lands on top of a resume) does
+  /// not fetch the same counts twice in the same breath.
+  DateTime? _lastBadgeRefresh;
+
   @override
   Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
     if (state == AppLifecycleState.resumed) {
       await refreshFcmListenerOnResume();
+      // A message that arrives while the app is in the BACKGROUND never
+      // reaches _handleForegroundMessage: iOS shows the banner itself and
+      // Dart sees nothing. The only refresh the app then had was opening a
+      // chat screen — so the main page's bubble, the run cards and the pills
+      // all sat on their old numbers until the user went looking (James,
+      // 2026-10-12: two DMs arrived at 21:06 with the app backgrounded; the
+      // runs page showed no badge on return, and the Chats page showed both
+      // messages because it fetches on open). The comment below used to say
+      // "the refresh boot and resume already use" — there was no resume
+      // refresh. This is it: every return to the foreground rebuilds all
+      // four badge fields from the server, the same call a push makes.
+      final DateTime now = DateTime.now();
+      if (_lastBadgeRefresh == null ||
+          now.difference(_lastBadgeRefresh!) > const Duration(seconds: 3)) {
+        BootLogger.logBreadcrumb('[PUSH] resume: refreshing badge counts');
+        await getEventChatMessageCounts();
+      }
     }
   }
 
