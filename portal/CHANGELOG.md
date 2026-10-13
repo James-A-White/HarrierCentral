@@ -1,3 +1,8 @@
+## 2.0.87+768 (2026-10-13)
+### Improvements
+- **Post to WhatsApp sends the whole description.** The run announcement cut the description at 300 characters (the app at 220); it now carries all of it, from the portal and the app alike.
+- **The announcement reads the same from the portal as from the app**: "🗺️ Details & map" first, "I'll be there" / "Can't make it" with a blank line between links, and "via Harrier Central" at the end.
+
 ## 2.0.87+767 (2026-10-12)
 ### Fixes
 - **Usage Data drill-downs no longer lose a column.** A column that was empty in the newest row — First Sign-in's home kennel, when the newest account had none — vanished from the whole table, because the table took its columns from the first row and the API left empty columns out. The dialog now asks the API to keep empty columns (API 1.0.61+103) and, as a backstop, shows every column any row has.
