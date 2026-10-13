@@ -5,23 +5,18 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_getEvent]
 	@accessToken NVARCHAR(1000) = NULL,
 	@includePaymentInfo INT = 0,
 
-	-- optional parameters
-	@publicEventId UNIQUEIDENTIFIER = NULL,
-	@kennelUniqueShortName NVARCHAR(50) = NULL,
-	@runDesignator NVARCHAR(50) = NULL
+	-- the run to return
+	@publicEventId UNIQUEIDENTIFIER = NULL
 
 AS
 -- =====================================================================
 -- Procedure: HC6.hcportal_getEvent
--- Description: Retrieves event details by publicEventId, kennel short
---              name + runDesignator, or special keywords 'nextrun'/
---              'lastrun'. Returns event details rowset and optionally
---              an attendee list (with or without payment info).
---              Used by both admin portal and public HashRuns.org site.
+-- Description: Retrieves event details by publicEventId. Returns event
+--              details rowset and optionally an attendee list (with or
+--              without payment info). Used by the admin portal.
 -- Parameters: @deviceId (auth), @accessToken (auth),
 --             @includePaymentInfo (0=basic attendees, 1=full payment),
---             @publicEventId (direct lookup),
---             @kennelUniqueShortName + @runDesignator (indirect lookup)
+--             @publicEventId (the run)
 -- Returns: Rowset 0: EventDetails (single row)
 --          Rowset 1: AttendeeList (basic or with payment details)
 -- Author: Harrier Central
@@ -41,6 +36,11 @@ AS
 --   - Removed ErrorLog inserts (error logging moved to API shim)
 --   - Removed GeneralLog inserts (request logging moved to API shim)
 --   - @publicHasherId replaced by @deviceId (device-bound auth via HC.Device lookup)
+--   - 2026-10-13: @kennelUniqueShortName and @runDesignator REMOVED with the
+--     three lookups they fed ('nextrun', 'lastrun', run number). Nothing has
+--     called them since the old portal's public run page was retired, and
+--     'lastrun' returned the furthest-future run. Rebuild if a caller needs
+--     them again (James, 2026-10-13).
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -61,61 +61,14 @@ BEGIN TRY
 	END
 
 	-- Validation: publicEventId (re-enabled from HC5 where it was commented out)
-	IF (@publicEventId IS NULL) AND (@kennelUniqueShortName IS NULL) AND (@runDesignator IS NULL)
+	IF (@publicEventId IS NULL)
 	BEGIN
-		SELECT 0 AS Success, 'No event identifier provided (publicEventId or kennelUniqueShortName+runDesignator required)' AS ErrorMessage;
+		SELECT 0 AS Success, 'publicEventId is required' AS ErrorMessage;
 		RETURN;
 	END
 
-	-- Resolve event ID from parameters
 	DECLARE @eventId UNIQUEIDENTIFIER
-	DECLARE @kennelId UNIQUEIDENTIFIER
-
-	IF (@publicEventId IS NOT NULL)
-	BEGIN
-		SELECT @eventId = id FROM HC.Event WHERE PublicEventId = @publicEventId
-	END
-	ELSE IF (LOWER(@runDesignator) = 'nextrun')
-	BEGIN
-		;WITH cte AS (
-			SELECT
-				ken.id AS kennelId,
-				evt.id AS evtId,
-				ROW_NUMBER() OVER (PARTITION BY KennelID ORDER BY EventStartDatetime ASC) AS RowNumber
-			FROM HC.Event evt
-			INNER JOIN HC.Kennel ken ON evt.KennelId = ken.id
-			INNER JOIN HC.City c ON ken.CityId = c.id
-			INNER JOIN DomainValues.Timezone tz ON tz.id = c.TimezoneId
-			WHERE
-				ken.KennelUniqueShortName = @kennelUniqueShortName AND
-				evt.removed = 0 AND
-				evt.EventStartDateTimeGmt > DATEADD(HOUR, -4, GETUTCDATE())
-		)
-		SELECT @kennelId = cte.kennelId, @eventId = cte.evtId FROM cte WHERE RowNumber = 1
-	END
-	ELSE IF (LOWER(@runDesignator) = 'lastrun')
-	BEGIN
-		;WITH cte AS (
-			SELECT
-				ken.id AS kennelId,
-				evt.id AS evtId,
-				ROW_NUMBER() OVER (PARTITION BY KennelID ORDER BY EventStartDatetime DESC) AS RowNumber
-			FROM HC.Event evt
-			INNER JOIN HC.Kennel ken ON evt.KennelId = ken.id
-			INNER JOIN HC.City c ON ken.CityId = c.id
-			INNER JOIN DomainValues.Timezone tz ON tz.id = c.TimezoneId
-			WHERE
-				ken.KennelUniqueShortName = @kennelUniqueShortName AND
-				evt.removed = 0 AND
-				evt.EventStartDateTimeGmt > DATEADD(HOUR, -4, GETUTCDATE())
-		)
-		SELECT @kennelId = cte.kennelId, @eventId = cte.evtId FROM cte WHERE RowNumber = 1
-	END
-	ELSE
-	BEGIN
-		SELECT @kennelId = id FROM HC.Kennel WHERE KennelUniqueShortName = @kennelUniqueShortName
-		SELECT @eventId = id FROM HC.Event evt WHERE CAST(evt.EventNumber AS NVARCHAR(50)) = @runDesignator AND evt.KennelId = @kennelId
-	END
+	SELECT @eventId = id FROM HC.Event WHERE PublicEventId = @publicEventId
 
 	IF @eventId IS NULL
 	BEGIN

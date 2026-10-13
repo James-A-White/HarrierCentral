@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_getEvent",
-  "version": "1.4.0",
-  "description": "Retrieves one event by @publicEventId, by @kennelUniqueShortName + @runDesignator (EventNumber), or by the keywords 'nextrun'/'lastrun'. Returns an EventDetails rowset and, for regular users (callerType 0), an attendee list whose shape depends on @includePaymentInfo. Auth: HC6.ValidatePortalAuth with @publicEventId as the compound callerParamString (token paramString = UPPER(deviceSecret):UPPER(publicEventId), or the device secret alone when @publicEventId is NULL). No kennel permission gate: any authenticated caller can read any event and its attendee/payment list. The attendee list is suppressed for the service accounts (callerType 1 = HashRuns.org 11111111-..., 2 = admin portal 22222222-...). Used by the admin portal and the public HashRuns.org site. Payments (2026-10-13): @includePaymentInfo = 1 is honoured only for AppAccessFlags 0x40000089 or viewPaymentReport on the run's kennel; anyone else silently gets the basic attendee list (includePaymentInfo treated as 0).",
+  "version": "2.0.0",
+  "description": "Returns an EventDetails rowset and, for regular users (callerType 0), an attendee list whose shape depends on @includePaymentInfo. Auth: HC6.ValidatePortalAuth with @publicEventId as the compound callerParamString (token paramString = UPPER(deviceSecret):UPPER(publicEventId), or the device secret alone when @publicEventId is NULL). No kennel permission gate: any authenticated caller can read any event and its attendee/payment list. The attendee list is suppressed for the service accounts (callerType 1 = HashRuns.org 11111111-..., 2 = admin portal 22222222-...). Used by the admin portal and the public HashRuns.org site. Payments (2026-10-13): @includePaymentInfo = 1 is honoured only for AppAccessFlags 0x40000089 or viewPaymentReport on the run's kennel; anyone else silently gets the basic attendee list (includePaymentInfo treated as 0). Since 2026-10-13 the run is found by @publicEventId only: @kennelUniqueShortName and @runDesignator were removed with the 'nextrun' / 'lastrun' / run-number lookups they fed (no caller; 'lastrun' returned the furthest-future run). A NULL @publicEventId returns {Success 0, 'publicEventId is required'}.",
   "parameters": [
     {
       "name": "deviceId",
@@ -31,20 +31,6 @@
       "nullable": true,
       "mapsToColumn": "Event.PublicEventId",
       "description": "Optional: direct lookup by Event.PublicEventId; takes precedence over the other identifiers. Also the compound callerParamString for token validation. No removed/deleted filter on this path."
-    },
-    {
-      "name": "kennelUniqueShortName",
-      "type": "NVARCHAR(50)",
-      "nullable": true,
-      "mapsToColumn": "Kennel.KennelUniqueShortName",
-      "description": "Optional: kennel identifier used with @runDesignator to resolve the event indirectly."
-    },
-    {
-      "name": "runDesignator",
-      "type": "NVARCHAR(50)",
-      "nullable": true,
-      "mapsToColumn": null,
-      "description": "Optional, used with @kennelUniqueShortName. 'nextrun' / 'lastrun' (case-insensitive) pick, among the kennel's non-removed events with EventStartDateTimeGmt later than now - 4 h, the earliest / LATEST by EventStartDatetime — so 'lastrun' returns the furthest-future scheduled run, not the most recent past one (see codeSmells). Both keyword paths INNER JOIN the kennel's City and DomainValues.Timezone, so a kennel without a city timezone resolves nothing. Any other value is matched against CAST(EventNumber AS NVARCHAR(50)) within the kennel, with no removed filter."
     }
   ],
   "rowsets": [
@@ -894,11 +880,6 @@
   ],
   "codeSmells": [
     {
-      "severity": "high",
-      "issue": "'lastrun' returns the furthest-future run",
-      "detail": "Lines 96-112: the 'lastrun' branch uses the same filter as 'nextrun' (EventStartDateTimeGmt > now - 4 h, line 110) and only reverses the sort (DESC, line 102), so it returns the LAST scheduled future run rather than the most recent past run. Any caller asking for 'lastrun' gets the wrong event."
-    },
-    {
       "severity": "medium",
       "issue": "Raw EventStartDatetime used for ordering",
       "detail": "Lines 84 and 102 ORDER BY EventStartDatetime, which carries a spurious +00:00 on most rows (see /hc-event-datetimes); the filter uses EventStartDateTimeGmt. Ordering by an instant should use EventStartDateTimeGmt. extEventStartDatetime/eventStartDatetime/eventEndDatetime (lines 189-191) are CONVERTed to DATETIME2, dropping the offset."
@@ -939,5 +920,8 @@
     "Never change the @includePaymentInfo=0 vs =1 column sets — callers rely on the split",
     "Never change the 'nextrun'/'lastrun' keyword values without frontend coordination",
     "Never change the 4-hour threshold used in the nextrun/lastrun CTE filter"
+  ],
+  "breakingChangeNotes": [
+    "2.0.0 (2026-10-13): parameters @kennelUniqueShortName and @runDesignator removed. A caller that still sends either is refused by SQL Server ('too many arguments'); none does. Rebuild the lookup if one is needed (James, 2026-10-13)."
   ]
 }
