@@ -82,7 +82,7 @@ END
 
 BEGIN TRY
 
--- Rowset 1: own photos (all statuses — always fully returned, no watermark).
+-- Rowset 1: own photos (all statuses, not deleted — fully returned, no watermark).
 -- Includes AssetId so the app can load the photo from device storage first
 -- and only fall back to BlobUrl if the asset is missing or stale.
 SELECT
@@ -104,7 +104,11 @@ SELECT
     kp.UpdatedAt
 FROM HC.KennelPhotos kp
 WHERE kp.EventId = @eventId
-  AND kp.UserId  = @userId;
+  AND kp.UserId  = @userId
+  -- Not your deleted photos (2026-10-13): rowset 2 already skipped them,
+  -- this one did not and carries no DeletedAt, so the PackTrack map drew a
+  -- photo its owner had deleted. Restoring is done from getRunAllPhotos.
+  AND kp.DeletedAt IS NULL;
 
 -- Rowset 2: others' public photos (status=2, incremental by @afterUpdatedAt)
 SELECT
