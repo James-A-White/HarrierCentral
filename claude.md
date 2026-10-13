@@ -165,6 +165,17 @@ These are firm decisions that must not be revisited or worked around:
   87 kennels still have `InboundIntegrationId = 1`; resetting them is a data
   change for James to approve, not part of a code clean-up.
 
+- **TSA Eats is defunct — exclude it from all work (James, 2026-10-13).**
+  TSA Eats was a separate meal-ordering prototype that shares this repo and
+  database but is not Harrier Central. Leave it out of everything: reviews,
+  audits, contract sweeps, scans, backlog stories, refactors, deploys and
+  release plans. Do not read, fix, test or document it unless James names it.
+  It lives in `tsa-eats/`, `db/hc6/tsa/`, `db/schema/tables/TSA.*`, the
+  `TSA` database schema and `api/Endpoints/TsaApi.cs`. `deploy_hc6.sh` never
+  deploys it, and `tools/contract_check.py` does not scan it. Removing its
+  code, endpoint or tables is a separate decision for James, not a clean-up
+  to do in passing.
+
 **Never convert a `StatelessWidget` to `StatefulWidget` without consulting
   James first.** The preferred direction is the opposite — migrate
   `StatefulWidget` toward `StatelessWidget` + GetX controller wherever the
