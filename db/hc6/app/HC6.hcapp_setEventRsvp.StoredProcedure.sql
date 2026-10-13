@@ -218,7 +218,11 @@ BEGIN
             @kennelNotificationPreference = hkm.KennelNotificationPreference,
             @emailAlertPreference         = hkm.KennelEmailAlertPreference
         FROM HC.HasherKennelMap hkm
-        WHERE hkm.KennelId = @kennelId AND hkm.UserId = @userId;
+        -- The TARGET's kennel settings (2026-10-13). This read @userId, the
+        -- caller, so a run admin changing someone's RSVP on the check-in
+        -- page wrote the admin's own kennel notification and email choices
+        -- onto that hasher's run. Same as before for your own RSVP.
+        WHERE hkm.KennelId = @kennelId AND hkm.UserId = @hasherId;
     END
 END
 

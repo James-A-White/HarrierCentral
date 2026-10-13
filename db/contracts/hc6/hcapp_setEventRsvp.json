@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_setEventRsvp",
-  "version": "1.3.0",
-  "description": "Updates a hasher's RSVP (RsvpState 1 no, 2 maybe, 3 yes) and/or hare flag for an event, inserting the HasherEventMap row if there is none. A hasher already checked in (AttendenceState >= 20) keeps their RSVP — only a hare-flag change is applied, and the SP still answers success = 1 with an explanatory serverMessage. RSVP 1 (not coming) forces IsHare 0. With @autoSetNotifications = 1 the event's notification/email preferences are set at the same time: 2 (off) on a No, otherwise copied from the CALLER's HasherKennelMap row. HC.Event.Hares is kept in step when the hare flag changes (rebuilt only where the text is this SP's own; admin-typed text only ever gains a name). Run counts are recalculated for the hasher after every call, the final row state is returned as adHocData, and the SP delegates to HC6.hcapp_syncEventAdminData. Auth: device-bound token via HC6.ValidateAppAuth (spNumber 26, @param NULL). Permission gate: NONE — @hasherId defaults to the caller but may name any hasher (see code smells). Acting for another hasher (via @hasherId or @hemId) requires manageAttendance for the run's kennel or being a hare of this run, as in hcapp_setEventAttendence; otherwise errorCode 1326 / errorType 13 'Not authorised' (2026-10-13).",
+  "version": "1.4.0",
+  "description": "Updates a hasher's RSVP (RsvpState 1 no, 2 maybe, 3 yes) and/or hare flag for an event, inserting the HasherEventMap row if there is none. A hasher already checked in (AttendenceState >= 20) keeps their RSVP — only a hare-flag change is applied, and the SP still answers success = 1 with an explanatory serverMessage. RSVP 1 (not coming) forces IsHare 0. With @autoSetNotifications = 1 the event's notification/email preferences are set at the same time: 2 (off) on a No, otherwise copied from the CALLER's HasherKennelMap row. HC.Event.Hares is kept in step when the hare flag changes (rebuilt only where the text is this SP's own; admin-typed text only ever gains a name). Run counts are recalculated for the hasher after every call, the final row state is returned as adHocData, and the SP delegates to HC6.hcapp_syncEventAdminData. Auth: device-bound token via HC6.ValidateAppAuth (spNumber 26, @param NULL). Permission gate: NONE — @hasherId defaults to the caller but may name any hasher (see code smells). Acting for another hasher (via @hasherId or @hemId) requires manageAttendance for the run's kennel or being a hare of this run, as in hcapp_setEventAttendence; otherwise errorCode 1326 / errorType 13 'Not authorised' (2026-10-13). Since 2026-10-13 @autoSetNotifications copies the TARGET hasher's kennel notification and email preferences (it read the caller's).",
   "parameters": [
     {
       "name": "deviceId",
@@ -247,11 +247,6 @@
     "EXEC HC6.hcapp_syncEventAdminData after the adHocData rowset (line 342)."
   ],
   "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "Auto-set preferences come from the caller, not the target",
-      "detail": "Lines 179-183 read HasherKennelMap for @userId (the caller). When an admin RSVPs on behalf of another hasher, that hasher's event preferences are set from the ADMIN's kennel preferences; when the admin has no row at the kennel they are set to NULL."
-    },
     {
       "severity": "medium",
       "issue": "Parameter without a default",
