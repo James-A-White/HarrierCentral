@@ -1282,9 +1282,29 @@ script and must be archived after it has been run.
 
 ## Table Schemas
 
-Base table definitions are in `/db/schema/tables/`.
+Base table definitions are in `/db/schema/tables/`, ONE FILE PER TABLE,
+GENERATED from the live database (`db/schema/tables/INDEX.md` lists them).
 Always reference these when working on SPs — never assume column types
-from memory.
+from memory. Each file has every column, default, key, index, foreign key,
+check constraint and trigger; notes on a column (deprecated, meaning) sit
+above it.
+
+**Keep them current — this is Claude's job, without being asked (James,
+2026-10-13).** Never edit these files by hand. After ANY run-once script
+that changes a table — a column, index, constraint, trigger or column note
+— run:
+
+```bash
+python3 tools/schema_dump.py           # rewrite what changed
+python3 tools/schema_dump.py --check   # drift only, exit 1 (the SP deploy runs this too)
+```
+
+and commit the regenerated files WITH the run-once script. A note about a
+column goes into the database as `MS_Description`
+(`sp_addextendedproperty`), never into the file, so it survives the next
+regeneration. Until 2026-10-13 the files were a March SSMS script: 27 of
+65 lacked 293 live columns and 22 tables had none, and an SP review took
+widths from them and raised false alarms.
 
 The most important tables for portal SPs:
 - `HC.Event` — core event data
