@@ -1,27 +1,30 @@
-Harrier Central 3.1.8 — everything since 3.1.0, in one update.
+Harrier Central 3.1.9 — everything since 3.1.8, in one update.
 
-MESSAGE ANOTHER HASHER
-Long-press anyone's message and choose "Message" to start a private conversation. You decide who can message you — friends only (the default), anyone, or nobody — and a request waits at the top of Chats for you to accept or decline. Pin the conversations you care about, and see when your message has been read.
+SAVE AND SEND
+Kennel admins and hares can now email a run to the kennel as well as post it to WhatsApp. Write the email from the run's own description, or let AI draft it in your kennel's house style. Preview it to yourself first, and see exactly who will get it and why.
 
-REPLY, REACT, SHARE
-Reply to a message and your answer carries a quote of it. React with a thumbs up, a heart, a laugh, a beer, a runner or a flame. Send a photo, your location or a dropped pin, copy any message, and delete your own for everyone. Block someone and you will not see them in any chat; report a message and it goes to Harrier Central's reviewers.
+THE HARE'S OFFICIAL TRAIL
+Hares can scout a trail before the run, or promote any runner's track to be the official trail. It is drawn on the PackTrack map, replays alongside the pack, and a lost runner who presses I'm Lost sees it on their map.
 
-CHATS, ONE TAP AWAY
-The chat bubble opens Chats over whatever screen you are on, and the app icon shows how many messages you have not read.
+KENNEL TRAIL MAP
+A Trail map button on the kennel page shows every official trail and every start point, with the kennel's favourite starts drawn bigger. Tap a pin to open any run that started there.
 
-AUTO START
-Arm it before the run and put your phone away: your trail starts by itself when you set off — your phone notices you running, and never starts it because you drove off. Press Start yourself and nothing you ran before is lost.
+PACKTRACK
+Tap Me to keep yourself in the middle of the map, and tap another hasher to see just the two of you and the trail between you. The radar now shows the streets behind it, zooming is smoother, and one button follows you on the map. About ten minutes before a run you said Yes to, PackTrack gets itself ready and arms auto start. Android trails are now as detailed as iPhone ones.
 
-THE SAME TRAIL ON EVERY SETTING
-Every tracking setting now records the same detailed trail. The setting only decides how often your position is sent to the pack while your phone is in your pocket — sending is what uses the battery — and with the app open you are always up to date.
+FIND A HASHER
+Search for hashers by hash name or home kennel. You choose whether others can find you. Run Counts › By Hasher lists everyone you have run with, most runs together first.
 
-WHEN YOU NEED HELP
-Send Help rings and buzzes the phones of the runners around you, even in a pocket. Before you start, the app checks the things that spoil a trail — location permission, battery saver — and a signal light on the run page shows how good your GPS is.
+CHATS
+Chats now splits Groups from Friends, each with its own unread count. A chat bubble next to a hasher's name on lists across the app starts a conversation. The kennel page has its own kennel chat, and a run's chat is the bubble at the top of the run. Chat notifications are fewer and better targeted.
 
-A PHONE WITH THE WRONG TIME
-If your phone's clock is wrong, Harrier Central now corrects for it and keeps working, and tells you how to fix it.
+I WAS AT THIS RUN
+On a past run, you can mark yourself as having been there, where your kennel allows it.
 
-PHOTOS ON THE MAP
-Tap a photo on the map, then "Map" to see exactly where it was taken.
+APPLE WATCH
+A run that starts automatically now appears on your watch.
+
+AND MORE
+Runs imported from a kennel's website carry an AI badge. The runs date filter jumps to any year quickly. A phone with the wrong clock now corrects itself straight away. Fixes for a rare crash on iPhone, the Android navigation bar, chat badges after returning to the app, and auto start on Android.
 
 On On!
