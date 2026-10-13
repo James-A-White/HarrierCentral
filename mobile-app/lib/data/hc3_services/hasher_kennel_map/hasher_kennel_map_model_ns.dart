@@ -17,6 +17,8 @@ abstract class HasherKennelMapModel
     required String userId,
     required String kennelId,
     required int following,
+    /// DEPRECATED snapshot — see HasherKennelMapTableHelper.colIsMember.
+    /// Queries that build this model compute it from the expiry date.
     required int isMember,
     required int isHomeKennel,
     required int kennelNotificationPreference,

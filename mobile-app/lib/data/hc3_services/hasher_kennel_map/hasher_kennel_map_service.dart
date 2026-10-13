@@ -32,6 +32,13 @@ class HasherKennelMapTableHelper extends BaseTableHelper<AppDomainType>
   final String colUserId = 'userId';
   final String colKennelId = 'kennelId';
   final String colFollowing = 'following';
+  /// DEPRECATED — never read (James, 2026-10-13). A snapshot the server
+  /// computes from MembershipExpirationDate at sync time; nothing re-sends
+  /// the row when a membership lapses, so it goes stale. Membership is
+  /// `colMembershipExpirationDate` >= now, computed in the query (see
+  /// QueryKennels.queryKennels). The column stays because the sync writes it
+  /// and HasherKennelMapModel requires it; the server's own stored
+  /// HC.HasherKennelMap.IsMember is deprecated too.
   final String colIsMember = 'isMember';
   final String colIsHomeKennel = 'isHomeKennel';
   /// Tri-state: NULL = default (pinned when isHomeKennel), 0/1 = explicit.

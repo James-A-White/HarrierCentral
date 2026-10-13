@@ -263,8 +263,12 @@ class CheckInPackController extends GetxController
         COUNT(CASE WHEN pay.paymentType >= 2 THEN 1 ELSE NULL END) as paid,
         COUNT(CASE WHEN rsvpState >= 2 AND attendenceState < 20 THEN 1 ELSE NULL END) as coming,
         COUNT(CASE WHEN attendenceState >= 30 THEN 1 ELSE NULL END) as onIn,
+        -- Membership is the expiry date (2026-10-13), never the synced isMember
+        -- snapshot, which goes stale when a membership lapses between syncs.
         (SELECT COUNT(*) FROM ${EnumDataTables.hasherKennelMap.eventTableName} hkm 
-         WHERE hkm.kennelId = "${eventAggregate.event.kennelId}" AND hkm.isMember = 1) as memberCount
+         WHERE hkm.kennelId = "${eventAggregate.event.kennelId}"
+           AND hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate} IS NOT NULL
+           AND julianday(hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now', '${Utilities.getSqfliteTimeOffset()}')) as memberCount
       FROM ${EnumDataTables.hasherEventMap.eventTableName} hem
       INNER JOIN ${EnumDataTables.hashers.commonTableName} h 
         ON hem.${tableModel.hasherEventMapTableHelper.colUserId} = h.${tableModel.hashersTableHelper.colHasherId}

@@ -252,7 +252,10 @@ class QueryKennels {
           hkm.${tableModel.hasherKennelMapTableHelper.colHkmId},
           hkm.${tableModel.hasherKennelMapTableHelper.colUserId},
           hkm.${tableModel.hasherKennelMapTableHelper.colFollowing},
-          hkm.${tableModel.hasherKennelMapTableHelper.colIsMember},
+          -- Membership is the expiry date (2026-10-13). The synced isMember
+          -- column is a deprecated snapshot (see colIsMember); keep the name
+          -- so HasherKennelMapModel still parses.
+          case when ((hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate} IS NOT NULL) AND (julianday(hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate}) >= julianday('now','$offsetFromGmtToLocal'))) then 1 else 0 end as ${tableModel.hasherKennelMapTableHelper.colIsMember},
           hkm.${tableModel.hasherKennelMapTableHelper.colIsHomeKennel},
           hkm.${tableModel.hasherKennelMapTableHelper.colKennelNotificationPreference},
           hkm.${tableModel.hasherKennelMapTableHelper.colKennelEmailAlertPreference},
