@@ -74,6 +74,11 @@ BEGIN TRY
         JOIN HC.Hasher h
           ON h.Removed = 0
          AND (   TRIM(h.HashName) = t.Term
+              -- Starts with the term (2026-10-13): an old account is usually
+              -- renamed "KickStand--DO NOT USE" / "Tuna Melt - DO NOT USE", and
+              -- an exact match never found it, so there was nothing to merge.
+              -- The term's own %, _ and [ are matched literally.
+              OR TRIM(h.HashName) LIKE REPLACE(REPLACE(REPLACE(t.Term, N'[', N'[[]'), N'%', N'[%]'), N'_', N'[_]') + N'%'
               OR TRIM(h.FirstName) = t.Term
               OR TRIM(h.LastName) = t.Term
               OR TRIM(COALESCE(h.FirstName, N'') + N' ' + COALESCE(h.LastName, N'')) = t.Term

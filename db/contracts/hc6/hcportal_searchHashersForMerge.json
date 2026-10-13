@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_searchHashersForMerge",
-  "version": "1.1.0",
-  "description": "Merge accounts search (E12.F6.S3): live accounts (Removed = 0) whose trimmed hash name, first name, last name or 'First Last' equals a term (case-insensitive by collation), or whose email / hasher id / PublicHasherId is a term. At most 20 terms (each cut to 250 characters) and 200 rows, ordered by hash name then most recent app use. Each row carries what tells two records of one person apart. Auth: HC6.ValidatePortalAuth; caller must hold a live HC.PlatformAdmin row with CanEditKennel = 1.",
+  "version": "1.2.0",
+  "description": "Merge accounts search (E12.F6.S3): live accounts (Removed = 0) whose trimmed hash name, first name, last name or 'First Last' equals a term (case-insensitive by collation), or whose email / hasher id / PublicHasherId is a term. At most 20 terms (each cut to 250 characters) and 200 rows, ordered by hash name then most recent app use. Each row carries what tells two records of one person apart. Auth: HC6.ValidatePortalAuth; caller must hold a live HC.PlatformAdmin row with CanEditKennel = 1. Since 2026-10-13 a hash name also matches when it STARTS WITH a term (wildcards in the term are literal), so an old account renamed '<name> - DO NOT USE' is found by its name.",
   "parameters": [
     {
       "name": "deviceId",
