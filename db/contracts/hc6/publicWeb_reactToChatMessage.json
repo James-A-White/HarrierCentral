@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "publicWeb_reactToChatMessage",
-  "version": "1.0.0",
-  "description": "The public web's door to HC6.hcapp_reactToChatMessage (E9.F1.S22, add or remove an emoji reaction on a chat message). A thin 'wrap for writes' wrapper: it EXECs hcapp_reactToChatMessage with the browser's own device credentials and adds no checks of its own, so the web and the app cannot drift. Auth, permission gate and every rule live in hcapp_reactToChatMessage (the token must be signed for 'hcapp_reactToChatMessage', because the inner SP validates under its own name). Reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET. Returns hcapp_reactToChatMessage's rowsets unchanged. The web reads only the row carrying success (and its reactions JSON); the API does not send the author's silent push for a web reaction.",
+  "version": "1.1.0",
+  "description": "The public web's door to HC6.hcapp_reactToChatMessage (E9.F1.S22, add or remove an emoji reaction on a chat message). A thin 'wrap for writes' wrapper: it EXECs hcapp_reactToChatMessage with the browser's own device credentials and adds no checks of its own, so the web and the app cannot drift. Auth, permission gate and every rule live in hcapp_reactToChatMessage (the token must be signed for 'hcapp_reactToChatMessage', because the inner SP validates under its own name). Reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET. Returns hcapp_reactToChatMessage's rowsets unchanged. The web reads only the row carrying success (and its reactions JSON); the API does not send the author's silent push for a web reaction. Since 2026-10-13 the public-web API drops every FcmToken column before replying, so the push-recipient rowsets reach the web server without device tokens (positions and row counts unchanged).",
   "parameters": [
     {
       "name": "deviceId",
@@ -177,18 +177,7 @@
     "  The API shim sends a silent FCM data push (Type=reaction) to the author's phones from rowset 2; nothing is queued in the database.",
     "On an error that escapes the inner SP (or the EXEC itself) the CATCH rolls back, logs 'Unhandled error in publicWeb_reactToChatMessage' to HC.ErrorLog (HcVersion '<web>', deviceId) and re-THROWs, so the API returns 500."
   ],
-  "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "Parameter without a default",
-      "detail": "@deviceId, @accessToken (line 18-19) have no SQL default. A caller that omits one fails with 'expects parameter' before the SP runs: PublicWebAdminApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
-    },
-    {
-      "severity": "low",
-      "issue": "API-only push rowsets reach the web server",
-      "detail": "hcapp_reactToChatMessage's PushDetail and SilentRecipients rowsets (the message author's FCM tokens) are not stripped by PublicWebAdminApi for this action (it strips only startDirectMessage / respondDirectMessageRequest), so they travel to the Next.js server, which reads only the success row. The header comment (lines 7-10) says they are stripped; they are ignored, not removed. No push is sent for a web reaction."
-    }
-  ],
+  "codeSmells": [],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

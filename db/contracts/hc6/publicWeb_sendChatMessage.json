@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "publicWeb_sendChatMessage",
-  "version": "1.0.0",
-  "description": "A web member posts one chat message (E9.F7.S15) through the app's own send SPs, chosen by @kind: 'run' → hcapp_sendEventMessage, 'kennel' → hcapp_sendKennelMessage, 'room' → hcapp_sendRoomMessage, 'dm' → hcapp_sendDirectMessage (E9.F1.S7). The wrapper only resolves public ids (run/kennel must be live) and checks the request is well formed; auth, membership/room/thread gates, content length (4,000) and message kind are the inner SP's. The token must be signed for the inner SP the kind selects. @messageId is the client's id, so a retried post cannot double up. Because the inner SPs answer with the message and push audiences rather than an envelope, the wrapper appends { success 1 } when the message row exists. Reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET; the API sends no push for a web post.",
+  "version": "1.1.0",
+  "description": "A web member posts one chat message (E9.F7.S15) through the app's own send SPs, chosen by @kind: 'run' → hcapp_sendEventMessage, 'kennel' → hcapp_sendKennelMessage, 'room' → hcapp_sendRoomMessage, 'dm' → hcapp_sendDirectMessage (E9.F1.S7). The wrapper only resolves public ids (run/kennel must be live) and checks the request is well formed; auth, membership/room/thread gates, content length (4,000) and message kind are the inner SP's. The token must be signed for the inner SP the kind selects. @messageId is the client's id, so a retried post cannot double up. Because the inner SPs answer with the message and push audiences rather than an envelope, the wrapper appends { success 1 } when the message row exists. Reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET; the API sends no push for a web post. Since 2026-10-13 the public-web API drops every FcmToken column before replying, so the push-recipient rowsets reach the web server without device tokens (positions and row counts unchanged).",
   "parameters": [
     {
       "name": "deviceId",
@@ -855,16 +855,6 @@
     "On an error that escapes the inner SP the CATCH rolls back, logs 'Unhandled error in publicWeb_sendChatMessage' to HC.ErrorLog (HcVersion '<web>', deviceId) and returns the envelope { success 0, errorCode 1500, errorType 5 } alone (no detail rowset)."
   ],
   "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "Parameter without a default",
-      "detail": "@deviceId, @accessToken, @kind, @messageId, @messageContent (line 13-15, 21, 24) have no SQL default. A caller that omits one fails with 'expects parameter' before the SP runs: PublicWebAdminApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
-    },
-    {
-      "severity": "medium",
-      "issue": "Header comment contradicts the inner SPs",
-      "detail": "Lines 63-66 say the app's send SPs return no rowset on success; all four return the inserted message plus push-audience rowsets (other hashers' user ids and FCM tokens). The wrapper's envelope therefore lands at index 3 or 4, and those token rowsets travel to the Next.js server unstripped (PublicWebAdminApi deliberately skips stripping for this action). The web only scans for success, but the tokens should not leave the API."
-    },
     {
       "severity": "low",
       "issue": "Refusal log omits the thread id",
