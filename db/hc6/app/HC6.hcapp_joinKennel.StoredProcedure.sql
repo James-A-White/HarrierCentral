@@ -256,6 +256,8 @@ BEGIN TRY
         BEGIN
             UPDATE HC.HasherKennelMap SET
                 [Following]                  = COALESCE(@isFollowing, [Following]),
+                -- IsMember is DEPRECATED (2026-10-13): written here for old rows' sake, never
+                -- read. Membership is MembershipExpirationDate in the future, nothing else.
                 [IsMember]                   = CASE
                     WHEN @monthsToAddToMembership IS NULL  THEN IsMember
                     WHEN @monthsToAddToMembership = -9999  THEN 0

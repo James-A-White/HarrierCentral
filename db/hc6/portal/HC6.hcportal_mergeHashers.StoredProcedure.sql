@@ -187,6 +187,8 @@ BEGIN TRY
 
     UPDATE k SET
         Following              = CASE WHEN m.removed = 0 AND m.Following = 1 THEN 1 ELSE k.Following END,
+        -- IsMember is DEPRECATED (2026-10-13): written here for old rows' sake, never
+        -- read. Membership is MembershipExpirationDate in the future, nothing else.
         IsMember               = CASE WHEN m.removed = 0 AND m.IsMember = 1 THEN 1 ELSE k.IsMember END,
         IsKennelFollowing      = CASE WHEN m.removed = 0 AND m.IsKennelFollowing = 1 THEN 1 ELSE k.IsKennelFollowing END,
         IsHomeKennel           = CASE WHEN m.removed = 0 AND m.IsHomeKennel = 1 THEN 1 ELSE k.IsHomeKennel END,

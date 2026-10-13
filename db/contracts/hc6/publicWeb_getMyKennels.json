@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getMyKennels",
-  "version": "1.2.0",
-  "description": "The app's Kennels tab for a signed-in web member (E9.F7.S9): every live, eligible kennel (KennelStatus NOT IN (-1, 4) — the app's rule — or any kennel the member has runs at or calls home) with the member's own live HasherKennelMap row alongside where one exists, and everything the app's kennel card and kennel page draw from the synced tables: following / home / member state, notification and email preferences, run and haring counts, last run date, credit, the location line as the app composes it, the city's coordinates for 'N km from here', the kennel's last and next run, default prices, and a lower-case search text for the app's search. ORDER BY KennelName; the client re-sorts. HasherPreferences (v3, 2026-09-27) carries the caller's own unit / radius bitfield. Auth: HC6.ValidateAppAuth (spNumber 112, @param NULL); scoped to the token's user. Read-only.",
+  "version": "1.3.0",
+  "description": "The app's Kennels tab for a signed-in web member (E9.F7.S9): every live, eligible kennel (KennelStatus NOT IN (-1, 4) — the app's rule — or any kennel the member has runs at or calls home) with the member's own live HasherKennelMap row alongside where one exists, and everything the app's kennel card and kennel page draw from the synced tables: following / home / member state, notification and email preferences, run and haring counts, last run date, credit, the location line as the app composes it, the city's coordinates for 'N km from here', the kennel's last and next run, default prices, and a lower-case search text for the app's search. ORDER BY KennelName; the client re-sorts. HasherPreferences (v3, 2026-09-27) carries the caller's own unit / radius bitfield. Auth: HC6.ValidateAppAuth (spNumber 112, @param NULL); scoped to the token's user. Read-only. Since 2026-10-13 IsMember is computed from MembershipExpirationDate (column name and type unchanged); the stored HC.HasherKennelMap.IsMember is deprecated.",
   "parameters": [
     {
       "name": "deviceId",
@@ -385,11 +385,6 @@
       "severity": "medium",
       "issue": "Parameter without a default",
       "detail": "@deviceId and @accessToken have no SQL default (lines 24-25). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
-    },
-    {
-      "severity": "medium",
-      "issue": "Returns the legacy IsMember flag",
-      "detail": "Line 76 returns HasherKennelMap.IsMember. Membership is decided by MembershipExpirationDate in the future and nothing else (James, 2026-10-02); a client that reads IsMember will disagree with the app for lapsed or newly paid members. MembershipExpirationDate is returned too — the web should test that, and IsMember should not be relied on."
     },
     {
       "severity": "low",

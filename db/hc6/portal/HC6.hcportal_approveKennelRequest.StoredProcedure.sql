@@ -267,6 +267,8 @@ BEGIN TRY
 
     IF EXISTS (SELECT 1 FROM HC.HasherKennelMap m WHERE m.UserId = @adminId AND m.KennelId = @kennelId)
         UPDATE HC.HasherKennelMap SET
+            -- IsMember is DEPRECATED (2026-10-13): written here for old rows' sake, never
+            -- read. Membership is MembershipExpirationDate in the future, nothing else.
             Following = 1, IsMember = 1, removed = 0,
             AppAccessFlags = COALESCE(AppAccessFlags, 0) | @adminAccessFlags,
             HcWebPermissionFlags = COALESCE(HcWebPermissionFlags, 0) | @adminWebFlags,

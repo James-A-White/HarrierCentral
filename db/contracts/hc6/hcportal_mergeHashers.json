@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_mergeHashers",
-  "version": "1.1.0",
-  "description": "Merge accounts, step 2 (E12.F6.S2): moves every run row and payment row (and memberships, chat, photos, receipts, down downs, songs, products, promotions, track imports, organiser links) from the merge account to the kept one; combines rows where both have one (runs by EventId+DisplayName, kennels, chat badges); recalculates run counts and kennel credit; disables the merge account as hcapp_gdprDelete does (Removed, every device signed out with a new secret, push tokens cleared). Nothing is deleted except exact duplicates in down downs, promotion and newsflash-read maps and friend links. Logged to LOG.GeneralLog. Requires HC.PlatformAdmin with CanEditKennel = 1. Auth: HC6.ValidatePortalAuth, then the HC.PlatformAdmin gate. Both accounts are locked (UPDLOCK, HOLDLOCK) and must still be live; the whole merge is one transaction.",
+  "version": "1.2.0",
+  "description": "Merge accounts, step 2 (E12.F6.S2): moves every run row and payment row (and memberships, chat, photos, receipts, down downs, songs, products, promotions, track imports, organiser links) from the merge account to the kept one; combines rows where both have one (runs by EventId+DisplayName, kennels, chat badges); recalculates run counts and kennel credit; disables the merge account as hcapp_gdprDelete does (Removed, every device signed out with a new secret, push tokens cleared). Nothing is deleted except exact duplicates in down downs, promotion and newsflash-read maps and friend links. Logged to LOG.GeneralLog. Requires HC.PlatformAdmin with CanEditKennel = 1. Auth: HC6.ValidatePortalAuth, then the HC.PlatformAdmin gate. Both accounts are locked (UPDLOCK, HOLDLOCK) and must still be live; the whole merge is one transaction. HC.HasherKennelMap.IsMember is still combined here but is DEPRECATED (2026-10-13): never read it.",
   "parameters": [
     {
       "name": "deviceId",

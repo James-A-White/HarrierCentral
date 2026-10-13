@@ -175,6 +175,12 @@ These are firm decisions that must not be revisited or worked around:
   A computed column was considered and rejected: the field mixes manual
   bits, and a time-dependent value never bumps `updatedAt`, so synced
   phones would never see it change.
+  **`HC.HasherKennelMap.IsMember` is DEPRECATED** for the same reason: a
+  stored copy of the date, set at join and never maintained. On 2026-10-13
+  it disagreed with the date on 1,839 rows, and hasher search read it.
+  Never read it; compute `MembershipExpirationDate > SYSDATETIMEOFFSET()`.
+  The old writers (join, approve kennel request, merge) still set it and
+  carry a DEPRECATED comment; dropping the column is James's call.
 
 - **TSA Eats is defunct — exclude it from all work (James, 2026-10-13).**
   TSA Eats was a separate meal-ordering prototype that shares this repo and

@@ -10,8 +10,10 @@ AS
 --   is the only gate:
 --     3 anyone                 — any signed-in hasher finds them
 --     1 people I have run with — only if HC6.CoRunners says so
---     2 kennel members         — only a member (IsMember = 1, not a
---                                follower) of a kennel they are a member of
+--     2 kennel members         — only a member (MembershipExpirationDate in
+--                                the future, not a follower) of a kennel
+--                                they are a member of (by date since
+--                                2026-10-13; it read the stale IsMember)
 --     0 / NULL                 — never found
 --   Matches the hash name and the home kennel's name / short name; the
 --   first name, last name and "first last" only when they also chose
@@ -92,7 +94,10 @@ BEGIN TRY
 
     CREATE TABLE #myKennels (KennelId UNIQUEIDENTIFIER PRIMARY KEY);
     INSERT #myKennels SELECT DISTINCT KennelId FROM HC.HasherKennelMap
-    WHERE UserId = @userId AND IsMember = 1;
+    WHERE UserId = @userId AND removed = 0
+      -- Membership is the expiry date (2026-10-13), never the deprecated
+      -- stored IsMember, which disagreed with it on 1,839 rows.
+      AND MembershipExpirationDate > SYSDATETIMEOFFSET();
 
     CREATE TABLE #found (PublicHasherId NVARCHAR(40), DisplayName NVARCHAR(600), Photo NVARCHAR(MAX),
                          HomeKennelName NVARCHAR(500), HomeKennelShortName NVARCHAR(250),
@@ -119,7 +124,8 @@ BEGIN TRY
            OR ((h.DirectoryVisibility & 3) = 2 AND EXISTS (
                    SELECT 1 FROM HC.HasherKennelMap theirs
                    JOIN #myKennels mk ON mk.KennelId = theirs.KennelId
-                   WHERE theirs.UserId = h.id AND theirs.IsMember = 1)))
+                   WHERE theirs.UserId = h.id AND theirs.removed = 0
+                     AND theirs.MembershipExpirationDate > SYSDATETIMEOFFSET())))
       AND (   h.HashName LIKE @pattern
            OR k.KennelName LIKE @pattern
            OR k.KennelShortName LIKE @pattern
