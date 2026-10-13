@@ -267,8 +267,9 @@ BEGIN TRY
                 [HcWebPermissionFlags]       = COALESCE(@appAccessFlags, HcWebPermissionFlags),
                 [MismanagementRoles]         = COALESCE(@mismanagementRoles, MismanagementRoles),
                 -- Manual standing grants (ALUMNI/TRUSTED/ADMIN): set/clear specific
-                -- bits without read-modify-write races. The automated MEMBER bit
-                -- (0x0001) is owned by nonApi_syncMemberStandingBit (runs below).
+                -- bits without read-modify-write races. Bit 0x0001 (the old
+                -- automated MEMBER bit) is RETIRED (2026-10-13): membership is
+                -- MembershipExpirationDate and nothing else.
                 [KennelStanding]             = (KennelStanding | COALESCE(@kennelStandingSet, 0))
                                                & ~COALESCE(@kennelStandingClear, 0),
                 [KennelNotificationPreference] = COALESCE(@notificationState, KennelNotificationPreference, 0),
@@ -290,10 +291,6 @@ BEGIN TRY
                 [updatedAt]                  = GETDATE()
             WHERE id = @hkmId;
         END
-
-        -- Keep the automated MEMBER standing bit (0x0001) in sync (covers both
-        -- the INSERT and UPDATE branches above).
-        EXEC HC6.nonApi_syncMemberStandingBit @userId = @targetUserId, @kennelId = @kennelId;
 
         -- Update kennel mismanagement team string when roles change
         IF (@mismanagementRoles IS NOT NULL)

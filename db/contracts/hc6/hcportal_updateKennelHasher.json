@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_updateKennelHasher",
-  "version": "1.2.0",
-  "description": "Updates a hasher's profile and kennel-specific settings for a given kennel. Allows editing of personal details (name, email, hash name), discount settings, membership status, notification preferences, historical run counts, and historical count estimates. The SP determines which fields to update based on which parameters are non-NULL. All writes are wrapped in a single transaction. 2026-09-23: personal details (@firstName/@lastName/@hashName/@eMail) are refused with Success=0 when the target has signed in (HC.Hasher.LastLoginDateTime set, or any HC.Device row) unless the caller is the target or SuperAdmin; and refused for a never-signed-in target whose HomeKennelId is not the @publicKennelId kennel. @eMail = '<hidden>' (the portal's non-member placeholder) is ignored. 2026-09-24: a non-NULL @eMail already held by another HC.Hasher row (IX_HasherUniqueEmail) is refused before the transaction with Success=0 and 'The email <x> already belongs to <DisplayName>…' — the owner is named only when they hold a HasherKennelMap row in @kennelId, otherwise 'another hasher outside this kennel'. Previously the unique index threw from the CATCH. Auth: HC6.ValidatePortalAuth with @hasherBeingEditedPublicId in the token param string; a regular user (callerType 0) needs AppAccessFlags & 0x40000012 (canManageKennel 0x02 | canManageMembers 0x10 | SuperAdmin) on the kennel — a hard-coded mask, not the Permissions V2 matrix; service accounts skip the permission and ownership checks.",
+  "version": "1.3.0",
+  "description": "Updates a hasher's profile and kennel-specific settings for a given kennel. Allows editing of personal details (name, email, hash name), discount settings, membership status, notification preferences, historical run counts, and historical count estimates. The SP determines which fields to update based on which parameters are non-NULL. All writes are wrapped in a single transaction. 2026-09-23: personal details (@firstName/@lastName/@hashName/@eMail) are refused with Success=0 when the target has signed in (HC.Hasher.LastLoginDateTime set, or any HC.Device row) unless the caller is the target or SuperAdmin; and refused for a never-signed-in target whose HomeKennelId is not the @publicKennelId kennel. @eMail = '<hidden>' (the portal's non-member placeholder) is ignored. 2026-09-24: a non-NULL @eMail already held by another HC.Hasher row (IX_HasherUniqueEmail) is refused before the transaction with Success=0 and 'The email <x> already belongs to <DisplayName>…' — the owner is named only when they hold a HasherKennelMap row in @kennelId, otherwise 'another hasher outside this kennel'. Previously the unique index threw from the CATCH. Auth: HC6.ValidatePortalAuth with @hasherBeingEditedPublicId in the token param string; a regular user (callerType 0) needs AppAccessFlags & 0x40000012 (canManageKennel 0x02 | canManageMembers 0x10 | SuperAdmin) on the kennel — a hard-coded mask, not the Permissions V2 matrix; service accounts skip the permission and ownership checks. Bit 0x0001 of KennelStanding (the old automated MEMBER bit) is retired since 2026-10-13: membership is MembershipExpirationDate and nothing else, and this SP no longer calls HC6.nonApi_syncMemberStandingBit (dropped).",
   "parameters": [
     {
       "name": "deviceId",
@@ -247,7 +247,7 @@
   ],
   "sideEffects": [
     "UPDATE HC.Hasher (Email, FirstName, LastName, HashName, updatedAt) when any of those are non-NULL; EXEC HC6.nonApi_resetEmailStatus when the address changed",
-    "UPDATE HC.HasherKennelMap discounts (DiscountAmount, DiscountPercent, DiscountDescription), then EXEC HC6.nonApi_syncMemberStandingBit",
+    "UPDATE HC.HasherKennelMap discounts (DiscountAmount, DiscountPercent, DiscountDescription)",
     "UPDATE HC.HasherKennelMap MembershipExpirationDate (2999-12-31 or yesterday) and Following = 1 when @isMember or @status is given",
     "UPDATE HC.HasherKennelMap KennelNotificationPreference / KennelEmailAlertPreference / HistoricalCountIsEstimate / HistoricalTotalRunCount / HistoricalHaringCount as given",
     "EXEC HC6.nonApi_updateRunCountsByUser after either historical count is written",
@@ -262,11 +262,6 @@
     "Never change the '2999-12-31' never-expires sentinel date without updating all callers"
   ],
   "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "Member standing bit synced in the wrong branch",
-      "detail": "Lines 260-265 call HC6.nonApi_syncMemberStandingBit inside the DISCOUNT block, with a comment saying it keeps the MEMBER bit in sync 'with the expiration just written'. The membership block (lines 269-283), which is what writes MembershipExpirationDate, never calls it, so making someone a member or ending membership here leaves KennelStanding 0x0001 stale until the sweep runs."
-    },
     {
       "severity": "medium",
       "issue": "CATCH block does not log to HC.ErrorLog",

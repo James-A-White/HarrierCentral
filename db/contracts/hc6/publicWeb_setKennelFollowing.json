@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "publicWeb_setKennelFollowing",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A web member's follow / home-kennel choice for one kennel — the app's kennel-card popup (Always show runs = 1, Never show runs = 2, Show runs within N km = 0, Set / Clear home kennel) — through the app's own hcapp_joinKennel in self mode. The wrapper resolves @publicKennelId, takes the hasher from the device row (always the caller), validates the values and passes only @isFollowing / @isHomeKennel; auth (token signed for 'hcapp_joinKennel') and every rule are the inner SP's. Reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET. v2 2026-09-17: follow type 0/1/2 and home kennel.",
   "parameters": [
     {
@@ -189,7 +189,6 @@
     "  UPDATE HC.HasherKennelMap — Following, IsMember, IsHomeKennel, AppAccessFlags, HcWebPermissionFlags, MismanagementRoles, KennelStanding (set/clear bits), KennelNotificationPreference, KennelEmailAlertPreference, MembershipExpirationDate, MemberSince, updatedAt — lines 257-291",
     "  UPDATE HC.Hasher SET HomeKennelId = @kennelId (isHomeKennel=1) or NULL (unfollow / isHomeKennel=0 when this was the home kennel)",
     "  UPDATE HC.HasherKennelMap SET IsHomeKennel=0 on the user's other kennels when isHomeKennel=1",
-    "  EXEC HC6.nonApi_syncMemberStandingBit — resyncs the automated MEMBER standing bit (line 296, inside the transaction)",
     "  UPDATE HC.Kennel SET KennelMismanagementTeam when @mismanagementRoles is set — rebuilt inline from HC.HasherKennelMap, HC.Hasher and DomainValues.MismanagementRoles (lines 299-314)",
     "  INSERT HC.ErrorLog on missing kennelId, not authorised, and unhandled CATCH",
     "  EXEC HC6.hcapp_syncUserData (self) or HC6.hcapp_syncKennelAdminData (another user) after COMMIT",

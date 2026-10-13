@@ -176,7 +176,7 @@ A hasher belongs to many kennels with different standing in each, and every perm
 | ID | Story | Status |
 |---|---|---|
 | `E2.F5.S1` | As a **Hash Cash**, I want a member's paid-up standing computed from their payment history so that I do not track subscriptions on paper. | `Shipped` |
-| `E2.F5.S2` | As a **Hash Cash**, I want standing swept nightly so that a lapsed membership shows as lapsed without anyone touching it. | `Shipped` |
+| `E2.F5.S2` | As a **Hash Cash**, I want standing swept nightly so that a lapsed membership shows as lapsed without anyone touching it. Since 2026-10-13 nothing needs sweeping: a lapsed membership shows as lapsed because membership IS `MembershipExpirationDate`, read live. James retired the stored MEMBER bit (`KennelStanding` 0x0001) that the sweep maintained — nothing read it, and each night's sweep re-synced every lapsed row to every phone for nothing. Its four callers and the sweep step are gone; `HC6.nonApi_sweepMemberStanding` / `nonApi_syncMemberStandingBit` are dropped by a run-once script after the API deploy. | `Shipped` |
 | `E2.F5.S3` | As a **Kennel HC Admin**, I want a richer standing model covering honorary, life and suspended members so that the roster matches how clubs actually work. | `Next` |
 
 ---

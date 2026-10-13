@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_joinKennel",
-  "version": "1.1.0",
-  "description": "Creates or updates a HasherKennelMap row for a target user at a kennel: follow state, home kennel, membership duration, notification and email preferences, app access flags, mismanagement roles and manual KennelStanding bits. Auth: device-bound token via HC6.ValidateAppAuth (spNumber 50, @param NULL). Permission gates (HC6.CheckKennelPermission in @kennelId): @appAccessFlags / @kennelStandingSet / @kennelStandingClear need 'assignAppAccessFlags'; @mismanagementRoles needs 'assignMismanagementRoles'; editing another user, @monthsToAddToMembership or @paymentAmount needs 'manageMembers'. Self-service (own row, follow / home kennel / preferences only) needs no role — a hasher cannot alter their own membership. After commit the automated MEMBER standing bit is resynced (HC6.nonApi_syncMemberStandingBit) and, when roles changed, HC.Kennel.KennelMismanagementTeam is rebuilt inline from HC.HasherKennelMap + DomainValues.MismanagementRoles. On success the SP then delegates to hcapp_syncUserData (self) or hcapp_syncKennelAdminData (another user) and streams those rowsets after its own. Sentinel -1 on most parameters means 'keep'.",
+  "version": "1.2.0",
+  "description": "Creates or updates a HasherKennelMap row for a target user at a kennel: follow state, home kennel, membership duration, notification and email preferences, app access flags, mismanagement roles and manual KennelStanding bits. Auth: device-bound token via HC6.ValidateAppAuth (spNumber 50, @param NULL). Permission gates (HC6.CheckKennelPermission in @kennelId): @appAccessFlags / @kennelStandingSet / @kennelStandingClear need 'assignAppAccessFlags'; @mismanagementRoles needs 'assignMismanagementRoles'; editing another user, @monthsToAddToMembership or @paymentAmount needs 'manageMembers'. Self-service (own row, follow / home kennel / preferences only) needs no role — a hasher cannot alter their own membership. After commit, when roles changed, HC.Kennel.KennelMismanagementTeam is rebuilt inline from HC.HasherKennelMap + DomainValues.MismanagementRoles. On success the SP then delegates to hcapp_syncUserData (self) or hcapp_syncKennelAdminData (another user) and streams those rowsets after its own. Sentinel -1 on most parameters means 'keep'. Bit 0x0001 of KennelStanding (the old automated MEMBER bit) is retired since 2026-10-13: membership is MembershipExpirationDate and nothing else, and this SP no longer calls HC6.nonApi_syncMemberStandingBit (dropped).",
   "parameters": [
     {
       "name": "deviceId",
@@ -86,7 +86,7 @@
       "type": "INT",
       "nullable": true,
       "mapsToColumn": "HasherKennelMap.KennelStanding",
-      "description": "Standing bits to OR in (manual grants such as ALUMNI / TRUSTED / ADMIN); requires 'assignAppAccessFlags'. Applied only on the UPDATE path. The automated MEMBER bit 0x0001 is owned by HC6.nonApi_syncMemberStandingBit."
+      "description": "Standing bits to OR in (manual grants such as ALUMNI / TRUSTED / ADMIN); requires 'assignAppAccessFlags'. Applied only on the UPDATE path. Bit 0x0001 (the old automated MEMBER bit) is retired since 2026-10-13."
     },
     {
       "name": "kennelStandingClear",
@@ -242,7 +242,6 @@
     "UPDATE HC.HasherKennelMap — Following, IsMember, IsHomeKennel, AppAccessFlags, HcWebPermissionFlags, MismanagementRoles, KennelStanding (set/clear bits), KennelNotificationPreference, KennelEmailAlertPreference, MembershipExpirationDate, MemberSince, updatedAt — lines 257-291",
     "UPDATE HC.Hasher SET HomeKennelId = @kennelId (isHomeKennel=1) or NULL (unfollow / isHomeKennel=0 when this was the home kennel)",
     "UPDATE HC.HasherKennelMap SET IsHomeKennel=0 on the user's other kennels when isHomeKennel=1",
-    "EXEC HC6.nonApi_syncMemberStandingBit — resyncs the automated MEMBER standing bit (line 296, inside the transaction)",
     "UPDATE HC.Kennel SET KennelMismanagementTeam when @mismanagementRoles is set — rebuilt inline from HC.HasherKennelMap, HC.Hasher and DomainValues.MismanagementRoles (lines 299-314)",
     "INSERT HC.ErrorLog on missing kennelId, not authorised, and unhandled CATCH",
     "EXEC HC6.hcapp_syncUserData (self) or HC6.hcapp_syncKennelAdminData (another user) after COMMIT"

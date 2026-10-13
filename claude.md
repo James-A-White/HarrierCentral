@@ -165,6 +165,17 @@ These are firm decisions that must not be revisited or worked around:
   87 kennels still have `InboundIntegrationId = 1`; resetting them is a data
   change for James to approve, not part of a code clean-up.
 
+- **Membership is `MembershipExpirationDate` in the future, nothing else
+  (James, 2026-10-13).** Never store, sweep or read a derived "is member"
+  flag. Bit 0x0001 of `HC.HasherKennelMap.KennelStanding` (the old automated
+  MEMBER bit) is RETIRED: nothing read it, and keeping it in step cost a
+  nightly re-sync of every lapsed row to every phone. Its values are frozen
+  and meaningless; do not reuse the bit. The manual standing bits (ALUMNI
+  0x0002, TRUSTED 0x0004, ADMIN 0x0100, notes suppressed 0x1000) stay.
+  A computed column was considered and rejected: the field mixes manual
+  bits, and a time-dependent value never bumps `updatedAt`, so synced
+  phones would never see it change.
+
 - **TSA Eats is defunct — exclude it from all work (James, 2026-10-13).**
   TSA Eats was a separate meal-ordering prototype that shares this repo and
   database but is not Harrier Central. Leave it out of everything: reviews,
