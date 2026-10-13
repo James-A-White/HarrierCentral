@@ -67,6 +67,7 @@ IF (@kennelId IS NULL) RETURN;
 
 IF EXISTS (SELECT 1 FROM HC.HasherKennelMap hkm
            WHERE hkm.UserId = @hasherId AND hkm.KennelId = @kennelId
+             AND hkm.removed = 0   -- as CheckKennelPermission
              AND (ISNULL(hkm.AppAccessFlags, 0) & (0x40000000 | ISNULL(@flagMask, 0))) <> 0)
 BEGIN
     SET @allowed = 1;
