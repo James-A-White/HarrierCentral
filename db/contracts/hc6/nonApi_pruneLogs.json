@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "nonApi_pruneLogs",
-  "version": "1.0.0",
-  "description": "Nightly log retention. Deletes aged rows, in batches, from LOG.GeneralLog (by clustered idx range resolved once from the Timestamp cutoff, so the delete is a sequential scan rather than a bookmark lookup per row), HC.IntegrationJob (keeping the latest job AND the latest completed job per integration, so a dormant integration never vanishes from the Usage Data monitor) and HC.ClientErrorLog (the on-device diagnostics harvest; no retention at all until 2026-09-02). Runs from the HC_prune_logs Logic App immediately before HC_rebiuld_indexes; no auth. Deliberately NOT one outer transaction — every batch autocommits, which is the point of batching. Inputs are clamped to sane ranges (@RetentionDays ≥ 30, 100 ≤ @BatchSize ≤ 50000, @MaxBatches ≥ 1, 0 ≤ @BatchDelaySeconds ≤ 600). @BatchDelaySeconds is the throttle: dead time between batches lowers the job's average DTU. Writes one LOG.GeneralLog summary row per run and returns one summary rowset. A runtime error is logged to HC.ErrorLog and re-thrown.",
+  "version": "1.1.0",
+  "description": "Nightly log retention. Deletes aged rows, in batches, from LOG.GeneralLog (by clustered idx range resolved once from the Timestamp cutoff, so the delete is a sequential scan rather than a bookmark lookup per row), HC.IntegrationJob (keeping the latest job AND the latest completed job per integration, so a dormant integration never vanishes from the Usage Data monitor) and HC.ClientErrorLog (the on-device diagnostics harvest; no retention at all until 2026-09-02). Runs from the HC_prune_logs Logic App immediately before HC_rebiuld_indexes; no auth. Deliberately NOT one outer transaction — every batch autocommits, which is the point of batching. Inputs are clamped to sane ranges (@RetentionDays ≥ 30, 100 ≤ @BatchSize ≤ 50000, @MaxBatches ≥ 1, 0 ≤ @BatchDelaySeconds ≤ 600). @BatchDelaySeconds is the throttle: dead time between batches lowers the job's average DTU. Writes one LOG.GeneralLog summary row per run and returns one summary rowset. A runtime error is logged to HC.ErrorLog and re-thrown. Since 2026-10-13 @cutoff is computed after the >= 30 day clamp (and a NULL @RetentionDays becomes 30).",
   "parameters": [
     {
       "name": "RetentionDays",
@@ -75,11 +75,6 @@
     "On any runtime error: rolls back if a transaction is open (none is opened here), inserts one HC.ErrorLog row (HcVersion '<unknown>'), then THROWs."
   ],
   "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "@RetentionDays clamp is applied AFTER @cutoff is computed — the guard does not protect the delete",
-      "detail": "Line 60 computes @cutoff = DATEADD(DAY, -@RetentionDays, SYSUTCDATETIME()) from the RAW parameter; line 68 then raises @RetentionDays to 30 if lower. The DELETEs use @cutoff, so a call with @RetentionDays = 1 deletes everything older than one day while the summary log line claims 'Pruned to 30d'. Harmless from the Logic App (defaults), but the documented floor is not real. Compute @cutoff after the clamp."
-    },
     {
       "severity": "low",
       "issue": "Header says the summary rowset has three columns; it has four",

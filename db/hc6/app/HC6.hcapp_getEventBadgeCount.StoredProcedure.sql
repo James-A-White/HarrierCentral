@@ -116,6 +116,11 @@ BEGIN TRY
 -- ---------------------------------------------------------------
 IF (@resetAllBadgeCounts != 0)
 BEGIN
+    -- One transaction (2026-10-13): "mark all read" is five writes, and a
+    -- failure partway used to leave some chats read and others not. The
+    -- CATCH rolls back before it logs.
+    BEGIN TRANSACTION;
+
     -- Advance every EXISTING badge row to the current max sequence for its
     -- thread. Event rows key on EventId; kennel-thread rows have EventId IS NULL
     -- and key on KennelId, so the max must be resolved from the matching scope.
@@ -241,6 +246,8 @@ BEGIN
       AND NOT EXISTS (
         SELECT 1 FROM HC.EventMessageBadgeCounts embc WITH (UPDLOCK, HOLDLOCK)
         WHERE embc.UserId = @userId AND embc.EventId = t.EventId);
+
+    COMMIT TRANSACTION;
 
     SELECT 0 AS BadgeCount, '00000000-0000-0000-0000-000000000000' AS PublicEventId;
     RETURN;

@@ -56,7 +56,7 @@ BEGIN
     SET XACT_ABORT ON;
 
     DECLARE @procName    NVARCHAR(128) = OBJECT_NAME(@@PROCID);
-    DECLARE @cutoff      DATETIMEOFFSET(7) = DATEADD(DAY, -@RetentionDays, SYSUTCDATETIME());
+    DECLARE @cutoff      DATETIMEOFFSET(7);   -- set AFTER the clamp below (2026-10-13)
     DECLARE @glDeleted   BIGINT = 0;
     DECLARE @ijDeleted   BIGINT = 0;
 DECLARE @celDeleted  BIGINT = 0;
@@ -65,7 +65,10 @@ DECLARE @celDeleted  BIGINT = 0;
     DECLARE @startedAt   DATETIME2(3) = SYSUTCDATETIME();
 
     -- Guard against a caller passing something absurd.
-    IF (@RetentionDays < 30) SET @RetentionDays = 30;
+    IF (@RetentionDays IS NULL OR @RetentionDays < 30) SET @RetentionDays = 30;
+    -- The cut-off used to be computed before this clamp, so a caller passing
+    -- 5 days deleted 25 days more than the 30-day floor promised.
+    SET @cutoff = DATEADD(DAY, -@RetentionDays, SYSUTCDATETIME());
     IF (@BatchSize < 100 OR @BatchSize > 50000) SET @BatchSize = 5000;
     IF (@MaxBatches < 1) SET @MaxBatches = 200;
     IF (@BatchDelaySeconds < 0 OR @BatchDelaySeconds > 600) SET @BatchDelaySeconds = 0.5;

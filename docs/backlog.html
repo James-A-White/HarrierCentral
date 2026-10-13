@@ -294,7 +294,7 @@
   <div class="meta-strip">
     <div><b>19</b> epics</div>
     <div><b>100</b> features</div>
-    <div><b>440</b> stories</div>
+    <div><b>441</b> stories</div>
     <div><b>50</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -320,7 +320,7 @@
 <div class="index-grid">
   <a class="idx" href="#e1"><span class="idx-id">E1</span><span class="idx-name">Identity &amp; Account Access</span><span class="idx-count">6 features · 25 stories</span></a>
   <a class="idx" href="#e2"><span class="idx-id">E2</span><span class="idx-name">Kennels, Membership &amp; Permissions</span><span class="idx-count">5 features · 19 stories</span></a>
-  <a class="idx" href="#e3"><span class="idx-id">E3</span><span class="idx-name">Runs &amp; the Calendar</span><span class="idx-count">6 features · 30 stories</span></a>
+  <a class="idx" href="#e3"><span class="idx-id">E3</span><span class="idx-name">Runs &amp; the Calendar</span><span class="idx-count">6 features · 31 stories</span></a>
   <a class="idx" href="#e4"><span class="idx-id">E4</span><span class="idx-name">Attendance &amp; Check-In</span><span class="idx-count">4 features · 16 stories</span></a>
   <a class="idx" href="#e5"><span class="idx-id">E5</span><span class="idx-name">PackTrack Live Tracking</span><span class="idx-count">6 features · 55 stories</span></a>
   <a class="idx" href="#e6"><span class="idx-id">E6</span><span class="idx-name">Photos &amp; Hash Flash</span><span class="idx-count">5 features · 20 stories</span></a>
@@ -495,6 +495,7 @@
       <li class="story"><span class="s-id">E3.F1.S4</span><span class="s-text">As a <em>Hare Raiser</em>, I want to cancel a run with a reason so that nobody drives to a trail that is not happening.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E3.F1.S5</span><span class="s-text">As a <em>Hare Raiser</em>, I want the run's start time stored as both an instant and a wall clock so that a trail in another timezone displays correctly in both places.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E3.F1.S6</span><span class="s-text">As a <em>Hare Raiser</em>, I want a run to have a pack-off time as well as a gather time, so that hashers know when the pack actually leaves and auto start watches for the real start (James, 2026-10-11). Many kennels gather at one time and set off at another ("gather 12:00, on-out 12:30"); HC holds one start time, so LH3's noon gather is also when PackTrack expects the pack to leave. Design: a default offset on <code>HC.Kennel</code> ("pack off N minutes after gather") and an override on <code>HC.Event</code> — columns, no new table; both tables sync, so the ALTER runs with triggers disabled. Run editing in the app and the portal together (parity rule); run cards, the run page and the web show "Gather 12:00 · Pack off 12:30"; auto start's T−5 precise GPS and its T+90 / T+2h disarm count from pack-off. Not a fix for the walk in (that is <code>E5.F1.S17</code>): a latecomer arriving at 12:28 meets the same detector.</span><span class="chip c-back">Backlog</span></li>
+      <li class="story"><span class="s-id">E3.F1.S7</span><span class="s-text">As a <em>Hare Raiser</em>, I want saving a new run to be safe to repeat, so that a lost reply on a weak connection never leaves the kennel with two copies of the run. Today the app sends no id for a new run and <code>hcapp_addEditEvent</code> mints one (<code>NEWID()</code>), so a save whose reply is lost, or that fails after the commit (the sync delegation runs after the success envelope, outside the TRY), looks failed; tapping Save again creates a second run. Fix as the chat sends were fixed on 2026-10-13 (bb44171e): the app mints the run's id before the first send and reuses it on a retry; the SP treats an existing id from the same kennel as an edit and returns success. Same pattern for the portal's run editor (<code>hcportal_addEditEvent</code>) — one feature, both sides (claude.md run-editing rule). Needs an app build and a device test; check <code>HC.Event</code> for existing same-kennel, same-start, same-name pairs first. Found in the 2026-10-13 contract sweep.</span><span class="chip c-next">Next</span></li>
     </ul>
   </div>
   <div class="feature">

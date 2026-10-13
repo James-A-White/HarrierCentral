@@ -81,13 +81,15 @@ DECLARE @errorType INT;
 DECLARE @userId       UNIQUEIDENTIFIER = '00000000-0000-0000-0000-000000000000';
 DECLARE @deviceSecret NVARCHAR(150)    = '<none>';
 DECLARE @timeWindow   INT              = 30;
+DECLARE @signedOutAt  DATETIMEOFFSET;
 
 IF (@deviceId IS NOT NULL)
 BEGIN
     SELECT
         @userId       = d.UserId,
         @deviceSecret = d.DeviceSecret,
-        @timeWindow   = d.TimeWindow
+        @timeWindow   = d.TimeWindow,
+        @signedOutAt  = d.SignedOutAt
     FROM HC.Device d
     WHERE d.id = @deviceId;
 END
@@ -135,7 +137,24 @@ BEGIN
     VALUES (@userId, @userName, 'HC Ver: ' + @hcVersion + ', Bld: ' + @buildNumber,
             @deviceType, @deviceId, @deviceName, @systemName, @systemVersion,
             @manufacturer, @latitude, @longitude, COALESCE(@usesLocSvcs, -1),
-            @ipInfo, 'Invalid Access Token');
+            @ipInfo, CASE WHEN @signedOutAt IS NOT NULL THEN 'Device signed out' ELSE 'Invalid Access Token' END);
+
+    -- A device signed out from elsewhere (2026-10-13). hcapp_signOutDevice
+    -- rotates the secret, so its token fails above; say WHY, with the same
+    -- errorType 7 ValidateAppAuth uses, so the app's signed-out handler
+    -- takes the user to sign-in instead of "please restart". Only when the
+    -- sign-out stamp is set: the app wipes local data on type 7, so a
+    -- drifted clock (no stamp) must keep the ordinary invalid-token reply.
+    IF (@signedOutAt IS NOT NULL)
+    BEGIN
+        SET @errorCode = 1203; SET @errorType = 7;
+        SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+        SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+               'Signed out' AS errorTitle,
+               'This device was signed out of your Harrier Central account. Sign in again to carry on.' AS errorUserMessage,
+               @procName AS errorProc;
+        RETURN;
+    END
 
     SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,

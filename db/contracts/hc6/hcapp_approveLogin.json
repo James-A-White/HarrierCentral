@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_approveLogin",
-  "version": "1.1.0",
-  "description": "App launch / login SP called on every start after device authorisation. Does NOT use HC6.ValidateAppAuth: it resolves HC.Device itself and calls HC.CHECK_ACCESS_TOKEN_V2 directly (standard token, device secret), so the only auth failure is 1103 / errorType 11; a deliberately signed-out device (Device.SignedOutAt) fails here as a rotated secret, not as errorType 7. Order: auth check (1103) BEFORE the removed-user check (1403, errorType 14) to avoid disclosing removal to an unauthenticated caller; a failed attempt is still recorded in HC.LaunchAndLogin with errorInfo = 'Invalid Access Token'. On success, in one transaction: LaunchAndLogin row, Hasher.LastLoginDateTime/HcVersion, a SplashSequenceViews row when @splashSequenceViewed is given, and Device.LastLogin/Latitude/Longitude/BuildNumber/Version/Locale. Then reads the active HC.LoginNotifications message, the next unseen HC.SplashSequence, any song selected in the last 5 minutes for a run whose start is within ~500 m of the device (HC.SongSession, bounding box), and HC.ServerStatus, and returns one LoginResult row. The permission matrix (ServerStatus.PermissionMatrixJson) is returned only when @clientPermissionsWatermark is NULL or older than ServerStatus.PermissionMatrixUpdatedAt; otherwise those two columns are NULL (Permissions V2 projection).",
+  "version": "1.2.0",
+  "description": "App launch / login SP called on every start after device authorisation. Does NOT use HC6.ValidateAppAuth: it resolves HC.Device itself and calls HC.CHECK_ACCESS_TOKEN_V2 directly (standard token, device secret), so the only auth failure is 1103 / errorType 11; a deliberately signed-out device (Device.SignedOutAt) fails here as a rotated secret, not as errorType 7. Order: auth check (1103) BEFORE the removed-user check (1403, errorType 14) to avoid disclosing removal to an unauthenticated caller; a failed attempt is still recorded in HC.LaunchAndLogin with errorInfo = 'Invalid Access Token'. On success, in one transaction: LaunchAndLogin row, Hasher.LastLoginDateTime/HcVersion, a SplashSequenceViews row when @splashSequenceViewed is given, and Device.LastLogin/Latitude/Longitude/BuildNumber/Version/Locale. Then reads the active HC.LoginNotifications message, the next unseen HC.SplashSequence, any song selected in the last 5 minutes for a run whose start is within ~500 m of the device (HC.SongSession, bounding box), and HC.ServerStatus, and returns one LoginResult row. The permission matrix (ServerStatus.PermissionMatrixJson) is returned only when @clientPermissionsWatermark is NULL or older than ServerStatus.PermissionMatrixUpdatedAt; otherwise those two columns are NULL (Permissions V2 projection). Since 2026-10-13 a device whose token fails AND that carries HC.Device.SignedOutAt (set only by hcapp_signOutDevice, which rotates the secret) gets errorCode 1203 / errorType 7 'Signed out' as ValidateAppAuth gives, so the app's signed-out handler runs; a token failure without the stamp keeps 1103 / errorType 11.",
   "parameters": [
     {
       "name": "deviceId",
@@ -353,11 +353,6 @@
       "severity": "medium",
       "issue": "Parameter without a default",
       "detail": "@deviceId, @accessToken, @deviceType, @deviceName, @systemName, @systemVersion, @manufacturer, @latitude, @longitude (lines 3-11) have no SQL default. A client that omits any of them is refused by SQL BEFORE the procedure runs: no HC.ErrorLog row, an empty 500 in the app, and the SP's own graceful checks are unreachable (CLAUDE.md, Rack of Lamb 2026-09-29)."
-    },
-    {
-      "severity": "medium",
-      "issue": "Does not use HC6.ValidateAppAuth — the signed-out device check is bypassed",
-      "detail": "Lines 85-146 resolve the device and call HC.CHECK_ACCESS_TOKEN_V2 directly. ValidateAppAuth's SignedOutAt test (E9.F7.S19, errorType 7, on which the app wipes the install) therefore never runs on the launch call; a signed-out device fails with 1103 / errorType 11 ('restart the app') because hcapp_signOutDevice rotated the secret. Deliberate or not, this is the one call every launch makes and it answers differently from every other SP."
     },
     {
       "severity": "medium",

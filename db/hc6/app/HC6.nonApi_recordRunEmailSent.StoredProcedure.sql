@@ -37,6 +37,11 @@ BEGIN TRY
     IF (@recipientCount IS NULL) THROW 50000, 'recipientCount is required', 1;
     IF (@kind = 'send' AND @eventId IS NULL) THROW 50000, 'eventId is required for a send', 1;
 
+    -- One transaction (2026-10-13): the send count, the kennel instruction
+    -- and the audit row change together, or none does. The count could rise
+    -- with no audit row behind it. The CATCH already rolls back first.
+    BEGIN TRANSACTION;
+
     IF (@kind = 'send')
     BEGIN
         UPDATE HC.Event
@@ -63,6 +68,8 @@ BEGIN TRY
                     @movedIn AS movedIn, @movedOut AS movedOut
              FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
             SYSDATETIMEOFFSET());
+
+    COMMIT TRANSACTION;
 
     SELECT 1 AS Success, NULL AS ErrorMessage;
 END TRY
