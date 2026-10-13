@@ -157,8 +157,21 @@ END
 DECLARE @publicHasherId UNIQUEIDENTIFIER;
 SELECT @publicHasherId = h.PublicHasherId FROM HC.Hasher h WHERE h.id = @userId;
 
+-- A resend of a message this sender already stored (2026-10-13): writes
+-- nothing, returns the stored message and empty push rowsets. The phone
+-- resends the same @messageId when a reply is lost; on 2026-10-12 the
+-- second INSERT hit PK_EventMessage and a delivered message was reported
+-- as "could not be sent".
+DECLARE @isResend SMALLINT = CASE WHEN EXISTS (
+        SELECT 1 FROM HC.EventMessage
+        WHERE id = @messageId AND UserId = @userId AND MessageType = @roomType
+          AND EventId IS NULL AND KennelId IS NULL AND ThreadId IS NULL) THEN 1 ELSE 0 END;
+
 BEGIN TRY
     BEGIN TRANSACTION;
+
+    IF (@isResend = 0)
+    BEGIN
 
     -- EventId, KennelId and ThreadId all NULL; MessageType names the room.
     -- A reply quotes a message of THIS thread (E9.F1.S21). Anything else —
@@ -201,6 +214,7 @@ BEGIN TRY
     WHEN NOT MATCHED BY TARGET THEN
         INSERT (UserId, EventId, KennelId, MessageType, LastSequenceCount)
         VALUES (Source.UserId, NULL, NULL, @roomType, Source.LastSequenceCount);
+    END
 
     COMMIT TRANSACTION;
 END TRY
@@ -318,6 +332,9 @@ WHERE h.Removed = 0
   AND TRY_CAST(device.BuildNumber AS INT) >= @minPushBuild
   AND ISNULL(b.ParticipationState, 0) <> 2
   AND HC6.UserMayEnterChatRoom(h.id, @roomType) = 1;
+
+-- A resend notifies nobody: its first send already did.
+IF (@isResend = 1) DELETE FROM #roomAudience;
 
 -- Rowset 2: visible push recipients
 -- BadgeTotal: the recipient's unread total for the app ICON (HC6.UserUnreadChatTotal,

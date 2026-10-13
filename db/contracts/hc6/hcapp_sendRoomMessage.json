@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_sendRoomMessage",
-  "version": "1.0.0",
-  "description": "Posts to a platform-wide chat room — one of the rooms in HC6.ChatRoomCatalog(), scoped to no kennel or run. The message is an HC.EventMessage row with EventId, KennelId and ThreadId all NULL and MessageType naming the room (no new table or column: James, 2026-09-13/14). Auth: HC6.ValidateAppAuth (spNumber 104, @param NULL — a standard token). Permission gate: HC6.UserMayEnterChatRoom(@userId, @roomType) — the one gate shared with hcapp_getRoomMessages and hcapp_getChatRooms, so the three cannot drift; an unknown room returns 0 and is refused (1942, errorType 13). NOT HC6.CheckKennelPermission, because a room belongs to no kennel. Returns the message in the flutter_chat_core shape (rowset 0, parsed by two clients and unchanged), then API-only push plumbing: push detail (1), visible recipients (2) and silent recipients (3). Rowsets 1–3 are computed inside a log-and-swallow TRY so a push-side failure never fails a send that has already committed. Room push audience is every hasher UserMayEnterChatRoom admits whose HC.EventMessageBadgeCounts.ParticipationState for the room is 0 (push, the default — no row means 0) or 1 (badges only); 2 (opted out) gets nothing. Unlike kennel/event bells, 0 IS consent here: a hasher only has the room because they hold its role.",
+  "version": "1.1.0",
+  "description": "Posts to a platform-wide chat room — one of the rooms in HC6.ChatRoomCatalog(), scoped to no kennel or run. The message is an HC.EventMessage row with EventId, KennelId and ThreadId all NULL and MessageType naming the room (no new table or column: James, 2026-09-13/14). Auth: HC6.ValidateAppAuth (spNumber 104, @param NULL — a standard token). Permission gate: HC6.UserMayEnterChatRoom(@userId, @roomType) — the one gate shared with hcapp_getRoomMessages and hcapp_getChatRooms, so the three cannot drift; an unknown room returns 0 and is refused (1942, errorType 13). NOT HC6.CheckKennelPermission, because a room belongs to no kennel. Returns the message in the flutter_chat_core shape (rowset 0, parsed by two clients and unchanged), then API-only push plumbing: push detail (1), visible recipients (2) and silent recipients (3). Rowsets 1–3 are computed inside a log-and-swallow TRY so a push-side failure never fails a send that has already committed. Room push audience is every hasher UserMayEnterChatRoom admits whose HC.EventMessageBadgeCounts.ParticipationState for the room is 0 (push, the default — no row means 0) or 1 (badges only); 2 (opted out) gets nothing. Unlike kennel/event bells, 0 IS consent here: a hasher only has the room because they hold its role. Since 2026-10-13 a resend of an already-stored @messageId by the same sender in the same thread is idempotent: nothing is written, rowset 0 returns the stored message and the push rowsets are empty, so nobody is notified twice (a resend after a lost reply used to hit PK_EventMessage and report a delivered message as unsent).",
   "parameters": [
     {
       "name": "deviceId",
@@ -65,17 +65,72 @@
       "name": "Message",
       "description": "On success: the message in the shape the chat page already reads for kennel and event threads (flutter_chat_core). One row. UNCHANGED since 2026-09-13 apart from the additive messageKind and canDelete.",
       "columns": [
-        { "name": "id", "type": "NVARCHAR(36)", "nullable": false, "description": "UPPER(EventMessage.id). Uppercase on purpose — the client lowercases on arrival (HcId)." },
-        { "name": "type", "type": "VARCHAR(4)", "nullable": false, "description": "Always 'text' — even for a photo or location; messageKind carries the kind." },
-        { "name": "text", "type": "NVARCHAR(4000)", "nullable": false, "description": "EventMessage.MessageContent — the raw content (text, photo URL or map link)." },
-        { "name": "roomId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Always the empty GUID 00000000-0000-0000-0000-000000000000 — a room has no id in this column; the client knows the room from the call it made." },
-        { "name": "createdAt", "type": "BIGINT", "nullable": false, "description": "EventMessage.createdAt as Unix epoch milliseconds (DATEDIFF_BIG from 1970-01-01; createdAt is sysutcdatetime)." },
-        { "name": "authorId", "type": "NVARCHAR(36)", "nullable": false, "description": "UPPER(Hasher.PublicHasherId) of the sender." },
-        { "name": "authorFirstName", "type": "NVARCHAR(250)", "nullable": false, "description": "Hasher.DisplayName (hash name or real name per preference)." },
-        { "name": "authorImageUrl", "type": "NVARCHAR(1000)", "nullable": true, "description": "Hasher.Photo." },
-        { "name": "sequenceCount", "type": "INT", "nullable": false, "description": "EventMessage.MessageSequenceCount, assigned by HC.trgCreateSeqNum." },
-        { "name": "messageKind", "type": "SMALLINT", "nullable": false, "description": "0 text, 1 photo, 2 location." },
-        { "name": "canDelete", "type": "SMALLINT", "nullable": false, "description": "Always 1 — it is the sender's own message." }
+        {
+          "name": "id",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "UPPER(EventMessage.id). Uppercase on purpose — the client lowercases on arrival (HcId)."
+        },
+        {
+          "name": "type",
+          "type": "VARCHAR(4)",
+          "nullable": false,
+          "description": "Always 'text' — even for a photo or location; messageKind carries the kind."
+        },
+        {
+          "name": "text",
+          "type": "NVARCHAR(4000)",
+          "nullable": false,
+          "description": "EventMessage.MessageContent — the raw content (text, photo URL or map link)."
+        },
+        {
+          "name": "roomId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Always the empty GUID 00000000-0000-0000-0000-000000000000 — a room has no id in this column; the client knows the room from the call it made."
+        },
+        {
+          "name": "createdAt",
+          "type": "BIGINT",
+          "nullable": false,
+          "description": "EventMessage.createdAt as Unix epoch milliseconds (DATEDIFF_BIG from 1970-01-01; createdAt is sysutcdatetime)."
+        },
+        {
+          "name": "authorId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "UPPER(Hasher.PublicHasherId) of the sender."
+        },
+        {
+          "name": "authorFirstName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Hasher.DisplayName (hash name or real name per preference)."
+        },
+        {
+          "name": "authorImageUrl",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Hasher.Photo."
+        },
+        {
+          "name": "sequenceCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "EventMessage.MessageSequenceCount, assigned by HC.trgCreateSeqNum."
+        },
+        {
+          "name": "messageKind",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 text, 1 photo, 2 location."
+        },
+        {
+          "name": "canDelete",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Always 1 — it is the sender's own message."
+        }
       ]
     },
     {
@@ -83,15 +138,60 @@
       "name": "PushDetail",
       "description": "On success, API ONLY (stripped before the reply): what the shim needs to build the push. One row. Inside the log-and-swallow TRY — absent, together with rowsets 2–3, if that section fails.",
       "columns": [
-        { "name": "MessageId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "EventMessage.id." },
-        { "name": "RoomType", "type": "INT", "nullable": false, "description": "EventMessage.MessageType — the room." },
-        { "name": "RoomName", "type": "NVARCHAR", "nullable": true, "description": "HC6.ChatRoomCatalog().RoomName (LEFT JOIN — NULL only for a room not in the catalog, which the gate already refused)." },
-        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Sender's Hasher.PublicHasherId." },
-        { "name": "UserDisplayName", "type": "NVARCHAR(250)", "nullable": false, "description": "Hasher.DisplayName." },
-        { "name": "UserPhoto", "type": "NVARCHAR(1000)", "nullable": true, "description": "Hasher.Photo." },
-        { "name": "MessageTitle", "type": "NVARCHAR", "nullable": true, "description": "RoomName + ' — ' + DisplayName (NULL if RoomName is NULL)." },
-        { "name": "MessageContent", "type": "NVARCHAR(MAX)", "nullable": false, "description": "HC6.ChatMessagePreview(MessageKind, MessageContent) — the push body, not the raw URL for a photo/location." },
-        { "name": "MessageKind", "type": "SMALLINT", "nullable": false, "description": "0 text, 1 photo, 2 location." }
+        {
+          "name": "MessageId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "EventMessage.id."
+        },
+        {
+          "name": "RoomType",
+          "type": "INT",
+          "nullable": false,
+          "description": "EventMessage.MessageType — the room."
+        },
+        {
+          "name": "RoomName",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "HC6.ChatRoomCatalog().RoomName (LEFT JOIN — NULL only for a room not in the catalog, which the gate already refused)."
+        },
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Sender's Hasher.PublicHasherId."
+        },
+        {
+          "name": "UserDisplayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Hasher.DisplayName."
+        },
+        {
+          "name": "UserPhoto",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Hasher.Photo."
+        },
+        {
+          "name": "MessageTitle",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "RoomName + ' — ' + DisplayName (NULL if RoomName is NULL)."
+        },
+        {
+          "name": "MessageContent",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "HC6.ChatMessagePreview(MessageKind, MessageContent) — the push body, not the raw URL for a photo/location."
+        },
+        {
+          "name": "MessageKind",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 text, 1 photo, 2 location."
+        }
       ]
     },
     {
@@ -99,9 +199,24 @@
       "name": "VisiblePushRecipients",
       "description": "On success, API ONLY: one row per distinct FCM token of a hasher admitted by HC6.UserMayEnterChatRoom whose room ParticipationState is 0 (no row = 0). Device must be live (removed 0, token present, LastLogin within 180 days, build >= HC6.MinBuildForChatPush() via TRY_CAST — fails closed) and the hasher must not have blocked the sender (HasherFriendMap.Ignore). The sender's own devices ARE included (the echo drives the delivered tick; James 2026-09-18). May be empty. HC6.UserMayEnterChatRoom is evaluated per hasher in the WHERE (line 320).",
       "columns": [
-        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Hasher.id (internal)." },
-        { "name": "FcmToken", "type": "NVARCHAR(500)", "nullable": false, "description": "Device.FcmToken." },
-        { "name": "BadgeTotal", "type": "INT", "nullable": true, "description": "HC6.UserUnreadChatTotal for the recipient (app-icon badge); NULL when no device with that token is on a build >= HC6.MinBuildForIconBadge()." }
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Hasher.id (internal)."
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Device.FcmToken."
+        },
+        {
+          "name": "BadgeTotal",
+          "type": "INT",
+          "nullable": true,
+          "description": "HC6.UserUnreadChatTotal for the recipient (app-icon badge); NULL when no device with that token is on a build >= HC6.MinBuildForIconBadge()."
+        }
       ]
     },
     {
@@ -109,9 +224,24 @@
       "name": "SilentPushRecipients",
       "description": "On success, API ONLY: the same audience with ParticipationState 1 (participate, badges only) — a data-only push. Same columns as rowset 2. May be empty.",
       "columns": [
-        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Hasher.id (internal)." },
-        { "name": "FcmToken", "type": "NVARCHAR(500)", "nullable": false, "description": "Device.FcmToken." },
-        { "name": "BadgeTotal", "type": "INT", "nullable": true, "description": "As rowset 2." }
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Hasher.id (internal)."
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Device.FcmToken."
+        },
+        {
+          "name": "BadgeTotal",
+          "type": "INT",
+          "nullable": true,
+          "description": "As rowset 2."
+        }
       ]
     }
   ],
@@ -126,11 +256,6 @@
       "severity": "medium",
       "issue": "errorCode 1942 means two different things",
       "detail": "Line 117 returns 1942 for 'Message too long' (errorType 2) and line 150 returns 1942 for 'Not authorised' to the room (errorType 13). Any client or log triage keyed on the errorCode alone conflates a length refusal with a permission refusal. The sibling SPs use distinct codes (1902 vs none, 2011 vs 2013)."
-    },
-    {
-      "severity": "medium",
-      "issue": "Duplicate messageId is not idempotent",
-      "detail": "Line 171 INSERTs the client-supplied @messageId with no existence check. A retried send after a timeout hits PK_EventMessage, lands in the CATCH and returns 1943 'Unexpected error' with an ErrorLog row for a message that is already in the room."
     },
     {
       "severity": "low",

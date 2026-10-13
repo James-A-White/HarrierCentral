@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_sendDirectMessage",
-  "version": "1.1.0",
-  "description": "Posts to a direct-message thread (E9.F1.S7): an HC.EventMessage row with EventId and KennelId NULL and ThreadId set — the third key HC.trgCreateSeqNum already numbers by. Mirrors hcapp_sendRoomMessage's rowsets so the chat page and the API's push dispatch work unchanged. Auth: HC6.ValidateAppAuth (spNumber 134, @param NULL — a standard token). Permission gate: BOTH HasherFriendMap rows for @threadId must be live — the caller's and the other party's, neither Removed (nobody ended it) and neither with Ignore = 1 (nobody blocking); otherwise 2013 'You can't message <name>.' (errorType 3), naming nobody's reason. Recipients are the OTHER party's devices only, on builds >= HC6.MinBuildForDmPush(); their FriendNotificationPreference on the thread decides: 2 nothing, 3 silent (badge only), anything else visible. Rowsets 1–3 are computed inside a log-and-swallow TRY so push plumbing can never fail an already-committed send.",
+  "version": "1.2.0",
+  "description": "Posts to a direct-message thread (E9.F1.S7): an HC.EventMessage row with EventId and KennelId NULL and ThreadId set — the third key HC.trgCreateSeqNum already numbers by. Mirrors hcapp_sendRoomMessage's rowsets so the chat page and the API's push dispatch work unchanged. Auth: HC6.ValidateAppAuth (spNumber 134, @param NULL — a standard token). Permission gate: BOTH HasherFriendMap rows for @threadId must be live — the caller's and the other party's, neither Removed (nobody ended it) and neither with Ignore = 1 (nobody blocking); otherwise 2013 'You can't message <name>.' (errorType 3), naming nobody's reason. Recipients are the OTHER party's devices only, on builds >= HC6.MinBuildForDmPush(); their FriendNotificationPreference on the thread decides: 2 nothing, 3 silent (badge only), anything else visible. Rowsets 1–3 are computed inside a log-and-swallow TRY so push plumbing can never fail an already-committed send. Since 2026-10-13 a resend of an already-stored @messageId by the same sender in the same thread is idempotent: nothing is written, rowset 0 returns the stored message and the push rowsets are empty, so nobody is notified twice (a resend after a lost reply used to hit PK_EventMessage and report a delivered message as unsent).",
   "parameters": [
     {
       "name": "deviceId",
@@ -65,17 +65,72 @@
       "name": "Message",
       "description": "On success: the message in the flutter_chat_core shape the chat page reads for every thread kind. One row.",
       "columns": [
-        { "name": "id", "type": "NVARCHAR(36)", "nullable": false, "description": "UPPER(EventMessage.id). Uppercase on purpose — the client lowercases on arrival (HcId)." },
-        { "name": "type", "type": "VARCHAR(4)", "nullable": false, "description": "Always 'text' — even for a photo or location; messageKind carries the kind." },
-        { "name": "text", "type": "NVARCHAR(4000)", "nullable": false, "description": "EventMessage.MessageContent — the raw content (text, photo URL or map link)." },
-        { "name": "roomId", "type": "NVARCHAR(36)", "nullable": false, "description": "UPPER(EventMessage.ThreadId)." },
-        { "name": "createdAt", "type": "BIGINT", "nullable": false, "description": "EventMessage.createdAt as Unix epoch milliseconds." },
-        { "name": "authorId", "type": "NVARCHAR(36)", "nullable": false, "description": "UPPER(Hasher.PublicHasherId) of the sender." },
-        { "name": "authorFirstName", "type": "NVARCHAR(250)", "nullable": false, "description": "Hasher.DisplayName." },
-        { "name": "authorImageUrl", "type": "NVARCHAR(1000)", "nullable": true, "description": "Hasher.Photo." },
-        { "name": "sequenceCount", "type": "INT", "nullable": false, "description": "EventMessage.MessageSequenceCount, assigned by HC.trgCreateSeqNum per ThreadId." },
-        { "name": "messageKind", "type": "SMALLINT", "nullable": false, "description": "0 text, 1 photo, 2 location." },
-        { "name": "canDelete", "type": "SMALLINT", "nullable": false, "description": "Always 1 — it is the sender's own message." }
+        {
+          "name": "id",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "UPPER(EventMessage.id). Uppercase on purpose — the client lowercases on arrival (HcId)."
+        },
+        {
+          "name": "type",
+          "type": "VARCHAR(4)",
+          "nullable": false,
+          "description": "Always 'text' — even for a photo or location; messageKind carries the kind."
+        },
+        {
+          "name": "text",
+          "type": "NVARCHAR(4000)",
+          "nullable": false,
+          "description": "EventMessage.MessageContent — the raw content (text, photo URL or map link)."
+        },
+        {
+          "name": "roomId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "UPPER(EventMessage.ThreadId)."
+        },
+        {
+          "name": "createdAt",
+          "type": "BIGINT",
+          "nullable": false,
+          "description": "EventMessage.createdAt as Unix epoch milliseconds."
+        },
+        {
+          "name": "authorId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "UPPER(Hasher.PublicHasherId) of the sender."
+        },
+        {
+          "name": "authorFirstName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Hasher.DisplayName."
+        },
+        {
+          "name": "authorImageUrl",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Hasher.Photo."
+        },
+        {
+          "name": "sequenceCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "EventMessage.MessageSequenceCount, assigned by HC.trgCreateSeqNum per ThreadId."
+        },
+        {
+          "name": "messageKind",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 text, 1 photo, 2 location."
+        },
+        {
+          "name": "canDelete",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Always 1 — it is the sender's own message."
+        }
       ]
     },
     {
@@ -83,14 +138,54 @@
       "name": "PushDetail",
       "description": "On success, API ONLY (stripped before the reply): what the shim needs to build the push. One row. Inside the log-and-swallow TRY — absent, with rowsets 2–3, if that section fails (logged as 'Push plumbing failed in sendDirectMessage (message was sent)').",
       "columns": [
-        { "name": "MessageId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "EventMessage.id." },
-        { "name": "ThreadId", "type": "NVARCHAR(40)", "nullable": false, "description": "UPPER(CAST(ThreadId AS NVARCHAR(40)))." },
-        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Sender's Hasher.PublicHasherId." },
-        { "name": "UserDisplayName", "type": "NVARCHAR(250)", "nullable": false, "description": "Hasher.DisplayName." },
-        { "name": "UserPhoto", "type": "NVARCHAR(1000)", "nullable": true, "description": "Hasher.Photo." },
-        { "name": "MessageTitle", "type": "NVARCHAR(250)", "nullable": false, "description": "The sender's DisplayName (a DM push is titled by who sent it)." },
-        { "name": "MessageContent", "type": "NVARCHAR(MAX)", "nullable": false, "description": "HC6.ChatMessagePreview(MessageKind, MessageContent) — the push body." },
-        { "name": "MessageKind", "type": "SMALLINT", "nullable": false, "description": "0 text, 1 photo, 2 location." }
+        {
+          "name": "MessageId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "EventMessage.id."
+        },
+        {
+          "name": "ThreadId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "UPPER(CAST(ThreadId AS NVARCHAR(40)))."
+        },
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Sender's Hasher.PublicHasherId."
+        },
+        {
+          "name": "UserDisplayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Hasher.DisplayName."
+        },
+        {
+          "name": "UserPhoto",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Hasher.Photo."
+        },
+        {
+          "name": "MessageTitle",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "The sender's DisplayName (a DM push is titled by who sent it)."
+        },
+        {
+          "name": "MessageContent",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "HC6.ChatMessagePreview(MessageKind, MessageContent) — the push body."
+        },
+        {
+          "name": "MessageKind",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 text, 1 photo, 2 location."
+        }
       ]
     },
     {
@@ -98,9 +193,24 @@
       "name": "VisibleRecipients",
       "description": "On success, API ONLY: the other party's live devices (removed 0, FcmToken present, LastLogin within 180 days, build >= HC6.MinBuildForDmPush()) when their FriendNotificationPreference for the thread is neither 2 (none) nor 3 (muted). Empty when it is 2 or 3, or they have no qualifying device. The sender's own devices are NOT included (unlike kennel/event/room sends).",
       "columns": [
-        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Device.UserId — the other party's internal Hasher.id." },
-        { "name": "FcmToken", "type": "NVARCHAR(500)", "nullable": false, "description": "Device.FcmToken." },
-        { "name": "BadgeTotal", "type": "INT", "nullable": true, "description": "HC6.UserUnreadChatTotal for the recipient; NULL when the device's build is below HC6.MinBuildForIconBadge()." }
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Device.UserId — the other party's internal Hasher.id."
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Device.FcmToken."
+        },
+        {
+          "name": "BadgeTotal",
+          "type": "INT",
+          "nullable": true,
+          "description": "HC6.UserUnreadChatTotal for the recipient; NULL when the device's build is below HC6.MinBuildForIconBadge()."
+        }
       ]
     },
     {
@@ -108,9 +218,24 @@
       "name": "SilentRecipients",
       "description": "On success, API ONLY: the same devices when the other party's FriendNotificationPreference is 3 (muted the thread) — a data-only push so the badge moves. Same columns as rowset 2.",
       "columns": [
-        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Device.UserId." },
-        { "name": "FcmToken", "type": "NVARCHAR(500)", "nullable": false, "description": "Device.FcmToken." },
-        { "name": "BadgeTotal", "type": "INT", "nullable": true, "description": "As rowset 2." }
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Device.UserId."
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Device.FcmToken."
+        },
+        {
+          "name": "BadgeTotal",
+          "type": "INT",
+          "nullable": true,
+          "description": "As rowset 2."
+        }
       ]
     }
   ],
@@ -121,11 +246,6 @@
     "The API shim pushes to rowsets 2–3; nothing is queued in the database."
   ],
   "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "Duplicate messageId is not idempotent",
-      "detail": "Line 126 INSERTs the client-supplied @messageId with no existence check. A retried send after a timeout hits PK_EventMessage, lands in the CATCH and returns 2014 'Unexpected error' with an ErrorLog row for a message that already arrived."
-    },
     {
       "severity": "low",
       "issue": "Refusal text can name a hasher who blocked the caller",
