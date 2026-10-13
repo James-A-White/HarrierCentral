@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_getNewsflashReaders",
-  "version": "1.0.0",
-  "description": "Returns all users who have interacted with a specific newsflash (dismissed or snoozed), ordered by UpdatedAt DESC. Only users who have responded at least once are included — users who have never seen or responded to the newsflash are not included. Works on soft-deleted newsflashes so admins can inspect the reader list after deletion.",
+  "version": "1.1.0",
+  "description": "Returns every user who has interacted with a specific newsflash (dismissed or snoozed), ordered by UpdatedAt DESC; users who never responded are not included. Works on soft-deleted newsflashes. Device-bound portal auth via HC6.ValidatePortalAuth; no admin/permission gate in the SP (any signed-in portal user may call it).",
   "parameters": [
     {
       "name": "deviceId",
@@ -30,10 +30,20 @@
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on NULL @newsflashId, auth failure, newsflash not found, or runtime error.",
+      "description": "Returned on NULL @newsflashId (checked BEFORE auth), auth failure, 'Newsflash not found', or from the CATCH block (ERROR_MESSAGE()).",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Human-readable error message"
+        }
       ]
     },
     {
@@ -41,17 +51,63 @@
       "name": "ReaderList",
       "description": "Zero or more rows, one per user who has interacted with this newsflash, ordered by UpdatedAt DESC.",
       "columns": [
-        { "name": "publicHasherId", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Public-facing hasher identifier from HC.Hasher.PublicHasherId" },
-        { "name": "hashName", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User's hash name from HC.Hasher.HashName" },
-        { "name": "displayName", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User's display name from HC.Hasher.DisplayName" },
-        { "name": "isDismissed", "type": "BIT", "nullable": false, "description": "1 = user permanently dismissed; 0 = user snoozed (Read Later)" },
-        { "name": "nextShowDate", "type": "DATE", "nullable": true, "description": "Date from which the newsflash will be shown again after a snooze. NULL when isDismissed=1." },
-        { "name": "updatedAt", "type": "DATETIME", "nullable": false, "description": "UTC timestamp of the last interaction" }
+        {
+          "name": "publicHasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Public-facing hasher identifier from HC.Hasher.PublicHasherId"
+        },
+        {
+          "name": "hashName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "User's hash name from HC.Hasher.HashName"
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "HC.Hasher.DisplayName (persisted computed column; never NULL)"
+        },
+        {
+          "name": "isDismissed",
+          "type": "BIT",
+          "nullable": false,
+          "description": "1 = user permanently dismissed; 0 = user snoozed (Read Later)"
+        },
+        {
+          "name": "nextShowDate",
+          "type": "DATE",
+          "nullable": true,
+          "description": "Date from which the newsflash will be shown again after a snooze. NULL when isDismissed=1."
+        },
+        {
+          "name": "updatedAt",
+          "type": "DATETIME",
+          "nullable": false,
+          "description": "UTC timestamp of the last interaction"
+        }
       ]
     }
   ],
   "sideEffects": [],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "No admin gate in the SP",
+      "detail": "Lines 41-49: only ValidatePortalAuth runs, so any signed-in portal user can list which hashers (publicHasherId, names) read a given newsflash."
+    },
+    {
+      "severity": "medium",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 72-75: CATCH returns the envelope without an HC.ErrorLog row."
+    },
+    {
+      "severity": "low",
+      "issue": "Parameter validated before auth",
+      "detail": "Lines 29-33: a NULL @newsflashId is reported before ValidatePortalAuth runs, so an unauthenticated caller gets a validation message rather than an auth failure. Harmless but inconsistent with the auth-first pattern."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

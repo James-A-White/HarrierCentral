@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getSongs",
-  "version": "1.0.0",
-  "description": "Returns all non-removed songs assigned to a kennel via HC.KennelSongMap, ordered by Rank ASC then SongName ASC. Used by the public songs page. Returns an empty rowset when the kennel is not found or has no assigned songs. No authentication required.",
+  "version": "1.1.0",
+  "description": "Returns all non-removed songs mapped (non-removed HC.KennelSongMap row) to a kennel, ordered by Rank ASC then SongName ASC, for the public songs page. Unauthenticated. An unknown, deleted or removed kennel returns an empty typed rowset (same columns, 0 rows); a NULL @publicKennelId or a runtime error returns the { Success = 0, ErrorMessage } envelope.",
   "parameters": [
     {
       "name": "publicKennelId",
@@ -15,21 +15,100 @@
   "rowsets": [
     {
       "index": 0,
-      "name": "Songs",
-      "description": "Zero or more song rows ordered by Rank ASC, SongName ASC. Empty when the kennel is not found, inactive, or has no assigned songs. On validation error the standard Success/ErrorMessage envelope is returned instead.",
+      "name": "ErrorEnvelope",
       "columns": [
-        { "name": "id",          "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Song GUID" },
-        { "name": "SongName",    "type": "NVARCHAR(120)",    "nullable": false, "description": "Song title" },
-        { "name": "TuneOf",      "type": "NVARCHAR(500)",    "nullable": true,  "description": "Tune this song is sung to" },
-        { "name": "BawdyRating", "type": "SMALLINT",         "nullable": true,  "description": "Bawdiness rating (e.g. 1–5)" },
-        { "name": "Lyrics",      "type": "NVARCHAR(MAX)",    "nullable": true,  "description": "Full lyrics text" },
-        { "name": "Notes",       "type": "NVARCHAR(MAX)",    "nullable": true,  "description": "Additional notes" },
-        { "name": "Actions",     "type": "NVARCHAR(MAX)",    "nullable": true,  "description": "Physical actions / choreography notes" },
-        { "name": "Variants",    "type": "NVARCHAR(MAX)",    "nullable": true,  "description": "Variant lyrics or versions" },
-        { "name": "ImageUrl",    "type": "NVARCHAR(500)",    "nullable": true,  "description": "Song illustration image URL" },
-        { "name": "AudioUrl",    "type": "NVARCHAR(500)",    "nullable": true,  "description": "Audio recording URL" },
-        { "name": "Rank",        "type": "SMALLINT",         "nullable": true,  "description": "Sort order" },
-        { "name": "Tags",        "type": "NVARCHAR(MAX)",    "nullable": true,  "description": "Tag string for filtering" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": false,
+          "description": "Validation text or ERROR_MESSAGE() from the CATCH"
+        }
+      ],
+      "description": "Instead of Songs when @publicKennelId is NULL ('publicKennelId is required.') or on any runtime error (CATCH, ERROR_MESSAGE())."
+    },
+    {
+      "index": 0,
+      "name": "Songs",
+      "description": "Zero or more song rows ordered by Rank ASC, SongName ASC. Empty when the kennel is not found/inactive (lines 45-58, typed WHERE 1 = 0 select) or has no assigned songs.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Song.id"
+        },
+        {
+          "name": "SongName",
+          "type": "NVARCHAR(120)",
+          "nullable": false,
+          "description": "Song title"
+        },
+        {
+          "name": "TuneOf",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Tune this song is sung to"
+        },
+        {
+          "name": "BawdyRating",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Bawdiness rating (Song.BawdyRating, NOT NULL)"
+        },
+        {
+          "name": "Lyrics",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Full lyrics text (Song.Lyrics, NOT NULL)"
+        },
+        {
+          "name": "Notes",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Additional notes about the song"
+        },
+        {
+          "name": "Actions",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Physical actions / choreography notes"
+        },
+        {
+          "name": "Variants",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Variant lyrics or versions"
+        },
+        {
+          "name": "ImageUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Song illustration image URL"
+        },
+        {
+          "name": "AudioUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Audio recording URL"
+        },
+        {
+          "name": "Rank",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Sort order (Song.Rank, NOT NULL)"
+        },
+        {
+          "name": "Tags",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Tag string for filtering"
+        }
       ]
     }
   ],
@@ -37,8 +116,18 @@
   "codeSmells": [
     {
       "severity": "low",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 84-86 return { Success = 0, ErrorMessage } without inserting an HC.ErrorLog row, so a runtime failure is invisible server-side. PublicWebApi does log a Success = 0 envelope as 'HC6 Public Web Error: <action>' with the message, so the failure is not lost, but the row carries no SP name or parameters."
+    },
+    {
+      "severity": "low",
       "issue": "Kennel-not-found returns empty rowset instead of error envelope",
-      "detail": "When the kennel is not found, the SP returns an empty typed rowset (WHERE 1=0) rather than a Success=0 error envelope. The comment says 'shim will treat as 404' but the shim actually returns [] for an empty first rowset. This is inconsistent with publicWeb_getSong which returns an error envelope for the same condition. The behaviour is harmless (callers show an empty list) but the intent is ambiguous."
+      "detail": "Lines 42-60 return an empty typed rowset where publicWeb_getSong returns 'Kennel not found.' for the same condition. The comment says 'shim will treat as 404'; callers simply see an empty list. Harmless but inconsistent."
+    },
+    {
+      "severity": "low",
+      "issue": "WITH (NOLOCK) on Song and KennelSongMap",
+      "detail": "Lines 75-76 read uncommitted data."
     }
   ],
   "breakingChangeRules": [

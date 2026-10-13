@@ -1,20 +1,20 @@
 {
   "schema": "HC6",
   "name": "nonApi_checkReminders",
-  "version": "1.1.0",
-  "description": "Timer-triggered SP (RunCheckInNotification, every 1 minute) that scans HC.Event for events within the check-in reminder window (±11 minutes from start) or RSVP reminder window (±3 days from start) that have not yet had their reminder sent. Returns two rowsets consumed by the C# timer trigger to dispatch FCM pushes, then stamps CheckInReminderSent / RsvpReminderSent on HC.Event so reminders are not re-sent on the next tick. No parameters — called inside Azure Functions and not publicly accessible.",
+  "version": "1.2.0",
+  "description": "Timer-triggered SP (RunCheckInNotification, every 1 minute; no parameters, no auth — internal to Azure Functions). Scans HC.Event (IsVisible = 1, deleted = 0, removed = 0) for runs inside the check-in window (EventStartDateTimeGmt within ±11 minutes of now, CheckInReminderSent NULL) or the RSVP window (±3 days + 1 minute, RsvpReminderSent NULL). Builds up to three messages per run: MessageType 1 'Time to check in', MessageType 2 'Time to RSVP', and — since 2026-10-03 (E5.F1.S10) — MessageType 3 'Get PackTrack ready' for every run in the check-in window. Only runs still in the future (minutesToEvent > 0) get a message. Returns two rowsets the C# trigger turns into FCM pushes (recipients are matched to messages on MessageId, because one run can now carry two messages), then stamps CheckInReminderSent / RsvpReminderSent on every run collected in step 1 so nothing is re-sent next tick. Recipients skip deleted hashers (Hasher.Removed = 1), removed kennel links, retired devices (Device.removed = 1), devices idle > 180 days (LastLogin) and NULL tokens; the UNION de-duplicates a token per message. A hasher who said RSVP Yes on an app build >= 1439 gets MessageType 3 instead of MessageType 1.",
   "parameters": [],
   "rowsets": [
     {
       "index": 0,
       "name": "MessageDetails",
-      "description": "One row per qualifying event (minutesToEvent > 0). Empty when no reminders are due. Consumed by the C# RunCheckInNotification trigger to build FCM notification payloads. MessageRelesabilityFlags column name preserves the HC5 typo so the C# EventMessage deserialiser continues to work without a breaking change.",
+      "description": "One row per message (minutesToEvent > 0): type 1 and 3 for a run in the check-in window, type 2 for a run in the RSVP window. Empty when no reminders are due. Joined to HC.Hasher for the hardcoded HC system user (id 0CDBB109-…), so a missing system user would empty the rowset. MessageRelesabilityFlags keeps the HC5 typo so the C# EventMessage deserialiser still works.",
       "columns": [
         {
           "name": "MessageId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": "NEWID() generated per qualifying event — shared key between Rowset 0 and Rowset 1."
+          "description": "NEWID() per message — the key Rowset 1 joins on (one run can have a type 1 and a type 3 message)."
         },
         {
           "name": "EventId",
@@ -32,7 +32,7 @@
           "name": "UserId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": "PublicHasherId of the HC system user ('B6BAFD0D-5D2E-41CD-8495-811D551F01D0'). Always the same hardcoded system user."
+          "description": "HC.Hasher.PublicHasherId of the HC system user (looked up by internal id 0CDBB109-215E-4B5F-A405-F6C9FBCB18EC)."
         },
         {
           "name": "UserDisplayName",
@@ -48,15 +48,15 @@
         },
         {
           "name": "MessageTitle",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(MAX)",
           "nullable": false,
-          "description": "Notification title: 'Time to check in' (MessageType=1) or 'Time to RSVP' (MessageType=2)."
+          "description": "'Time to check in' (1), 'Time to RSVP' (2) or 'Get PackTrack ready' (3)."
         },
         {
           "name": "MessageContent",
-          "type": "NVARCHAR",
-          "nullable": false,
-          "description": "Notification body text constructed from event name and time-to-event. Human-readable string with time units (minutes/hours/days)."
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Body text built from EventName and minutes/hours/days to start. Type 3: '\"<run>\" starts in N minutes. Tap to arm auto start: …'. NULL if EventName is NULL (string concatenation)."
         },
         {
           "name": "MessageRelesabilityFlags",
@@ -74,14 +74,14 @@
           "name": "MessageType",
           "type": "INT",
           "nullable": false,
-          "description": "1 = check-in reminder (within ±11 minutes of event start), 2 = RSVP reminder (within ±3 days of event start)."
+          "description": "1 = check-in reminder, 2 = RSVP reminder, 3 = 'get PackTrack ready' (opens Live Run, arms auto start, checks in at the start). Only sent to devices on build >= 1439; older apps read an unknown type as chat."
         }
       ]
     },
     {
       "index": 1,
       "name": "Recipients",
-      "description": "One row per FCM token that should receive the push for a given event. For MessageType=1 (check-in): filtered to tokens within 100 km of the event and not already checked in. For MessageType=2 (RSVP): all token holders who have not yet RSVPd. May be empty when no qualifying recipients exist.",
+      "description": "UNION (distinct) of three branches. Type 1: kennel link with COALESCE(HEM.EventNotificationPreference, HKM.KennelNotificationPreference, 0) IN (1,3,4), device within 100 km of the run (GeoPoint, run SyncLatitude/SyncLongitude set), not checked in (AttendenceState < 20), and NOT (RSVP Yes on build >= 1439). Type 3: an HEM row with RsvpState = 3 or AttendenceState >= 20, not removed, preference COALESCE(NULLIF(HEM pref,0), HKM pref, 0) <> 2, build >= 1439, no distance fence. Type 2: preference IN (1,3,4) and no RSVP yet (RsvpState < 1), no fence. All branches: Hasher.Removed = 0, HKM.removed = 0, FcmToken NOT NULL, Device.removed = 0, Device.LastLogin within 180 days.",
       "columns": [
         {
           "name": "UserId",
@@ -92,8 +92,8 @@
         {
           "name": "FcmToken",
           "type": "NVARCHAR(500)",
-          "nullable": true,
-          "description": "HC.Device.FcmToken — the FCM registration token for this device. May be NULL (for check-in pushes, geo-filter may pass NULL-token devices if GeoPoint matches; for RSVP pushes, NULL tokens are explicitly excluded)."
+          "nullable": false,
+          "description": "HC.Device.FcmToken. Never NULL: every branch filters FcmToken IS NOT NULL."
         },
         {
           "name": "EventId",
@@ -105,16 +105,15 @@
           "name": "MessageId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": "NEWID() from #messages — links back to Rowset 0 MessageId."
+          "description": "#messages.id — matches Rowset 0 MessageId; the API matches recipients to messages on this."
         }
       ]
     }
   ],
   "sideEffects": [
-    "Stamps HC.Event.CheckInReminderSent = GETDATE() for all type-1 events returned in Rowset 0.",
-    "Stamps HC.Event.RsvpReminderSent = GETDATE() for all type-2 events returned in Rowset 0.",
-    "On stamp failure: inserts an error row into HC.ErrorLog (does not abort — rowsets have already been returned).",
-    "Stamp failures cause the reminder to be re-sent on the next timer tick (preferred over silent failure)."
+    "Creates and drops temp tables #events and #messages.",
+    "UPDATE HC.Event SET CheckInReminderSent = GETDATE() (type-1 rows) / RsvpReminderSent = GETDATE() (type-2 rows) for EVERY run collected in step 1 — including runs whose start has already passed (minutesToEvent <= 0), which get no message but are stamped so they leave the window. Fires the Event updatedAt trigger, so stamped runs re-sync.",
+    "On stamp failure: INSERT HC.ErrorLog ('nonApi_checkReminders stamp failed') and continue — the rowsets are already returned, so the next tick may send a duplicate reminder."
   ],
   "codeSmells": [
     {
@@ -124,18 +123,13 @@
     },
     {
       "severity": "medium",
-      "issue": "Check-in recipient filter can return rows with NULL FcmToken",
-      "detail": "The check-in (MessageType=1) UNION branch filters d.Latitude IS NOT NULL and uses GeoPoint.STDistance for geo-fencing but does not filter d.FcmToken IS NOT NULL. Recipients with a known location but a NULL FCM token will appear in Rowset 1. The C# caller must guard against null tokens before dispatching."
+      "issue": "SP body not wrapped in TRY/CATCH",
+      "detail": "Only the stamp UPDATE (lines 265-283) is in TRY/CATCH. A runtime error in steps 1-4 (lines 55-259: temp tables, the GEOGRAPHY distance, the recipient UNION) reaches the RunCheckInNotification timer as a raw exception with NO HC.ErrorLog row — reminders silently stop for that tick (CLAUDE.md 'TRY/CATCH is mandatory on EVERY SP')."
     },
     {
       "severity": "low",
       "issue": "Hardcoded system user UUIDs",
       "detail": "The HC system user id ('0CDBB109-215E-4B5F-A405-F6C9FBCB18EC') and PublicHasherId ('B6BAFD0D-5D2E-41CD-8495-811D551F01D0') are hardcoded literals. If these ever change in the DB, the SP breaks silently."
-    },
-    {
-      "severity": "low",
-      "issue": "No TRY/CATCH around main SELECT steps",
-      "detail": "Only Step 5 (the stamp UPDATE) is wrapped in TRY/CATCH. An unexpected error in Steps 1-4 (the #temp population or SELECT queries) will propagate as a raw SQL exception to the C# timer trigger with no structured error rowset."
     },
     {
       "severity": "low",
@@ -146,12 +140,28 @@
       "severity": "low",
       "issue": "Bare COALESCE on the notification preference (no NULLIF)",
       "detail": "COALESCE(hem.EventNotificationPreference, hkm.KennelNotificationPreference, 0) treats an event-level 0 ('no override') as the answer, so a hasher with the kennel switched on but an HEM row at 0 gets no reminder. Flagged 2026-09-25, not changed: fixing it would send MORE reminders, which is a product decision."
+    },
+    {
+      "severity": "low",
+      "issue": "Stamp CATCH logs without ErrorLog.id or userId and uses GETDATE()",
+      "detail": "Lines 278-282 rely on the id column default (DF_ErrorLog_HasherId) and write HcVersion 'HC6'; the windows and stamps use server-local GETDATE() (lines 56, 74, 268) against EventStartDateTimeGmt. Azure SQL runs in UTC so it works, but SYSUTCDATETIME() would say what it means."
+    },
+    {
+      "severity": "low",
+      "issue": "Duplicate predicate",
+      "detail": "Line 106 repeats 'evt.removed = 0' from line 105. Harmless."
+    },
+    {
+      "severity": "low",
+      "issue": "Magic build number",
+      "detail": "@minBuildPreRun = 1439 (line 49) gates MessageType 3 on TRY_CAST(Device.BuildNumber AS INT); a non-numeric BuildNumber silently counts as an old build."
     }
   ],
   "breakingChanges": [
     "HC5 accepted an @apiKey parameter and validated it against a hardcoded key. HC6 removes @apiKey entirely — the timer trigger is internal to Azure Functions.",
     "HC5 wrote a startup entry to LOG.GeneralLog. HC6 removes this noise (timer runs every minute).",
     "HC5 stamp failure caused the SP to abort with a raw error. HC6 wraps the stamp in TRY/CATCH and continues — duplicate reminders are possible on transient stamp failures.",
-    "1.1.0 (2026-09-25): no rowset change. Recipients skip deleted hashers (Hasher.Removed = 1) and removed kennel links (HasherKennelMap.removed = 1)."
+    "1.1.0 (2026-09-25): no rowset change. Recipients skip deleted hashers (Hasher.Removed = 1) and removed kennel links (HasherKennelMap.removed = 1).",
+    "1.2.0 (2026-10-03, E5.F1.S10): Rowset 0 can carry MessageType 3 'Get PackTrack ready'; Rowset 1 carries MessageId and callers must match recipients on it, not on EventId. Recipients also skip retired and 180-day-idle devices (2026-09-17)."
   ]
 }

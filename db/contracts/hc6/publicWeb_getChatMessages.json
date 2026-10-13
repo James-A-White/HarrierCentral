@@ -1,0 +1,449 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getChatMessages",
+  "version": "1.0.0",
+  "description": "One chat thread's messages for a web member (E9.F7.S15) through the app's own SPs, chosen by @kind: 'run' → HC6.hcapp_getEventMessages, 'kennel' → HC6.hcapp_getKennelMessages, 'dm' → HC6.hcapp_getDirectMessages (@apiOnlyRowsets = 0, so no read-receipt device rowset), 'room' → HC6.hcapp_getRoomMessages. The wrapper only resolves public ids (PublicEventId → Event.id, PublicKennelId → Kennel.id) and the caller's PublicHasherId (Me), emits its own envelope, then EXECs the app SP, whose rowsets follow unchanged. Auth: the wrapped SP's HC6.ValidateAppAuth — the token must be signed for the SP that @kind selects. @markRead applies to 'dm' and 'room' only; the run and kennel SPs take no such parameter (the kennel SP's full fetch turns a never-chosen kennel bell on).",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "The browser's HC.Device id (the web member session). No SQL default."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token signed for the app SP that @kind selects (hcapp_getEventMessages / hcapp_getKennelMessages / hcapp_getDirectMessages / hcapp_getRoomMessages) (the SP that validates it). No SQL default."
+    },
+    {
+      "name": "kind",
+      "type": "NVARCHAR(10)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "'run' | 'kennel' | 'room' | 'dm'. Anything else → 1230. No SQL default."
+    },
+    {
+      "name": "publicEventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.PublicEventId",
+      "description": "kind = 'run': the run."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "kind = 'kennel': the kennel."
+    },
+    {
+      "name": "roomType",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.MessageType",
+      "description": "kind = 'room': the room (HC6.ChatRoomCatalog)."
+    },
+    {
+      "name": "threadId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "HasherFriendMap.ThreadId",
+      "description": "kind = 'dm': the thread id from the chat list (E9.F1.S7)."
+    },
+    {
+      "name": "sinceSequenceCount",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Delta fetch: only messages newer than this. NULL = full fetch."
+    },
+    {
+      "name": "reactionsSince",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Watermark from the last ReactionsAsOf row; NULL = no reaction updates."
+    },
+    {
+      "name": "markRead",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "1 = mark the thread read (dm and room only). Default 0."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "NotFoundEnvelope",
+      "description": "When @me is NULL (unknown device), @kind is not run/kennel/room/dm, or the kind's id does not resolve (run: no live HC.Event for @publicEventId; kennel: no live HC.Kennel for @publicKennelId; room: @roomType NULL; dm: @threadId NULL): { success = 0, errorCode = 1230, errorType = 12, Me } then the detail at index 1; RETURN. Logged to HC.ErrorLog before returning.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "1230."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "12."
+        },
+        {
+          "name": "Me",
+          "type": "NVARCHAR(40)",
+          "nullable": true,
+          "description": "Caller's PublicHasherId (upper case) or NULL."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "After NotFoundEnvelope: errorCode 1230, errorType 12, errorTitle 'Not found', errorUserMessage 'That chat could not be found.' (no debugMessage column)."
+    },
+    {
+      "index": 0,
+      "name": "WrapperEnvelope",
+      "description": "Otherwise: the wrapper's success envelope with the caller's public id, emitted BEFORE the wrapped SP runs.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1 here."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "Always NULL."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "Always NULL."
+        },
+        {
+          "name": "Me",
+          "type": "NVARCHAR(40)",
+          "nullable": true,
+          "description": "UPPER(CAST(Hasher.PublicHasherId AS NVARCHAR(40))) of the device's hasher, so the web can mark its own messages; NULL when @deviceId matches no live device (the wrapped SP's auth then fails at index 1)."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "When the wrapped SP fails ValidateAppAuth (token not signed for the SP that @kind selects) or rejects its id (hcapp_getDirectMessages 2015 not your thread; hcapp_getRoomMessages 1944 not permitted): its error detail alone, after the success WrapperEnvelope."
+    },
+    {
+      "index": 1,
+      "name": "Messages",
+      "description": "Messages, the same shape from all four wrapped SPs (hcapp_getEventMessages / hcapp_getKennelMessages / hcapp_getDirectMessages / hcapp_getRoomMessages): Live messages of the run thread the reader may see, ORDER BY createdAt DESC. Empty when nothing is newer than @sinceSequenceCount.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "EventMessage.id uppercased via UPPER(). Returned as string, not typed UNIQUEIDENTIFIER."
+        },
+        {
+          "name": "type",
+          "type": "NVARCHAR(4)",
+          "nullable": false,
+          "description": "Literal constant 'text' for all rows."
+        },
+        {
+          "name": "text",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "EventMessage.MessageContent. NOT NULL in base table."
+        },
+        {
+          "name": "roomId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "EventMessage.PublicEventId. NOT NULL in base table."
+        },
+        {
+          "name": "createdAt",
+          "type": "BIGINT",
+          "nullable": false,
+          "description": "Unix timestamp in milliseconds computed via DATEDIFF_BIG(MILLISECOND, '1970-01-01', msg.createdAt)."
+        },
+        {
+          "name": "authorId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "Hasher.PublicHasherId uppercased via UPPER(). NOT NULL in base table."
+        },
+        {
+          "name": "authorFirstName",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Hasher.DisplayName — persisted computed column, never NULL (falls back to '<no names provided>')."
+        },
+        {
+          "name": "authorImageUrl",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Hasher.Photo. NULL when hasher has no profile photo."
+        },
+        {
+          "name": "sequenceCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "EventMessage.MessageSequenceCount — the delta watermark."
+        },
+        {
+          "name": "messageKind",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 text, 1 photo, 2 location"
+        },
+        {
+          "name": "canDelete",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 when the caller wrote it or may moderate this thread (HC6.nonApi_mayModerateChat)"
+        },
+        {
+          "name": "replyToMessageId",
+          "type": "NVARCHAR(36)",
+          "nullable": true,
+          "description": "EventMessage.ReplyToMessageId, UPPER-cased; NULL when not a reply (E9.F1.S21)."
+        },
+        {
+          "name": "replyToText",
+          "type": "NVARCHAR(200)",
+          "nullable": true,
+          "description": "First 200 characters of the quoted message; NULL when not a reply or the original was removed."
+        },
+        {
+          "name": "replyToKind",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "The quoted message's MessageKind."
+        },
+        {
+          "name": "replyToAuthor",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "The quoted message's author DisplayName."
+        },
+        {
+          "name": "replyToRemoved",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 when the quoted message exists but was removed."
+        },
+        {
+          "name": "reactions",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "EventMessage.ReactionsJson (E9.F1.S22)."
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "Thread",
+      "columns": [
+        {
+          "name": "unreadCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Live messages by the other hasher above the caller's LastSequenceCount, 0 when blocked."
+        },
+        {
+          "name": "newestSequenceCount",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "canSend",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 when both rows live and nobody blocks"
+        },
+        {
+          "name": "otherPublicHasherId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "otherDisplayName",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "otherPhoto",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "muted",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 when the caller's FriendNotificationPreference is 3 (silver bell)."
+        },
+        {
+          "name": "pinned",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "The caller's HasherFriendMap.Pinned for this thread (E9.F1.S25)."
+        },
+        {
+          "name": "otherReadSequenceCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "How far the OTHER hasher has read (their badge row's LastSequenceCount, 0 when none): the caller's messages at or below it show as read (E9.F1.S24)."
+        }
+      ],
+      "description": "kind = 'dm' only (hcapp_getDirectMessages): One row (the other hasher), computed BEFORE the mark."
+    },
+    {
+      "index": 2,
+      "name": "Badge",
+      "description": "kind = 'room' only (hcapp_getRoomMessages): One row, computed BEFORE the mark so the caller learns what it had to clear.",
+      "columns": [
+        {
+          "name": "unreadCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Live messages by others, not blocked, above the caller's LastSequenceCount for this room (0 when no badge row)."
+        },
+        {
+          "name": "newestSequenceCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "MAX(MessageSequenceCount) of live messages in the room; 0 when the room is empty."
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "RemovedMessageIds",
+      "description": "Index 2 for kind 'run' / 'kennel', index 3 for 'dm' / 'room' (after the Thread / Badge row): Every removed message in this thread (Removed = 1), so a client drops any it already drew — a delta by sequence number never sees a deletion (E9.F1.S13/S14). Find it by column name.",
+      "columns": [
+        {
+          "name": "removedId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "Id of a removed message (same case as the message ids)"
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "name": "ReactionUpdates",
+      "description": "Index 3 for kind 'run' / 'kennel', index 4 for 'dm' / 'room' (after the Thread / Badge row): ALWAYS present (empty when @reactionsSince is NULL or nothing changed): { id, reactions } for live messages at or below @sinceSequenceCount whose ReactionsUpdatedAt is after @reactionsSince (E9.F1.S22).",
+      "columns": [
+        {
+          "name": "id",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "Message id"
+        },
+        {
+          "name": "reactions",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "ReactionsJson"
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "name": "ReactionsAsOf",
+      "description": "Index 4 for kind 'run' / 'kennel', index 5 for 'dm' / 'room' (after the Thread / Badge row): One row { reactionsAsOf } — server time; pass back as @reactionsSince.",
+      "columns": [
+        {
+          "name": "reactionsAsOf",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "SYSDATETIMEOFFSET()"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "UnhandledErrorTail",
+      "description": "CATCH path: appended after whatever rowsets were already sent (the success envelope at least, so its position varies — find it by success = 0 / errorCode 1500): { success = 0, errorCode = 1500, errorType = 5 }. No StandardErrorResult follows and the error is not re-raised. The wrapped SPs log and THROW, so this row follows any failure inside them.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "1500."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "5."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "EXEC the selected hcapp_ SP — every side effect is its own: hcapp_getRoomMessages / hcapp_getDirectMessages advance the caller's HC.EventMessageBadgeCounts / HasherFriendMap read position when @markRead = 1; hcapp_getKennelMessages on a full fetch turns a never-chosen KennelNotificationPreference 0 → 1 on the caller's HasherKennelMap row.",
+    "INSERT HC.ErrorLog on the 1230 not-found path (line 44) and in the CATCH (line 68, userId NULL)."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken and @kind have no SQL default (lines 16-18). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
+    },
+    {
+      "severity": "medium",
+      "issue": "Success envelope sent before the work",
+      "detail": "Rowset 0 { success = 1 } is SELECTed before the wrapped SP runs. When the wrapped SP fails auth its StandardErrorResult arrives at index 1 after a success envelope, and when it THROWs the CATCH appends { success = 0, 1500, 5 } after the success row — so a client reading rowset 0 alone sees success on every call. The web must look for errorId / the trailing row by column name."
+    },
+    {
+      "severity": "low",
+      "issue": "Not-found log omits the dm thread id",
+      "detail": "The 1230 ErrorLog description (lines 46-47) records kind, event, kennel and room but not @threadId, so a failed 'dm' request logs four nulls."
+    },
+    {
+      "severity": "low",
+      "issue": "Id lookups before auth",
+      "detail": "Lines 33-37 resolve the device's PublicHasherId and the run/kennel ids before any token check, so a caller with only a device id can tell an existing public event or kennel id (success envelope) from a missing one (1230). Low value, but it is a probe the token would otherwise stop."
+    },
+    {
+      "severity": "low",
+      "issue": "Error logged twice",
+      "detail": "Every wrapped SP logs and THROWs; the wrapper's CATCH (lines 66-71) logs a second HC.ErrorLog row."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_getRunAllPhotos",
-  "version": "1.0.0",
-  "description": "Returns every photo for a specific event regardless of status — pending, approved at any level, private, and soft-deleted (DeletedAt IS NOT NULL rows are included). Used to power the portal photo review screen. Caller must hold authIsAdmin (0x0001), authCanManagePublicWebContent (0x0080), or authIsSuperAdmin (0x40000000) in HC.HasherKennelMap.AppAccessFlags for the specified kennel. Results are ordered newest-first by KennelPhotos.CreatedAt. New for HC6 — no HC5 equivalent.",
+  "version": "1.1.0",
+  "description": "Returns every photo for a specific event regardless of status — pending, approved at any level, private, and soft-deleted (DeletedAt IS NOT NULL rows are included) — for the portal photo review screen. Device-bound portal auth via HC6.ValidatePortalAuth; the caller must hold authIsAdmin (0x0001), authCanManagePublicWebContent (0x0080) or authIsSuperAdmin (0x40000000) in HC.HasherKennelMap.AppAccessFlags for the kennel (hard-coded mask 0x40000081, not the Permissions V2 matrix). Ordered newest-first by KennelPhotos.CreatedAt. Same row shape as HC6.hcapp_getRunAllPhotos.",
   "parameters": [
     {
       "name": "deviceId",
@@ -47,7 +47,7 @@
         },
         {
           "name": "ErrorMessage",
-          "type": "NVARCHAR(255)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
           "description": "Human-readable error description. From ValidatePortalAuth output on auth failure; literal string on validation errors; ERROR_MESSAGE() on runtime error."
         }
@@ -114,7 +114,7 @@
         },
         {
           "name": "uploaderDisplayName",
-          "type": "NVARCHAR(MAX)",
+          "type": "NVARCHAR(250)",
           "nullable": false,
           "description": "HC.Hasher.DisplayName — computed persisted column. The uploader's display name based on their NameDisplayPreference. Always non-NULL due to the COALESCE chain in the computed column definition (falls back to '<no names provided>'). Sourced from INNER JOIN HC.Hasher on KennelPhotos.UserId."
         },
@@ -143,13 +143,8 @@
   "codeSmells": [
     {
       "severity": "medium",
-      "issue": "Non-standard error envelope — not using ValidatePortalAuth StandardErrorResult",
-      "detail": "Portal SPs that call HC6.ValidatePortalAuth typically propagate the full StandardErrorResult rowset (errorId, errorType, errorTitle, errorUserMessage, debugMessage, errorProc) when auth fails. This SP returns a simplified 2-column envelope (Success=0, ErrorMessage) across all error paths, consistent with the other KennelPhotos-related portal SPs but inconsistent with the broader portal SP set."
-    },
-    {
-      "severity": "medium",
-      "issue": "EditedBlobUrl is not returned",
-      "detail": "HC.KennelPhotos has an EditedBlobUrl column (NVARCHAR(500) NULL) that stores the blob URL of a cropped/edited version of a photo. The SP returns only BlobUrl. A portal review screen that wants to display the edited version of a photo (e.g. to show what will appear in the gallery) cannot distinguish original from edited without EditedBlobUrl. Whether this is intentional is unclear — the app equivalent SP may differ."
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 109-112: CATCH returns the envelope without an HC.ErrorLog row."
     },
     {
       "severity": "low",
@@ -164,7 +159,12 @@
     {
       "severity": "low",
       "issue": "Permission comment in header misidentifies the authCanManageRuns flag",
-      "detail": "The SP header comment says 'authCanManageRuns (0x0004)' but the actual permission check in the body uses 0x40000081, which is authIsAdmin (0x0001) | authCanManagePublicWebContent (0x0080) | authIsSuperAdmin (0x40000000). The 0x0004 flag (authCanManageRuns) is not included in the actual check. The permission comment also appears verbatim in hcportal_batchUpdatePhotoStatus — likely copied and not corrected."
+      "detail": "Header lines 14-16 say 'authIsAdmin (0x0001), authCanManageRuns (0x0004), or authIsSuperAdmin' but line 77 checks 0x40000081 = authIsAdmin (0x0001) | authCanManagePublicWebContent (0x0080) | authIsSuperAdmin (0x40000000). 0x0004 is not in the mask. The in-body comment on line 71 is correct."
+    },
+    {
+      "severity": "low",
+      "issue": "Hard-coded flag mask instead of HC6.CheckKennelPermission",
+      "detail": "Line 77 gates on AppAccessFlags & 0x40000081, so mismanagement roles (Permissions V2 grantors) cannot grant photo review here even when the matrix allows it; the gate can diverge from the app and the editor."
     }
   ],
   "breakingChanges": [

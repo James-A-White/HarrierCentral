@@ -1,14 +1,14 @@
 {
   "schema": "HC6",
   "name": "hcportal_addSong",
-  "version": "1.0.0",
-  "description": "Creates a new song record in HC.Song and immediately links it to the requesting kennel via HC.KennelSongMap. Both inserts are wrapped in a single transaction. The authenticated hasher is recorded as AddedBy_UserId; the resolved internal kennelId as AddedBy_KennelId. ImageUrl, AudioUrl, AutoAddToKennel, and Rank are not set at creation time (ImageUrl/AudioUrl = NULL, AutoAddToKennel = 0, Rank = 0). Caller must hold authIsSuperAdmin (0x40000000) or authCanManageSongs (0x00000040) for the requesting kennel. Service accounts (callerType 1 or 2) are explicitly rejected. This is a new SP with no HC5 equivalent.",
+  "version": "1.1.0",
+  "description": "Creates a new song record in HC.Song and immediately links it to the requesting kennel via HC.KennelSongMap. Both inserts are wrapped in a single transaction. The authenticated hasher is recorded as AddedBy_UserId; the resolved internal kennelId as AddedBy_KennelId. ImageUrl, AudioUrl, AutoAddToKennel, and Rank are not set at creation time (ImageUrl/AudioUrl = NULL, AutoAddToKennel = 0, Rank = 0). Caller must hold authIsSuperAdmin (0x40000000) or authCanManageSongs (0x00000040) for the requesting kennel. Service accounts (callerType 1 or 2) are explicitly rejected. Auth: HC6.ValidatePortalAuth with @publicKennelId as callerParamString. This is a new SP with no HC5 equivalent.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": "Device.id",
+      "mapsToColumn": null,
       "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
@@ -86,16 +86,26 @@
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error. Ordering: publicKennelId null check → auth → songName blank check → bawdyRating range check → kennel not found.",
+      "description": "Returned on any validation, auth, permission or runtime error. Short-circuits on first error. Order: publicKennelId NULL → auth → songName blank → bawdyRating range → service account (callerType != 0) → kennel not found → AppAccessFlags permission → CATCH (ERROR_MESSAGE()).",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Human-readable error message"
+        }
       ]
     },
     {
       "index": 0,
       "name": "SuccessResult",
-      "description": "Returned after the song has been inserted and linked to the kennel.",
+      "description": "Returned after COMMIT when the song has been inserted and linked. Business data in rowset 0 with no Success column — callers tell the two shapes apart by column name.",
       "columns": [
         {
           "name": "resultCode",
@@ -105,7 +115,7 @@
         },
         {
           "name": "result",
-          "type": "NVARCHAR",
+          "type": "VARCHAR(7)",
           "nullable": false,
           "description": "Always 'Success'"
         },
@@ -120,7 +130,25 @@
   ],
   "sideEffects": [
     "INSERT into HC.Song with the supplied fields; AddedBy_KennelId = resolved @kennelId, AddedBy_UserId = authenticated @hasherId, ImageUrl = NULL, AudioUrl = NULL, AutoAddToKennel = 0, Rank = 0, Removed = 0",
-    "INSERT into HC.KennelSongMap linking the new song to the requesting kennel (KennelId = resolved @kennelId, Removed = 0)"
+    "INSERT into HC.KennelSongMap linking the new song to the requesting kennel (KennelId = resolved @kennelId, Removed = 0)",
+    "HC.Song / HC.KennelSongMap updatedAt triggers fire, so the song syncs to the kennel's phones"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH does not log to HC.ErrorLog",
+      "detail": "Lines 175-178 roll back and return the envelope without writing HC.ErrorLog."
+    },
+    {
+      "severity": "medium",
+      "issue": "Permission read straight from AppAccessFlags",
+      "detail": "Lines 109-118 test HasherKennelMap.AppAccessFlags & 0x40000040 directly instead of HC6.CheckKennelPermission, so a Mismanagement role that grants song management (the other independent grantor on HasherKennelMap) is ignored, and the gate can drift from the permission matrix."
+    },
+    {
+      "severity": "low",
+      "issue": "NVARCHAR(n) parameters receive user text",
+      "detail": "@songName NVARCHAR(120) and @tuneOf NVARCHAR(500) (lines 7-8) silently truncate longer input; the columns are the same width, so declare NVARCHAR(MAX) and check LEN()."
+    }
   ],
   "permissionBits": {
     "column": "HC.HasherKennelMap.AppAccessFlags",
@@ -131,7 +159,6 @@
     },
     "note": "Check is against the kennel identified by @publicKennelId. Service accounts (callerType 1 or 2) are rejected unconditionally — they may not add songs."
   },
-  "codeSmells": [],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

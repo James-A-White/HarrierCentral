@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_getKennelRequests",
-  "version": "1.1.0",
-  "description": "Kennel request review queue (E12.F1.S5): requests of one RequestStatus, newest first, with location names, SimilarKennels and ExistingHashName warnings. Requires HC.PlatformAdmin with CanEditKennel = 1 (E12.F1).",
+  "version": "1.2.0",
+  "description": "The kennel request review queue (E12.F1.S5/S10): requests in EXT.OfficeForms_KennelImport with one RequestStatus, newest first (open statuses 0/1 up to 1000 rows, closed statuses the newest 200), with location ids resolved to names, the reviewer's hash name, the approved kennel's slug, and two warnings: ExistingHasherId/ExistingHashName (a live account already holding the requester's email, which approval makes the admin) and SimilarKennels (open requests only: up to five live kennels matching short name, name or website, same country first). A second rowset counts requests per status for the filter chips. WRITES before reading (2026-10-11): every open request (status 0/1) whose KennelId points at a live kennel is closed as approved (RequestStatus 2, removed 1, ConfirmCode NULL, ReviewedAt now, ReviewNote appended). Auth: HC6.ValidatePortalAuth with no context identifier; gate: a live HC.PlatformAdmin row with CanEditKennel = 1. EXT.OfficeForms_KennelImport has no file in db/schema/tables; types for later columns come from db/hc6/portal/archive/migration_kennel_request_review_columns.sql, db/hc6/public-web/archive/migration_kennel_request_*.sql and db/hc6/portal/archive/2026-10-10_kennel_from_website_columns.sql; the original HC3 columns have no definition in the repo and are typed loosely.",
   "parameters": [
     {
       "name": "deviceId",
@@ -23,332 +23,371 @@
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": "OfficeForms_KennelImport.RequestStatus",
-      "description": "0 awaiting email, 1 new (default), 2 approved, 3 rejected, 4 spam, 5 duplicate. Closed statuses return the newest 200."
+      "description": "0 awaiting email · 1 new · 2 approved · 3 rejected · 4 spam · 5 duplicate. Default 1."
     }
   ],
   "rowsets": [
     {
       "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned alone on auth failure or 'Not authorised: Platform Admin with CanEditKennel required'. Runtime errors are logged to HC.ErrorLog and re-thrown (raw error to the API).",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(255)",
+          "nullable": false,
+          "description": "Error text"
+        }
+      ]
+    },
+    {
+      "index": 0,
       "name": "Requests",
-      "description": "One row per request (or the Success=0 refusal).",
+      "description": "On success: one row per request with RequestStatus = @status, ORDER BY SubmittedOn DESC; TOP 1000 for statuses 0/1, TOP 200 otherwise. Columns in SELECT order.",
       "columns": [
         {
           "name": "KennelImportId",
-          "type": "see table",
-          "nullable": true,
-          "description": ""
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Request id"
         },
         {
           "name": "RequestStatus",
-          "type": "see table",
-          "nullable": true,
-          "description": ""
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0..5 as @status (migration_kennel_request_review_columns.sql)"
         },
         {
           "name": "SubmittedOn",
-          "type": "see table",
+          "type": "DATETIME",
           "nullable": true,
-          "description": ""
+          "description": "When submitted (original HC3 column; type inferred from GETDATE() comparisons in publicWeb_submitKennelRequest)"
         },
         {
           "name": "ConfirmedAt",
-          "type": "see table",
+          "type": "DATETIMEOFFSET(7)",
           "nullable": true,
-          "description": ""
+          "description": "When the requester confirmed their email"
         },
         {
           "name": "FirstName",
-          "type": "see table",
+          "type": "NVARCHAR",
           "nullable": true,
-          "description": ""
+          "description": "Original HC3 column; width not in repo"
         },
         {
           "name": "LastName",
-          "type": "see table",
+          "type": "NVARCHAR",
           "nullable": true,
-          "description": ""
+          "description": "Original HC3 column; width not in repo"
         },
         {
           "name": "HashName",
-          "type": "see table",
+          "type": "NVARCHAR",
           "nullable": true,
-          "description": ""
+          "description": "Original HC3 column; width not in repo"
         },
         {
           "name": "EmailAddress",
-          "type": "see table",
+          "type": "NVARCHAR",
           "nullable": true,
-          "description": ""
+          "description": "Requester email; original HC3 column"
         },
         {
           "name": "KennelName",
-          "type": "see table",
+          "type": "NVARCHAR",
           "nullable": true,
-          "description": ""
+          "description": "Original HC3 column"
         },
         {
           "name": "KennelShortName",
-          "type": "see table",
+          "type": "NVARCHAR",
           "nullable": true,
-          "description": ""
+          "description": "Original HC3 column"
         },
         {
           "name": "KennelDescription",
-          "type": "see table",
+          "type": "NVARCHAR",
           "nullable": true,
-          "description": ""
+          "description": "Original HC3 column"
         },
         {
           "name": "KennelUrl",
-          "type": "see table",
+          "type": "NVARCHAR",
           "nullable": true,
-          "description": ""
+          "description": "Original HC3 column"
         },
         {
           "name": "KennelFacebookUrl",
-          "type": "see table",
+          "type": "NVARCHAR",
           "nullable": true,
-          "description": ""
+          "description": "Original HC3 column (a social link now; the Facebook integration is defunct)"
         },
         {
           "name": "Country",
-          "type": "see table",
+          "type": "NVARCHAR",
           "nullable": true,
-          "description": ""
+          "description": "Free-text country as typed"
         },
         {
           "name": "Region",
-          "type": "see table",
+          "type": "NVARCHAR",
           "nullable": true,
-          "description": ""
+          "description": "Free-text region as typed"
         },
         {
           "name": "City",
-          "type": "see table",
+          "type": "NVARCHAR",
           "nullable": true,
-          "description": ""
+          "description": "Free-text city as typed"
         },
         {
           "name": "CountryId",
-          "type": "see table",
+          "type": "UNIQUEIDENTIFIER",
           "nullable": true,
-          "description": ""
+          "description": "HC.Country.id chosen"
         },
         {
           "name": "RegionId",
-          "type": "see table",
+          "type": "UNIQUEIDENTIFIER",
           "nullable": true,
-          "description": ""
+          "description": "HC.Region.id chosen"
         },
         {
           "name": "CityId",
-          "type": "see table",
+          "type": "UNIQUEIDENTIFIER",
           "nullable": true,
-          "description": ""
+          "description": "HC.City.id chosen"
         },
         {
           "name": "CountryName",
-          "type": "see table",
+          "type": "NVARCHAR(250)",
           "nullable": true,
-          "description": ""
+          "description": "HC.Country.CountryName (LEFT JOIN)"
         },
         {
           "name": "RegionName",
-          "type": "see table",
+          "type": "NVARCHAR(100)",
           "nullable": true,
-          "description": ""
+          "description": "HC.Region.RegionName (LEFT JOIN)"
         },
         {
           "name": "CityName",
-          "type": "see table",
+          "type": "NVARCHAR(100)",
           "nullable": true,
-          "description": ""
+          "description": "HC.City.CityName (LEFT JOIN)"
         },
         {
           "name": "HashCash",
-          "type": "see table",
+          "type": "NVARCHAR(50)",
           "nullable": true,
-          "description": ""
+          "description": "Members' run fee as typed (submit caps at 50)"
         },
         {
           "name": "NonMemberPrice",
           "type": "NVARCHAR(50)",
           "nullable": true,
-          "description": "Visitors' run fee."
+          "description": "Visitors' run fee as typed"
         },
         {
           "name": "MembershipFee",
           "type": "NVARCHAR(50)",
           "nullable": true,
-          "description": ""
+          "description": "Membership fee as typed"
         },
         {
           "name": "MembershipRenewalMode",
           "type": "SMALLINT",
           "nullable": true,
-          "description": "NULL = no membership"
+          "description": "1..3 (migration_kennel_request_membership.sql)"
         },
         {
           "name": "NumberOfRunsPerMonth",
-          "type": "see table",
+          "type": "NVARCHAR(50)",
           "nullable": true,
-          "description": ""
+          "description": "As typed"
         },
         {
           "name": "NumberOfHashersPerRun",
-          "type": "see table",
+          "type": "NVARCHAR(50)",
           "nullable": true,
-          "description": ""
+          "description": "As typed"
         },
         {
           "name": "NextRunNumber",
-          "type": "see table",
+          "type": "NVARCHAR(250)",
           "nullable": true,
-          "description": ""
+          "description": "ki.nextRunNumber, as typed"
         },
         {
           "name": "HowDidYouLearnAboutHc",
-          "type": "see table",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
-          "description": ""
+          "description": "As typed"
         },
         {
           "name": "Comments",
-          "type": "see table",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
-          "description": ""
+          "description": "ki.comments"
         },
         {
           "name": "TermsAnswers",
           "type": "NVARCHAR(1000)",
           "nullable": true,
-          "description": "The three opt-in answers, '1: … | 2: … | 3: …' (hashruns.org form only)."
+          "description": "Answers to the terms questions (migration_kennel_request_terms.sql)"
         },
         {
           "name": "SubmitIp",
-          "type": "see table",
+          "type": "NVARCHAR(64)",
           "nullable": true,
-          "description": ""
+          "description": "Submitter IP"
         },
         {
           "name": "ReviewNote",
-          "type": "see table",
+          "type": "NVARCHAR(1000)",
           "nullable": true,
-          "description": ""
+          "description": "Reviewer note; auto-close appends to it"
         },
         {
           "name": "ReviewedAt",
-          "type": "see table",
+          "type": "DATETIMEOFFSET(7)",
           "nullable": true,
-          "description": ""
+          "description": "When reviewed"
         },
         {
           "name": "ReviewedByHashName",
-          "type": "see table",
+          "type": "NVARCHAR(250)",
           "nullable": true,
-          "description": ""
+          "description": "HC.Hasher.HashName of ki.ReviewedBy"
         },
         {
           "name": "KennelId",
-          "type": "see table",
+          "type": "UNIQUEIDENTIFIER",
           "nullable": true,
-          "description": ""
-        },
-        {
-          "name": "ApprovedKennelSlug",
-          "type": "see table",
-          "nullable": true,
-          "description": ""
-        },
-        {
-          "name": "ExistingHasherId",
-          "type": "see table",
-          "nullable": true,
-          "description": ""
-        },
-        {
-          "name": "ExistingHashName",
-          "type": "see table",
-          "nullable": true,
-          "description": ""
-        },
-        {
-          "name": "SimilarKennels",
-          "type": "see table",
-          "nullable": true,
-          "description": ""
+          "description": "The kennel created/linked on approval"
         },
         {
           "name": "LogoUrl",
           "type": "NVARCHAR(1000)",
           "nullable": true,
-          "description": ""
+          "description": "2026-10-10_kennel_from_website_columns.sql"
         },
         {
           "name": "FoundedOn",
           "type": "NVARCHAR(10)",
           "nullable": true,
-          "description": "'yyyy' | 'yyyy-mm' | 'yyyy-mm-dd'"
+          "description": "2026-10-10_kennel_from_website_columns.sql"
         },
         {
           "name": "RunDayOfWeek",
           "type": "SMALLINT",
           "nullable": true,
-          "description": "1 Monday … 7 Sunday"
+          "description": "2026-10-10_kennel_from_website_columns.sql"
         },
         {
           "name": "RunStartTime",
           "type": "VARCHAR(5)",
           "nullable": true,
-          "description": "'HH:mm'"
+          "description": "ki.RunStartTime (TIME(0)) as 'HH:mm'"
         },
         {
           "name": "RunsPageUrl",
           "type": "NVARCHAR(1000)",
           "nullable": true,
-          "description": ""
+          "description": "2026-10-10_kennel_from_website_columns.sql"
         },
         {
           "name": "SocialLinksJson",
           "type": "NVARCHAR(MAX)",
           "nullable": true,
-          "description": "E12.F4.S4 array"
+          "description": "2026-10-10_kennel_from_website_columns.sql"
         },
         {
           "name": "SourceJson",
           "type": "NVARCHAR(MAX)",
           "nullable": true,
-          "description": "Where each field came from"
+          "description": "2026-10-10_kennel_from_website_columns.sql"
         },
         {
           "name": "RequestSource",
           "type": "NVARCHAR(20)",
           "nullable": true,
-          "description": "'website' when made by New kennel from a website"
+          "description": "'website' when made by New kennel from a website; NULL for the public form"
+        },
+        {
+          "name": "ApprovedKennelSlug",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "HC.Kennel.KennelUniqueShortName of KennelId"
+        },
+        {
+          "name": "ExistingHasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "A live (Removed = 0) HC.Hasher with the same Email (TOP 1, unordered)"
+        },
+        {
+          "name": "ExistingHashName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "That hasher's HashName"
+        },
+        {
+          "name": "SimilarKennels",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Up to five 'Name (slug)' labels joined by ' · '; NULL for closed statuses or no match"
         }
       ]
     },
     {
       "index": 1,
       "name": "StatusCounts",
+      "description": "On success: one row per RequestStatus present in the table (all rows, including removed ones), ordered by status.",
       "columns": [
         {
           "name": "RequestStatus",
           "type": "SMALLINT",
           "nullable": false,
-          "description": ""
+          "description": "Status"
         },
         {
           "name": "RequestCount",
           "type": "INT",
           "nullable": false,
-          "description": ""
+          "description": "COUNT(*)"
         }
       ]
     }
   ],
-  "sideEffects": [],
-  "codeSmells": [],
+  "sideEffects": [
+    "UPDATE EXT.OfficeForms_KennelImport: open requests (RequestStatus 0/1) whose KennelId is a live HC.Kennel are set RequestStatus 2, removed 1, ConfirmCode NULL, ReviewedAt SYSDATETIMEOFFSET(), ReviewNote appended 'Closed automatically: the kennel already exists (<name>).', updatedAt GETDATE()",
+    "CATCH: INSERT HC.ErrorLog then THROW"
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "A read endpoint writes",
+      "detail": "Lines 69-79: opening the queue runs an UPDATE (auto-close of already-created kennels) outside any explicit transaction. Deliberate (2026-10-11) and idempotent, but a 'get' that mutates is surprising and runs on every page load."
+    },
+    {
+      "severity": "low",
+      "issue": "ExistingHasher match is unordered",
+      "detail": "Lines 137-141: TOP 1 with no ORDER BY when several live accounts share an email; which one is reported is arbitrary."
+    },
+    {
+      "severity": "low",
+      "issue": "Mixed timestamp types on one row",
+      "detail": "Line 76 stamps updatedAt with GETDATE() (server local) while ReviewedAt gets SYSDATETIMEOFFSET()."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

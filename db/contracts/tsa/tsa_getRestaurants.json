@@ -1,0 +1,96 @@
+{
+  "schema": "TSA",
+  "name": "tsa_getRestaurants",
+  "version": "1.0.0",
+  "description": "Returns all active restaurants (isActive = 1) ordered by name for the browse page. Public data; called by GET. Does not return phone or portalPassword. Called by the TSA Eats Next.js app (tsa-eats/lib/api.ts) through api/Endpoints/TsaApi.cs, which maps queryType 'getRestaurants' to [TSA].[tsa_getRestaurants]. There is no Harrier Central auth: POST requires the shared X-Api-Key (TsaApiKey); GET requires nothing, and the shim does not restrict which procedure a GET may name. The shim turns any one-row rowset with Success = 0 into HTTP 400 {success:false, errorMessage}, and an empty first rowset into HTTP 404.",
+  "parameters": [],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Restaurants",
+      "description": "Zero or more rows ordered by name.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Restaurant id."
+        },
+        {
+          "name": "name",
+          "type": "NVARCHAR(200)",
+          "nullable": false,
+          "description": "Name."
+        },
+        {
+          "name": "address",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Address."
+        },
+        {
+          "name": "latitude",
+          "type": "DECIMAL(9,6)",
+          "nullable": true,
+          "description": "Latitude."
+        },
+        {
+          "name": "longitude",
+          "type": "DECIMAL(9,6)",
+          "nullable": true,
+          "description": "Longitude."
+        },
+        {
+          "name": "cuisineType",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "Cuisine."
+        },
+        {
+          "name": "serviceTypes",
+          "type": "NVARCHAR(200)",
+          "nullable": true,
+          "description": "Comma-separated: pickup,delivery,dine-in,food-truck."
+        },
+        {
+          "name": "description",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Description."
+        },
+        {
+          "name": "imageUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Image URL."
+        },
+        {
+          "name": "dailyQuota",
+          "type": "INT",
+          "nullable": false,
+          "description": "Per-day quota (not enforced anywhere)."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "SP body not wrapped in TRY/CATCH",
+      "detail": "Read procedure with no TRY/CATCH: any runtime error (timeout, deadlock) becomes an unlogged raw 500 from the shim."
+    },
+    {
+      "severity": "low",
+      "issue": "Comma-delimited list column",
+      "detail": "serviceTypes is comma-separated (TSA.Restaurant table header); CLAUDE.md asks for '|'."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

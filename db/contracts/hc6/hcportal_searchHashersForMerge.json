@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_searchHashersForMerge",
-  "version": "1.0.0",
-  "description": "Merge accounts search (E12.F6.S3): live accounts whose hash name, first name, last name or 'First Last' matches a term (whole, case- and space-insensitive), or whose email / hasher id / PublicHasherId is a term. Up to 20 terms, 200 rows. Requires HC.PlatformAdmin.CanEditKennel.",
+  "version": "1.1.0",
+  "description": "Merge accounts search (E12.F6.S3): live accounts (Removed = 0) whose trimmed hash name, first name, last name or 'First Last' equals a term (case-insensitive by collation), or whose email / hasher id / PublicHasherId is a term. At most 20 terms (each cut to 250 characters) and 200 rows, ordered by hash name then most recent app use. Each row carries what tells two records of one person apart. Auth: HC6.ValidatePortalAuth; caller must hold a live HC.PlatformAdmin row with CanEditKennel = 1.",
   "parameters": [
     {
       "name": "deviceId",
@@ -21,121 +21,150 @@
     {
       "name": "searchTerms",
       "type": "NVARCHAR(MAX)",
-      "nullable": false,
-      "mapsToColumn": "Hasher.HashName",
-      "description": "'|'-delimited hash names / first or last names / 'First Last' / emails / ids (the portal converts the admin's commas). Names match whole; added first/last/full-name matching 2026-09-30."
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "'|'-delimited hash names / first or last names / 'First Last' / emails / ids (the portal converts the admin's commas). NULL or only blanks returns a refusal."
     }
   ],
   "rowsets": [
     {
       "index": 0,
+      "name": "Refusal",
+      "description": "{ Success = 0, ErrorMessage } on auth failure, missing CanEditKennel, or no usable term. No other rowset follows.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "0"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(255)",
+          "nullable": false,
+          "description": "Why"
+        }
+      ]
+    },
+    {
+      "index": 0,
       "name": "Accounts",
-      "description": "One row per matching account, or { Success = 0, ErrorMessage }. RecentRuns = last three attended: 'KENNEL yyyy-mm-dd (City)' joined by ' · '. LastAppUse = newest HC.Device.LastLogin, else Hasher.LastLoginDateTime.",
+      "description": "On success: one row per matching account (no envelope), at most 200. A runtime error is logged to HC.ErrorLog and re-thrown.",
       "columns": [
         {
           "name": "HasherId",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.Hasher.id"
         },
         {
           "name": "HashName",
-          "type": "see SP",
+          "type": "NVARCHAR(250)",
           "nullable": true,
           "description": ""
         },
         {
           "name": "FirstName",
-          "type": "see SP",
+          "type": "NVARCHAR(250)",
           "nullable": true,
           "description": ""
         },
         {
           "name": "LastName",
-          "type": "see SP",
+          "type": "NVARCHAR(250)",
           "nullable": true,
           "description": ""
         },
         {
           "name": "Email",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "HC.Hasher.Email (may be generated)"
         },
         {
           "name": "MatchedOn",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "The terms this account matched, ', '-joined"
         },
         {
           "name": "HomeKennel",
-          "type": "see SP",
+          "type": "NVARCHAR(25)",
           "nullable": true,
-          "description": ""
+          "description": "Home kennel short name (LEFT JOIN)"
         },
         {
           "name": "CreatedAt",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "HC.Hasher.createdAt"
         },
         {
           "name": "LastAppUse",
-          "type": "see SP",
+          "type": "DATETIMEOFFSET(7)",
           "nullable": true,
-          "description": ""
+          "description": "Newest HC.Device.LastLogin, else Hasher.LastLoginDateTime"
         },
         {
           "name": "SignedInDevices",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "INT",
+          "nullable": false,
+          "description": "Devices with SignedOutAt NULL and removed = 0"
         },
         {
           "name": "KennelsFollowed",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "INT",
+          "nullable": false,
+          "description": "Live HasherKennelMap rows with Following = 1"
         },
         {
           "name": "KennelsFollowedList",
-          "type": "see SP",
+          "type": "NVARCHAR(MAX)",
           "nullable": true,
-          "description": ""
+          "description": "Up to 8 followed kennels' short names, alphabetical, ', '-joined"
         },
         {
           "name": "RunsAttended",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "INT",
+          "nullable": false,
+          "description": "Live run rows with AttendenceState >= 20"
         },
         {
           "name": "Payments",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "INT",
+          "nullable": false,
+          "description": "Uncancelled HC.Payment rows"
         },
         {
           "name": "RecentRuns",
-          "type": "see SP",
+          "type": "NVARCHAR(MAX)",
           "nullable": true,
-          "description": ""
+          "description": "Last three attended runs: 'KENNEL yyyy-mm-dd (City or venue)' joined by ' · '"
         },
         {
           "name": "IsPlatformAdmin",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 when the account has a live HC.PlatformAdmin row"
         }
       ]
     }
   ],
-  "sideEffects": [],
-  "codeSmells": [],
+  "sideEffects": [
+    "On a runtime error: INSERT HC.ErrorLog, then THROW"
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Non-sargable name match over HC.Hasher",
+      "detail": "Lines 74-82 compare TRIM(HashName), TRIM(FirstName), TRIM(LastName) and a concatenated full name for each term, which forces a scan of every live hasher per term; acceptable for an admin tool capped at 20 terms, but it will grow with the table."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",
-    "Never change a parameter type"
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
   ]
 }

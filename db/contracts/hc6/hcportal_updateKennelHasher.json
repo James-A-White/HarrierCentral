@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_updateKennelHasher",
-  "version": "1.1.0",
-  "description": "Updates a hasher's profile and kennel-specific settings for a given kennel. Allows editing of personal details (name, email, hash name), discount settings, membership status, notification preferences, historical run counts, and historical count estimates. The SP determines which fields to update based on which parameters are non-NULL. All writes are wrapped in a single transaction. 2026-09-23: personal details (@firstName/@lastName/@hashName/@eMail) are refused with Success=0 when the target has signed in (HC.Hasher.LastLoginDateTime set, or any HC.Device row) unless the caller is the target or SuperAdmin; and refused for a never-signed-in target whose HomeKennelId is not the @publicKennelId kennel. @eMail = '<hidden>' (the portal's non-member placeholder) is ignored. 2026-09-24: a non-NULL @eMail already held by another HC.Hasher row (IX_HasherUniqueEmail) is refused before the transaction with Success=0 and 'The email <x> already belongs to <DisplayName>…' — the owner is named only when they hold a HasherKennelMap row in @kennelId, otherwise 'another hasher outside this kennel'. Previously the unique index threw from the CATCH.",
+  "version": "1.2.0",
+  "description": "Updates a hasher's profile and kennel-specific settings for a given kennel. Allows editing of personal details (name, email, hash name), discount settings, membership status, notification preferences, historical run counts, and historical count estimates. The SP determines which fields to update based on which parameters are non-NULL. All writes are wrapped in a single transaction. 2026-09-23: personal details (@firstName/@lastName/@hashName/@eMail) are refused with Success=0 when the target has signed in (HC.Hasher.LastLoginDateTime set, or any HC.Device row) unless the caller is the target or SuperAdmin; and refused for a never-signed-in target whose HomeKennelId is not the @publicKennelId kennel. @eMail = '<hidden>' (the portal's non-member placeholder) is ignored. 2026-09-24: a non-NULL @eMail already held by another HC.Hasher row (IX_HasherUniqueEmail) is refused before the transaction with Success=0 and 'The email <x> already belongs to <DisplayName>…' — the owner is named only when they hold a HasherKennelMap row in @kennelId, otherwise 'another hasher outside this kennel'. Previously the unique index threw from the CATCH. Auth: HC6.ValidatePortalAuth with @hasherBeingEditedPublicId in the token param string; a regular user (callerType 0) needs AppAccessFlags & 0x40000012 (canManageKennel 0x02 | canManageMembers 0x10 | SuperAdmin) on the kennel — a hard-coded mask, not the Permissions V2 matrix; service accounts skip the permission and ownership checks.",
   "parameters": [
     {
       "name": "deviceId",
@@ -51,7 +51,7 @@
       "type": "NVARCHAR(250)",
       "nullable": true,
       "mapsToColumn": "Hasher.Email",
-      "description": "User's email address. If non-NULL, updates Hasher.Email."
+      "description": "New email. '<hidden>' (the portal's placeholder for a non-member) is ignored. Refused when another HC.Hasher already holds it; a changed address resets the email status."
     },
     {
       "name": "hashName",
@@ -64,29 +64,33 @@
       "name": "isMember",
       "type": "NVARCHAR(50)",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "String value controlling membership status. If 'yes' (case-insensitive), sets HasherKennelMap.MembershipExpirationDate to the sentinel date '2999-12-31' (never expires). Otherwise sets it to yesterday. Evaluated together with @status in a single IF block."
+      "mapsToColumn": "HasherKennelMap.MembershipExpirationDate",
+      "description": "'yes' sets MembershipExpirationDate to 2999-12-31 (never expires), anything else to yesterday; also sets Following = 1.",
+      "typeMismatch": "NVARCHAR(50) text code for a SMALLINT/INT/DATETIMEOFFSET column (TODO in the SP: proper types when the portal is updated)."
     },
     {
       "name": "status",
       "type": "NVARCHAR(50)",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "String value controlling membership status. If 'member' (case-insensitive), sets HasherKennelMap.MembershipExpirationDate to the sentinel date '2999-12-31' (never expires). Otherwise sets it to yesterday. Evaluated together with @isMember in a single IF block."
+      "mapsToColumn": "HasherKennelMap.MembershipExpirationDate",
+      "description": "'member' behaves like @isMember = 'yes'; any other non-NULL value ends membership (yesterday).",
+      "typeMismatch": "NVARCHAR(50) text code for a SMALLINT/INT/DATETIMEOFFSET column (TODO in the SP: proper types when the portal is updated)."
     },
     {
       "name": "emailAlerts",
       "type": "NVARCHAR(50)",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "String value ('on', 'off', 'auto') to set email alert preference. Maps to HasherKennelMap.KennelEmailAlertPreference: 'on'=1, 'off'=2, 'auto'=0."
+      "mapsToColumn": "HasherKennelMap.KennelEmailAlertPreference",
+      "description": "'on' 1, 'off' 2, 'auto' 0; anything else leaves it.",
+      "typeMismatch": "NVARCHAR(50) text code for a SMALLINT/INT/DATETIMEOFFSET column (TODO in the SP: proper types when the portal is updated)."
     },
     {
       "name": "notifications",
       "type": "NVARCHAR(50)",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "String value to set kennel-level push notification preference. Maps to HasherKennelMap.KennelNotificationPreference (case-insensitive): 'on'=1, 'off'=2, 'silver bell'=3 (silent/in-app only), '6 hrs before'=4 (push only within the 6-hour window before the run), 'auto'=0. Unrecognised values leave the existing preference unchanged."
+      "mapsToColumn": "HasherKennelMap.KennelNotificationPreference",
+      "description": "'on' 1, 'off' 2, 'silver bell' 3, '6 hrs before' 4, 'auto' 0; anything else leaves it.",
+      "typeMismatch": "NVARCHAR(50) text code for a SMALLINT/INT/DATETIMEOFFSET column (TODO in the SP: proper types when the portal is updated)."
     },
     {
       "name": "discountPercent",
@@ -113,29 +117,32 @@
       "name": "historicTotalRuns",
       "type": "NVARCHAR(50)",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "String representation of historical total run count. If non-NULL and numeric (via ISNUMERIC), updates HasherKennelMap.HistoricalTotalRunCount, calls HC.nonApi_updateRunCountsByUser, and returns HistoricalRunCountUpdate rowset."
+      "mapsToColumn": "HasherKennelMap.HistoricalTotalRunCount",
+      "description": "Written when ISNUMERIC; then run counts are recalculated and a HistoricalCounts rowset is returned.",
+      "typeMismatch": "NVARCHAR(50) text code for a SMALLINT/INT/DATETIMEOFFSET column (TODO in the SP: proper types when the portal is updated)."
     },
     {
       "name": "historicHaring",
       "type": "NVARCHAR(50)",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "String representation of historical haring count. If non-NULL and numeric (via ISNUMERIC), updates HasherKennelMap.HistoricalHaringCount, calls HC.nonApi_updateRunCountsByUser, and returns HistoricalRunCountUpdate rowset."
+      "mapsToColumn": "HasherKennelMap.HistoricalHaringCount",
+      "description": "Written when ISNUMERIC; then run counts are recalculated and a HistoricalCounts rowset is returned.",
+      "typeMismatch": "NVARCHAR(50) text code for a SMALLINT/INT/DATETIMEOFFSET column (TODO in the SP: proper types when the portal is updated)."
     },
     {
       "name": "historicCountsAreEstimates",
       "type": "NVARCHAR(50)",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "String value ('yes' or 'no') indicating if historical counts are estimates. Maps to HasherKennelMap.HistoricalCountIsEstimate: 'yes'=1, 'no'=0."
+      "mapsToColumn": "HasherKennelMap.HistoricalCountIsEstimate",
+      "description": "'yes' 1, 'no' 0; anything else leaves it.",
+      "typeMismatch": "NVARCHAR(50) text code for a SMALLINT/INT/DATETIMEOFFSET column (TODO in the SP: proper types when the portal is updated)."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "description": "Returned on auth failure, missing permission, NULL/unknown hasher or kennel, the personal-details ownership refusals, an email already in use, or from the CATCH block (ERROR_MESSAGE()). On success there is NO envelope: the SP returns nothing unless a historical count was written.",
       "columns": [
         {
           "name": "Success",
@@ -145,7 +152,7 @@
         },
         {
           "name": "ErrorMessage",
-          "type": "NVARCHAR(255)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
           "description": "Human-readable error message"
         }
@@ -154,7 +161,7 @@
     {
       "index": 0,
       "name": "HistoricalRunCountUpdate",
-      "description": "Returned when @historicTotalRuns is successfully updated. Contains updated run count values from HasherKennelMap. Not returned if @historicTotalRuns is NULL or non-numeric.",
+      "description": "Returned when @historicTotalRuns is numeric and written (after nonApi_updateRunCountsByUser). Comes first when both counts are given.",
       "columns": [
         {
           "name": "hkmId",
@@ -190,20 +197,14 @@
           "name": "hasherBeingEditedId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": "Public hasher ID of the user being edited (echo of @hasherBeingEditedPublicId parameter)"
-        },
-        {
-          "name": "publicHasherId",
-          "type": "UNIQUEIDENTIFIER",
-          "nullable": false,
-          "description": "Public hasher ID of the user performing the update (echo of @publicHasherId parameter)"
+          "description": "Echo of @hasherBeingEditedPublicId (the PUBLIC id, despite the name)"
         }
       ]
     },
     {
-      "index": 0,
+      "index": 1,
       "name": "HistoricalHaringUpdate",
-      "description": "Returned when @historicHaring is successfully updated. Contains updated run count values from HasherKennelMap. Not returned if @historicHaring is NULL or non-numeric. HC6 re-enabled HC.nonApi_updateRunCountsByUser for haring updates (was commented out in HC5).",
+      "description": "Returned when @historicHaring is numeric and written (after nonApi_updateRunCountsByUser). Index 0 when it is the only count given, index 1 when @historicTotalRuns was also given.",
       "columns": [
         {
           "name": "hkmId",
@@ -239,27 +240,18 @@
           "name": "hasherBeingEditedId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": "Public hasher ID of the user being edited (echo of @hasherBeingEditedPublicId parameter)"
-        },
-        {
-          "name": "publicHasherId",
-          "type": "UNIQUEIDENTIFIER",
-          "nullable": false,
-          "description": "Public hasher ID of the user performing the update (echo of @publicHasherId parameter)"
+          "description": "Echo of @hasherBeingEditedPublicId (the PUBLIC id, despite the name)"
         }
       ]
     }
   ],
   "sideEffects": [
-    "UPDATE HC.Hasher (Email, FirstName, LastName, HashName, updatedAt) if any of those parameters are non-NULL",
-    "UPDATE HC.HasherKennelMap (DiscountAmount, DiscountPercent, DiscountDescription, updatedAt) if any discount parameters are non-NULL",
-    "UPDATE HC.HasherKennelMap (MembershipExpirationDate, Following, updatedAt) if @isMember or @status are non-NULL. Sentinel: '2999-12-31' = never expires; yesterday = not a member. Following always set to 1 on membership update.",
-    "UPDATE HC.HasherKennelMap (KennelNotificationPreference, KennelEmailAlertPreference, updatedAt) if @emailAlerts or @notifications are non-NULL",
-    "UPDATE HC.HasherKennelMap (HistoricalCountIsEstimate, updatedAt) if @historicCountsAreEstimates is non-NULL",
-    "UPDATE HC.HasherKennelMap (HistoricalTotalRunCount, updatedAt) if @historicTotalRuns is non-NULL and numeric",
-    "UPDATE HC.HasherKennelMap (HistoricalHaringCount, updatedAt) if @historicHaring is non-NULL and numeric",
-    "EXEC HC.nonApi_updateRunCountsByUser when @historicTotalRuns is updated (recalculates aggregate run counts)",
-    "EXEC HC.nonApi_updateRunCountsByUser when @historicHaring is updated (recalculates aggregate run counts — re-enabled in HC6)"
+    "UPDATE HC.Hasher (Email, FirstName, LastName, HashName, updatedAt) when any of those are non-NULL; EXEC HC6.nonApi_resetEmailStatus when the address changed",
+    "UPDATE HC.HasherKennelMap discounts (DiscountAmount, DiscountPercent, DiscountDescription), then EXEC HC6.nonApi_syncMemberStandingBit",
+    "UPDATE HC.HasherKennelMap MembershipExpirationDate (2999-12-31 or yesterday) and Following = 1 when @isMember or @status is given",
+    "UPDATE HC.HasherKennelMap KennelNotificationPreference / KennelEmailAlertPreference / HistoricalCountIsEstimate / HistoricalTotalRunCount / HistoricalHaringCount as given",
+    "EXEC HC6.nonApi_updateRunCountsByUser after either historical count is written",
+    "All writes in one transaction"
   ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
@@ -268,5 +260,32 @@
     "Never change a sentinel value meaning",
     "Never change the string values for @isMember ('yes'), @status ('member'), @emailAlerts ('on'/'off'/'auto'), @notifications ('on'/'off'/'silver bell'/'6 hrs before'/'auto'), @historicCountsAreEstimates ('yes'/'no') without updating all callers",
     "Never change the '2999-12-31' never-expires sentinel date without updating all callers"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Member standing bit synced in the wrong branch",
+      "detail": "Lines 260-265 call HC6.nonApi_syncMemberStandingBit inside the DISCOUNT block, with a comment saying it keeps the MEMBER bit in sync 'with the expiration just written'. The membership block (lines 269-283), which is what writes MembershipExpirationDate, never calls it, so making someone a member or ending membership here leaves KennelStanding 0x0001 stale until the sweep runs."
+    },
+    {
+      "severity": "medium",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 408-411: CATCH rolls back and returns the envelope with no HC.ErrorLog row."
+    },
+    {
+      "severity": "low",
+      "issue": "ISNUMERIC then CAST AS INT",
+      "detail": "Lines 339-341 and 372-374: ISNUMERIC accepts '1.5', '$', '1e3'; CAST(... AS INT) then throws and the whole edit rolls back with a raw conversion message. TRY_CAST would skip it cleanly."
+    },
+    {
+      "severity": "low",
+      "issue": "No success envelope",
+      "detail": "A successful edit with no historical count returns no rowset at all; the client infers success from the absence of an error."
+    },
+    {
+      "severity": "low",
+      "issue": "Hard-coded flag mask and service-account bypass",
+      "detail": "Line 100 gates on AppAccessFlags & 0x40000012 rather than HC6.CheckKennelPermission (mismanagement roles cannot grant it), and lines 91-105 / 157 skip both the permission and the ownership checks for callerType != 0."
+    }
   ]
 }

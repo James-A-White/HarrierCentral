@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_mergeHashers",
-  "version": "1.0.0",
-  "description": "Merge accounts, step 2 (E12.F6.S2): moves every run row and payment row (and memberships, chat, photos, receipts, down downs, songs, products, promotions, track imports, organiser links) from the merge account to the kept one; combines rows where both have one (runs by EventId+DisplayName, kennels, chat badges); recalculates run counts and kennel credit; disables the merge account as hcapp_gdprDelete does (Removed, every device signed out with a new secret, push tokens cleared). Nothing is deleted except exact duplicates in down downs, promotion and newsflash-read maps and friend links. Logged to LOG.GeneralLog. Requires HC.PlatformAdmin with CanEditKennel = 1.",
+  "version": "1.1.0",
+  "description": "Merge accounts, step 2 (E12.F6.S2): moves every run row and payment row (and memberships, chat, photos, receipts, down downs, songs, products, promotions, track imports, organiser links) from the merge account to the kept one; combines rows where both have one (runs by EventId+DisplayName, kennels, chat badges); recalculates run counts and kennel credit; disables the merge account as hcapp_gdprDelete does (Removed, every device signed out with a new secret, push tokens cleared). Nothing is deleted except exact duplicates in down downs, promotion and newsflash-read maps and friend links. Logged to LOG.GeneralLog. Requires HC.PlatformAdmin with CanEditKennel = 1. Auth: HC6.ValidatePortalAuth, then the HC.PlatformAdmin gate. Both accounts are locked (UPDLOCK, HOLDLOCK) and must still be live; the whole merge is one transaction.",
   "parameters": [
     {
       "name": "deviceId",
@@ -21,40 +21,41 @@
     {
       "name": "keepHasherId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Hasher.id",
-      "description": "From the preview."
+      "description": "The account that survives. From hcportal_previewHasherMerge. Required: NULL, or the same id for both, returns 'Two different accounts are needed'."
     },
     {
       "name": "mergeHasherId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Hasher.id",
-      "description": "From the preview."
+      "description": "The account whose rows move to the kept one and which is then disabled. From hcportal_previewHasherMerge. Required: NULL, or the same id for both, returns 'Two different accounts are needed'."
     }
   ],
   "rowsets": [
     {
       "index": 0,
-      "name": "Success",
+      "name": "Envelope",
       "columns": [
         {
           "name": "Success",
           "type": "INT",
           "nullable": false,
-          "description": ""
+          "description": "1 merged, 0 not"
         },
         {
           "name": "ErrorMessage",
-          "type": "NVARCHAR(500)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
-          "description": ""
+          "description": "Why not; NULL on success"
         }
-      ]
+      ],
+      "description": "Always returned. Success = 0 with ErrorMessage on auth failure, missing CanEditKennel, 'Two different accounts are needed', 'One of the accounts no longer exists or was already merged — preview again' (after ROLLBACK), or from the CATCH block (ROLLBACK, HC.ErrorLog row, ERROR_MESSAGE()). Success = 1 after COMMIT, followed by rowset 1."
     },
     {
       "index": 1,
-      "name": "Moved (success only)",
+      "name": "Moved",
       "columns": [
         {
           "name": "RunsMoved",
@@ -104,24 +105,35 @@
           "nullable": true,
           "description": ""
         }
-      ]
+      ],
+      "description": "Success only: one row of counts from the merge (NULL where the step did not record a count)."
     }
   ],
   "sideEffects": [
-    "UPDATE HC.HasherEventMap UserId (soft-remove combined twins)",
-    "UPDATE HC.Payment UserId, HasherEventMapId, *By columns",
-    "UPDATE HC.HasherKennelMap (combine / move / soft-remove)",
-    "UPDATE HC.EventMessage, EventMessageBadgeCounts, KennelPhotos, Receipt, DownDowns, DownDownHashers, Event (organiser), Song, SongSession, Product, Promotion, HasherPromotionMap, TrackImport, HasherOwnEvent, PortalNewsflash(Read), HasherFriendMap, PlatformAdmin",
-    "UPDATE HC.Hasher (keep fills blanks; merge Removed = 1)",
-    "UPDATE HC.Device (merge account signed out)",
-    "HC6.nonApi_updateRunCountsByUser, HC6.nonApi_updateKennelCreditByUser",
-    "INSERT LOG.GeneralLog"
+    "UPDATE HC.HasherEventMap: combine paired run rows into the kept row (best attendance/RSVP/hare/track/notes), soft-remove the merge twins (removed = 1, attendance/RSVP/hare/track cleared), move every other live merge row (UserId = keep)",
+    "UPDATE HC.Payment UserId, HasherEventMapId (to the combined row) and PaymentProcessedBy_userId / ConfirmedBy_UserId / CancelledBy_UserId; HC.Receipt UserId and ReimbursedBy",
+    "UPDATE HC.HasherKennelMap: combine paired kennel rows (flags OR-ed, historical counts the larger, dates widened), soft-remove the merge twins, move the rest",
+    "UPDATE HC.EventMessage (UserId, PublicHasherId); combine / soft-remove / move HC.EventMessageBadgeCounts per thread",
+    "UPDATE HC.KennelPhotos, HC.DownDownHashers, HC.DownDowns, HC.Event (Organizer_HasherId, EventLastUpdatedBy), HC.Song, HC.SongSession, HC.Product, HC.Promotion, HC.HasherPromotionMap, HC.TrackImport, HC.HasherOwnEvent, HC.PortalNewsflash, HC.PortalNewsflashRead, HC.HasherFriendMap, EXT.OfficeForms_KennelImport (ReviewedBy)",
+    "DELETE exact duplicates only: HC.DownDownHashers, HC.HasherPromotionMap, HC.PortalNewsflashRead rows the kept account already has; HC.HasherFriendMap self-links and duplicate links",
+    "HC.PlatformAdmin: the merge account's row moves to the kept account when it has none, else is soft-removed",
+    "UPDATE HC.Hasher: kept account fills blank HashName/FirstName/LastName/Photo/HomeKennelId from the merge account; merge account Removed = 1, ResetCode reset",
+    "UPDATE HC.Device for every merge-account device: new DeviceSecret, SignedOutAt, FcmToken/ApnsToken NULL, removed = 1",
+    "UPDATE HC.KennelCredit for the merge account: removed = 1, currentBalance = 0",
+    "EXEC HC6.nonApi_updateRunCountsByUser and HC6.nonApi_updateKennelCreditByUser for the kept account",
+    "INSERT LOG.GeneralLog (merge summary JSON in Data)",
+    "On error: INSERT HC.ErrorLog after the ROLLBACK"
   ],
   "codeSmells": [
     {
       "severity": "low",
       "issue": "PackTrack points in Table Storage keep the old id",
       "detail": "Live positions are keyed by userId in Azure Table Storage. A run tracked by the merge account and not yet archived (the nightly job) stays under the old id; runs already archived travel with their HasherEventMap row."
+    },
+    {
+      "severity": "low",
+      "issue": "Kennel-pair join assumes one kept row per kennel",
+      "detail": "Lines 182-186 JOIN (not TOP 1) the kept account's HasherKennelMap rows; if the kept account has two rows for one kennel, the INSERT into @kennelPairs (PRIMARY KEY mergeRow) fails and the whole merge rolls back with a raw ERROR_MESSAGE."
     }
   ],
   "breakingChangeRules": [

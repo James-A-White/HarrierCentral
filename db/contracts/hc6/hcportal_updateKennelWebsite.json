@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_updateKennelWebsite",
-  "version": "1.0.0",
-  "description": "Updates a kennel's HC6 public website configuration in HC.KennelWebsite. Update-only — the row is created on kennel insert via the TR_Kennel_AfterInsert_CreateKennelWebsite trigger. All style and content parameters use COALESCE so omitted parameters preserve existing values. Nullable NVARCHAR fields use the empty-string sentinel: sending '' sets the column to NULL (clears the value); omitting the parameter leaves it unchanged.",
+  "version": "1.1.0",
+  "description": "Updates a kennel's HC6 public website configuration in HC.KennelWebsite. Update-only — the row is created on kennel insert via the TR_Kennel_AfterInsert_CreateKennelWebsite trigger. All style and content parameters use COALESCE so omitted parameters preserve existing values. Nullable NVARCHAR fields use the empty-string sentinel: sending '' sets the column to NULL (clears the value); omitting the parameter leaves it unchanged. Auth: HC6.ValidatePortalAuth with @publicKennelId in the token param string; the caller needs AppAccessFlags & 0x40000081 (authIsAdmin | authCanManagePublicWebContent | SuperAdmin) on the kennel — a hard-coded mask, not the Permissions V2 editWebsite/designWebsite functions that hcportal_getLandingPageData uses to show the buttons. SMALLINT/INT fields (enabled, scrollBlur, controlFlags) are never cleared, only replaced.",
   "parameters": [
     {
       "name": "deviceId",
@@ -27,10 +27,11 @@
     },
     {
       "name": "enabled",
-      "type": "BIT",
+      "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": "KennelWebsite.Enabled",
-      "description": "Whether the public website is enabled. NULL = no change."
+      "description": "1 publish the website, 0 hide it; NULL keeps.",
+      "typeMismatch": "SMALLINT parameter vs KennelWebsite.Enabled BIT (implicit conversion; any non-zero value stores 1)."
     },
     {
       "name": "themeMode",
@@ -114,42 +115,42 @@
       "type": "NVARCHAR(9)",
       "nullable": true,
       "mapsToColumn": "KennelWebsite.TextMutedColor",
-      "description": "Secondary/label text colour (#RRGGBBAA). '' clears to NULL; NULL = no change."
+      "description": "Secondary/label text colour (#RRGGBBAA). '' clears to NULL; NULL = no change. Column added by db/hc6/public-web/archive/add_style_tokens.sql."
     },
     {
       "name": "cardBackgroundColor",
       "type": "NVARCHAR(9)",
       "nullable": true,
       "mapsToColumn": "KennelWebsite.CardBackgroundColor",
-      "description": "Card/panel surface colour (#RRGGBBAA). '' clears to NULL; NULL = no change."
+      "description": "Card/panel surface colour (#RRGGBBAA). '' clears to NULL; NULL = no change. Column added by db/hc6/public-web/archive/add_style_tokens.sql."
     },
     {
       "name": "buttonPrimaryColor",
       "type": "NVARCHAR(9)",
       "nullable": true,
       "mapsToColumn": "KennelWebsite.ButtonPrimaryColor",
-      "description": "Primary action button background (#RRGGBBAA). '' clears to NULL; NULL = no change."
+      "description": "Primary action button background (#RRGGBBAA). '' clears to NULL; NULL = no change. Column added by db/hc6/public-web/archive/add_ButtonColor_RunCardColor.sql."
     },
     {
       "name": "buttonCancelColor",
       "type": "NVARCHAR(9)",
       "nullable": true,
       "mapsToColumn": "KennelWebsite.ButtonCancelColor",
-      "description": "Cancel/undo action button background (#RRGGBBAA). '' clears to NULL; NULL = no change."
+      "description": "Cancel/undo action button background (#RRGGBBAA). '' clears to NULL; NULL = no change. Column added by db/hc6/public-web/archive/add_ButtonColor_RunCardColor.sql."
     },
     {
       "name": "buttonSecondaryColor",
       "type": "NVARCHAR(9)",
       "nullable": true,
       "mapsToColumn": "KennelWebsite.ButtonSecondaryColor",
-      "description": "Secondary (non-primary, non-cancel) button background (#RRGGBBAA). '' clears to NULL; NULL = no change."
+      "description": "Secondary (non-primary, non-cancel) button background (#RRGGBBAA). '' clears to NULL; NULL = no change. Column added by db/hc6/public-web/archive/add_ButtonColor_RunCardColor.sql."
     },
     {
       "name": "runCardColor",
       "type": "NVARCHAR(9)",
       "nullable": true,
       "mapsToColumn": "KennelWebsite.RunCardColor",
-      "description": "Run card surface colour (#RRGGBBAA). '' clears to NULL; NULL = no change."
+      "description": "Run card surface colour (#RRGGBBAA). '' clears to NULL; NULL = no change. Column added by db/hc6/public-web/archive/add_ButtonColor_RunCardColor.sql."
     },
     {
       "name": "backgroundColor",
@@ -261,18 +262,44 @@
       "type": "INT",
       "nullable": true,
       "mapsToColumn": "KennelWebsite.ControlFlags",
-      "description": "HC5 legacy feature toggle bitflags. NULL = no change. Note: the SP has a dead CASE WHEN @controlFlags = '' check that can never fire on INT — harmless but inert."
+      "description": "Bit flags for website feature toggles; NULL keeps (never cleared)."
+    },
+    {
+      "name": "pageFeaturesJson",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "KennelWebsite.PageFeaturesJson",
+      "description": "Per-page feature toggles JSON; '' clears, NULL keeps. Column added by db/hc6/public-web/archive/add_pagefeaturesjson.sql (NVARCHAR(4000), not in the stale table script)."
     }
   ],
   "rowsets": [
     {
       "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned instead of SuccessResult on auth failure, NULL publicKennelId, themeMode not light/dark, scrollBlur outside 0-100, kennel or KennelWebsite row not found, missing permission, or from the CATCH block (ERROR_MESSAGE()).",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": false,
+          "description": "Why"
+        }
+      ]
+    },
+    {
+      "index": 0,
       "name": "SuccessResult",
-      "description": "Single row on success.",
+      "description": "Single row after the UPDATE commits.",
       "columns": [
         {
           "name": "result",
-          "type": "NVARCHAR",
+          "type": "VARCHAR(37)",
           "nullable": false,
           "description": "'Website settings updated successfully'"
         },
@@ -280,38 +307,29 @@
           "name": "resultCode",
           "type": "INT",
           "nullable": false,
-          "description": "1 on success"
-        }
-      ]
-    },
-    {
-      "index": 0,
-      "name": "ErrorResult",
-      "description": "Returned on auth failure, validation error, or kennel not found — in place of SuccessResult.",
-      "columns": [
-        {
-          "name": "Success",
-          "type": "BIT",
-          "nullable": false,
-          "description": "0 on error"
-        },
-        {
-          "name": "ErrorMessage",
-          "type": "NVARCHAR",
-          "nullable": false,
-          "description": "Human-readable error description"
+          "description": "Always 1"
         }
       ]
     }
   ],
   "sideEffects": [
-    "Updates HC.KennelWebsite WHERE KennelId = resolved @publicKennelId"
+    "UPDATE HC.KennelWebsite WHERE KennelId = the resolved kennel (only supplied columns change; '' clears a nullable text column)"
   ],
   "codeSmells": [
     {
+      "severity": "medium",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 179-182: CATCH rolls back and returns the envelope with no HC.ErrorLog row."
+    },
+    {
       "severity": "low",
-      "issue": "Dead sentinel check on INT column",
-      "detail": "controlFlags uses CASE WHEN @controlFlags = '' THEN NULL which can never be true on an INT parameter. The COALESCE path still works correctly — the CASE is simply dead code."
+      "issue": "Website gate disagrees with the landing-page gate",
+      "detail": "Line 123 checks AppAccessFlags & 0x40000081, while hcportal_getLandingPageData shows the Edit/Design Website buttons from the Permissions V2 editWebsite/designWebsite functions (which mismanagement roles can grant). A role-granted editor sees the button and is then refused here."
+    },
+    {
+      "severity": "low",
+      "issue": "updatedAt not stamped",
+      "detail": "Lines 135-172 do not set KennelWebsite.updatedAt and the table has no trigger for it, so the column keeps the creation time after every edit."
     }
   ],
   "breakingChangeRules": [

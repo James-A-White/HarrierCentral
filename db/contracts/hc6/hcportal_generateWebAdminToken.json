@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_generateWebAdminToken",
-  "version": "1.0.0",
-  "description": "Generates a short-lived one-time token (10 min) that the Flutter portal passes to the Next.js public-web admin UI via URL parameter. The browser redeems the token via publicWeb_redeemAdminToken to obtain a session cookie. Requires the caller to have AppAccessFlags bit 0 (0x00000001) set in HC.HasherKennelMap for the target kennel.",
+  "version": "1.1.0",
+  "description": "Generates a short-lived one-time token (10 min) that the Flutter portal passes to the Next.js public-web admin UI as ?token=. The browser redeems it via publicWeb_redeemAdminToken to obtain the hc_admin_session cookie. Auth: HC6.ValidatePortalAuth (device-bound token, NULL callerParamString). Permission gate: the caller's non-removed HC.HasherKennelMap row for the kennel (resolved from KennelUniqueShortName, deleted=0, removed=0) must carry any of authIsAdmin (0x00000001), authCanManagePublicWebContent (0x00000080) or authIsSuperAdmin (0x40000000) in AppAccessFlags (mask 0x40000081). Expired tokens are purged and the new token inserted inside one transaction.",
   "parameters": [
     {
       "name": "deviceId",
@@ -23,38 +23,65 @@
       "type": "NVARCHAR(100)",
       "nullable": true,
       "mapsToColumn": "Kennel.KennelUniqueShortName",
-      "description": "URL slug of the kennel whose website the admin wants to edit"
+      "description": "Required. URL slug (Kennel.KennelUniqueShortName) of the kennel whose website the admin wants to edit; stored on the token row as PublicWebAdminToken.KennelSlug. NULL/empty returns 'kennelSlug is required.'",
+      "typeMismatch": "Parameter is NVARCHAR(100); Kennel.KennelUniqueShortName is NVARCHAR(50). Matches PublicWebAdminToken.KennelSlug NVARCHAR(100). Wider than the lookup column, so no data loss."
     }
   ],
   "rowsets": [
     {
       "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned instead of TokenResult on auth failure, missing kennelSlug, kennel not found, missing admin rights ('You do not have admin access to this kennel website.'), or a runtime error from the CATCH block.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Auth error text (NVARCHAR(255) from ValidatePortalAuth), validation message, or ERROR_MESSAGE() from the CATCH block"
+        }
+      ]
+    },
+    {
+      "index": 0,
       "name": "TokenResult",
-      "description": "Returned on success — one row containing the lowercase UUID token to pass in the redirect URL. On any error the SP returns the standard Success/ErrorMessage envelope instead.",
+      "description": "Returned on success — one row containing the lowercase UUID token to pass in the redirect URL.",
       "columns": [
         {
           "name": "Token",
           "type": "NVARCHAR(36)",
           "nullable": false,
-          "description": "Lowercase UUID of the newly created HC.PublicWebAdminToken row — valid for 10 minutes, single use"
+          "description": "LOWER(CAST(id AS NVARCHAR(36))) of the new HC.PublicWebAdminToken row — valid for 10 minutes, single use. Lowercase because Next.js compares with LOWER()."
         }
       ]
     }
   ],
   "sideEffects": [
-    "Purges all expired rows from HC.PublicWebAdminToken (DELETE WHERE ExpiresAt < SYSDATETIMEOFFSET())",
-    "Inserts one row into HC.PublicWebAdminToken with a 10-minute expiry"
+    "In one transaction: DELETE FROM HC.PublicWebAdminToken WHERE ExpiresAt < SYSDATETIMEOFFSET() (purge of expired tokens)",
+    "In the same transaction: INSERT HC.PublicWebAdminToken (Id, HasherId, KennelSlug, ExpiresAt = now + 10 min). Table defined in db/hc6/public-web/archive/add_publicwebadmintoken.sql (not in db/schema/tables)."
   ],
   "codeSmells": [
     {
+      "severity": "medium",
+      "issue": "CATCH does not log to HC.ErrorLog",
+      "detail": "The CATCH block (line 89) returns the Success=0 envelope with ERROR_MESSAGE() but writes no HC.ErrorLog row, so a runtime failure (timeout, deadlock) is invisible server-side unless the API shim logs it. CLAUDE.md: every CATCH must log to HC.ErrorLog."
+    },
+    {
       "severity": "low",
-      "issue": "No transaction around DELETE + INSERT",
-      "detail": "The purge DELETE and the INSERT into PublicWebAdminToken run outside an explicit transaction. A crash between them leaves no partial inconsistency (the purged rows were expired anyway), so the risk is negligible. Consider wrapping if atomicity ever matters."
+      "issue": "Admin lookup does not require a single HKM row",
+      "detail": "Lines 59-64 assign @HasAdminRights from a SELECT over HasherKennelMap; if duplicate non-removed rows existed the last row read wins. Harmless while (UserId, KennelId) stays unique."
     }
   ],
   "breakingChangeRules": [
     "Never remove the Token column from the success rowset",
     "Never change the token lifetime without updating the Next.js session cookie maxAge",
-    "Never change the auth flag from 0x00000001 without updating all callers"
+    "Never change the permission mask (0x40000081) without updating all callers",
+    "Never rename a parameter",
+    "Never change a parameter type"
   ]
 }

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_regenerateExtApiKey",
-  "version": "1.0.0",
-  "description": "Regenerates the external API key (ExtApiKey) for a kennel. Requires the current API key to be provided for security verification. Only users with appropriate AppAccessFlags (0x40000019) can regenerate. Generates a 75-character cryptographically random key using CRYPT_GEN_RANDOM(150) and base64 encoding, with '+' and '/' characters stripped. The UPDATE is wrapped in a transaction. @publicKennelId changed from NVARCHAR(250) (HC5) to UNIQUEIDENTIFIER in HC6. @currentExtApiKey narrowed from NVARCHAR(1000) to NVARCHAR(120) to match Kennel.ExtApiKey.",
+  "version": "1.1.0",
+  "description": "Regenerates the external API key (Kennel.ExtApiKey) for a kennel. Auth: HC6.ValidatePortalAuth with @publicKennelId in the token param string. The caller must supply the current key, and must hold AppAccessFlags & 0x40000019 (authIsAdmin 0x1 | 0x8 | 0x10 | SuperAdmin 0x40000000) on the kennel — a hard-coded mask, not the Permissions V2 matrix. Generates a 75-character key from CRYPT_GEN_RANDOM(150), base64 with '+' and '/' stripped, and writes it in a transaction.",
   "parameters": [
     {
       "name": "deviceId",
@@ -37,22 +37,32 @@
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "description": "Returned on auth failure, NULL @publicKennelId, unknown kennel, wrong current key, missing permission, or from the CATCH block (ERROR_MESSAGE()). Short-circuits.",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Human-readable error message"
+        }
       ]
     },
     {
       "index": 0,
       "name": "SuccessResult",
-      "description": "Returned when the API key has been successfully regenerated.",
+      "description": "Returned (alone, no Success column) when the key has been regenerated.",
       "columns": [
         {
           "name": "newExtApiKey",
-          "type": "NVARCHAR(75)",
-          "nullable": true,
-          "description": "The newly generated external API key. 75 characters, derived from LEFT(base64(CRYPT_GEN_RANDOM(150)), 75) with '+' and '/' stripped."
+          "type": "NVARCHAR(1000)",
+          "nullable": false,
+          "description": "The new key (75 characters), held in an NVARCHAR(1000) local."
         }
       ]
     }
@@ -66,5 +76,27 @@
     "Never change a parameter type",
     "Never change a sentinel value meaning",
     "Never change the AppAccessFlags permission bitmask (0x40000019) without coordinating with all callers"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 126-129: CATCH rolls back and returns the envelope with no HC.ErrorLog row."
+    },
+    {
+      "severity": "low",
+      "issue": "Refusal message is NULL for a caller with no kennel row",
+      "detail": "Lines 94-105: @kennelName is read through the caller's HasherKennelMap row; when there is none, 'You are not authorized … for ' + NULL yields a NULL ErrorMessage. The wording ('access Hasher information') is also copied from another SP."
+    },
+    {
+      "severity": "low",
+      "issue": "Key checked before permission",
+      "detail": "Lines 81-88 test the supplied key before the permission check on lines 91-106, so any signed-in portal user can learn whether a guessed key is correct for any kennel."
+    },
+    {
+      "severity": "low",
+      "issue": "Success shape differs from the error shape",
+      "detail": "Line 123: success returns only newExtApiKey, with no Success column; clients must detect success by the column name."
+    }
   ]
 }

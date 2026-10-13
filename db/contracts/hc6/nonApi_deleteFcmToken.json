@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "nonApi_deleteFcmToken",
-  "version": "1.0.0",
-  "description": "Clears a stale or invalid FCM registration token from HC.Device by setting FcmToken = NULL and stamping FcmTokenDeleted. Called by AppApiHC6, PortalApiHC6, and RunCheckInNotification whenever FCM returns UNREGISTERED or NOT_FOUND for a token. Fire-and-forget — errors are swallowed by callers. Preserves the device row (including location/audit history) rather than deleting it.",
+  "version": "1.1.0",
+  "description": "Clears a stale or invalid FCM registration token from HC.Device by setting FcmToken = NULL and stamping FcmTokenDeleted. Internal, no auth. Called by api/Endpoints/AppApiHC6.cs, PortalApiHC6.cs and RunCheckInNotification.cs whenever FCM returns UNREGISTERED or NOT_FOUND for a token. Fire-and-forget — errors are swallowed by callers. Preserves the device row (including location/audit history) rather than deleting it.",
   "parameters": [
     {
       "name": "fcmToken",
@@ -15,18 +15,29 @@
   "rowsets": [],
   "sideEffects": [
     "Sets HC.Device.FcmToken = NULL for the matching device row.",
-    "Sets HC.Device.FcmTokenDeleted = SYSUTCDATETIME() for the matching device row.",
+    "Sets HC.Device.FcmTokenDeleted = SYSUTCDATETIME() for the matching device row(s) — every row holding that token, not just one.",
     "No-op if @fcmToken is NULL or empty (early return guard).",
     "No-op if no HC.Device row matches the given token (UPDATE affects 0 rows silently)."
   ],
   "codeSmells": [
     {
       "severity": "low",
-      "issue": "FcmTokenDeleted column not in extracted table schema",
-      "detail": "The SP references HC.Device.FcmTokenDeleted, which does not appear in the /db/schema/tables/HC.Device.Table.sql snapshot. This column was likely added after the schema was exported. Callers should be aware it exists in production."
+      "issue": "FcmTokenDeleted missing from the table schema file",
+      "detail": "HC.Device.FcmTokenDeleted is not in db/schema/tables/HC.Device.Table.sql (stale). Its type, DATETIMEOFFSET(7) NULL, comes from the run-once db/hc6/app/archive/HC6.Device.FcmTokenTimestamps.migration.sql line 22. SYSUTCDATETIME() (DATETIME2) converts implicitly as +00:00."
+    },
+    {
+      "severity": "medium",
+      "issue": "SP body not wrapped in TRY/CATCH",
+      "detail": "The UPDATE (lines 29-32) has no TRY/CATCH, so a runtime error (deadlock on a busy HC.Device) leaves no HC.ErrorLog row. The three C# callers swallow the exception, so the failure is invisible — the stale token stays live and is retried on the next push (CLAUDE.md 'TRY/CATCH is mandatory on EVERY SP')."
+    },
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@fcmToken (line 2) has no SQL default. All three C# callers always add it, so no client reaches the unlogged 'expects parameter' error today, and the body's NULL guard (line 27) is unreachable for an omitted parameter."
     }
   ],
   "breakingChanges": [
-    "HC5.hcinternalapi_removeStaleFcmToken performed DELETE FROM HC.Device, destroying the device row. HC6 sets FcmToken = NULL instead, preserving the row. Any code that relied on the device row being deleted after token removal must be updated."
+    "HC5.hcinternalapi_removeStaleFcmToken performed DELETE FROM HC.Device, destroying the device row. HC6 sets FcmToken = NULL instead, preserving the row. Any code that relied on the device row being deleted after token removal must be updated.",
+    "1.1.0: no change to the SP — contract corrected (callers, FcmTokenDeleted type, missing TRY/CATCH and no-default smells)."
   ]
 }

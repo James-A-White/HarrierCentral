@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "nonApi_findRunForTrack",
-  "version": "1.0.0",
-  "description": "The matching rule behind a track import, without auth, so hcapp_findRunForTrack (the app) and the ProcessTrackImport function match identically. Runs starting in [firstPointUtc - 3h, lastPointUtc], nearest first, with distance from the recorded start, the caller's existing track points and attendance.",
+  "version": "1.1.0",
+  "description": "Internal, no auth. The matching rule behind a track import (E5.F5.S6/S7), split out of hcapp_findRunForTrack on 2026-09-11 so the app (HC6.hcapp_findRunForTrack, which authenticates and then calls this) and the server-side import processor (api/Endpoints/TrackImportProcessor.cs) match identically. Given a track's first/last point times (UTC) and first position, returns up to 10 visible, non-deleted, non-removed runs whose EventStartDateTimeGmt lies in [firstPointUtc − 3 h, lastPointUtc], nearest start time to the first point first, with the distance from each run's recorded start, the caller's existing trail points and attendance state. Callers apply the rest: a recorded start must be within a mile; no recorded start ⇒ needs a human; several ⇒ needs a choice. Instant ⇒ EventStartDateTimeGmt (hc-event-datetimes).",
   "parameters": [
     {
       "name": "userId",
@@ -44,7 +44,7 @@
     {
       "index": 0,
       "name": "CandidateRuns",
-      "description": "As hcapp_findRunForTrack.",
+      "description": "Up to 10 candidate runs, ORDER BY ABS(seconds between EventStartDateTimeGmt and @firstPointUtc). Empty when nothing started in the window.",
       "columns": [
         {
           "name": "eventId",
@@ -56,31 +56,31 @@
           "name": "eventName",
           "type": "NVARCHAR(250)",
           "nullable": false,
-          "description": ""
+          "description": "HC.Event.EventName (the run's own name; the Fb* import mirror is not consulted)."
         },
         {
           "name": "kennelName",
           "type": "NVARCHAR(250)",
           "nullable": false,
-          "description": ""
+          "description": "HC.Kennel.KennelName."
         },
         {
           "name": "kennelId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": ""
+          "description": "HC.Event.KennelId."
         },
         {
           "name": "eventStartGmt",
-          "type": "DATETIMEOFFSET",
+          "type": "DATETIMEOFFSET(7)",
           "nullable": false,
-          "description": "UTC instant."
+          "description": "HC.Event.EventStartDateTimeGmt — the UTC instant."
         },
         {
           "name": "eventStartLocal",
           "type": "DATETIME2(0)",
           "nullable": false,
-          "description": "Wall clock."
+          "description": "CAST(EventStartDatetime AS DATETIME2(0)) — the wall-clock start with the offset dropped (same value as EventStartLocal, to the second)."
         },
         {
           "name": "hasLocation",
@@ -98,22 +98,37 @@
           "name": "existingTrackPoints",
           "type": "INT",
           "nullable": false,
-          "description": "The runner's TrackPointCount on this run."
+          "description": "The caller's HC.HasherEventMap.TrackPointCount (INT NULL) on this run; 0 when no live row or no trail."
         },
         {
           "name": "attendenceState",
           "type": "SMALLINT",
           "nullable": false,
-          "description": ""
+          "description": "The caller's HC.HasherEventMap.AttendenceState on this run (live row with the most track points); 0 when none. >= 20 = attended."
         }
       ]
     }
   ],
-  "sideEffects": [],
-  "codeSmells": [],
+  "sideEffects": [
+    "None (read only). On a runtime error: INSERT HC.ErrorLog ('<unknown>', userId) then THROW."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "All five parameters (lines 2-6) have no SQL default. Both callers (hcapp_findRunForTrack, TrackImportProcessor) always pass them; a NULL @latitude/@longitude reaching geography::Point (line 31) errors inside the TRY and is logged."
+    },
+    {
+      "severity": "low",
+      "issue": "No SET XACT_ABORT ON",
+      "detail": "Line 23 sets NOCOUNT only. Read-only SP, so no practical effect."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",
-    "Never change a parameter type"
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
   ]
 }

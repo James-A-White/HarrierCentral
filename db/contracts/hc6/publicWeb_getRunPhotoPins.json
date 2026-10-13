@@ -1,23 +1,73 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getRunPhotoPins",
-  "version": "1.0.0",
-  "description": "Where and when each Hash-Flash-approved PUBLIC photo of a run was taken, for the public PackTrack map and Trail TV pins. Photos are no longer written into GPS tracks, so maps read pins from photo rows. Same exposure as the PHO:: coordinates the track payload used to carry; the gallery endpoint still returns no coordinates.",
+  "version": "1.1.0",
+  "description": "Where and when each Hash-Flash-approved PUBLIC photo of a run was taken, for the public PackTrack map and Trail TV pins. Unauthenticated (no device or token). Photos are no longer written into GPS tracks, so maps read pins from HC.KennelPhotos rows. Exposure is the audience model's Public (3) and Cover (5) photos only — the same coordinates the track payload used to carry as PHO:: marks; the gallery endpoint (publicWeb_getRunPhotos) still returns no coordinates.",
   "parameters": [
-    { "name": "publicEventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "Event.PublicEventId", "description": "The run's public id" }
+    {
+      "name": "publicEventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Event.PublicEventId",
+      "description": "The run's public id. NULL returns EventFound = 0 and no second rowset."
+    }
   ],
   "rowsets": [
-    { "index": 0, "name": "EventFound", "description": "1 if the event exists, else 0", "columns": [ { "name": "EventFound", "type": "INT", "nullable": false, "description": "1/0" } ] },
-    { "index": 1, "name": "Pins", "description": "Public photos with a real coordinate, oldest first by TakenAtUtc then CreatedAt.",
+    {
+      "index": 0,
+      "name": "EventFound",
+      "description": "Always one row. 1 if any HC.Event has this PublicEventId (deleted/removed runs included), else 0. When @publicEventId is NULL this is the only rowset.",
       "columns": [
-        { "name": "photoId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.KennelPhotos.id" },
-        { "name": "Latitude", "type": "DECIMAL(18,15)", "nullable": false, "description": "Where the photo was taken" },
-        { "name": "Longitude", "type": "DECIMAL(19,15)", "nullable": false, "description": "Where the photo was taken" },
-        { "name": "TakenAtUtc", "type": "DATETIME2", "nullable": true, "description": "When it was taken (UTC); NULL on rows before 2026-09-07 — callers fall back to CreatedAt" },
-        { "name": "CreatedAt", "type": "DATETIME2", "nullable": false, "description": "Upload time" }
-      ] }
+        {
+          "name": "EventFound",
+          "type": "INT",
+          "nullable": false,
+          "description": "1/0"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Pins",
+      "description": "Photos with Status >= 3, DeletedAt IS NULL and a real coordinate (not NULL, not 0,0), ordered by COALESCE(TakenAtUtc, CreatedAt) ascending. Returned only when @publicEventId is not NULL.",
+      "columns": [
+        {
+          "name": "photoId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.KennelPhotos.id"
+        },
+        {
+          "name": "Latitude",
+          "type": "DECIMAL(9,6)",
+          "nullable": false,
+          "description": "KennelPhotos.Latitude — where the photo was taken"
+        },
+        {
+          "name": "Longitude",
+          "type": "DECIMAL(9,6)",
+          "nullable": false,
+          "description": "KennelPhotos.Longitude — where the photo was taken"
+        },
+        {
+          "name": "TakenAtUtc",
+          "type": "DATETIME2",
+          "nullable": true,
+          "description": "When it was taken (UTC); NULL on rows before 2026-09-07 — callers fall back to CreatedAt"
+        },
+        {
+          "name": "CreatedAt",
+          "type": "DATETIME2",
+          "nullable": false,
+          "description": "Upload time (UTC)"
+        }
+      ]
+    }
   ],
   "sideEffects": [],
   "codeSmells": [],
-  "breakingChangeRules": [ "Never remove a column from any rowset", "Never return photos below Status 3 from this unauthenticated endpoint" ]
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never return photos below Status 3 from this unauthenticated endpoint"
+  ]
 }

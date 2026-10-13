@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_setFcmTokens",
-  "version": "1.0.0",
-  "description": "Updates the Apple Push Notification (APNS) and Firebase Cloud Messaging (FCM) tokens for the calling device. Called after the OS grants or refreshes notification permissions. @apnsToken is NULL for Android devices.",
+  "version": "1.1.0",
+  "description": "Updates the Apple Push Notification (APNS) and Firebase Cloud Messaging (FCM) tokens for the calling device, called after the OS grants or refreshes notification permissions (@apnsToken is NULL on Android). Auth: HC6.ValidateAppAuth (spNumber 15); no permission gate — a device may only set its own tokens. A fresh FCM token stamps FcmTokenCreatedAt and clears FcmTokenDeleted. Since 2026-09-17 it also retires the same physical device's other rows so one hasher stops receiving duplicate pushes: (a) any other HC.Device row carrying the identical FCM token string (any hasher — one token = one install), and (b) on iOS/iPadOS only, the same hasher's other Apple rows with the same DeviceData identifierForVendor. Android is deliberately excluded from (b) because its fingerprint is identical across two handsets of one model.",
   "parameters": [
     {
       "name": "deviceId",
@@ -37,11 +37,11 @@
     {
       "index": 0,
       "name": "Envelope",
-      "description": "Always returned as the first rowset. success=1 on success; success=0 with errorCode and errorType populated on any error (auth failure, or unhandled DB error).",
+      "description": "Always returned first. success=1 (errorCode/errorType NULL) on success; success=0 with errorCode and errorType on any error: ValidateAppAuth codes (1160/1360/1260 family) or 1915 / errorType 19 from the CATCH block.",
       "columns": [
         {
           "name": "success",
-          "type": "BIT",
+          "type": "INT",
           "nullable": false,
           "description": "1 if the operation succeeded; 0 on any error path."
         },
@@ -104,24 +104,27 @@
     }
   ],
   "sideEffects": [
-    "UPDATE HC.Device SET ApnsToken = @apnsToken, FcmToken = @fcmToken WHERE id = @deviceId",
-    "INSERT HC.ErrorLog on auth failure (via ValidateAppAuth) and on unhandled CATCH block error"
+    "UPDATE HC.Device SET ApnsToken, FcmToken, FcmTokenCreatedAt = SYSUTCDATETIME() and FcmTokenDeleted = NULL (both only when @fcmToken is not NULL) WHERE id = @deviceId. FcmTokenCreatedAt / FcmTokenDeleted are DATETIMEOFFSET(7) NULL, added by db/hc6/app/archive/HC6.Device.FcmTokenTimestamps.migration.sql (missing from the stale db/schema/tables/HC.Device.Table.sql).",
+    "When @fcmToken is not NULL: UPDATE HC.Device SET FcmToken = NULL, FcmTokenDeleted = SYSUTCDATETIME() on every OTHER row with the same FcmToken string (not scoped to the hasher).",
+    "When the calling device is iOS/iPadOS and has an identifierForVendor: the same NULLing on the same hasher's other iOS/iPadOS rows that carry a token and the same identifierForVendor.",
+    "All updates in one transaction.",
+    "INSERT HC.ErrorLog on auth failure (via ValidateAppAuth) and in the CATCH block (after ROLLBACK)."
   ],
   "codeSmells": [
     {
       "severity": "medium",
-      "issue": "Magic errorCode 1915 in CATCH block",
-      "detail": "Line 84: SET @errorCode = 1915 is an undocumented magic value with no explanation. If this is a composed code (19=errorType, 15=spNumber), that convention is not consistent with other SPs and should be documented or replaced with a standard sentinel."
-    },
-    {
-      "severity": "low",
-      "issue": "HcVersion hardcoded as '<unknown>' in ErrorLog INSERT",
-      "detail": "Line 86: INSERT HC.ErrorLog uses HcVersion = '<unknown>'. If the schema has a mechanism to pass the app version, this should be populated. If not, document why it is always unknown on this path."
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken (lines 3-4) have no SQL default. A client that omits one is refused by SQL before the procedure runs: no HC.ErrorLog row, an empty 500 in the app, and any graceful check inside is unreachable (CLAUDE.md, Rack of Lamb 2026-09-29)."
     },
     {
       "severity": "low",
       "issue": "No @@ROWCOUNT check after UPDATE",
-      "detail": "The UPDATE at line 71 does not verify @@ROWCOUNT = 1 after completing. If the deviceId does not match any row, the SP silently succeeds with success=1. HC5 at least returned 'Failed' when @@ROWCOUNT != 1. Consider asserting @@ROWCOUNT = 1 and returning a not-found error if the device no longer exists."
+      "detail": "The UPDATE at line 79 does not verify a row was hit. An unknown @deviceId cannot pass ValidateAppAuth, so this is near-unreachable, but a device row deleted between auth and update would still report success=1."
+    },
+    {
+      "severity": "low",
+      "issue": "JSON_VALUE over CAST(DeviceData) in a WHERE clause",
+      "detail": "Line ~118 evaluates JSON_VALUE(CAST(d.DeviceData AS NVARCHAR(MAX)), '$.identifierForVendor') per row; it is bounded by UserId and FcmToken IS NOT NULL so the row count is small, but it cannot use an index."
     }
   ],
   "breakingChanges": [

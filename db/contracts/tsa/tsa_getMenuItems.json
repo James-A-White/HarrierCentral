@@ -1,0 +1,91 @@
+{
+  "schema": "TSA",
+  "name": "tsa_getMenuItems",
+  "version": "1.0.0",
+  "description": "Returns every TSA.MenuItem for a restaurant, ordered by name, including items with isAvailable = 0 (the caller filters). Public data; called by GET. Called by the TSA Eats Next.js app (tsa-eats/lib/api.ts) through api/Endpoints/TsaApi.cs, which maps queryType 'getMenuItems' to [TSA].[tsa_getMenuItems]. There is no Harrier Central auth: POST requires the shared X-Api-Key (TsaApiKey); GET requires nothing, and the shim does not restrict which procedure a GET may name. The shim turns any one-row rowset with Success = 0 into HTTP 400 {success:false, errorMessage}, and an empty first rowset into HTTP 404.",
+  "parameters": [
+    {
+      "name": "restaurantId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "MenuItem.restaurantId",
+      "description": "Restaurant id. No default."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "MenuItems",
+      "description": "Zero or more rows ordered by name (zero rows → shim 404, which the client treats as empty).",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "MenuItem id."
+        },
+        {
+          "name": "restaurantId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Owning restaurant."
+        },
+        {
+          "name": "name",
+          "type": "NVARCHAR(200)",
+          "nullable": false,
+          "description": "Dish name."
+        },
+        {
+          "name": "description",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Dish description."
+        },
+        {
+          "name": "imageUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Image URL."
+        },
+        {
+          "name": "dailyQuota",
+          "type": "INT",
+          "nullable": false,
+          "description": "Per-day quota (not enforced anywhere)."
+        },
+        {
+          "name": "isAvailable",
+          "type": "BIT",
+          "nullable": false,
+          "description": "BIT column: serialised by the shim as a JSON boolean."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@restaurantId (line 2) have no SQL default. A caller that omits one is refused by SQL Server before the body runs: no log row, and the TsaApi shim returns a generic 500."
+    },
+    {
+      "severity": "medium",
+      "issue": "SP body not wrapped in TRY/CATCH",
+      "detail": "Read procedure with no TRY/CATCH: any runtime error (timeout, deadlock) becomes an unlogged raw 500 from the shim."
+    },
+    {
+      "severity": "low",
+      "issue": "BIT column",
+      "detail": "TSA.MenuItem.isAvailable is BIT (CLAUDE.md: never BIT); it reaches the client as true/false."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

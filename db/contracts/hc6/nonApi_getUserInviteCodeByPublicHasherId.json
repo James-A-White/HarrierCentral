@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "nonApi_getUserInviteCodeByPublicHasherId",
-  "version": "1.0.0",
-  "description": "Resolves a hasher's email address and current invite code from their public hasher ID so the EmailInviteCode Azure Function can send an invite without requiring the client to supply the email address directly. Called only from the EmailInviteCode endpoint — never from the app. Returns an empty result set when the hasher is not found or is removed (Removed != 0).",
+  "version": "1.1.0",
+  "description": "Internal, no auth. Called only by the EmailInviteCode Azure Function (api/Endpoints/EmailInviteCode.cs) — never by the app. Resolves the live hasher (Removed = 0) from their public hasher id (identification only), makes sure they hold a compliant invite code via HC6.nonApi_ensureUserInviteCode WITHOUT rotation (this path must not invalidate a code the user may just have been sent), and returns their email address and the code, so the function can send the invite without the client ever seeing the address. Empty rowset when the hasher is unknown or removed.",
   "parameters": [
     {
       "name": "publicHasherId",
@@ -28,20 +28,28 @@
           "name": "InviteCode",
           "type": "NVARCHAR(50)",
           "nullable": false,
-          "description": "HC.Hasher.ResetCode with the 'URC:' prefix stripped via REPLACE. Returns the raw 6-letter code. Table column is NVARCHAR(50) NOT NULL (default '######'). May return an empty string or non-URC value if the code has never been generated for this hasher."
+          "description": "HC.Hasher.ResetCode with the 'URC:' prefix stripped — a six-letter code, guaranteed compliant by nonApi_ensureUserInviteCode just before the read (unless its ten-attempt generation failed, which it logs)."
         }
       ]
     }
   ],
-  "sideEffects": [],
+  "sideEffects": [
+    "EXEC HC6.nonApi_ensureUserInviteCode @userId (no rotation) — UPDATEs HC.Hasher.ResetCode / ResetCodeLastUpdated only when the current code is non-compliant (e.g. the '######' default); fires the Hasher triggers."
+  ],
   "codeSmells": [
     {
       "severity": "medium",
-      "issue": "InviteCode may be the default placeholder if no code was ever generated",
-      "detail": "HC.Hasher.ResetCode has a default value of '######'. If nonApi_getUserInviteCode has never been called for this hasher, the REPLACE strips the 'URC:' prefix (no-op since the default does not contain it) and returns '######' as the InviteCode. The C# caller should call nonApi_getUserInviteCode first to ensure a code is generated before calling this SP."
+      "issue": "SP body not wrapped in TRY/CATCH",
+      "detail": "Lines 27-39 have no TRY/CATCH; an error in the lookups reaches EmailInviteCode as a raw exception with no HC.ErrorLog row from this SP."
+    },
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@publicHasherId (line 2) has no SQL default. The one C# caller always supplies it."
     }
   ],
   "breakingChanges": [
-    "HC5 lived in the HC schema (HC.nonApi_getUserInviteCodeByPublicHasherId). HC6 moves it to the HC6 schema. Any C# code referencing the HC schema name directly must be updated."
+    "HC5 lived in the HC schema (HC.nonApi_getUserInviteCodeByPublicHasherId). HC6 moves it to the HC6 schema. Any C# code referencing the HC schema name directly must be updated.",
+    "1.1.0 (2026-09-07): calls nonApi_ensureUserInviteCode before reading, so the '######' column default is no longer returned as a code. Rowset unchanged."
   ]
 }

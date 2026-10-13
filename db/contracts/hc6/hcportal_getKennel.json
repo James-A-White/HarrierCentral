@@ -1,14 +1,14 @@
 {
   "schema": "HC6",
   "name": "hcportal_getKennel",
-  "version": "1.2.0",
-  "description": "Retrieves comprehensive details for a single kennel by its public ID. Returns kennel profile, location info, website settings, payment configuration (3 slots), default run settings, and related geographic data. Used by both the admin portal and public HashRuns.org sites. Two service account GUIDs bypass the hasher-existence check: 11111111-...=HashRuns.org public access, 22222222-...=admin portal service account. Read-only query.",
+  "version": "1.3.0",
+  "description": "Returns one kennel's full profile for the portal's kennel editor and the HashRuns.org service account: identity, location (city/region/country with flags), website settings, dissemination flags, default run settings, membership settings, three payment-scheme slots, bank details, card payment provider, runs-page import status, trail symbol/type config and notification windows. Auth: HC6.ValidatePortalAuth with @publicKennelId as the context identifier. There is no kennel permission gate: any authenticated portal caller (regular user callerType 0, or service account 1/2) can read any kennel. Read-only.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": "Device.id",
+      "mapsToColumn": null,
       "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
@@ -30,7 +30,7 @@
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "description": "Returned alone on auth failure, 'Hasher not found', 'Null or invalid publicKennelId', 'Kennel not found', or from the CATCH (ERROR_MESSAGE(), not logged).",
       "columns": [
         {
           "name": "Success",
@@ -40,7 +40,7 @@
         },
         {
           "name": "ErrorMessage",
-          "type": "NVARCHAR(255)",
+          "type": "NVARCHAR(MAX)",
           "nullable": true,
           "description": "Human-readable error message"
         }
@@ -49,7 +49,7 @@
     {
       "index": 0,
       "name": "KennelDetailResult",
-      "description": "Single row containing comprehensive kennel profile. JOINs HC.City, HC.Region, and HC.Country for geographic data. Only returned when no errors occur.",
+      "description": "On success: exactly one row (empty if the kennel's city/region/country chain is broken — INNER JOINs). Columns in SELECT order.",
       "columns": [
         {
           "name": "kennelPublicId",
@@ -140,6 +140,30 @@
           "type": "NVARCHAR(500)",
           "nullable": true,
           "description": "Kennel.KennelWebsiteUrl — external kennel website URL"
+        },
+        {
+          "name": "defaultMessagingPlatform",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "COALESCE(Kennel.DefaultMessagingPlatform, 1). Column from db/hc6/app/archive/2026-09-15_kennel_messaging.sql (SMALLINT NOT NULL); not in db/schema/tables."
+        },
+        {
+          "name": "messagingGroupInviteUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Kennel.MessagingGroupInviteUrl (db/hc6/app/archive/2026-09-15_kennel_messaging.sql)."
+        },
+        {
+          "name": "cardPaymentProvider",
+          "type": "NVARCHAR(30)",
+          "nullable": true,
+          "description": "Card payment app the kennel hands off to: 'sumup', or NULL when the kennel takes no card through Harrier Central (E8.F7.S2)."
+        },
+        {
+          "name": "cardPaymentMerchantCode",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "The club's SumUp merchant code: the account the Hash Cash's SumUp app must be signed in to (E8.F7.S2)."
         },
         {
           "name": "kennelCoverPhoto",
@@ -370,6 +394,12 @@
           "description": "Kennel.DefaultRunStartTime (TIME(7)) CAST to DATETIME — default run start time"
         },
         {
+          "name": "defaultRunDayOfWeek",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "COALESCE(Kennel.DefaultRunDayOfWeek, 1): 1=Mon .. 7=Sun. Column from db/hc6/portal/archive/add_DefaultRunDayOfWeek_to_Kennel.sql."
+        },
+        {
           "name": "bankScheme",
           "type": "NVARCHAR(10)",
           "nullable": true,
@@ -598,6 +628,42 @@
           "description": "Kennel.KennelSearchTags — search keywords for kennel discovery"
         },
         {
+          "name": "runsPageUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Kennel.RunsPageUrl — the kennel's runs page read by the runs-page import (db/hc6/app/archive/2026-10-04_kennel_runs_page.sql)."
+        },
+        {
+          "name": "inboundIntegrationId",
+          "type": "INT",
+          "nullable": false,
+          "description": "Kennel.InboundIntegrationId (HC.Integration id; 1 = the defunct Facebook import)."
+        },
+        {
+          "name": "runsPageStatus",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Kennel.RunsPageStatus — what the last runs-page read found (db/hc6/app/archive/2026-10-04_kennel_runs_page.sql)."
+        },
+        {
+          "name": "runsPageCheckedAt",
+          "type": "NVARCHAR(30)",
+          "nullable": true,
+          "description": "Kennel.RunsPageCheckedAt (DATETIME2(0)) as ISO 8601 text, style 126."
+        },
+        {
+          "name": "trailSymbolsConfigJson",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Kennel.TrailSymbolsConfigJson (type per db/hc6/archive/add_TrailTypesConfigJson_to_Kennel.sql, which mirrors it)."
+        },
+        {
+          "name": "trailTypesConfigJson",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Kennel.TrailTypesConfigJson (db/hc6/archive/add_TrailTypesConfigJson_to_Kennel.sql)."
+        },
+        {
           "name": "notificationMinutesBeforeRunForChatPushNotifications",
           "type": "INT",
           "nullable": true,
@@ -608,18 +674,6 @@
           "type": "INT",
           "nullable": true,
           "description": "Kennel.NotificationMinutesBeforeRunForCheckinReminder — minutes before run to send check-in reminders"
-        },
-        {
-          "name": "cardPaymentProvider",
-          "type": "NVARCHAR(30)",
-          "nullable": true,
-          "description": "Card payment app the kennel hands off to: 'sumup', or NULL when the kennel takes no card through Harrier Central (E8.F7.S2)."
-        },
-        {
-          "name": "cardPaymentMerchantCode",
-          "type": "NVARCHAR(100)",
-          "nullable": true,
-          "description": "The club's SumUp merchant code: the account the Hash Cash's SumUp app must be signed in to (E8.F7.S2)."
         }
       ]
     }
@@ -631,5 +685,22 @@
     "Never change a parameter type",
     "Never change a sentinel value meaning",
     "Never fix the 'canEditRunAttendence' typo without coordinating with all clients"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No kennel permission gate on sensitive columns",
+      "detail": "After auth (line 51) nothing checks the caller's HasherKennelMap rights for this kennel, yet the row carries bankAccountNumber/bankBic/bankBeneficiary (146-149), extApiKey (182), cardPaymentMerchantCode (106) and kennelAdminEmailList (133). Any hasher with a portal device token can read them for any kennel."
+    },
+    {
+      "severity": "medium",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 201-204 return {Success 0, ErrorMessage} with no HC.ErrorLog row."
+    },
+    {
+      "severity": "low",
+      "issue": "Dead validation",
+      "detail": "Lines 59-66: ValidatePortalAuth never returns success with a NULL @hasherId, so 'Hasher not found' is unreachable."
+    }
   ]
 }

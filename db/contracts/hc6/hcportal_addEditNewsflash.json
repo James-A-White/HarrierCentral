@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_addEditNewsflash",
-  "version": "1.0.0",
-  "description": "Creates or updates a portal newsflash. When @newsflashId is NULL a new row is inserted with the calling admin's hasherId recorded as CreatedByHasherId. When @newsflashId is provided the existing active (IsDeleted=0) newsflash is updated. Image upload to Azure Blob Storage is handled by the Flutter portal before calling this SP — @imageUrl receives the resulting blob URL. An empty or whitespace-only @imageUrl is treated as NULL (no image / clear existing image). Validation is fast-failed before the auth round-trip.",
+  "version": "1.1.0",
+  "description": "Creates or updates a portal newsflash. When @newsflashId is NULL a new row is inserted with the calling admin's hasherId recorded as CreatedByHasherId. When @newsflashId is provided the existing active (IsDeleted=0) newsflash is updated. Image upload to Azure Blob Storage is handled by the Flutter portal before calling this SP — @imageUrl receives the resulting blob URL. An empty or whitespace-only @imageUrl is treated as NULL (no image / clear existing image). Validation is fast-failed before the auth round-trip. Auth: HC6.ValidatePortalAuth with NULL callerParamString. There is no permission gate beyond a valid portal token (see codeSmells). HC.PortalNewsflash is defined in db/hc6/portal/archive/create_portal_newsflash_tables.sql (not in db/schema/tables).",
   "parameters": [
     {
       "name": "deviceId",
@@ -72,10 +72,20 @@
     {
       "index": 0,
       "name": "SuccessEnvelope",
-      "description": "Returned on any outcome — success, validation failure, auth failure, or runtime error.",
+      "description": "Returned on every outcome — success, validation failure ('Title is required', 'Body text is required', 'Start date is required', 'End date must be on or after start date'), auth failure, 'Kennel not found', 'Newsflash not found', or runtime error (ERROR_MESSAGE()).",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "1 on success, 0 on any error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "NULL on success, error message on failure" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 on any error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success, error message on failure"
+        }
       ]
     }
   ],
@@ -83,7 +93,23 @@
     "INSERT HC.PortalNewsflash — when @newsflashId is NULL",
     "UPDATE HC.PortalNewsflash SET Title, BodyText, ImageUrl, StartDate, EndDate, KennelId, UpdatedAt — when @newsflashId is provided"
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No permission gate",
+      "detail": "After HC6.ValidatePortalAuth (lines 72-80) any authenticated portal user may create or overwrite a newsflash, including a platform-wide one (@kennelId NULL) and one targeted at any kennel. There is no HC.PlatformAdmin or kennel-role check, and no ownership check on edit (CreatedByHasherId is not compared)."
+    },
+    {
+      "severity": "medium",
+      "issue": "CATCH does not log to HC.ErrorLog",
+      "detail": "Lines 134-137 roll back and return the envelope without writing HC.ErrorLog."
+    },
+    {
+      "severity": "low",
+      "issue": "NVARCHAR(n) parameter receives user text",
+      "detail": "@title NVARCHAR(250) (line 6) silently truncates a longer title instead of returning an error; the column is also 250, so declare NVARCHAR(MAX) and check LEN()."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

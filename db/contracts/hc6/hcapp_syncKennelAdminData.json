@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_syncKennelAdminData",
-  "version": "1.1.0",
-  "description": "Incremental pull-sync for kennel-level admin data. Each of the five entity types is gated by a watermark parameter — 'ignore' (default) skips that table. HasherKennelMap is scoped to @kennelId; Payments and HasherEventMap are scoped to @targetHasherId if provided. Used after write SPs that modify kennel-level membership so the admin view is immediately updated. Supports the write-SP delegation pattern via @procName and @param.",
+  "version": "1.2.0",
+  "description": "Incremental pull-sync for kennel-level admin data (ValidateAppAuth, spNumber 72). Each of the five entity types is gated by a watermark parameter — 'ignore' (default), NULL or a date <= 2000-01-01 skips that table. HasherKennelMap is scoped to @kennelId; Payments and HasherEventMap are scoped to @targetHasherId (a NULL @targetHasherId returns no rows for either). Kennels and Hashers are global. Permission gate on a DIRECT call (@procName NULL): HC6.CheckAreaEntry areaKey 'kennelTools' on the app surface (derived entry — any one kennel-tools capability), else errorCode 1372. Delegated calls from write SPs (@procName set) skip the gate because the write SP already authorised the caller, and validate the token with the delegating SP's name and @param suffix. @includeUnboundPayments (default 0) hides event-less payments from pre-3.1 clients that cannot parse them. Read SP: no success envelope; body is wrapped in TRY/CATCH that logs to HC.ErrorLog and re-throws.",
   "parameters": [
     {
       "name": "deviceId",
@@ -65,14 +65,21 @@
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "When provided, scopes the Payments and HasherEventMap rowsets to this specific hasher. Payments filter uses UserId = @targetHasherId with no kennelId constraint."
+      "description": "Scopes the Payments and HasherEventMap rowsets to this hasher (UserId = @targetHasherId, no kennelId constraint on Payments). When NULL those two rowsets come back empty, since the equality never matches."
     },
     {
       "name": "usePaging",
       "type": "INT",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Default 0 (unlimited). When 1, limits Kennels and HasherKennelMap to 250 rows; Hashers to 1000 rows. HasherEventMap has no page limit even when paging is enabled."
+      "description": "Default 0 (unlimited). When 1, limits Kennels and HasherKennelMap to 250 rows and Hashers to 2500 rows. Payments and HasherEventMap have no page limit even when paging is enabled."
+    },
+    {
+      "name": "includeUnboundPayments",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Default 0. 0 = omit payments with a NULL EventId or HasherEventMapId (run packages, hare rewards) because pre-3.1 clients declare eventId/hemId as required and fail to parse them; 1 = return every payment (3.1+ clients send 1)."
     },
     {
       "name": "procName",
@@ -93,7 +100,7 @@
     {
       "index": 0,
       "name": "Error",
-      "description": "Returned on auth failure (errorType=11 from ValidateAppAuth) or missing kennelId (errorType=12, errorCode=1272). Mutually exclusive with all data rowsets.",
+      "description": "Returned instead of all data rowsets on: auth failure from ValidateAppAuth (errorType 11); NULL or zero-UUID @kennelId (errorType 12, errorCode 1272, logged); caller lacking the 'kennelTools' area entry on a direct call (errorType 13, errorCode 1372, logged). Column order is errorId, errorType, errorCode, errorTitle, errorUserMessage, errorProc.",
       "columns": [
         {
           "name": "errorId",
@@ -105,13 +112,13 @@
           "name": "errorType",
           "type": "INT",
           "nullable": false,
-          "description": "Error classification. 12=validation (missing kennelId); see ValidateAppAuth for auth error codes."
+          "description": "Error classification. 11 = auth (ValidateAppAuth); 12 = validation (missing kennelId); 13 = not authorised (kennelTools gate)."
         },
         {
           "name": "errorCode",
           "type": "INT",
           "nullable": false,
-          "description": "Specific error code. 1272 = null or zero-UUID kennelId."
+          "description": "Specific error code. 1272 = null or zero-UUID kennelId; 1372 = not authorised for kennel admin sync; see ValidateAppAuth for auth codes."
         },
         {
           "name": "errorTitle",
@@ -209,6 +216,13 @@
           "description": "Search tags."
         },
         {
+          "name": "disseminateAllowWebLinks",
+          "type": "SMALLINT",
+          "nullable": false,
+          "mapsToColumn": "Kennel.DisseminateAllowWebLinks",
+          "description": "Whether run web links may be disseminated (default 1)."
+        },
+        {
           "name": "kennelLogo",
           "type": "NVARCHAR(500)",
           "nullable": false,
@@ -235,6 +249,34 @@
           "nullable": true,
           "mapsToColumn": "Kennel.KennelWebsiteUrl",
           "description": "External website URL."
+        },
+        {
+          "name": "defaultMessagingPlatform",
+          "type": "SMALLINT",
+          "nullable": false,
+          "mapsToColumn": "Kennel.DefaultMessagingPlatform",
+          "description": "Which messaging app 'Post this run' opens (E9.F6). COALESCE to 1 = WhatsApp. Column type from db/hc6/app/archive/2026-09-15_kennel_messaging.sql (not yet in db/schema/tables)."
+        },
+        {
+          "name": "messagingGroupInviteUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "mapsToColumn": "Kennel.MessagingGroupInviteUrl",
+          "description": "Invite link to the kennel's messaging group. Type from db/hc6/app/archive/2026-09-15_kennel_messaging.sql."
+        },
+        {
+          "name": "cardPaymentProvider",
+          "type": "NVARCHAR(30)",
+          "nullable": true,
+          "mapsToColumn": "Kennel.CardPaymentProvider",
+          "description": "Card app the Hash Cash hands off to (e.g. 'sumup'), E8.F7.S1. Type from db/hc6/app/archive/2026-09-22_kennel_payment_provider.sql."
+        },
+        {
+          "name": "cardPaymentMerchantCode",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "mapsToColumn": "Kennel.CardPaymentMerchantCode",
+          "description": "Club's merchant code shown before handing off to the card app (E8.F7.S2). Type from db/hc6/app/archive/2026-09-22_kennel_payment_provider.sql."
         },
         {
           "name": "kennelMismanagementTeam",
@@ -539,6 +581,20 @@
           "description": "Non-member surcharge for payment scheme 3."
         },
         {
+          "name": "trailSymbolsConfigJson",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "mapsToColumn": "Kennel.TrailSymbolsConfigJson",
+          "description": "Per-kennel trail symbol (mark) configuration JSON, or NULL for defaults."
+        },
+        {
+          "name": "trailTypesConfigJson",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "mapsToColumn": "Kennel.TrailTypesConfigJson",
+          "description": "Per-kennel merge-by-value trail-type config JSON, or NULL. Type from db/hc6/archive/add_TrailTypesConfigJson_to_Kennel.sql."
+        },
+        {
           "name": "removed",
           "type": "SMALLINT",
           "nullable": false,
@@ -769,7 +825,7 @@
     {
       "index": "conditional",
       "name": "Hashers",
-      "description": "Emitted when @hashersUpdatedAfter != 'ignore'. All hashers updated after the watermark (global, not kennel-scoped). Ordered by updatedAt ASC, id ASC. Page limit: 1000 rows when @usePaging=1.",
+      "description": "Emitted when @hashersUpdatedAfter != 'ignore'. All hashers updated after the watermark (global, not kennel-scoped). Ordered by updatedAt ASC, id ASC. Page limit: 2500 rows when @usePaging=1.",
       "columns": [
         {
           "name": "hasherId",
@@ -845,7 +901,7 @@
     {
       "index": "conditional",
       "name": "Payments",
-      "description": "Emitted when @paymentsUpdatedAfter != 'ignore'. Payments where UserId = @targetHasherId and updatedAt > watermark. No ORDER BY clause — returned in storage order. No page limit regardless of @usePaging.",
+      "description": "Emitted when @paymentsUpdatedAfter != 'ignore'. Payments where UserId = @targetHasherId and updatedAt > watermark, across ALL kennels (no @kennelId filter). When @includeUnboundPayments = 0 (the default), rows with a NULL EventId or HasherEventMapId are excluded. No ORDER BY — storage order. No page limit regardless of @usePaging.",
       "columns": [
         {
           "name": "paymentId",
@@ -871,16 +927,16 @@
         {
           "name": "hemId",
           "type": "UNIQUEIDENTIFIER",
-          "nullable": false,
+          "nullable": true,
           "mapsToColumn": "Payment.HasherEventMapId",
-          "description": "Associated HasherEventMap record."
+          "description": "Associated HasherEventMap record. NULL only for event-less payments, which are returned only when @includeUnboundPayments = 1. (db/schema/tables/HC.Payment.Table.sql still declares these NOT NULL; the SP's own comment at lines 341-353 documents NULL rows in production, so the schema file is stale and no run-once script for the change was found.)"
         },
         {
           "name": "eventId",
           "type": "UNIQUEIDENTIFIER",
-          "nullable": false,
+          "nullable": true,
           "mapsToColumn": "Payment.EventId",
-          "description": "Event the payment is for."
+          "description": "Event the payment is for. NULL only for event-less payments, which are returned only when @includeUnboundPayments = 1. (db/schema/tables/HC.Payment.Table.sql still declares these NOT NULL; the SP's own comment at lines 341-353 documents NULL rows in production, so the schema file is stale and no run-once script for the change was found.)"
         },
         {
           "name": "paidTo",
@@ -1037,7 +1093,7 @@
     {
       "index": "conditional",
       "name": "HasherEventMap",
-      "description": "Emitted when @hasherEventMapUpdatedAfter != 'ignore'. HEM records where UserId = @targetHasherId and updatedAt > watermark. Joined to HC.Event for denormalised event fields, and to HC.HasherKennelMap for kennel-specific photo and hash name. Ordered by updatedAt ASC, id ASC. No page limit regardless of @usePaging.",
+      "description": "Emitted when @hasherEventMapUpdatedAfter != 'ignore'. HEM records where UserId = @targetHasherId and updatedAt > watermark. Joined to HC.Event for denormalised event fields, and to HC.HasherKennelMap for kennel-specific photo and hash name. Ordered by updatedAt ASC, id ASC. No page limit regardless of @usePaging. notes/notesShared are privacy-gated: notes are returned only when NotesVisibility = 1 and neither HasherKennelMap.KennelStanding & 0x1000 nor Hasher.Preferences & 0x2000 is set.",
       "columns": [
         {
           "name": "hemId",
@@ -1214,13 +1270,13 @@
           "name": "hemEventStartDatetime",
           "type": "DATETIME2",
           "nullable": false,
-          "description": "Event start datetime as DATETIME2: uses FbEventStartDatetime when UseFbRunDetails=1, otherwise EventStartDatetime."
+          "description": "CONVERT(DATETIME2, Event.EventStartDatetime) — local wall-clock value with the offset dropped."
         },
         {
           "name": "hemEventStartDatetimeGmt",
           "type": "DATETIME2",
           "nullable": true,
-          "description": "Event start datetime (GMT) as DATETIME2: uses FbEventStartDatetime when UseFbRunDetails=1, otherwise EventStartDatetimeGmt. Note: second derivation uses Fb column for both local and GMT when UseFbRunDetails=1 — EventStartDatetimeGmt is not used in the FB branch."
+          "description": "CONVERT(DATETIME2, Event.EventStartDatetimeGmt) — the UTC instant as a DATETIME2 (offset dropped)."
         },
         {
           "name": "eventStartDatetimeGmt",
@@ -1278,41 +1334,54 @@
       ]
     }
   ],
-  "sideEffects": [],
+  "sideEffects": [
+    "Inserts an HC.ErrorLog row on the 1272 (missing kennel) and 1372 (not authorised) paths and on any unhandled error (CATCH, then re-throw). Otherwise read-only."
+  ],
   "codeSmells": [
     {
       "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "Lines 3-5: @deviceId, @accessToken and @kennelId have no SQL default. A client that omits @kennelId is refused by SQL ('expects parameter') before the body runs — an empty 500 with no HC.ErrorLog row — and the SP's own 1272 'Missing kennel' path is unreachable. Give each a default (= NULL) and keep the NULL check."
+    },
+    {
+      "severity": "medium",
       "issue": "Payments not scoped to @kennelId",
-      "detail": "The Payments rowset filters only on pmt.UserId = @targetHasherId with no kennelId restriction (line 291). A call for kennel A can return payments the hasher made at kennels B and C. This may be intentional for a full hasher payment view, but it deviates from the kennel-scoped intent of the SP and should be documented for callers."
+      "detail": "The Payments rowset filters only on pmt.UserId = @targetHasherId with no kennelId restriction (line 339). A call for kennel A returns the hasher's payments at kennels B and C too. Possibly intentional (full hasher ledger) but it contradicts the 'scoped to the given kennel' wording in the header (line 23) and lets a kennel-A admin pull another kennel's payment rows for that hasher."
     },
     {
       "severity": "medium",
       "issue": "HasherEventMap has no page limit",
-      "detail": "The HasherEventMap rowset (lines 297-338) has no FETCH NEXT clause. When @usePaging=1, Kennels, HasherKennelMap, and Hashers are page-limited but HEM is not. A hasher with many events could return an unbounded result set."
+      "detail": "The HasherEventMap rowset (lines 362-410) has no FETCH NEXT clause. When @usePaging=1, Kennels, HasherKennelMap and Hashers are page-limited but HEM is not."
     },
     {
       "severity": "medium",
       "issue": "Payments has no ORDER BY and no page limit",
-      "detail": "The Payments rowset (lines 259-292) has no ORDER BY clause and no FETCH NEXT clause. Row order is non-deterministic and the result set is unbounded regardless of @usePaging."
+      "detail": "The Payments rowset (lines 307-357) has no ORDER BY and no FETCH NEXT. Row order is non-deterministic and the result set is unbounded regardless of @usePaging; a client taking the last row's updatedAt as its watermark can skip rows."
     },
     {
       "severity": "low",
-      "issue": "Duplicate eventStartDatetimeGmt columns with different derivations",
-      "detail": "The HasherEventMap rowset returns two GMT datetime columns: hemEventStartDatetimeGmt (lines 323-324, cast to DATETIME2, uses FB branch for both local and GMT) and eventStartDatetimeGmt (line 325, DATETIMEOFFSET, uses COALESCE(EventStartDatetimeGmt, EventStartDatetime)). These are semantically different and the duplication is a potential source of confusion for callers."
+      "issue": "Duplicate event start GMT columns with different derivations",
+      "detail": "The HasherEventMap rowset returns hemEventStartDatetimeGmt (line 396, CONVERT(DATETIME2, EventStartDatetimeGmt), NULL when the GMT column is NULL) and eventStartDatetimeGmt (line 397, COALESCE(EventStartDatetimeGmt, EventStartDatetime) as DATETIMEOFFSET). Same concept, two shapes; the fallback to raw EventStartDatetime reintroduces the spurious +00:00 offset (see /hc-event-datetimes)."
+    },
+    {
+      "severity": "low",
+      "issue": "Correlated subquery repeated per row",
+      "detail": "Lines 387 and 391 each run SELECT h.Preferences FROM HC.Hasher per HEM row to compute notes and notesShared. Join HC.Hasher once instead."
     },
     {
       "severity": "low",
       "issue": "authorizedDeviceList and authorizedDeviceCount are always empty/zero",
-      "detail": "The HasherKennelMap rowset hardcodes '' for authorizedDeviceList and 0 for authorizedDeviceCount (lines 221-223). These fields appear to be placeholders. Callers should not rely on them containing real data."
+      "detail": "The HasherKennelMap rowset hardcodes '' for authorizedDeviceList and 0 for authorizedDeviceCount (lines 269-270). Placeholders kept for client compatibility."
     },
     {
       "severity": "low",
       "issue": "isMember is a CASE expression returning INT not SMALLINT",
-      "detail": "The isMember column (line 201) is produced by a CASE WHEN ... THEN 1 ELSE 0 END expression, which returns INT. The underlying HasherKennelMap.IsMember column is SMALLINT. Callers migrating from HC5 (which returned the stored SMALLINT column) should be aware of the type change and the semantic change (now computed rather than stored)."
+      "detail": "The isMember column (line 249) is CASE WHEN ... THEN 1 ELSE 0 END, which is INT; the stored HasherKennelMap.IsMember column is SMALLINT. Semantic change vs HC5 too (computed from MembershipExpirationDate rather than stored)."
     }
   ],
   "breakingChanges": [
     "isMember in HasherKennelMap rowset is now computed dynamically (CASE WHEN MembershipExpirationDate > GETDATE() THEN 1 ELSE 0 END) instead of returning the stored HasherKennelMap.IsMember SMALLINT column. The stored column can be stale; the computed value reflects current membership state. Column type changes from SMALLINT to INT.",
-    "@procName parameter widened from NVARCHAR(100) in HC5 to NVARCHAR(128) in HC6, matching OBJECT_NAME() return type."
+    "@procName parameter widened from NVARCHAR(100) in HC5 to NVARCHAR(128) in HC6, matching OBJECT_NAME() return type.",
+    "@includeUnboundPayments SMALLINT = 0 added (2026-09-13) before @procName. Pre-3.1 clients omit it and do not see event-less payments; callers passing parameters by position must account for it."
   ]
 }

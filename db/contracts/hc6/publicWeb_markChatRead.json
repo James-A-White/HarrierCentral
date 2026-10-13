@@ -1,0 +1,250 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_markChatRead",
+  "version": "1.0.0",
+  "description": "A web member opened a run or kennel chat (E9.F7.S15): resolves the public id and EXECs the app's own hcapp_markEventChatRead (@kind 'run') or hcapp_markKennelChatRead (@kind 'kennel'), so read state is one rule for both clients. Rooms are marked read by hcapp_getRoomMessages and DMs by hcapp_getDirectMessages, so 'room' and 'dm' are refused here. The token must be signed for the inner SP the kind selects; auth lives there. Reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET. Since 2026-10-03 every parameter has a default and @roomType / @threadId are accepted but unused, because the web's shared chatIds() sends every kind's id and a JSON null used to fail the call with 'too many arguments'.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "The calling browser's HC.Device id (the browser is a registered device)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Device-bound token signed for 'hcapp_markEventChatRead' (run) or 'hcapp_markKennelChatRead' (kennel)."
+    },
+    {
+      "name": "kind",
+      "type": "NVARCHAR(10)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "'run' or 'kennel'. Anything else → 1230."
+    },
+    {
+      "name": "publicEventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.PublicEventId",
+      "description": "Used when @kind = 'run'."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "Used when @kind = 'kennel'."
+    },
+    {
+      "name": "roomType",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Accepted, unused (see description)."
+    },
+    {
+      "name": "threadId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Accepted, unused (see description)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "NotFoundEnvelope",
+      "description": "Wrapper refusal: @kind is not 'run'/'kennel', or the run/kennel is unknown, deleted or removed → { success 0, errorCode 1230, errorType 12 } ALONE — no detail rowset and no HC.ErrorLog row. Also the CATCH envelope (1500/5).",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 success, 0 failure"
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success"
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "AuthOrValidationError",
+      "description": "[kind 'run'] From hcapp_markEventChatRead: Returned when HC6.ValidateAppAuth fails or @eventId is NULL. errorType from ValidateAppAuth on auth failure. errorType=12, errorCode=1270 for null eventId. Mutually exclusive with the success rowsets.",
+      "columns": [
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.ErrorLog GUID."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification (1=auth, 3=device not found, 12=validation)."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Specific error code."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Short error title."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name via OBJECT_NAME(@@PROCID)."
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "UnhandledError",
+      "description": "[kind 'run'] From hcapp_markEventChatRead: Returned from the CATCH block when an unexpected DB error occurs. errorCode=9999, errorType=5. Mutually exclusive with success rowsets and other error rowsets.",
+      "columns": [
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.ErrorLog GUID."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 5 (unhandled DB error)."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 9999."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Always 'Database error'."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Always 'An unexpected error occurred.'."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name via OBJECT_NAME(@@PROCID)."
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "LastSequenceCount",
+      "description": "[kind 'run'] From hcapp_markEventChatRead: Returned on success. The message count written to HC.EventMessageBadgeCounts.LastSequenceCount. Mutually exclusive with error rowsets.",
+      "columns": [
+        {
+          "name": "LastSequenceCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Total count of non-removed messages in HC.EventMessage for this event at the time the SP ran. Written to EventMessageBadgeCounts.LastSequenceCount."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "FcmFanoutTokens",
+      "description": "[kind 'run'] From hcapp_markEventChatRead: Returned on success at rowset 1. FCM tokens for the authenticated user's other registered devices. The API shim sends a silent 'read_sync' push to each to zero their badge count. May be empty (zero rows) if the user has only one device or no other devices have an FcmToken.",
+      "columns": [
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Device.FcmToken — Firebase Cloud Messaging token for a device owned by the same user, excluding the calling device. Table column is NVARCHAR(500) NULL, but the WHERE clause filters to IS NOT NULL."
+        },
+        {
+          "name": "BadgeTotal",
+          "type": "INT",
+          "nullable": true,
+          "description": "The recipient's unread chat total for the app icon (HC6.UserUnreadChatTotal); the API puts it in aps.badge / notification_count / data.BadgeTotal. Added 2026-09-28. NULL for a device below HC6.MinBuildForIconBadge() (older apps never lower the icon)."
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "[kind 'kennel'] From hcapp_markKennelChatRead: On auth failure (ValidateAppAuth) or NULL kennelId (1901/2): the error detail alone, no envelope."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "[kind 'kennel'] From hcapp_markKennelChatRead: After the TRY block: success=1 when the MERGE committed; success=0 from the CATCH block (logged to HC.ErrorLog, but no errorId or detail is returned).",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 written, 0 unhandled error."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "EXEC HC6.hcapp_markEventChatRead (kind 'run') — upserts HC.EventMessageBadgeCounts (EventId, UserId); logs its own refusals.",
+    "EXEC HC6.hcapp_markKennelChatRead (kind 'kennel') — MERGE HC.EventMessageBadgeCounts (KennelId, UserId); logs its own refusals.",
+    "hcapp_markEventChatRead's FcmFanoutTokens rowset (the reader's other devices) reaches the API, which does not send the read_sync push for this web action.",
+    "On an error that escapes the inner SP the CATCH rolls back, logs 'Unhandled error in publicWeb_markChatRead' to HC.ErrorLog (HcVersion '<web>', deviceId) and returns the envelope { success 0, errorCode 1500, errorType 5 } alone (no detail rowset)."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Refusal is neither logged nor detailed",
+      "detail": "Lines 36-40 return { success 0, 1230, 12 } without an HC.ErrorLog row or a detail rowset, unlike every other wrapper in this family. The web ignores the reply (.catch(() => undefined)), so a run or kennel that stops resolving would go unnoticed."
+    },
+    {
+      "severity": "low",
+      "issue": "Dead inputs",
+      "detail": "@roomType and @threadId (lines 25-26) are accepted and never read — deliberately, so the web's shared id set does not fail the call. Documented in the header (lines 11-18)."
+    },
+    {
+      "severity": "low",
+      "issue": "NULL @kind slips past the kind check",
+      "detail": "@kind NOT IN ('run','kennel') is UNKNOWN for NULL (line 36), so a NULL kind is not refused here and falls to the ELSE branch (line 45): hcapp_markKennelChatRead with @kennelId NULL, which refuses it (1901). Harmless, but the refusal comes from the wrong SP."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

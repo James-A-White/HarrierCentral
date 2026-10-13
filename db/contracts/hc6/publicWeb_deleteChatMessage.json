@@ -1,0 +1,82 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_deleteChatMessage",
+  "version": "1.0.0",
+  "description": "Web member's door to HC6.hcapp_deleteChatMessage (E9.F1.S13/S14): deletes one chat message — run, kennel or room — for everyone. A thin wrapper that EXECs the app SP with the same arguments and returns its rowsets unchanged; it adds no checks of its own, so authorization (own message, or moderateChat / SuperAdmin) lives only in hcapp_deleteChatMessage and HC6.nonApi_deleteChatMessage. Auth: the wrapped SP's HC6.ValidateAppAuth — the browser's token must be signed for hcapp_deleteChatMessage, not for this wrapper.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "The browser's HC.Device id (the web member session). No SQL default."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token signed for hcapp_deleteChatMessage (the SP that validates it). No SQL default."
+    },
+    {
+      "name": "messageId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.id",
+      "description": "The message to delete, as the web received it. Passed straight through; NULL is refused by the app SP (1980)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "As returned by HC6.hcapp_deleteChatMessage: Auth failure (ValidateAppAuth 1223 / 1323 / 1223 signed out) returns the error detail ALONE — no envelope row before it."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "As returned by HC6.hcapp_deleteChatMessage: Success envelope, or the compact failure envelope followed by the detail at index 1.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 deleted (or already was); 0 refused."
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success. On failure this column is absent: the row is { success = 0, errorCode, errorType } — 1980 missing id (2), 1981 not found (3), 1982 not allowed (3), 1983 unhandled (5)."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "As returned by HC6.hcapp_deleteChatMessage: After a { success = 0 } envelope: 1980, 1981, 1982 (errorId from nonApi_deleteChatMessage) or 1983."
+    }
+  ],
+  "sideEffects": [
+    "EXEC HC6.hcapp_deleteChatMessage with the same arguments — every side effect is the wrapped SP's:",
+    "  EXEC HC6.nonApi_deleteChatMessage (@userId, @messageId, caller name, HcVersion) — sets HC.EventMessage.Removed = 1 and updatedAt; writes HC.ErrorLog itself on a refusal and returns the errorId.",
+    "  trgEventMessageActivityCount refreshes the run card's chat count.",
+    "  LOG.GeneralLog line with the removed text when a moderator removes someone else's message.",
+    "  INSERT HC.ErrorLog on 1980 (pre-flight) and in the CATCH.",
+    "INSERT HC.ErrorLog ('<web>', userId NULL, deviceId) then THROW in the wrapper's CATCH, for an error the wrapped SP does not handle itself."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId and @accessToken have no SQL default (line 17). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

@@ -1,14 +1,14 @@
 {
   "schema": "HC6",
   "name": "hcportal_getCountries",
-  "version": "1.0.0",
-  "description": "Returns a list of all countries from HC.Country, ordered alphabetically by CountryName. Used for populating country dropdowns in the portal. Requires standard portal authentication.",
+  "version": "1.1.0",
+  "description": "Returns a list of all countries from HC.Country, ordered alphabetically by CountryName. Used for populating country dropdowns in the portal. Auth: HC6.ValidatePortalAuth (device-bound token, NULL callerParamString); no kennel permission gate — any authenticated portal user may call it.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": "Device.id",
+      "mapsToColumn": null,
       "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
@@ -23,16 +23,26 @@
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "description": "Returned instead of the result rowset on auth failure or a runtime error from the CATCH block.",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Auth error text (NVARCHAR(255) from ValidatePortalAuth), validation message, or ERROR_MESSAGE() from the CATCH block"
+        }
       ]
     },
     {
       "index": 0,
       "name": "CountriesResult",
-      "description": "List of all countries ordered alphabetically by CountryName. Only returned on successful authentication.",
+      "description": "Every row in HC.Country ordered by CountryName — removed countries (Country.Removed = 1) are NOT filtered out.",
       "columns": [
         {
           "name": "id",
@@ -50,12 +60,24 @@
           "name": "NeighboringCountries",
           "type": "NVARCHAR(50)",
           "nullable": false,
-          "description": "Comma-separated ISO country codes for this country + its neighbours; used as the gazetteer countryCodes filter when a run overrides its country."
+          "description": "Comma-separated ISO country codes for this country and its neighbours; used as the gazetteer countryCodes filter when a run overrides its country. Default ''."
         }
       ]
     }
   ],
   "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH does not log to HC.ErrorLog",
+      "detail": "The CATCH block (line 53) returns the Success=0 envelope with ERROR_MESSAGE() but writes no HC.ErrorLog row, so a runtime failure (timeout, deadlock) is invisible server-side unless the API shim logs it. CLAUDE.md: every CATCH must log to HC.ErrorLog."
+    },
+    {
+      "severity": "low",
+      "issue": "Removed countries returned",
+      "detail": "Line 48-50 selects all of HC.Country without WHERE Removed = 0, unlike hcportal_getCities which filters City.Removed. A retired country would still appear in portal dropdowns."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

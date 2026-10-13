@@ -1,0 +1,115 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_listPasskeys",
+  "version": "1.0.0",
+  "description": "The public web's door to HC6.hcapp_listPasskeys (E9.F7.S18, the web member's passkey list). A thin 'wrap for writes' wrapper: it EXECs hcapp_listPasskeys with the browser's own device credentials and adds no checks of its own, so the web and the app cannot drift. Auth, permission gate and every rule live in hcapp_listPasskeys (the token must be signed for 'hcapp_listPasskeys', because the inner SP validates under its own name). Reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET. Returns hcapp_listPasskeys's rowsets unchanged.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "The calling browser's HC.Device id (the browser is a registered device). No SQL default."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Device-bound token signed for 'hcapp_listPasskeys' (the inner SP validates it under its own name via HC6.ValidateAppAuth). No SQL default."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "From hcapp_listPasskeys: Auth failure (ValidateAppAuth) returns the error detail alone and the SP returns."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "From hcapp_listPasskeys: On success: emitted before the query runs.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Always NULL."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Passkeys",
+      "description": "From hcapp_listPasskeys: One row per passkey-bearing live device, newest sign-in first. WHERE d.UserId = @userId AND d.removed = 0 AND d.PasskeyCredentialId IS NOT NULL.",
+      "columns": [
+        {
+          "name": "DeviceId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "Device.id as text."
+        },
+        {
+          "name": "Label",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "'Safari on iPhone', 'Harrier Central on iPhone' — from Device.OperatingSystem / IsMobile and HC6.DevicePlatformName(DeviceData)."
+        },
+        {
+          "name": "Platform",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "HC6.DevicePlatformName(Device.DeviceData)."
+        },
+        {
+          "name": "IsThisDevice",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when the row is the calling @deviceId."
+        },
+        {
+          "name": "LastLogin",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "Device.LastLogin."
+        },
+        {
+          "name": "IsMobile",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "ISNULL(Device.IsMobile, 0)."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "EXEC HC6.hcapp_listPasskeys — everything it does:",
+    "  None on success. INSERT HC.ErrorLog then THROW on an unhandled error.",
+    "On an error that escapes the inner SP (or the EXEC itself) the CATCH rolls back, logs 'Unhandled error in publicWeb_listPasskeys' to HC.ErrorLog (HcVersion '<web>', deviceId) and re-THROWs, so the API returns 500."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken (line 14-15) have no SQL default. A caller that omits one fails with 'expects parameter' before the SP runs: PublicWebAdminApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
+    },
+    {
+      "severity": "low",
+      "issue": "Failure logged twice",
+      "detail": "hcapp_listPasskeys' own CATCH logs to HC.ErrorLog and THROWs; this wrapper's CATCH (lines 23-29) logs the same error again before re-throwing, so one failure leaves two ErrorLog rows."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

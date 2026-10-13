@@ -1,0 +1,95 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_setDirectMessageMute",
+  "version": "1.0.0",
+  "description": "The public web's door to HC6.hcapp_setDirectMessageMute (direct messages E9.F1.S7/S18/S19, mute or unmute one DM thread). A thin 'wrap for writes' wrapper: it EXECs hcapp_setDirectMessageMute with the browser's own device credentials and adds no checks of its own, so the web and the app cannot drift. Auth, permission gate and every rule live in hcapp_setDirectMessageMute (the token must be signed for 'hcapp_setDirectMessageMute', because the inner SP validates under its own name). Reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET. Returns hcapp_setDirectMessageMute's rowsets unchanged.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "The calling browser's HC.Device id (the browser is a registered device). No SQL default."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Device-bound token signed for 'hcapp_setDirectMessageMute' (the inner SP validates it under its own name via HC6.ValidateAppAuth). No SQL default."
+    },
+    {
+      "name": "threadId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "HasherFriendMap.ThreadId",
+      "description": "The DM thread. Default NULL, which is refused with 2008. The column was added by the 2026-09-29 direct-messages script (db/hc6/app/archive) and is not yet in db/schema/tables/HC.HasherFriendMap.Table.sql. Passed straight to hcapp_setDirectMessageMute."
+    },
+    {
+      "name": "mute",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "HasherFriendMap.FriendNotificationPreference",
+      "description": "1 mute (stored as 3), 0 normal (stored as 0). Default NULL — see code smells: NULL is not rejected and is written as 0. Passed straight to hcapp_setDirectMessageMute."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "From hcapp_setDirectMessageMute: Auth failure (ValidateAppAuth) returns the error detail ALONE at index 0 and the SP returns — no envelope. Other failures return {success:0, errorCode, errorType} at index 0 and then this detail at index 1: 2008 'No such conversation' (errorType 2 — @threadId NULL, @mute not 0/1, or no HasherFriendMap row for the caller on that thread; logged to HC.ErrorLog), 2009 unhandled (errorType 5, CATCH, logged)."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "From hcapp_setDirectMessageMute: On success.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1"
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Muted",
+      "description": "From hcapp_setDirectMessageMute: On success: echoes the request, not a re-read of the row.",
+      "columns": [
+        {
+          "name": "Muted",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "@mute as passed (1 muted, 0 normal; NULL if NULL was passed)."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "EXEC HC6.hcapp_setDirectMessageMute — everything it does:",
+    "  UPDATE HC.HasherFriendMap SET FriendNotificationPreference = 3|0, updatedAt = SYSDATETIMEOFFSET() WHERE UserId = @userId AND ThreadId = @threadId (line 53).",
+    "  INSERT HC.ErrorLog on refusal (line 44) and in the CATCH (line 61).",
+    "On an error that escapes the inner SP (or the EXEC itself) the CATCH rolls back, logs 'Unhandled error in publicWeb_setDirectMessageMute' to HC.ErrorLog (HcVersion '<web>', deviceId) and re-THROWs, so the API returns 500."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken (line 14-15) have no SQL default. A caller that omits one fails with 'expects parameter' before the SP runs: PublicWebAdminApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

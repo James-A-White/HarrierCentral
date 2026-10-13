@@ -1,146 +1,224 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getRunPack",
-  "version": "1.0.0",
-  "description": "A signed-in web member's own state for a run and who else is coming. ValidateAppAuth spNumber 109.",
+  "version": "1.1.0",
+  "description": "A signed-in web member's own state for a run and who else is coming (E9.F7.S4) — the first member-only content on the public web. Gated on any valid device token via HC6.ValidateAppAuth (spNumber 109, @param NULL), because the pack list is what the app shows any signed-in hasher on the RSVP tab; no kennel permission. The run must exist and be live (deleted = 0, removed = 0; IsVisible is not checked). The pack is hares, RSVP yes / maybe and anyone checked in — never the 'not coming' rows — hares first, then attended, then yes, then maybe, then by name. Read-only.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
-      "mapsToColumn": "Device.id",
-      "description": "The browser's device id"
+      "mapsToColumn": null,
+      "description": "The browser's HC.Device id. No SQL default."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Token for this SP's name, paramString = deviceSecret"
+      "description": "Short-lived token signed for this SP (ValidateAppAuth spNumber 109). No SQL default."
     },
     {
       "name": "publicEventId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": "Event.PublicEventId",
-      "description": ""
+      "description": "The run. No SQL default; unknown or deleted → 1200."
     }
   ],
   "rowsets": [
     {
       "index": 0,
-      "name": "Envelope",
-      "description": "success 1/0, errorCode, errorType",
+      "name": "AuthErrorEnvelope",
+      "description": "On a ValidateAppAuth failure: { success = 0, errorCode, errorType } then the detail at index 1; the SP RETURNs.",
       "columns": [
         {
           "name": "success",
           "type": "INT",
           "nullable": false,
-          "description": ""
+          "description": "Always 0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "ValidateAppAuth's error code."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "ValidateAppAuth's error type."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Error detail after the AuthErrorEnvelope (errorId, errorType, errorCode, errorTitle, errorUserMessage, errorProc)."
+    },
+    {
+      "index": 0,
+      "name": "NotFoundEnvelope",
+      "description": "Run not found or deleted / removed: { success = 0, errorCode = 1200, errorType = 12 } then the detail at index 1 (logged to HC.ErrorLog); RETURN.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "1200."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "12."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "After NotFoundEnvelope: 1200 / 12, 'Run not found', 'That run could not be found.' (no debugMessage column)."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "On success, before the data rowsets: { success = 1, errorCode = NULL, errorType = NULL }.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
         },
         {
           "name": "errorCode",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "Always NULL."
         },
         {
           "name": "errorType",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "Always NULL."
         }
       ]
     },
     {
       "index": 1,
       "name": "Me",
-      "description": "One row",
+      "description": "On success: one row for the caller (zero if their HC.Hasher row is gone).",
       "columns": [
         {
           "name": "hasherId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": ""
+          "description": "The caller's HC.Hasher.id (internal id)."
         },
         {
           "name": "hashName",
-          "type": "NVARCHAR(250)",
+          "type": "NVARCHAR(501)",
           "nullable": false,
-          "description": ""
+          "description": "COALESCE(HashName, DisplayName, '')."
         },
         {
           "name": "rsvpState",
-          "type": "INT",
+          "type": "SMALLINT",
           "nullable": false,
-          "description": ""
+          "description": "COALESCE(HasherEventMap.RsvpState, 0) — 0 none, 1 no, 2 maybe, 3 yes."
         },
         {
           "name": "attendenceState",
-          "type": "INT",
+          "type": "SMALLINT",
           "nullable": false,
-          "description": ""
+          "description": "COALESCE(AttendenceState, 0) — >= 20 attended."
         },
         {
           "name": "isHare",
-          "type": "INT",
+          "type": "SMALLINT",
           "nullable": false,
-          "description": ""
+          "description": "COALESCE(IsHare, 0)."
         },
         {
           "name": "isPast",
           "type": "SMALLINT",
           "nullable": false,
-          "description": ""
+          "description": "1 when EventStartDatetimeGmt is before now (no 6-hour grace, unlike publicWeb_getMyRuns' IsPast)."
         }
       ]
     },
     {
       "index": 2,
       "name": "Pack",
-      "description": "Hares, going, maybe, checked in \u2014 never 'not coming'",
+      "description": "On success: one row per live hasher with IsHare = 1, RsvpState 2 / 3, or AttendenceState >= 20 on the run; ORDER BY IsHare DESC, attended, yes, maybe, name.",
       "columns": [
         {
           "name": "hasherId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": ""
+          "description": "HC.Hasher.id (internal id)."
         },
         {
           "name": "name",
-          "type": "NVARCHAR(250)",
+          "type": "NVARCHAR(501)",
           "nullable": false,
-          "description": ""
+          "description": "COALESCE(NULLIF(HasherEventMap.DisplayName, ''), Hasher.DisplayName, HashName, '') — the per-run name first."
         },
         {
           "name": "photo",
           "type": "NVARCHAR(1000)",
           "nullable": false,
-          "description": ""
+          "description": "COALESCE(NULLIF(HasherKennelMap.KennelUserPhoto, ''), Hasher.Photo, '') — may be a bundle:// avatar; the web skips non-http values."
         },
         {
           "name": "rsvpState",
           "type": "SMALLINT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "HasherEventMap.RsvpState."
         },
         {
           "name": "attendenceState",
           "type": "SMALLINT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "HasherEventMap.AttendenceState."
         },
         {
           "name": "isHare",
           "type": "SMALLINT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "HasherEventMap.IsHare."
         }
       ]
     }
   ],
-  "sideEffects": [],
-  "codeSmells": [],
+  "sideEffects": [
+    "INSERT HC.ErrorLog on the 1200 not-found path and in the CATCH (then THROW)."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken and @publicEventId have no SQL default (lines 2-4). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
+    },
+    {
+      "severity": "low",
+      "issue": "Internal hasher ids sent to the browser",
+      "detail": "Rowsets 1 and 2 return HC.Hasher.id (lines 71, 83) where /hc-primary-keys reserves PublicHasherId for identification outside the server. publicWeb_getEventRunners already exposes the same ids for PackTrack, so this widens nothing today, but it is the pattern the key strategy says to avoid."
+    },
+    {
+      "severity": "low",
+      "issue": "Hidden runs are not refused",
+      "detail": "The run lookup (line 52) does not check IsVisible, so a signed-in member with the PublicEventId of a hidden run sees its pack."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

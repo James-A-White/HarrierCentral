@@ -1,72 +1,179 @@
 {
   "schema": "HC6",
   "name": "hcapp_setHasherBlock",
-  "version": "1.0.0",
-  "description": "Blocks (1) or unblocks (0) another hasher for the caller: HC.HasherFriendMap (UserId=caller, Friend_UserId=target, Ignore). Every chat reader hides the blocked hasher's messages from the caller, no push from them reaches the caller, unread counts leave them out. Directional; the blocked hasher is told nothing. E9.F1.S16.",
+  "version": "1.1.0",
+  "description": "Blocks (1) or unblocks (0) another hasher for the caller (E9.F1.S16): MERGE on HC.HasherFriendMap (UserId = caller, Friend_UserId = target) setting Ignore. Unblock keeps the row with Ignore = 0. Every chat reader hides the blocked hasher's messages from the caller, no push from them reaches the caller, unread counts leave them out. Directional; the blocked hasher is told nothing. Auth: HC6.ValidateAppAuth (spNumber 125); no permission gate — any signed-in hasher manages their own block list. Target must exist with Removed = 0, must not be the caller, and @blocked must be 0 or 1 (else 1985 / errorType 2). Returns the caller's refreshed blocked list (the shape of hcapp_getBlockedHashers).",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Registered device"
+      "description": "Registered device UUID (default NULL; ValidateAppAuth refuses NULL)."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Short-lived token (standard, device secret)"
+      "description": "Short-lived token (standard, device secret). Default NULL; ValidateAppAuth refuses NULL."
     },
     {
       "name": "targetPublicHasherId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Hasher.PublicHasherId",
-      "description": "The other hasher's PUBLIC id (chat authorId)"
+      "description": "The other hasher's PUBLIC id (chat authorId). Resolved to HC.Hasher.id with Removed = 0. Default NULL → 1985 'That hasher could not be found.'"
     },
     {
       "name": "blocked",
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": "HasherFriendMap.Ignore",
-      "description": "1 block, 0 unblock (default 1)"
+      "description": "1 block, 0 unblock (default 1). Any other value → 1985 / errorType 2."
     }
   ],
   "rowsets": [
     {
       "index": 0,
-      "ref": "StandardErrorResult",
-      "description": "Auth failure returns the detail alone."
+      "name": "AuthErrorDetail",
+      "description": "Auth failure ONLY (ValidateAppAuth): a single rowset with the error detail — NO success/errorCode/errorType envelope precedes it.",
+      "columns": [
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.ErrorLog id."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification (ValidateAppAuth value, 2 validation, 5 unhandled)."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error code."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Short title."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "User-facing message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "OBJECT_NAME(@@PROCID)."
+        }
+      ]
     },
     {
       "index": 0,
-      "name": "Envelope",
+      "name": "ErrorEnvelope",
+      "description": "Bad request (1985/2: target not found or removed, target = caller, @blocked not 0/1) or unhandled (1986/5). Followed by ErrorDetail at index 1.",
       "columns": [
         {
           "name": "success",
           "type": "INT",
           "nullable": false,
-          "description": "1 saved"
+          "description": "Always 0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "1985 (bad request) or 1986 (unhandled)."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "2 (bad request) or 5 (unhandled)."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "Follows ErrorEnvelope. Same columns as AuthErrorDetail.",
+      "columns": [
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.ErrorLog id."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification (ValidateAppAuth value, 2 validation, 5 unhandled)."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error code."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Short title."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "User-facing message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "OBJECT_NAME(@@PROCID)."
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Success: { success = 1, errorMessage = NULL }.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
         },
         {
           "name": "errorMessage",
           "type": "NVARCHAR(MAX)",
           "nullable": true,
-          "description": "NULL on success"
+          "description": "Always NULL."
         }
       ]
     },
     {
       "index": 1,
       "name": "BlockedHashers",
-      "description": "On success: the caller's blocked list, newest first (same shape as hcapp_getBlockedHashers). On failure: error detail — 1985 bad target/self/flag (errorType 2), 1986 unhandled (5).",
+      "description": "Success only, after the envelope: the caller's blocked hashers (Ignore = 1), newest block first.",
       "columns": [
         {
           "name": "PublicHasherId",
-          "type": "NVARCHAR(36)",
+          "type": "NVARCHAR(40)",
           "nullable": false,
-          "description": "Blocked hasher's public id, UPPER"
+          "description": "UPPER(CAST(Hasher.PublicHasherId AS NVARCHAR(40))) — UPPERCASE text; clients must lowercase on arrival (HcId)."
         },
         {
           "name": "DisplayName",
@@ -76,24 +183,41 @@
         },
         {
           "name": "Photo",
-          "type": "NVARCHAR(500)",
+          "type": "NVARCHAR(1000)",
           "nullable": true,
           "description": "Profile photo URL"
         },
         {
           "name": "BlockedAt",
-          "type": "DATETIMEOFFSET",
+          "type": "DATETIMEOFFSET(7)",
           "nullable": false,
-          "description": "When the block was last set"
+          "description": "HasherFriendMap.updatedAt (DATETIMEOFFSET(7) NOT NULL, added by db/hc6/app/archive/2026-09-29_hasher_block.sql; missing from the stale table file). Ordered newest first."
         }
       ]
     }
   ],
   "sideEffects": [
-    "MERGE HC.HasherFriendMap",
-    "LOG.GeneralLog line"
+    "MERGE HC.HasherFriendMap WITH (HOLDLOCK) on (UserId, Friend_UserId): matched → SET Ignore = @blocked, updatedAt = SYSDATETIMEOFFSET(); not matched → INSERT (UserId, Friend_UserId, Ignore). One transaction.",
+    "INSERT LOG.GeneralLog ('Hasher blocked' / 'Hasher unblocked', StrParam1 = caller, Data = 'target=<id>').",
+    "INSERT HC.ErrorLog on auth failure (ValidateAppAuth), bad request (line 58) and in the CATCH (after ROLLBACK)."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Auth-failure rowset shape differs from every other error path",
+      "detail": "Lines 45-50 return only the error-detail rowset, with no success/errorCode/errorType envelope; the validation (lines 62-67) and CATCH (lines 104-108) paths return envelope + detail. A client that reads rowset 0 for 'success' sees errorId there instead on an auth failure."
+    },
+    {
+      "severity": "low",
+      "issue": "Uppercase id in a client rowset",
+      "detail": "Line 91 returns UPPER(CAST(PublicHasherId ...)). The app lowercases at the door (lowerGuidsInPlace), but the UPPER is deliberate work in the wrong direction (CLAUDE.md 'Ids are lowercase')."
+    },
+    {
+      "severity": "low",
+      "issue": "Validation uses 'Bad block request' for three different causes",
+      "detail": "Line 55 folds not-found, self-block and bad @blocked into one code 1985; the user message (line 65) says 'could not be found' when @blocked is out of range."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

@@ -1,14 +1,14 @@
 {
   "schema": "HC6",
   "name": "hcportal_getEvent",
-  "version": "1.2.0",
-  "description": "Retrieves event details by publicEventId, kennelUniqueShortName + runDesignator, or special keywords 'nextrun'/'lastrun'. Returns an EventDetails rowset (always) and optionally an AttendeeList rowset. AttendeeList is suppressed for service account callers (GUIDs 11111111-... and 22222222-...). @includePaymentInfo controls whether the AttendeeList includes full payment columns. Auth is enforced via HC6.ValidatePortalAuth. Used by both admin portal and public HashRuns.org site.",
+  "version": "1.3.0",
+  "description": "Retrieves one event by @publicEventId, by @kennelUniqueShortName + @runDesignator (EventNumber), or by the keywords 'nextrun'/'lastrun'. Returns an EventDetails rowset and, for regular users (callerType 0), an attendee list whose shape depends on @includePaymentInfo. Auth: HC6.ValidatePortalAuth with @publicEventId as the compound callerParamString (token paramString = UPPER(deviceSecret):UPPER(publicEventId), or the device secret alone when @publicEventId is NULL). No kennel permission gate: any authenticated caller can read any event and its attendee/payment list. The attendee list is suppressed for the service accounts (callerType 1 = HashRuns.org 11111111-..., 2 = admin portal 22222222-...). Used by the admin portal and the public HashRuns.org site.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": "Device.id",
+      "mapsToColumn": null,
       "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
@@ -21,16 +21,16 @@
     {
       "name": "includePaymentInfo",
       "type": "INT",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Controls AttendeeList shape: 0 = basic attendee columns (no payment amounts), 1 = full payment details (amounts, confirmation dates, payment types). Only relevant when caller is not a service account."
+      "description": "Controls the attendee-list shape: 0 (default) = basic columns with formatted currency strings; any other value — including an explicit NULL — = full payment details. Ignored for service-account callers."
     },
     {
       "name": "publicEventId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "Event.PublicEventId",
-      "description": "Optional: direct event lookup by public ID. Takes precedence over kennelUniqueShortName/runDesignator when provided. Validation is now enforced (was commented out in HC5)."
+      "description": "Optional: direct lookup by Event.PublicEventId; takes precedence over the other identifiers. Also the compound callerParamString for token validation. No removed/deleted filter on this path."
     },
     {
       "name": "kennelUniqueShortName",
@@ -44,177 +44,894 @@
       "type": "NVARCHAR(50)",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Optional: event identifier within a kennel. Special values: 'nextrun' (next future event, >4 hours from now in kennel local time), 'lastrun' (most recent past event using same threshold). Any other value is treated as EventNumber cast to NVARCHAR(50) for exact match."
+      "description": "Optional, used with @kennelUniqueShortName. 'nextrun' / 'lastrun' (case-insensitive) pick, among the kennel's non-removed events with EventStartDateTimeGmt later than now - 4 h, the earliest / LATEST by EventStartDatetime — so 'lastrun' returns the furthest-future scheduled run, not the most recent past one (see codeSmells). Both keyword paths INNER JOIN the kennel's City and DomainValues.Timezone, so a kennel without a city timezone resolves nothing. Any other value is matched against CAST(EventNumber AS NVARCHAR(50)) within the kennel, with no removed filter."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "description": "Returned instead of the data rowsets on auth failure, no identifier supplied, no event resolved ('No run record found with provided information'), or a runtime error. A CATCH after EventDetails has been sent arrives as an extra rowset after it.",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Auth error text, validation message, or ERROR_MESSAGE()"
+        }
       ]
     },
     {
       "index": 0,
       "name": "EventDetails",
-      "description": "Returned when the event is found. Single row with comprehensive event, kennel, location, pricing, dissemination, integration, and currency data.",
+      "description": "Single row for the resolved event. EMPTY (no error) when the event has no CountryId or its kennel has no CityId/CountryId, because HC.Country c4s (on Event.CountryId), HC.City and HC.Country (kennel) are INNER JOINs. Event.RegionId, CityId and TimezoneId are not in db/schema/tables/HC.Event.Table.sql — types taken from db/hc6/portal/archive/HC.Event.AddRegionIdCityId_20260628.sql (UNIQUEIDENTIFIER NULL) and HC.Event.AddTimezoneId_20260628.sql (INT NULL).",
       "columns": [
-        { "name": "publicEventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Event.PublicEventId" },
-        { "name": "publicKennelId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Kennel.PublicKennelId" },
-        { "name": "kennelName", "type": "NVARCHAR(250)", "nullable": true, "description": "Kennel.KennelName" },
-        { "name": "kennelLogo", "type": "NVARCHAR(500)", "nullable": true, "description": "Kennel.KennelLogo" },
-        { "name": "kennelWebUrl", "type": "NVARCHAR(500)", "nullable": true, "description": "Kennel.KennelWebsiteUrl" },
-        { "name": "kennelShortName", "type": "NVARCHAR(25)", "nullable": true, "description": "Kennel.KennelShortName" },
-        { "name": "kennelUniqueShortName", "type": "NVARCHAR(50)", "nullable": true, "description": "Kennel.KennelUniqueShortName" },
-        { "name": "isVisible", "type": "SMALLINT", "nullable": false, "description": "Event.IsVisible" },
-        { "name": "isCountedRun", "type": "SMALLINT", "nullable": false, "description": "Event.IsCountedRun" },
-        { "name": "eventGeographicScope", "type": "SMALLINT", "nullable": false, "description": "Event.EventGeographicScope (1=Normal, 2=Local special, 3=Regional, 4=National, 5=Continental, 6=Global, 7=Other)" },
-        { "name": "isPromotedEvent", "type": "SMALLINT", "nullable": false, "description": "Event.IsPromotedEvent" },
-        { "name": "eventNumber", "type": "SMALLINT", "nullable": true, "description": "Event.EventNumber — sequential run number within kennel" },
-        { "name": "eventPriceForMembers", "type": "DECIMAL(10,4)", "nullable": true, "description": "Event.EventPriceForMembers" },
-        { "name": "eventPriceForNonMembers", "type": "DECIMAL(10,4)", "nullable": true, "description": "Event.EventPriceForNonMembers" },
-        { "name": "kennelDefaultEventPriceForMembers", "type": "DECIMAL(10,4)", "nullable": true, "description": "Kennel.DefaultEventPriceForMembers" },
-        { "name": "kennelDefaultEventPriceForNonMembers", "type": "DECIMAL(10,4)", "nullable": true, "description": "Kennel.DefaultEventPriceForNonMembers" },
-        { "name": "eventPriceForExtras", "type": "DECIMAL(10,4)", "nullable": true, "description": "Event.EventPriceForExtras" },
-        { "name": "extrasDescription", "type": "NVARCHAR(250)", "nullable": true, "description": "Event.ExtrasDescription" },
-        { "name": "extrasRsvpRequired", "type": "SMALLINT", "nullable": true, "description": "Event.ExtrasRsvpRequired" },
-        { "name": "doTrackHashCash", "type": "SMALLINT", "nullable": true, "description": "Event.DoTrackHashCash" },
-        { "name": "kenDisseminateHashRunsDotOrg", "type": "SMALLINT", "nullable": true, "description": "Kennel.DisseminateHashRunsDotOrg" },
-        { "name": "kenDisseminateAllowWebLinks", "type": "SMALLINT", "nullable": true, "description": "Kennel.DisseminateAllowWebLinks" },
-        { "name": "kenDisseminationAudience", "type": "INT", "nullable": true, "description": "Kennel.DisseminationAudience" },
-        { "name": "evtDisseminationAudience", "type": "INT", "nullable": true, "description": "Event.EvtDisseminationAudience" },
-        { "name": "evtDisseminateAllowWebLinks", "type": "SMALLINT", "nullable": true, "description": "Event.EvtDisseminateAllowWebLinks" },
-        { "name": "evtDisseminateHashRunsDotOrg", "type": "SMALLINT", "nullable": true, "description": "Event.EvtDisseminateHashRunsDotOrg" },
-        { "name": "evtPublishToGoogleCalendar", "type": "SMALLINT", "nullable": true, "description": "Event.PublishToGoogleCalendar" },
-        { "name": "kenPublishToGoogleCalendar", "type": "SMALLINT", "nullable": true, "description": "Kennel.PublishToGoogleCalendar" },
-        { "name": "evtPublishToGoogleCalendarAddresses", "type": "NVARCHAR(1000)", "nullable": true, "description": "Event.PublishToGoogleCalendarAddresses" },
-        { "name": "evtDisseminateOnGlobalGoogleCalendar", "type": "SMALLINT", "nullable": true, "description": "Event.DisseminateOnGlobalGoogleCalendar" },
-        { "name": "kenDisseminateOnGlobalGoogleCalendar", "type": "SMALLINT", "nullable": true, "description": "Kennel.DisseminateOnGlobalGoogleCalendar" },
-        { "name": "inboundIntegrationId", "type": "INT", "nullable": true, "description": "Event.InboundIntegrationId" },
-        { "name": "integrationEnabled", "type": "INT", "nullable": true, "description": "Event.IntegrationEnabled" },
-        { "name": "extDataLastUpdated", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "Event.FacebookRecordLastUpdated — aliased as extDataLastUpdated" },
-        { "name": "eventFacebookId", "type": "NVARCHAR(250)", "nullable": true, "description": "Event.EventFacebookId" },
-        { "name": "absoluteEventNumber", "type": "SMALLINT", "nullable": true, "description": "Event.AbsoluteEventNumber" },
-        { "name": "canEditRunAttendence", "type": "SMALLINT", "nullable": true, "description": "Event.CanEditRunAttendence" },
-        { "name": "hares", "type": "NVARCHAR(2500)", "nullable": true, "description": "Event.Hares" },
-        { "name": "eventPaymentScheme", "type": "NVARCHAR(10)", "nullable": true, "description": "Event.EventPaymentScheme" },
-        { "name": "eventPaymentUrl", "type": "NVARCHAR(2000)", "nullable": true, "description": "Event.EventPaymentUrl" },
-        { "name": "eventPaymentUrlExpires", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "Event.EventPaymentUrlExpires" },
-        { "name": "unconfirmedBankXferCount", "type": "INT", "nullable": true, "description": "Event.UnconfirmedBankXferCount" },
-        { "name": "tags1", "type": "INT", "nullable": true, "description": "Event.Tags1 — event tag bitfield 1" },
-        { "name": "tags2", "type": "INT", "nullable": true, "description": "Event.Tags2 — event tag bitfield 2" },
-        { "name": "tags3", "type": "INT", "nullable": true, "description": "Event.Tags3 — event tag bitfield 3" },
-        { "name": "extEventImage", "type": "NVARCHAR(500)", "nullable": true, "description": "Event.FbEventImage — raw external (Facebook) event image URL, returned separately from eventImage so callers can implement their own UseFbImage logic" },
-        { "name": "eventImage", "type": "NVARCHAR(500)", "nullable": true, "description": "Event.EventImage — HC-managed event image URL" },
-        { "name": "extEventName", "type": "NVARCHAR(250)", "nullable": true, "description": "Event.FbEventName — raw external event name" },
-        { "name": "eventName", "type": "NVARCHAR(250)", "nullable": true, "description": "Event.EventName — HC-managed event name" },
-        { "name": "extEventStartDatetime", "type": "DATETIME2", "nullable": true, "description": "Event.FbEventStartDatetime converted to DATETIME2 (local time; DATETIMEOFFSET timezone migration is a known TODO)" },
-        { "name": "eventStartDatetime", "type": "DATETIME2", "nullable": true, "description": "Event.EventStartDatetime converted to DATETIME2 (local time; DATETIMEOFFSET timezone migration is a known TODO)" },
-        { "name": "eventEndDatetime", "type": "DATETIME2", "nullable": true, "description": "Event.EventEndDatetime converted to DATETIME2 (local time)" },
-        { "name": "extEventDescription", "type": "NVARCHAR(4000)", "nullable": false, "description": "COALESCE(Event.FbEventDescription, '') — never NULL" },
-        { "name": "eventDescription", "type": "NVARCHAR(4000)", "nullable": false, "description": "COALESCE(Event.EventDescription, '') — never NULL" },
-        { "name": "maximumParticipantsAllowed", "type": "SMALLINT", "nullable": true, "description": "Event.MaximumParticipantsAllowed" },
-        { "name": "minimumParticipantsRequired", "type": "SMALLINT", "nullable": true, "description": "Event.MinimumParticipantsRequired" },
-        { "name": "extLocationOneLineDesc", "type": "NVARCHAR(250)", "nullable": true, "description": "Event.FbLocationOneLineDesc — raw external location one-liner" },
-        { "name": "locationOneLineDesc", "type": "NVARCHAR(250)", "nullable": true, "description": "Event.LocationOneLineDesc — HC-managed location one-liner" },
-        { "name": "resolvableLocation", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Event.SyncResolvableLocation — geocodeable address string" },
-        { "name": "extLocationPostCode", "type": "NVARCHAR(250)", "nullable": true, "description": "Event.FbLocationPostCode" },
-        { "name": "extLocationCity", "type": "NVARCHAR(250)", "nullable": true, "description": "Event.FbLocationCity" },
-        { "name": "extLocationStreet", "type": "NVARCHAR(250)", "nullable": true, "description": "Event.FbLocationStreet" },
-        { "name": "extLocationCountry", "type": "NVARCHAR(250)", "nullable": true, "description": "Event.FbLocationCountry" },
-        { "name": "extLocationRegion", "type": "NVARCHAR(250)", "nullable": true, "description": "Event.FbLocationRegion" },
-        { "name": "extLocationSubRegion", "type": "NVARCHAR(250)", "nullable": true, "description": "Event.FbLocationSubRegion" },
-        { "name": "locationPostCode", "type": "NVARCHAR(250)", "nullable": true, "description": "Event.LocationPostCode" },
-        { "name": "locationCity", "type": "NVARCHAR(250)", "nullable": true, "description": "Event.LocationCity" },
-        { "name": "locationStreet", "type": "NVARCHAR(250)", "nullable": true, "description": "Event.LocationStreet" },
-        { "name": "locationCountry", "type": "NVARCHAR(250)", "nullable": true, "description": "Event.LocationCountry" },
-        { "name": "locationRegion", "type": "NVARCHAR(250)", "nullable": true, "description": "Event.LocationRegion" },
-        { "name": "locationSubRegion", "type": "NVARCHAR(250)", "nullable": true, "description": "Event.LocationSubRegion" },
-        { "name": "removed", "type": "SMALLINT", "nullable": false, "description": "Event.removed — soft-delete flag" },
-        { "name": "updatedAt", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "Event.updatedAt" },
-        { "name": "useFbLocation", "type": "SMALLINT", "nullable": true, "description": "Event.UseFbLocation" },
-        { "name": "useFbLatLon", "type": "SMALLINT", "nullable": true, "description": "Event.UseFbLatLon" },
-        { "name": "useFbRunDetails", "type": "SMALLINT", "nullable": true, "description": "Event.UseFbRunDetails" },
-        { "name": "useFbImage", "type": "SMALLINT", "nullable": true, "description": "Event.UseFbImage" },
-        { "name": "hcLatitude", "type": "DECIMAL(18,15)", "nullable": true, "description": "Event.Latitude — HC-managed latitude" },
-        { "name": "hcLongitude", "type": "DECIMAL(19,15)", "nullable": true, "description": "Event.Longitude — HC-managed longitude" },
-        { "name": "fbLatitude", "type": "DECIMAL(18,15)", "nullable": true, "description": "Event.FbLatitude — external (Facebook) latitude" },
-        { "name": "fbLongitude", "type": "DECIMAL(19,15)", "nullable": true, "description": "Event.FbLongitude — external (Facebook) longitude" },
-        { "name": "countryId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "Event.CountryId — country at time of event creation (statistics country, may differ from current kennel country)" },
-        { "name": "countryName", "type": "NVARCHAR(250)", "nullable": true, "description": "Country.CountryName from Event.CountryId (c4s alias)" },
-        { "name": "regionId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "Event.RegionId — statistics region (nullable). Cascades from country." },
-        { "name": "regionName", "type": "NVARCHAR(100)", "nullable": true, "description": "Region.RegionName from Event.RegionId (evtReg alias, LEFT JOIN — null if no region set)" },
-        { "name": "cityId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "Event.CityId — statistics city (nullable). Cascades from region." },
-        { "name": "cityName", "type": "NVARCHAR(100)", "nullable": true, "description": "City.CityName from Event.CityId (evtCity alias, LEFT JOIN — null if no city set)" },
-        { "name": "eventCityLatitude", "type": "NUMERIC(12,9)", "nullable": true, "description": "Selected city's latitude (evtCity) — gazetteer search centre when a structured city is set; null otherwise" },
-        { "name": "eventCityLongitude", "type": "NUMERIC(13,9)", "nullable": true, "description": "Selected city's longitude (evtCity) — gazetteer search centre when a structured city is set; null otherwise" },
-        { "name": "timezoneId", "type": "INT", "nullable": true, "description": "Event.TimezoneId — manual timezone override (DomainValues.Timezone.id) for free-text 'Other' locations; null when derived from a structured city or inherited from the kennel" },
-        { "name": "eventCountryCodes", "type": "NVARCHAR(50)", "nullable": true, "description": "Event country's NeighboringCountries (c4s) — gazetteer country filter when the event country is set; mirrors kennelCountryCodes" },
-        { "name": "kenLatitude", "type": "DECIMAL(18,15)", "nullable": true, "description": "Kennel.Latitude" },
-        { "name": "kenLongitude", "type": "DECIMAL(19,15)", "nullable": true, "description": "Kennel.Longitude" },
-        { "name": "cityLatitude", "type": "NUMERIC(12,9)", "nullable": true, "description": "City.Latitude — city the kennel is based in" },
-        { "name": "cityLongitude", "type": "NUMERIC(13,9)", "nullable": true, "description": "City.Longitude — city the kennel is based in" },
-        { "name": "kennelCountryCodes", "type": "NVARCHAR(50)", "nullable": true, "description": "Country.NeighboringCountries from the kennel's country" },
-        { "name": "digitsAfterDecimal", "type": "SMALLINT", "nullable": true, "description": "COALESCE(Kennel.DigitsAfterDecimal, Country.DigitsAfterDecimal) — currency decimal places" },
-        { "name": "currencySymbol", "type": "NVARCHAR(5)", "nullable": true, "description": "COALESCE(Kennel.CurrencySymbol, Country.CurrencySymbol). Uses '^' as placeholder for the numeric amount in formatted strings." },
-        { "name": "searchText", "type": "NVARCHAR(4)", "nullable": false, "description": "Hardcoded empty string — placeholder for future client-side search functionality" }
+        {
+          "name": "publicEventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Event.PublicEventId"
+        },
+        {
+          "name": "publicKennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Kennel.PublicKennelId"
+        },
+        {
+          "name": "kennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Kennel.KennelName"
+        },
+        {
+          "name": "kennelLogo",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Kennel.KennelLogo"
+        },
+        {
+          "name": "kennelWebUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Kennel.KennelWebsiteUrl"
+        },
+        {
+          "name": "kennelShortName",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "Kennel.KennelShortName"
+        },
+        {
+          "name": "kennelUniqueShortName",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Kennel.KennelUniqueShortName"
+        },
+        {
+          "name": "isVisible",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Event.IsVisible"
+        },
+        {
+          "name": "isCountedRun",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Event.IsCountedRun"
+        },
+        {
+          "name": "eventGeographicScope",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Event.EventGeographicScope (1=Normal, 2=Local special, 3=Regional, 4=National, 5=Continental, 6=Global, 7=Other)"
+        },
+        {
+          "name": "isPromotedEvent",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Event.IsPromotedEvent"
+        },
+        {
+          "name": "eventNumber",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.EventNumber — sequential run number within kennel"
+        },
+        {
+          "name": "eventPriceForMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": true,
+          "description": "Event.EventPriceForMembers"
+        },
+        {
+          "name": "eventPriceForNonMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": true,
+          "description": "Event.EventPriceForNonMembers"
+        },
+        {
+          "name": "kennelDefaultEventPriceForMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": true,
+          "description": "Kennel.DefaultEventPriceForMembers"
+        },
+        {
+          "name": "kennelDefaultEventPriceForNonMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": true,
+          "description": "Kennel.DefaultEventPriceForNonMembers"
+        },
+        {
+          "name": "eventPriceForExtras",
+          "type": "DECIMAL(10,4)",
+          "nullable": true,
+          "description": "Event.EventPriceForExtras"
+        },
+        {
+          "name": "extrasDescription",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Event.ExtrasDescription"
+        },
+        {
+          "name": "extrasRsvpRequired",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.ExtrasRsvpRequired"
+        },
+        {
+          "name": "doTrackHashCash",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.DoTrackHashCash"
+        },
+        {
+          "name": "kenDisseminateHashRunsDotOrg",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Kennel.DisseminateHashRunsDotOrg"
+        },
+        {
+          "name": "kenDisseminateAllowWebLinks",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Kennel.DisseminateAllowWebLinks"
+        },
+        {
+          "name": "kenDisseminationAudience",
+          "type": "INT",
+          "nullable": true,
+          "description": "Kennel.DisseminationAudience"
+        },
+        {
+          "name": "evtDisseminationAudience",
+          "type": "INT",
+          "nullable": true,
+          "description": "Event.EvtDisseminationAudience"
+        },
+        {
+          "name": "evtDisseminateAllowWebLinks",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.EvtDisseminateAllowWebLinks"
+        },
+        {
+          "name": "evtDisseminateHashRunsDotOrg",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.EvtDisseminateHashRunsDotOrg"
+        },
+        {
+          "name": "evtPublishToGoogleCalendar",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.PublishToGoogleCalendar"
+        },
+        {
+          "name": "kenPublishToGoogleCalendar",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Kennel.PublishToGoogleCalendar"
+        },
+        {
+          "name": "evtPublishToGoogleCalendarAddresses",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Event.PublishToGoogleCalendarAddresses"
+        },
+        {
+          "name": "evtDisseminateOnGlobalGoogleCalendar",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.DisseminateOnGlobalGoogleCalendar"
+        },
+        {
+          "name": "kenDisseminateOnGlobalGoogleCalendar",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Kennel.DisseminateOnGlobalGoogleCalendar"
+        },
+        {
+          "name": "inboundIntegrationId",
+          "type": "INT",
+          "nullable": true,
+          "description": "Event.InboundIntegrationId"
+        },
+        {
+          "name": "integrationEnabled",
+          "type": "INT",
+          "nullable": true,
+          "description": "Event.IntegrationEnabled"
+        },
+        {
+          "name": "extDataLastUpdated",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Event.FacebookRecordLastUpdated — aliased as extDataLastUpdated"
+        },
+        {
+          "name": "eventFacebookId",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Event.EventFacebookId"
+        },
+        {
+          "name": "absoluteEventNumber",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.AbsoluteEventNumber"
+        },
+        {
+          "name": "canEditRunAttendence",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.CanEditRunAttendence"
+        },
+        {
+          "name": "hares",
+          "type": "NVARCHAR(2500)",
+          "nullable": true,
+          "description": "Event.Hares"
+        },
+        {
+          "name": "eventPaymentScheme",
+          "type": "NVARCHAR(10)",
+          "nullable": true,
+          "description": "Event.EventPaymentScheme"
+        },
+        {
+          "name": "eventPaymentUrl",
+          "type": "NVARCHAR(2000)",
+          "nullable": true,
+          "description": "Event.EventPaymentUrl"
+        },
+        {
+          "name": "eventPaymentUrlExpires",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Event.EventPaymentUrlExpires"
+        },
+        {
+          "name": "unconfirmedBankXferCount",
+          "type": "INT",
+          "nullable": true,
+          "description": "Event.UnconfirmedBankXferCount"
+        },
+        {
+          "name": "tags1",
+          "type": "INT",
+          "nullable": true,
+          "description": "Event.Tags1 — event tag bitfield 1"
+        },
+        {
+          "name": "tags2",
+          "type": "INT",
+          "nullable": true,
+          "description": "Event.Tags2 — event tag bitfield 2"
+        },
+        {
+          "name": "tags3",
+          "type": "INT",
+          "nullable": true,
+          "description": "Event.Tags3 — event tag bitfield 3"
+        },
+        {
+          "name": "extEventImage",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Event.FbEventImage — raw external (Facebook) event image URL, returned separately from eventImage so callers can implement their own UseFbImage logic"
+        },
+        {
+          "name": "eventImage",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Event.EventImage — HC-managed event image URL"
+        },
+        {
+          "name": "extEventName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Event.FbEventName — raw external event name"
+        },
+        {
+          "name": "eventName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Event.EventName — HC-managed event name"
+        },
+        {
+          "name": "extEventStartDatetime",
+          "type": "DATETIME2",
+          "nullable": true,
+          "description": "Event.FbEventStartDatetime converted to DATETIME2 (local time; DATETIMEOFFSET timezone migration is a known TODO)"
+        },
+        {
+          "name": "eventStartDatetime",
+          "type": "DATETIME2",
+          "nullable": true,
+          "description": "Event.EventStartDatetime converted to DATETIME2 (local time; DATETIMEOFFSET timezone migration is a known TODO)"
+        },
+        {
+          "name": "eventEndDatetime",
+          "type": "DATETIME2",
+          "nullable": true,
+          "description": "Event.EventEndDatetime converted to DATETIME2 (local time)"
+        },
+        {
+          "name": "extEventDescription",
+          "type": "NVARCHAR(4000)",
+          "nullable": false,
+          "description": "COALESCE(Event.FbEventDescription, '') — never NULL"
+        },
+        {
+          "name": "eventDescription",
+          "type": "NVARCHAR(4000)",
+          "nullable": false,
+          "description": "COALESCE(Event.EventDescription, '') — never NULL"
+        },
+        {
+          "name": "maximumParticipantsAllowed",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.MaximumParticipantsAllowed"
+        },
+        {
+          "name": "minimumParticipantsRequired",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.MinimumParticipantsRequired"
+        },
+        {
+          "name": "extLocationOneLineDesc",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Event.FbLocationOneLineDesc — raw external location one-liner"
+        },
+        {
+          "name": "locationOneLineDesc",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Event.LocationOneLineDesc — HC-managed location one-liner"
+        },
+        {
+          "name": "resolvableLocation",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Event.SyncResolvableLocation — geocodeable address string"
+        },
+        {
+          "name": "extLocationPostCode",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Event.FbLocationPostCode"
+        },
+        {
+          "name": "extLocationCity",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Event.FbLocationCity"
+        },
+        {
+          "name": "extLocationStreet",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Event.FbLocationStreet"
+        },
+        {
+          "name": "extLocationCountry",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Event.FbLocationCountry"
+        },
+        {
+          "name": "extLocationRegion",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Event.FbLocationRegion"
+        },
+        {
+          "name": "extLocationSubRegion",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Event.FbLocationSubRegion"
+        },
+        {
+          "name": "locationPostCode",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Event.LocationPostCode"
+        },
+        {
+          "name": "locationCity",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Event.LocationCity"
+        },
+        {
+          "name": "locationStreet",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Event.LocationStreet"
+        },
+        {
+          "name": "locationCountry",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Event.LocationCountry"
+        },
+        {
+          "name": "locationRegion",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Event.LocationRegion"
+        },
+        {
+          "name": "locationSubRegion",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Event.LocationSubRegion"
+        },
+        {
+          "name": "removed",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Event.removed — soft-delete flag"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Event.updatedAt"
+        },
+        {
+          "name": "useFbLocation",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.UseFbLocation"
+        },
+        {
+          "name": "useFbLatLon",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.UseFbLatLon"
+        },
+        {
+          "name": "useFbRunDetails",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.UseFbRunDetails"
+        },
+        {
+          "name": "useFbImage",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.UseFbImage"
+        },
+        {
+          "name": "hcLatitude",
+          "type": "DECIMAL(18,15)",
+          "nullable": true,
+          "description": "Event.Latitude — HC-managed latitude"
+        },
+        {
+          "name": "hcLongitude",
+          "type": "DECIMAL(19,15)",
+          "nullable": true,
+          "description": "Event.Longitude — HC-managed longitude"
+        },
+        {
+          "name": "fbLatitude",
+          "type": "DECIMAL(18,15)",
+          "nullable": true,
+          "description": "Event.FbLatitude — external (Facebook) latitude"
+        },
+        {
+          "name": "fbLongitude",
+          "type": "DECIMAL(19,15)",
+          "nullable": true,
+          "description": "Event.FbLongitude — external (Facebook) longitude"
+        },
+        {
+          "name": "countryId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "Event.CountryId — country at time of event creation (statistics country, may differ from current kennel country)"
+        },
+        {
+          "name": "countryName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Country.CountryName from Event.CountryId (c4s alias)"
+        },
+        {
+          "name": "regionId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "Event.RegionId — statistics region (nullable). Cascades from country."
+        },
+        {
+          "name": "regionName",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "Region.RegionName from Event.RegionId (evtReg alias, LEFT JOIN — null if no region set)"
+        },
+        {
+          "name": "cityId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "Event.CityId — statistics city (nullable). Cascades from region."
+        },
+        {
+          "name": "cityName",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "City.CityName from Event.CityId (evtCity alias, LEFT JOIN — null if no city set)"
+        },
+        {
+          "name": "eventCityLatitude",
+          "type": "NUMERIC(12,9)",
+          "nullable": true,
+          "description": "Selected city's latitude (evtCity) — gazetteer search centre when a structured city is set; null otherwise"
+        },
+        {
+          "name": "eventCityLongitude",
+          "type": "NUMERIC(13,9)",
+          "nullable": true,
+          "description": "Selected city's longitude (evtCity) — gazetteer search centre when a structured city is set; null otherwise"
+        },
+        {
+          "name": "timezoneId",
+          "type": "INT",
+          "nullable": true,
+          "description": "Event.TimezoneId — manual timezone override (DomainValues.Timezone.id) for free-text 'Other' locations; null when derived from a structured city or inherited from the kennel"
+        },
+        {
+          "name": "eventCountryCodes",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Event country's NeighboringCountries (c4s) — gazetteer country filter when the event country is set; mirrors kennelCountryCodes"
+        },
+        {
+          "name": "kenLatitude",
+          "type": "DECIMAL(18,15)",
+          "nullable": true,
+          "description": "Kennel.Latitude"
+        },
+        {
+          "name": "kenLongitude",
+          "type": "DECIMAL(19,15)",
+          "nullable": true,
+          "description": "Kennel.Longitude"
+        },
+        {
+          "name": "cityLatitude",
+          "type": "NUMERIC(12,9)",
+          "nullable": true,
+          "description": "City.Latitude — city the kennel is based in"
+        },
+        {
+          "name": "cityLongitude",
+          "type": "NUMERIC(13,9)",
+          "nullable": true,
+          "description": "City.Longitude — city the kennel is based in"
+        },
+        {
+          "name": "kennelCountryCodes",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Country.NeighboringCountries from the kennel's country"
+        },
+        {
+          "name": "digitsAfterDecimal",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "COALESCE(Kennel.DigitsAfterDecimal, Country.DigitsAfterDecimal) — currency decimal places"
+        },
+        {
+          "name": "currencySymbol",
+          "type": "NVARCHAR(5)",
+          "nullable": true,
+          "description": "COALESCE(Kennel.CurrencySymbol, Country.CurrencySymbol). Uses '^' as placeholder for the numeric amount in formatted strings."
+        },
+        {
+          "name": "searchText",
+          "type": "NVARCHAR(4)",
+          "nullable": false,
+          "description": "Hardcoded empty string — placeholder for future client-side search functionality"
+        }
       ]
     },
     {
       "index": 1,
       "name": "AttendeeListBasic",
-      "description": "Returned when caller is NOT a service account (@publicHasherId not in service account GUIDs) AND @includePaymentInfo = 0. One row per attendee. Includes formatted currency strings for payment amounts but no raw payment values.",
+      "description": "Returned when caller is NOT a service account (callerType = 0 from ValidatePortalAuth) AND @includePaymentInfo = 0. One row per attendee. Includes formatted currency strings for payment amounts but no raw payment values.",
       "condition": "(@publicHasherId NOT IN service account GUIDs) AND (@includePaymentInfo = 0)",
       "columns": [
-        { "name": "displayName", "type": "NVARCHAR(250)", "nullable": true, "description": "COALESCE(HasherEventMap.DisplayName, Hasher.DisplayName)" },
-        { "name": "rsvpState", "type": "SMALLINT", "nullable": true, "description": "HasherEventMap.RsvpState. Known values: 0=no response, 1=maybe, 2+=going." },
-        { "name": "attendanceState", "type": "SMALLINT", "nullable": true, "description": "HasherEventMap.AttendenceState. Values >= 20 indicate checked in." },
-        { "name": "isHare", "type": "SMALLINT", "nullable": false, "description": "HasherEventMap.IsHare — 1 if this person is a hare for the event, 0 otherwise." },
-        { "name": "totalRunsThisKennel", "type": "INT", "nullable": false, "description": "HasherKennelMap.HcTotalRunCount + HasherKennelMap.HistoricalTotalRunCount — current system run count plus legacy imported count. HcTotalRunCount is updated whenever the hasher attends a run, so this is always current regardless of whether the queried event is past or future." },
-        { "name": "totalHaringThisKennel", "type": "INT", "nullable": false, "description": "HasherKennelMap.HcHaringCount + HasherKennelMap.HistoricalHaringCount — current system haring count plus legacy imported count." },
-        { "name": "amountPaidStr", "type": "NVARCHAR(MAX)", "nullable": false, "description": "COALESCE(formatted currency string using Payment.CreditAmount, '') — '^' in currency symbol replaced with formatted amount" },
-        { "name": "amountOwedStr", "type": "NVARCHAR(MAX)", "nullable": false, "description": "COALESCE(formatted currency string using Payment.DebitAmount, '')" },
-        { "name": "creditAvailableStr", "type": "NVARCHAR(MAX)", "nullable": false, "description": "COALESCE(formatted currency string using Payment.CreditAvailable, '')" },
-        { "name": "virginVisitorType", "type": "SMALLINT", "nullable": true, "description": "HasherEventMap.VirginVisitorType" }
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "COALESCE(HasherEventMap.DisplayName NVARCHAR(120), Hasher.DisplayName)"
+        },
+        {
+          "name": "rsvpState",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherEventMap.RsvpState. Known values: 0=no response, 1=maybe, 2+=going."
+        },
+        {
+          "name": "attendanceState",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherEventMap.AttendenceState. Values >= 20 indicate checked in."
+        },
+        {
+          "name": "isHare",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherEventMap.IsHare — 1 if this person is a hare for the event, 0 otherwise."
+        },
+        {
+          "name": "totalRunsThisKennel",
+          "type": "INT",
+          "nullable": false,
+          "description": "HasherKennelMap.HcTotalRunCount + HasherKennelMap.HistoricalTotalRunCount — current system run count plus legacy imported count. HcTotalRunCount is updated whenever the hasher attends a run, so this is always current regardless of whether the queried event is past or future."
+        },
+        {
+          "name": "totalHaringThisKennel",
+          "type": "INT",
+          "nullable": false,
+          "description": "HasherKennelMap.HcHaringCount + HasherKennelMap.HistoricalHaringCount — current system haring count plus legacy imported count."
+        },
+        {
+          "name": "amountPaidStr",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "COALESCE(formatted currency string using Payment.CreditAmount, '') — '^' in currency symbol replaced with formatted amount"
+        },
+        {
+          "name": "amountOwedStr",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "COALESCE(formatted currency string using Payment.DebitAmount, '')"
+        },
+        {
+          "name": "creditAvailableStr",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "COALESCE(formatted currency string using Payment.CreditAvailable, '')"
+        },
+        {
+          "name": "virginVisitorType",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherEventMap.VirginVisitorType"
+        }
       ]
     },
     {
       "index": 1,
       "name": "AttendeeListWithPayment",
-      "description": "Returned when caller is NOT a service account AND @includePaymentInfo = 1. One row per attendee. Includes full payment detail columns in addition to all basic columns.",
+      "description": "Returned when callerType = 0 AND @includePaymentInfo <> 0 (or NULL). One row per HasherEventMap row × non-cancelled Payment row (LEFT JOIN on HasherEventMapId with CancelledBy_UserId IS NULL).",
       "condition": "(@publicHasherId NOT IN service account GUIDs) AND (@includePaymentInfo = 1)",
       "columns": [
-        { "name": "displayName", "type": "NVARCHAR(250)", "nullable": true, "description": "COALESCE(HasherEventMap.DisplayName, Hasher.DisplayName)" },
-        { "name": "rsvpState", "type": "SMALLINT", "nullable": true, "description": "HasherEventMap.RsvpState. Known values: 0=no response, 1=maybe, 2+=going." },
-        { "name": "attendanceState", "type": "SMALLINT", "nullable": true, "description": "HasherEventMap.AttendenceState. Values >= 20 indicate checked in." },
-        { "name": "isHare", "type": "SMALLINT", "nullable": false, "description": "HasherEventMap.IsHare — 1 if this person is a hare for the event, 0 otherwise." },
-        { "name": "totalRunsThisKennel", "type": "INT", "nullable": false, "description": "HasherKennelMap.HcTotalRunCount + HasherKennelMap.HistoricalTotalRunCount — current system run count plus legacy imported count. HcTotalRunCount is updated whenever the hasher attends a run, so this is always current regardless of whether the queried event is past or future." },
-        { "name": "totalHaringThisKennel", "type": "INT", "nullable": false, "description": "HasherKennelMap.HcHaringCount + HasherKennelMap.HistoricalHaringCount — current system haring count plus legacy imported count." },
-        { "name": "virginVisitorType", "type": "SMALLINT", "nullable": true, "description": "HasherEventMap.VirginVisitorType" },
-        { "name": "cancelledDate", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "Payment.CancelledDate" },
-        { "name": "cancelledBy", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Hasher.DisplayName of the user who cancelled the payment (computed column)" },
-        { "name": "creditAvailable", "type": "SMALLMONEY", "nullable": true, "description": "Payment.CreditAvailable" },
-        { "name": "amountPaid", "type": "SMALLMONEY", "nullable": true, "description": "Payment.CreditAmount" },
-        { "name": "amountOwed", "type": "SMALLMONEY", "nullable": true, "description": "Payment.DebitAmount" },
-        { "name": "netPayment", "type": "SMALLMONEY", "nullable": true, "description": "Payment.NetPayment (computed: CreditAmount - DebitAmount)" },
-        { "name": "amountPaidStr", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Formatted currency string with Payment.CreditAmount" },
-        { "name": "amountOwedStr", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Formatted currency string with Payment.DebitAmount" },
-        { "name": "netPaymentStr", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Formatted currency string with Payment.NetPayment" },
-        { "name": "creditAvailableStr", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Formatted currency string with Payment.CreditAvailable" },
-        { "name": "doPayForExtras", "type": "SMALLINT", "nullable": true, "description": "Payment.DoPayForExtras" },
-        { "name": "paymentConfirmedDate", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "Payment.ConfirmedDate" },
-        { "name": "paymentConfirmedBy", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Hasher.DisplayName of the user who confirmed payment" },
-        { "name": "payedDate", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "Payment.PaidDate" },
-        { "name": "paymentType", "type": "SMALLINT", "nullable": true, "description": "Payment.PaymentType (0=Unknown, 1=Not paid, 2=Free, 3=Cash, 4=Bank transfer, 5=Cash other amount, 6=Hash credit, 7=Bank transfer other amount)" },
-        { "name": "paymentTypeString", "type": "NVARCHAR(30)", "nullable": true, "description": "Human-readable payment type decoded from Payment.PaymentType via CASE expression" },
-        { "name": "paymentReference", "type": "NVARCHAR(50)", "nullable": true, "description": "Payment.PaymentReference" }
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "COALESCE(HasherEventMap.DisplayName NVARCHAR(120), Hasher.DisplayName)"
+        },
+        {
+          "name": "rsvpState",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherEventMap.RsvpState. Known values: 0=no response, 1=maybe, 2+=going."
+        },
+        {
+          "name": "attendanceState",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherEventMap.AttendenceState. Values >= 20 indicate checked in."
+        },
+        {
+          "name": "isHare",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherEventMap.IsHare — 1 if this person is a hare for the event, 0 otherwise."
+        },
+        {
+          "name": "totalRunsThisKennel",
+          "type": "INT",
+          "nullable": false,
+          "description": "HasherKennelMap.HcTotalRunCount + HasherKennelMap.HistoricalTotalRunCount — current system run count plus legacy imported count. HcTotalRunCount is updated whenever the hasher attends a run, so this is always current regardless of whether the queried event is past or future."
+        },
+        {
+          "name": "totalHaringThisKennel",
+          "type": "INT",
+          "nullable": false,
+          "description": "HasherKennelMap.HcHaringCount + HasherKennelMap.HistoricalHaringCount — current system haring count plus legacy imported count."
+        },
+        {
+          "name": "virginVisitorType",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherEventMap.VirginVisitorType"
+        },
+        {
+          "name": "cancelledDate",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Always NULL: the Payment join already excludes cancelled payments (CancelledBy_UserId IS NULL), so the cancelledBy join can never match."
+        },
+        {
+          "name": "cancelledBy",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Always NULL: the Payment join already excludes cancelled payments (CancelledBy_UserId IS NULL), so the cancelledBy join can never match."
+        },
+        {
+          "name": "creditAvailable",
+          "type": "SMALLMONEY",
+          "nullable": true,
+          "description": "Payment.CreditAvailable"
+        },
+        {
+          "name": "amountPaid",
+          "type": "SMALLMONEY",
+          "nullable": true,
+          "description": "Payment.CreditAmount"
+        },
+        {
+          "name": "amountOwed",
+          "type": "SMALLMONEY",
+          "nullable": true,
+          "description": "Payment.DebitAmount"
+        },
+        {
+          "name": "netPayment",
+          "type": "SMALLMONEY",
+          "nullable": true,
+          "description": "Payment.NetPayment (computed: CreditAmount - DebitAmount)"
+        },
+        {
+          "name": "amountPaidStr",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Formatted currency string with Payment.CreditAmount"
+        },
+        {
+          "name": "amountOwedStr",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Formatted currency string with Payment.DebitAmount"
+        },
+        {
+          "name": "netPaymentStr",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Formatted currency string with Payment.NetPayment"
+        },
+        {
+          "name": "creditAvailableStr",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Formatted currency string with Payment.CreditAvailable"
+        },
+        {
+          "name": "doPayForExtras",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Payment.DoPayForExtras"
+        },
+        {
+          "name": "paymentConfirmedDate",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Payment.ConfirmedDate"
+        },
+        {
+          "name": "paymentConfirmedBy",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Hasher.DisplayName of the user who confirmed payment"
+        },
+        {
+          "name": "payedDate",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Payment.PaidDate"
+        },
+        {
+          "name": "paymentType",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Payment.PaymentType (0=Unknown, 1=Not paid, 2=Free, 3=Cash, 4=Bank transfer, 5=Cash other amount, 6=Hash credit, 7=Bank transfer other amount)"
+        },
+        {
+          "name": "paymentTypeString",
+          "type": "NVARCHAR(30)",
+          "nullable": true,
+          "description": "Human-readable payment type decoded from Payment.PaymentType via CASE expression"
+        },
+        {
+          "name": "paymentReference",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Payment.PaymentReference"
+        }
       ]
     }
   ],
   "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "'lastrun' returns the furthest-future run",
+      "detail": "Lines 96-112: the 'lastrun' branch uses the same filter as 'nextrun' (EventStartDateTimeGmt > now - 4 h, line 110) and only reverses the sort (DESC, line 102), so it returns the LAST scheduled future run rather than the most recent past run. Any caller asking for 'lastrun' gets the wrong event."
+    },
+    {
+      "severity": "medium",
+      "issue": "Raw EventStartDatetime used for ordering",
+      "detail": "Lines 84 and 102 ORDER BY EventStartDatetime, which carries a spurious +00:00 on most rows (see /hc-event-datetimes); the filter uses EventStartDateTimeGmt. Ordering by an instant should use EventStartDateTimeGmt. extEventStartDatetime/eventStartDatetime/eventEndDatetime (lines 189-191) are CONVERTed to DATETIME2, dropping the offset."
+    },
+    {
+      "severity": "medium",
+      "issue": "No permission gate on attendee and payment data",
+      "detail": "After ValidatePortalAuth (line 56) any authenticated regular user receives the full attendee list, and with @includePaymentInfo <> 0 every attendee's payment amounts, types and references, for any event in any kennel."
+    },
+    {
+      "severity": "medium",
+      "issue": "INNER JOIN on nullable Event.CountryId silently hides the event",
+      "detail": "Line 256 INNER JOINs HC.Country on evt.CountryId (nullable). An event without a country returns an empty EventDetails rowset with no error envelope, while the attendee list (lines 266-331) is still returned."
+    },
+    {
+      "severity": "medium",
+      "issue": "CATCH does not log to HC.ErrorLog",
+      "detail": "The CATCH block (line 336) returns the Success=0 envelope but writes no HC.ErrorLog row. CLAUDE.md: every CATCH must log."
+    },
+    {
+      "severity": "low",
+      "issue": "Duplicate attendee rows and dead columns",
+      "detail": "Lines 283/328: a HasherEventMap row with more than one non-cancelled Payment row appears once per payment. cancelledDate/cancelledBy (lines 296-297) can never be non-NULL because the join excludes cancelled payments."
+    },
+    {
+      "severity": "low",
+      "issue": "EventNumber path has no removed filter and no tie-break",
+      "detail": "Lines 116-117: kennel and event lookups ignore removed/deleted; if a kennel has two events with the same EventNumber the variable assignment picks one arbitrarily. The @publicEventId path (line 76) likewise returns removed events."
+    },
+    {
+      "severity": "low",
+      "issue": "NULL @includePaymentInfo takes the payment branch",
+      "detail": "Line 264 tests @includePaymentInfo = 0; an explicit NULL is not 0 and returns the full payment shape."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "nonApi_ensureTrackAttendance",
-  "version": "1.1.0",
-  "description": "Creates the attendance row for a runner who has a PackTrack trail on a run but no HC.HasherEventMap row (tracks recorded before the app checked the tracker in as tracking starts). Called only by the nightly track archive (TrackArchiver / ArchiveTrack Azure Functions) when a run's partition holds points for a hasher with no row. The insert mirrors a fresh At Hash check-in from hcapp_setEventAttendence and the run counts are recomputed the same way. A row that already exists in any state, including removed, is left alone. 1.1.0 (2026-09-11): a row below At Hash (an RSVP) is raised to At Hash / RSVP Yes as a check-in would; Reason 'raised'. Also called by the track-import processor for every imported activity.",
+  "version": "1.2.0",
+  "description": "Internal, no auth. Gives a runner an At Hash attendance row on a run (James, 2026-09-10: every runner who has a track has an attendance row). The write mirrors a fresh At Hash check-in from hcapp_setEventAttendence (AttendenceState 20, RsvpState 3, IsHare 0, VirginVisitorType 0) and the run counts are recomputed the same way. No row → inserted ('inserted'); a live row below At Hash (an RSVP, a No) → raised to At Hash / RSVP Yes ('raised'); a live row already >= 20 → untouched ('rowExists'); only removed rows → untouched, an admin's removal is not undone ('rowExists'); deleted/missing hasher → 'noHasher'; deleted/missing run → 'noEvent'. Callers: the nightly track archive (api/Endpoints/ArchiveTrack.cs, TrackArchiver / ArchiveTracksNightly) for a hasher with points but no row; the track-import processor (TrackImportProcessor.cs) for every imported activity (2026-09-11); and HC6.hcapp_addDownDown via INSERT…EXEC when the run/kennel has CanEditRunAttendence = 1 — entering a charge checks you in (2026-09-12).",
   "parameters": [
     {
       "name": "eventId",
@@ -33,22 +33,45 @@
         },
         {
           "name": "Reason",
-          "type": "VARCHAR(20)",
+          "type": "VARCHAR(9)",
           "nullable": false,
-          "description": "'inserted' | 'raised' | 'rowExists' | 'noHasher' | 'noEvent'."
+          "description": "'inserted' | 'raised' | 'rowExists' | 'noHasher' | 'noEvent' (varchar literals; hcapp_addDownDown captures it as NVARCHAR(20))."
         }
       ]
     }
   ],
   "sideEffects": [
-    "Inserts one HC.HasherEventMap row (AttendenceState 20, RsvpState 3, IsHare 0, VirginVisitorType 0, KennelId from HC.Event) under UPDLOCK/HOLDLOCK on the existence check — fires the HEM updatedAt trigger so the row syncs to the runner's clients.",
-    "EXEC HC6.nonApi_updateRunCountsByUser for the runner after the insert, outside the transaction, exactly as hcapp_setEventAttendence does — the runner's run counts change.",
-    "On any runtime error: rolls back, logs to HC.ErrorLog (with userId and eventId), re-throws."
+    "INSERT one HC.HasherEventMap row (AttendenceState 20, RsvpState 3, IsHare 0, VirginVisitorType 0, KennelId from HC.Event, updatedAt GETDATE()) when none exists, under UPDLOCK/HOLDLOCK on the existence check — or UPDATE the live row to AttendenceState 20 / RsvpState 3 when it is below 20. Either fires the HEM triggers: the row syncs to the runner's devices and nonApi_refreshEventActivity runs.",
+    "EXEC HC6.nonApi_updateRunCountsByUser @userId after COMMIT, outside the transaction (as hcapp_setEventAttendence does) — the runner's run counts change.",
+    "On any runtime error inside the TRY: rolls back, INSERT HC.ErrorLog ('<unknown>', userId, eventId), THROW."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@eventId and @userId (lines 2-3) have no SQL default. All three callers pass both, so no client reaches the unlogged 'expects parameter' error today."
+    },
+    {
+      "severity": "medium",
+      "issue": "CATCH cannot log when called through INSERT…EXEC",
+      "detail": "hcapp_addDownDown line 137-138 calls this SP as INSERT @checkIn EXEC …, which runs it inside the INSERT's transaction. A runtime error here hits ROLLBACK TRANSACTION (line 101), which is itself an error inside INSERT-EXEC (Msg 3915), and the HC.ErrorLog INSERT (lines 102-104) is lost with the statement. The call in addDownDown is also outside its TRY, so the Add Down Down request fails as an unlogged 500."
+    },
+    {
+      "severity": "low",
+      "issue": "Pre-flight reads outside TRY",
+      "detail": "Lines 40-64 (existing-state lookup, hasher and event checks) run before BEGIN TRY. They are plain reads, but an error there (e.g. a deadlock victim during the nightly archive) leaves no HC.ErrorLog row."
+    },
+    {
+      "severity": "low",
+      "issue": "'raised' reported even when nothing changed",
+      "detail": "If the row reaches >= 20 between the pre-check (line 40) and the UPDATE (line 86), the UPDATE touches 0 rows but the SP still returns Reason 'raised' and recomputes run counts. Harmless."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",
-    "Never change a parameter type"
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
   ]
 }

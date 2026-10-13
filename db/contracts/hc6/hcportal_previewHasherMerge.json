@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_previewHasherMerge",
-  "version": "1.1.0",
-  "description": "Merge accounts, step 1 (E12.F6.S1): finds two live accounts by email (or hasher id / PublicHasherId) and returns what each holds and where they overlap. Read only. Requires HC.PlatformAdmin with CanEditKennel = 1.",
+  "version": "1.2.0",
+  "description": "Merge accounts, step 1 (E12.F6.S1): finds two live accounts (Removed = 0) — each by email, or by a hasher id / PublicHasherId pasted in the same box — and returns what each holds and where they overlap, including what the kept account will hold after hcportal_mergeHashers. Read only. Auth: HC6.ValidatePortalAuth; caller must hold a live HC.PlatformAdmin row with CanEditKennel = 1.",
   "parameters": [
     {
       "name": "deviceId",
@@ -21,173 +21,194 @@
     {
       "name": "keepEmail",
       "type": "NVARCHAR(MAX)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Hasher.Email",
-      "description": "The account that stays."
+      "description": "The account that stays: email, hasher id or PublicHasherId. Blank returns a refusal.",
+      "typeMismatch": "NVARCHAR(MAX) vs Hasher.Email NVARCHAR(250); trimmed and lower-cased, also tried as a UNIQUEIDENTIFIER against Hasher.id and Hasher.PublicHasherId."
     },
     {
       "name": "mergeEmail",
       "type": "NVARCHAR(MAX)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Hasher.Email",
-      "description": "The account merged into it and then disabled."
+      "description": "The account whose history moves across and which is then disabled: email, hasher id or PublicHasherId. Blank returns a refusal.",
+      "typeMismatch": "NVARCHAR(MAX) vs Hasher.Email NVARCHAR(250); trimmed and lower-cased, also tried as a UNIQUEIDENTIFIER against Hasher.id and Hasher.PublicHasherId."
     }
   ],
   "rowsets": [
     {
       "index": 0,
+      "name": "Refusal",
+      "description": "{ Success = 0, ErrorMessage } on auth failure, missing CanEditKennel, a blank box, no live account, more than one live account for an email, or both boxes naming the same account. No other rowset follows.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "0"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Why"
+        }
+      ]
+    },
+    {
+      "index": 0,
       "name": "Accounts",
-      "description": "Two rows, Role 'keep' then 'merge' — or { Success = 0, ErrorMessage } when refused (not found, ambiguous, same account).",
+      "description": "On success: two rows, Role 'keep' then 'merge'. A runtime error is logged to HC.ErrorLog and re-thrown.",
       "columns": [
         {
           "name": "Role",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "VARCHAR(5)",
+          "nullable": false,
+          "description": "'keep' then 'merge'"
         },
         {
           "name": "HasherId",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.Hasher.id"
         },
         {
           "name": "PublicHasherId",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.Hasher.PublicHasherId"
         },
         {
           "name": "HashName",
-          "type": "see SP",
+          "type": "NVARCHAR(250)",
           "nullable": true,
           "description": ""
         },
         {
           "name": "FirstName",
-          "type": "see SP",
+          "type": "NVARCHAR(250)",
           "nullable": true,
           "description": ""
         },
         {
           "name": "LastName",
-          "type": "see SP",
+          "type": "NVARCHAR(250)",
           "nullable": true,
           "description": ""
         },
         {
           "name": "Email",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "HC.Hasher.Email (may be generated)"
         },
         {
           "name": "HomeKennelName",
-          "type": "see SP",
+          "type": "NVARCHAR(250)",
           "nullable": true,
-          "description": ""
+          "description": "Home kennel name (LEFT JOIN)"
         },
         {
           "name": "CreatedAt",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "HC.Hasher.createdAt"
         },
         {
           "name": "LastLoginDateTime",
-          "type": "see SP",
+          "type": "DATETIMEOFFSET(7)",
           "nullable": true,
-          "description": ""
+          "description": "HC.Hasher.LastLoginDateTime"
         },
         {
           "name": "SignedInDevices",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "INT",
+          "nullable": false,
+          "description": "HC.Device rows with SignedOutAt NULL"
         },
         {
           "name": "KennelsFollowed",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "INT",
+          "nullable": false,
+          "description": "Live HasherKennelMap rows with Following = 1"
         },
         {
           "name": "KennelsMember",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "INT",
+          "nullable": false,
+          "description": "Live HasherKennelMap rows with IsMember = 1 (not MembershipExpirationDate)"
         },
         {
           "name": "KennelsAdmin",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "INT",
+          "nullable": false,
+          "description": "Live HasherKennelMap rows with AppAccessFlags & 1"
         },
         {
           "name": "RunsAttended",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "INT",
+          "nullable": false,
+          "description": "Live HasherEventMap rows with AttendenceState >= 20 (attended)"
         },
         {
           "name": "RunsHared",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "INT",
+          "nullable": false,
+          "description": "Attended rows with IsHare = 1"
         },
         {
           "name": "RunRows",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "INT",
+          "nullable": false,
+          "description": "All live HasherEventMap rows"
         },
         {
           "name": "LastRunLocal",
-          "type": "see SP",
+          "type": "DATETIME2(7)",
           "nullable": true,
-          "description": ""
+          "description": "MAX Event.EventStartLocal over attended runs"
         },
         {
           "name": "Tracks",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "INT",
+          "nullable": false,
+          "description": "Live run rows with TrackPointCount > 0"
         },
         {
           "name": "Payments",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "INT",
+          "nullable": false,
+          "description": "Uncancelled HC.Payment rows"
         },
         {
           "name": "PaymentsTotal",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "SMALLMONEY",
+          "nullable": false,
+          "description": "SUM(NetPayment) over uncancelled payments"
         },
         {
           "name": "CreditTotal",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "SMALLMONEY",
+          "nullable": false,
+          "description": "SUM(KennelCredit.currentBalance) over live credit rows"
         },
         {
           "name": "ChatMessages",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "INT",
+          "nullable": false,
+          "description": "HC.EventMessage rows by the account"
         },
         {
           "name": "Photos",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "INT",
+          "nullable": false,
+          "description": "HC.KennelPhotos rows by the account"
         },
         {
           "name": "IsPlatformAdmin",
-          "type": "see SP",
-          "nullable": true,
-          "description": ""
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 when the account has a live HC.PlatformAdmin row"
         }
       ]
     },
@@ -255,11 +276,20 @@
           "nullable": false,
           "description": "Kennels the kept account is an app admin of (AppAccessFlags & 1) after the merge"
         }
-      ]
+      ],
+      "description": "On success: one row of overlaps and of what the kept account holds after the merge (same pairing rules as hcportal_mergeHashers: runs by EventId + DisplayName, kennels by KennelId)."
     }
   ],
-  "sideEffects": [],
-  "codeSmells": [],
+  "sideEffects": [
+    "On a runtime error: INSERT HC.ErrorLog, then THROW"
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Membership counted from IsMember",
+      "detail": "Lines 107-108 (KennelsMember) and 196-200 (AfterKennelsMember) test HasherKennelMap.IsMember; membership is defined by MembershipExpirationDate in the future, so these counts can disagree with what the app and portal call a member."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

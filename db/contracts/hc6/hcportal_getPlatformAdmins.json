@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_getPlatformAdmins",
-  "version": "1.0.0",
-  "description": "Platform admins list (E12.F7.S1): every live HC.PlatformAdmin row with the hasher and the four capability flags; IsSelf marks the caller. Requires HC.PlatformAdmin.CanManagePermissions.",
+  "version": "1.1.0",
+  "description": "Platform admins list for HC Admin Tools > Platform admins (E12.F7.S1): every live HC.PlatformAdmin row (removed = 0) with the hasher behind it and the four capability flags; IsSelf marks the caller so the portal can stop them removing themselves. Auth: HC6.ValidatePortalAuth; the caller must hold a live HC.PlatformAdmin row with CanManagePermissions = 1. HC.PlatformAdmin is the only platform-wide grant (AppAccessFlags 0x40000000 is the per-kennel founder bit).",
   "parameters": [
     {
       "name": "deviceId",
@@ -23,7 +23,7 @@
     {
       "index": 0,
       "name": "Refusal",
-      "description": "{ Success = 0, ErrorMessage } when auth or the CanManagePermissions gate fails.",
+      "description": "{ Success = 0, ErrorMessage } when auth or the CanManagePermissions gate fails. A runtime error inside the TRY is logged to HC.ErrorLog and re-thrown (no envelope).",
       "columns": [
         {
           "name": "Success",
@@ -42,7 +42,7 @@
     {
       "index": 0,
       "name": "PlatformAdmins",
-      "description": "One row per live platform admin, ordered by hash name.",
+      "description": "One row per live platform admin, ordered by TRIM(HashName), LastName, FirstName.",
       "columns": [
         {
           "name": "HasherId",
@@ -71,14 +71,14 @@
         {
           "name": "Email",
           "type": "NVARCHAR(250)",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "HC.Hasher.Email (NOT NULL; may be a generated address)"
         },
         {
           "name": "HomeKennel",
-          "type": "NVARCHAR(250)",
+          "type": "NVARCHAR(25)",
           "nullable": true,
-          "description": "Home kennel short name"
+          "description": "Home kennel short name (LEFT JOIN; NULL when the hasher has no home kennel)"
         },
         {
           "name": "CanViewMonitor",
@@ -125,7 +125,9 @@
       ]
     }
   ],
-  "sideEffects": [],
+  "sideEffects": [
+    "On a runtime error: INSERT HC.ErrorLog, then THROW"
+  ],
   "codeSmells": [],
   "breakingChangeRules": [
     "Never remove a column from any rowset",

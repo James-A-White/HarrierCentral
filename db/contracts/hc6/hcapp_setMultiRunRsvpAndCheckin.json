@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_setMultiRunRsvpAndCheckin",
-  "version": "1.0.0",
-  "description": "Processes the multi-run check-in dialog result in a single transaction. For each event in @checkInEventIds, upserts HasherEventMap with AttendenceState=20 (at hash) and RsvpState=3 (RSVP yes), guarded so existing check-ins (AttendenceState >= 20) are never downgraded. For each event in @rsvpNoEventIds, upserts HasherEventMap with RsvpState=1 (not coming), guarded so rows where the hasher is already checked in are not touched. Both lists are pipe-delimited UUID strings. After the transaction, runs HC6.nonApi_updateRunCountsByUser for check-in events, then delegates to HC6.hcapp_syncUserData (common domain) to replicate attendance changes back to the device.",
+  "version": "1.1.0",
+  "description": "Processes the multi-run check-in dialog result in a single transaction. For each event in @checkInEventIds, upserts HasherEventMap with AttendenceState=20 (at hash) and RsvpState=3 (RSVP yes), guarded so existing check-ins (AttendenceState >= 20) are never downgraded. For each event in @rsvpNoEventIds, upserts HasherEventMap with RsvpState=1 (not coming), guarded so rows where the hasher is already checked in are not touched. Both lists are pipe-delimited UUID strings; an id with no HC.Event row is silently skipped (INNER JOIN). Auth: HC6.ValidateAppAuth (spNumber 93, device-secret token, @param NULL). There is NO permission gate: @hasherId defaults to the caller but any value is accepted. After the transaction, runs HC6.nonApi_updateRunCountsByUser for check-in events, then delegates to HC6.hcapp_syncUserData (common domain) to replicate attendance changes back to the device.",
   "parameters": [
     {
       "name": "deviceId",
@@ -23,46 +23,61 @@
       "type": "NVARCHAR(MAX)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Pipe-delimited list of event UUIDs to check in to (AttendenceState=20, RsvpState=3). Pass an empty string or NULL to skip check-in processing. UUIDs are TRIM()ed before CAST."
+      "description": "Pipe-delimited list of event UUIDs to check in to (AttendenceState=20, RsvpState=3). Pass an empty string or NULL (the parameter has no default, so it must still be sent) to skip check-in processing. UUIDs are TRIM()ed before CAST."
     },
     {
       "name": "rsvpNoEventIds",
       "type": "NVARCHAR(MAX)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Pipe-delimited list of event UUIDs to mark RSVP No (RsvpState=1). Pass an empty string or NULL to skip RSVP-No processing. Never downgrades existing check-ins."
+      "description": "Pipe-delimited list of event UUIDs to mark RSVP No (RsvpState=1). Pass an empty string or NULL (the parameter has no default, so it must still be sent) to skip RSVP-No processing. Never downgrades existing check-ins."
     },
     {
       "name": "hasherId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": "Hasher.id",
-      "description": "Target hasher to check in or RSVP for. If NULL, defaults to the authenticated user (@userId resolved from auth). Allows admins to act on behalf of other hashers."
+      "description": "Target hasher to check in or RSVP for. If NULL, set to the authenticated caller (line 73). Any other hasher id is accepted WITHOUT a permission check (see codeSmells). The app always sends its own userId."
     },
     {
       "name": "hasherEventMapUpdatedAfter",
       "type": "NVARCHAR(50)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Sync watermark forwarded to hcapp_syncUserData for the HasherEventMap rowset. Pass 'ignore' to skip that domain. NULL is COALESCE'd to 'ignore'."
+      "description": "Sync watermark forwarded to hcapp_syncUserData for the HasherEventMap rowset. Pass 'ignore' to skip that domain. No default — must be sent; a NULL value is COALESCE'd to 'ignore'."
     },
     {
       "name": "hasherKennelMapUpdatedAfter",
       "type": "NVARCHAR(50)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Sync watermark forwarded to hcapp_syncUserData for the HasherKennelMap rowset. Pass 'ignore' to skip that domain. NULL is COALESCE'd to 'ignore'."
+      "description": "Sync watermark forwarded to hcapp_syncUserData for the HasherKennelMap rowset. Pass 'ignore' to skip that domain. No default — must be sent; a NULL value is COALESCE'd to 'ignore'."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "Envelope",
-      "description": "Always returned as rowset 0. success=0 on auth failure or unhandled error; success=1 on success.",
+      "description": "Always returned as rowset 0. success=0 on auth failure (ValidateAppAuth codes) or unhandled error (1993 / errorType 19); success=1 on success (errorCode/errorType NULL).",
       "columns": [
-        { "name": "success", "type": "INT", "nullable": false, "description": "1 on success, 0 on any error." },
-        { "name": "errorCode", "type": "INT", "nullable": true, "description": "NULL on success. Auth error codes (1193/1393) or CATCH error code (1993)." },
-        { "name": "errorType", "type": "INT", "nullable": true, "description": "NULL on success. 1=auth, 3=device not found, 19=unhandled CATCH error." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 on any error."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success. Auth error codes (1193/1393) or CATCH error code (1993)."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success. 1=auth, 3=device not found, 19=unhandled CATCH error."
+        }
       ]
     },
     {
@@ -70,12 +85,42 @@
       "name": "ErrorDetail",
       "description": "Returned at rowset 1 when success=0. Standard HC6 app error shape. Mutually exclusive with AdHocData and sync rowsets.",
       "columns": [
-        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Specific error code." },
-        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short error title." },
-        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
-        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.ErrorLog GUID."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Specific error code."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Short error title."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name via OBJECT_NAME(@@PROCID)."
+        }
       ]
     },
     {
@@ -107,19 +152,34 @@
   ],
   "codeSmells": [
     {
+      "severity": "high",
+      "issue": "@hasherId acts for any hasher with no permission check",
+      "detail": "Line 73 only defaults @hasherId to the caller; any non-NULL id is used as-is in both MERGEs (lines 89, 113) and in nonApi_updateRunCountsByUser (line 148). Any signed-in device can check another hasher in to any run (inflating their run count) or RSVP them No. The app sends its own userId, so nothing legitimate needs the override; either drop the parameter or gate it (e.g. CheckKennelPermission per event kennel)."
+    },
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "All seven parameters (@deviceId, @accessToken, @checkInEventIds, @rsvpNoEventIds, @hasherId, @hasherEventMapUpdatedAfter, @hasherKennelMapUpdatedAfter) (lines 3-9) have no SQL default. A client that omits one is refused by SQL before the procedure runs: no HC.ErrorLog row, an empty 500 in the app, and any graceful check inside is unreachable (CLAUDE.md, Rack of Lamb 2026-09-29)."
+    },
+    {
       "severity": "medium",
       "issue": "Unhandled CATCH errorType 19 is non-standard",
-      "detail": "The CATCH block uses errorType=19, which is not in the standard HC6 errorType table (valid codes are 1=auth, 2=validation, 3=not found, 4=concurrent modification, 5=unhandled DB error). Callers that branch on errorType=5 for unhandled errors will not catch this case."
+      "detail": "Line 131 uses errorType=19 / errorCode 1993, not the standard 5 for unhandled errors. Callers that branch on errorType 5 miss this case."
     },
     {
       "severity": "low",
-      "issue": "No validation on empty or malformed event UUID strings",
-      "detail": "STRING_SPLIT + CAST(TRIM(s.value) AS UNIQUEIDENTIFIER) will throw an exception (caught by TRY/CATCH) if any pipe-delimited segment is not a valid UUID. The error message will be a raw SQL CAST failure with no indication of which event ID was malformed. Client-side validation is the only guard."
+      "issue": "No validation on malformed event UUID strings",
+      "detail": "Lines 84/108: CAST(TRIM(s.value) AS UNIQUEIDENTIFIER) throws on a non-GUID segment; the CATCH logs a raw conversion error with no hint which id was bad. Ids that are valid GUIDs but match no HC.Event are dropped silently by the INNER JOIN."
     },
     {
       "severity": "low",
-      "issue": "updatedAt set with GETDATE() instead of SYSUTCDATETIME()",
-      "detail": "HasherEventMap upserts set updatedAt = GETDATE() (local server time). Other SPs in the codebase use SYSUTCDATETIME() for UTC consistency. The UpdatedAt trigger on HasherEventMap will override this value on INSERT/UPDATE, so the final stored value is trigger-computed — but the GETDATE() in the MERGE is redundant and potentially misleading."
+      "issue": "updatedAt set with GETDATE()",
+      "detail": "Lines 94/99/117/122 write GETDATE() (server local time) rather than SYSUTCDATETIME()/SYSDATETIMEOFFSET(). The HasherEventMap UpdatedAt trigger restamps the row, so the literal is redundant and misleading."
+    },
+    {
+      "severity": "low",
+      "issue": "RSVP-No MERGE can fire for a run the hasher already has a row for at state >= 20",
+      "detail": "By design the WHEN MATCHED guard (line 114) skips checked-in rows, so a No for an attended run is silently ignored and the client still receives success=1."
     }
   ],
   "breakingChanges": [

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "ValidatePortalAuth",
-  "version": "1.0.0",
-  "description": "Internal authentication helper SP used by all HC6 portal SPs. Validates the caller's deviceId, looks up the associated device secret and hasher from HC.Device/HC.Hasher, determines the caller type (regular user, HashRuns.org service account, or admin portal service account), builds the token param string (UPPER(deviceSecret) + callerParamString), and validates the access token via HC6.CHECK_PORTAL_ACCESS_TOKEN. Returns hasherId (HC.Hasher PK) and callerType as OUTPUT parameters. NOT exposed as an API endpoint — called only by other HC6 portal SPs.",
+  "version": "1.1.0",
+  "description": "Internal authentication helper used by every HC6 portal SP (and some others). Validates the caller's deviceId, looks up the device secret and owning hasher from HC.Device JOIN HC.Hasher, determines the caller type (regular user, HashRuns.org service account, admin portal service account) from PublicHasherId, builds the token param string, and validates the access token via HC6.CHECK_PORTAL_ACCESS_TOKEN. Regular devices: UPPER(DeviceSecret), with ':' + UPPER(callerParamString) appended when callerParamString is non-NULL. Service-account devices (empty DeviceSecret): UPPER(callerParamString) alone, no prefix. Returns hasherId and callerType through OUTPUT parameters; the caller checks @errorMessage. Returns no rowsets, writes nothing and logs nothing. NOT exposed as an API endpoint — called only by other HC6 SPs, which must pass OBJECT_NAME(@@PROCID) as @callerProcName.",
   "parameters": [
     {
       "name": "deviceId",
@@ -14,9 +14,9 @@
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
-      "nullable": true,
+      "nullable": false,
       "mapsToColumn": null,
-      "description": "Short-lived cryptographic token to validate. Validated via HC6.CHECK_PORTAL_ACCESS_TOKEN using UPPER(deviceSecret) + callerParamString as the token input."
+      "description": "Short-lived cryptographic token to validate via HC6.CHECK_PORTAL_ACCESS_TOKEN. No SQL default: callers always pass their own @accessToken (which may be NULL — a NULL token simply fails validation)."
     },
     {
       "name": "callerProcName",
@@ -30,28 +30,28 @@
       "type": "NVARCHAR(500)",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Optional context string baked into the token hash on the client side. Must match exactly what Flutter passed to generateToken() as paramString. Pass NULL when no additional context is used. UPPER(deviceSecret) is always prepended to this value."
+      "description": "Optional context string baked into the token hash on the client side. Must match what Flutter passed to generateToken() as paramString. NULL when no extra context is used. For a regular device it is appended as ':' + UPPER(value) after UPPER(deviceSecret); for a service account (empty DeviceSecret) it is the whole param string."
     },
     {
       "name": "errorMessage",
       "type": "NVARCHAR(255)",
-      "nullable": true,
+      "nullable": false,
       "mapsToColumn": null,
-      "description": "OUTPUT: NULL on success, human-readable error description on failure."
+      "description": "OUTPUT (no default — must be supplied): set to NULL on success, 'deviceId is required' or 'Authentication failed' on failure."
     },
     {
       "name": "hasherId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": true,
+      "nullable": false,
       "mapsToColumn": "Hasher.id",
-      "description": "OUTPUT: HC.Hasher.id (internal PK) for the authenticated device's user. NULL on failure. Used by calling SPs for all internal hasher-scoped queries."
+      "description": "OUTPUT (no default — must be supplied): HC.Hasher.id (internal PK) of the device's user. NULL on failure."
     },
     {
       "name": "callerType",
       "type": "INT",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "OUTPUT: 0=regular user, 1=HashRuns.org service account (publicHasherId 11111111-1111-1111-1111-111111111111), 2=admin portal service account (publicHasherId 22222222-2222-2222-2222-222222222222). Used by calling SPs to branch service-account vs regular-user logic."
+      "description": "OUTPUT (no default — must be supplied): 0=regular user, 1=HashRuns.org service account (PublicHasherId 11111111-1111-1111-1111-111111111111), 2=admin portal service account (PublicHasherId 22222222-2222-2222-2222-222222222222). NULL when the device is unknown."
     }
   ],
   "rowsets": [],
@@ -64,5 +64,17 @@
     "Never change the OUTPUT parameter semantics",
     "Never change callerType integer codes without updating all callers",
     "Never change the token param string format (UPPER(deviceSecret) + callerParamString) without coordinating with Flutter"
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken and @callerProcName (lines 2-4) and the three OUTPUT parameters (lines 6-8) have no SQL default. Harmless in practice: the helper is only called from other SPs, which always pass all of them; it is never an API endpoint."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH",
+      "detail": "The body (lines 51-122) has no TRY/CATCH and logs nothing. Callers deliberately invoke it OUTSIDE their own TRY block, so a runtime error here (e.g. inside HC6.CHECK_PORTAL_ACCESS_TOKEN) would surface as an unlogged 500. Low likelihood: two single-row lookups and a scalar function call."
+    }
   ]
 }

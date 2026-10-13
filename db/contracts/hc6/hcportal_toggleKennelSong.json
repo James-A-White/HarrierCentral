@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_toggleKennelSong",
-  "version": "1.0.0",
-  "description": "Toggles whether a song is associated with a kennel. @publicKennelId is resolved to the internal HC.Kennel.id (@kennelId) before all KennelSongMap operations — fixing the HC5 bug where @publicKennelId was used directly and no songs were ever actually toggled. If adding (@isInKennel=1), either creates a new KennelSongMap record or un-soft-deletes an existing one (Removed=0). If removing (@isInKennel=0), soft-deletes the mapping (Removed=1). All writes wrapped in a transaction.",
+  "version": "1.1.0",
+  "description": "Toggles whether a song is associated with a kennel. @publicKennelId is resolved to the internal HC.Kennel.id (@kennelId) before all KennelSongMap operations — fixing the HC5 bug where @publicKennelId was used directly and no songs were ever actually toggled. If adding (@isInKennel=1), either creates a new KennelSongMap record or un-soft-deletes an existing one (Removed=0). If removing (@isInKennel=0), soft-deletes the mapping (Removed=1). All writes wrapped in a transaction. Auth: HC6.ValidatePortalAuth with @songId in the token param string; there is NO kennel permission check — any signed-in portal user can change any kennel's songbook.",
   "parameters": [
     {
       "name": "deviceId",
@@ -23,7 +23,7 @@
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "Kennel.PublicKennelId",
-      "description": "The public kennel GUID used to resolve the internal Kennel.id (@kennelId), which is then used in all KennelSongMap operations. Validated IS NULL after auth."
+      "description": "The public kennel GUID resolved to the internal Kennel.id for all KennelSongMap operations. NULL is refused; an unknown kennel is NOT (see codeSmells)."
     },
     {
       "name": "songId",
@@ -36,24 +36,34 @@
       "name": "isInKennel",
       "type": "SMALLINT",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "Toggle flag: 1 = add song to kennel (insert or un-soft-delete), 0 = remove song from kennel (soft-delete). Validated to be exactly 0 or 1; NULL or other values return an error."
+      "mapsToColumn": "KennelSongMap.Removed",
+      "description": "Toggle flag: 1 = add song to kennel (insert or un-soft-delete), 0 = remove song from kennel (soft-delete). Validated to be exactly 0 or 1; NULL or other values return an error. Stored inverted: 1 writes Removed = 0, 0 writes Removed = 1."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "description": "Returned on auth failure, NULL publicKennelId / songId, isInKennel not 0/1, or from the CATCH block (ERROR_MESSAGE()).",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Human-readable error message"
+        }
       ]
     },
     {
       "index": 0,
       "name": "SuccessResult",
-      "description": "Returned after the song association has been successfully added or removed.",
+      "description": "Returned after the write commits, including when a remove matched no row.",
       "columns": [
         {
           "name": "resultCode",
@@ -63,7 +73,7 @@
         },
         {
           "name": "result",
-          "type": "NVARCHAR",
+          "type": "VARCHAR(7)",
           "nullable": false,
           "description": "Always 'Success'"
         }
@@ -80,5 +90,27 @@
     "Never rename a parameter",
     "Never change a parameter type",
     "Never change a sentinel value meaning"
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "No kennel permission gate",
+      "detail": "Lines 54-80: after ValidatePortalAuth only the parameters are checked. Nothing ties the caller to the kennel, so any signed-in portal user can add or remove songs in any kennel's songbook."
+    },
+    {
+      "severity": "medium",
+      "issue": "Unknown kennel not refused",
+      "detail": "Lines 83-84: a @publicKennelId that matches no kennel leaves @kennelId NULL; an add then INSERTs KennelId NULL into a NOT NULL column, which fails in the CATCH as a raw constraint message; a remove silently succeeds."
+    },
+    {
+      "severity": "medium",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 124-127: CATCH rolls back and returns the envelope with no HC.ErrorLog row."
+    },
+    {
+      "severity": "low",
+      "issue": "Check-then-INSERT without UPDLOCK, HOLDLOCK",
+      "detail": "Lines 94-106: IF EXISTS … ELSE INSERT with no lock hint; two concurrent adds can create two KennelSongMap rows for one song (the table has no unique key on KennelId, SongId)."
+    }
   ]
 }

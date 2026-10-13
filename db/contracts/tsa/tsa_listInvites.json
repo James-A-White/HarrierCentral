@@ -1,0 +1,84 @@
+{
+  "schema": "TSA",
+  "name": "tsa_listInvites",
+  "version": "1.0.0",
+  "description": "Returns every TSA.WorkerInvite, newest first, with a computed status: Registered (usedAt set), Expired (expiresAt passed), else Pending. Admin dashboard; the token is not returned. Called by the TSA Eats Next.js app (tsa-eats/lib/api.ts) through api/Endpoints/TsaApi.cs, which maps queryType 'listInvites' to [TSA].[tsa_listInvites]. There is no Harrier Central auth: POST requires the shared X-Api-Key (TsaApiKey); GET requires nothing, and the shim does not restrict which procedure a GET may name. The shim turns any one-row rowset with Success = 0 into HTTP 400 {success:false, errorMessage}, and an empty first rowset into HTTP 404.",
+  "parameters": [],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Invites",
+      "description": "Zero or more rows ordered by createdAt DESC.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Invite id."
+        },
+        {
+          "name": "firstName",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": "First name."
+        },
+        {
+          "name": "lastName",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": "Last name."
+        },
+        {
+          "name": "createdByAdmin",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": "Admin who created it."
+        },
+        {
+          "name": "createdAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "Created."
+        },
+        {
+          "name": "expiresAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "Expiry."
+        },
+        {
+          "name": "usedAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "When registration used it."
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR(10)",
+          "nullable": false,
+          "description": "'Registered' | 'Expired' | 'Pending'."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "SP body not wrapped in TRY/CATCH",
+      "detail": "Read procedure with no TRY/CATCH: any runtime error (timeout, deadlock) becomes an unlogged raw 500 from the shim."
+    },
+    {
+      "severity": "medium",
+      "issue": "Admin list readable without a key",
+      "detail": "The client calls it by POST, but the shim lets a GET name it with no X-Api-Key, exposing officer names. Fix belongs in TsaApi.cs."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

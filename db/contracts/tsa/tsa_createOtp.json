@@ -1,0 +1,71 @@
+{
+  "schema": "TSA",
+  "name": "tsa_createOtp",
+  "version": "1.0.0",
+  "description": "Stores a new OTP hash for a phone number, valid for 10 minutes, after marking every unused OTP for that number as used. The Next.js caller generates the 6-digit code, hashes it with SHA-256 and sends the plaintext by SMS (Twilio); the plaintext never reaches the database. Currently unused while the app runs the tsa_loginByPhone bypass. Called by the TSA Eats Next.js app (tsa-eats/lib/api.ts) through api/Endpoints/TsaApi.cs, which maps queryType 'createOtp' to [TSA].[tsa_createOtp]. There is no Harrier Central auth: POST requires the shared X-Api-Key (TsaApiKey); GET requires nothing, and the shim does not restrict which procedure a GET may name. The shim turns any one-row rowset with Success = 0 into HTTP 400 {success:false, errorMessage}, and an empty first rowset into HTTP 404.",
+  "parameters": [
+    {
+      "name": "phoneNumber",
+      "type": "NVARCHAR(30)",
+      "nullable": false,
+      "mapsToColumn": "OtpCode.phoneNumber",
+      "description": "E.164 phone number. No default."
+    },
+    {
+      "name": "otpHash",
+      "type": "NVARCHAR(64)",
+      "nullable": false,
+      "mapsToColumn": "OtpCode.otpHash",
+      "description": "SHA-256 hex hash of the 6-digit code. No default."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Success or CATCH error, one row.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 on error."
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "NULL on success; ERROR_MESSAGE() on error."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE TSA.OtpCode SET usedAt = now for the phone's unused codes.",
+    "INSERT TSA.OtpCode (one row, expiresAt = now + 10 minutes)."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@phoneNumber, @otpHash (lines 2-3) have no SQL default. A caller that omits one is refused by SQL Server before the body runs: no log row, and the TsaApi shim returns a generic 500."
+    },
+    {
+      "severity": "medium",
+      "issue": "CATCH block does not log",
+      "detail": "The CATCH (lines 35-38) returns the error envelope but writes nothing to HC.ErrorLog or any TSA log table, so failures are only visible in Azure Function logs as a 400 warning."
+    },
+    {
+      "severity": "low",
+      "issue": "No rate limit",
+      "detail": "Nothing limits how often a code can be requested for a number; each call is an SMS sent by the caller."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

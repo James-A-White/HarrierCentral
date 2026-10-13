@@ -1,0 +1,214 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_respondDirectMessageRequest",
+  "version": "1.0.0",
+  "description": "The public web's door to HC6.hcapp_respondDirectMessageRequest (direct messages E9.F1.S7/S18/S19, accept or decline a request to DM the caller). A thin 'wrap for writes' wrapper: it EXECs hcapp_respondDirectMessageRequest with the browser's own device credentials and adds no checks of its own, so the web and the app cannot drift. Auth, permission gate and every rule live in hcapp_respondDirectMessageRequest (the token must be signed for 'hcapp_respondDirectMessageRequest', because the inner SP validates under its own name). Reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET. Returns hcapp_respondDirectMessageRequest's rowsets unchanged. PublicWebAdminApi strips the API-only rowsets 2+ (push detail, recipients) before the reply, so the web sees rowsets 0-1.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "The calling browser's HC.Device id (the browser is a registered device). No SQL default."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Device-bound token signed for 'hcapp_respondDirectMessageRequest' (the inner SP validates it under its own name via HC6.ValidateAppAuth). No SQL default."
+    },
+    {
+      "name": "fromPublicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Hasher.PublicHasherId",
+      "description": "The requester, by public id (resolved to Hasher.id; Removed hashers do not resolve). Required in effect: NULL, unknown, or no pending request from them → 2004. Passed straight to hcapp_respondDirectMessageRequest."
+    },
+    {
+      "name": "accept",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "1 accept, 0 decline. Has a SQL default of NULL but NULL is NOT handled: see code smells — a NULL @accept with a valid pending request falls through to the DECLINE branch. Passed straight to hcapp_respondDirectMessageRequest."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "From hcapp_respondDirectMessageRequest: Auth failure only (ValidateAppAuth): the error detail is returned ALONE at index 0 and the SP returns."
+    },
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "From hcapp_respondDirectMessageRequest: Every other refusal: {success 0, errorCode, errorType} at index 0, then the StandardErrorResult detail at index 1. Codes: 2004 no such pending request — requester unknown, @accept out of range, or nothing pending ('That request is no longer waiting.', errorType 2); 2005 unhandled error from the CATCH (5).",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "2004 or 2005."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "2 validation, 5 unhandled."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "From hcapp_respondDirectMessageRequest: Follows the ErrorEnvelope on every non-auth refusal."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "From hcapp_respondDirectMessageRequest: On success, after the commit.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Always NULL."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Result",
+      "description": "From hcapp_respondDirectMessageRequest: On success: the outcome and the other party, one row.",
+      "columns": [
+        {
+          "name": "Outcome",
+          "type": "VARCHAR(8)",
+          "nullable": false,
+          "description": "'open' on accept, 'declined' on decline."
+        },
+        {
+          "name": "ThreadId",
+          "type": "NVARCHAR(40)",
+          "nullable": true,
+          "description": "UPPER(new ThreadId) on accept; NULL on decline."
+        },
+        {
+          "name": "OtherPublicHasherId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "UPPER(requester's Hasher.PublicHasherId)."
+        },
+        {
+          "name": "OtherDisplayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Requester's Hasher.DisplayName."
+        },
+        {
+          "name": "OtherPhoto",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Requester's Hasher.Photo."
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "PushDetail",
+      "description": "From hcapp_respondDirectMessageRequest: ACCEPT ONLY, API-only (stripped): what the shim needs to tell the requester. Absent on decline — the client reply has two rowsets, the API sees four only on accept.",
+      "columns": [
+        {
+          "name": "Kind",
+          "type": "VARCHAR(10)",
+          "nullable": false,
+          "description": "Always 'dmAccepted'."
+        },
+        {
+          "name": "ThreadId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "UPPER(new ThreadId)."
+        },
+        {
+          "name": "FromPublicHasherId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "UPPER(the CALLER's Hasher.PublicHasherId) — the accepter, who the push is from."
+        },
+        {
+          "name": "FromDisplayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "The caller's Hasher.DisplayName."
+        },
+        {
+          "name": "FromPhoto",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "The caller's Hasher.Photo."
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "name": "Recipients",
+      "description": "From hcapp_respondDirectMessageRequest: ACCEPT ONLY, API-only (stripped): the requester's live devices (removed 0, FcmToken present, LastLogin within 180 days, build >= HC6.MinBuildForDmPush()). May be empty.",
+      "columns": [
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Device.UserId — the requester's internal Hasher.id."
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Device.FcmToken."
+        },
+        {
+          "name": "BadgeTotal",
+          "type": "INT",
+          "nullable": true,
+          "description": "HC6.UserUnreadChatTotal for the requester; NULL when the device's build is below HC6.MinBuildForIconBadge()."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "EXEC HC6.hcapp_respondDirectMessageRequest — everything it does:",
+    "  Accept: MERGE HC.HasherFriendMap WITH (HOLDLOCK) for both directions (caller→requester, requester→caller) — UPDATE FriendSince = COALESCE(existing, now), ThreadId = new id, Removed 0, updatedAt; or INSERT (UserId, Friend_UserId, FriendSince, ThreadId). A previously ended or declined pair is revived with a NEW ThreadId, so earlier DM history (under the old ThreadId) is not shown in the new thread.",
+    "  Decline: UPDATE HC.HasherFriendMap SET Removed 1, updatedAt on the requester's row (FriendSince IS NULL).",
+    "  INSERT HC.ErrorLog on 2004 and in the CATCH (2005).",
+    "  The API pushes 'dmAccepted' to rowset 3 on accept; nothing is queued in the database.",
+    "PublicWebAdminApi removes rowsets 2+ (PushDetail, Recipients) before replying; the web sends no 'dmAccepted' push yet (E9.F7.S15 gap).",
+    "On an error that escapes the inner SP (or the EXEC itself) the CATCH rolls back, logs 'Unhandled error in publicWeb_respondDirectMessageRequest' to HC.ErrorLog (HcVersion '<web>', deviceId) and re-THROWs, so the API returns 500."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken (line 14-15) have no SQL default. A caller that omits one fails with 'expects parameter' before the SP runs: PublicWebAdminApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

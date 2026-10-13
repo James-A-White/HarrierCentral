@@ -1,34 +1,65 @@
 {
   "schema": "HC6",
   "name": "publicWeb_resolveCustomDomain",
-  "version": "1.0.0",
-  "description": "Resolves a custom domain hostname to the kennel slug that should handle requests for it. Called by the Next.js middleware on every inbound request from an unrecognised hostname; result is cached in-process. Only returns slugs for kennels with Enabled = 1 — disabled kennels do not route. No authentication required.",
+  "version": "1.1.0",
+  "description": "Resolves a custom domain hostname (tier 3) to the kennel slug that should handle it. Called by the Next.js middleware for every request from an unrecognised hostname; the result is cached in-process. Only kennels whose KennelWebsite.Enabled = 1 and that are not deleted/removed resolve. Unauthenticated (PublicWebApi GET shim).",
   "parameters": [
     {
       "name": "CustomDomain",
       "type": "NVARCHAR(253)",
       "nullable": false,
       "mapsToColumn": "KennelWebsite.CustomDomain",
-      "description": "Hostname without port (e.g. 'www.decisionhall.com' or 'decisionhall.com') — exact match against HC.KennelWebsite.CustomDomain"
+      "description": "Hostname without port (e.g. 'www.decisionhall.com'), exact match against HC.KennelWebsite.CustomDomain (unique where not NULL). No SQL default.",
+      "typeMismatch": "KennelWebsite.CustomDomain is NVARCHAR(250); the parameter is NVARCHAR(253) (the DNS maximum). A hostname longer than the column simply matches nothing."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "ResolvedKennel",
-      "description": "Zero or one row. Zero rows means no active kennel owns this domain — middleware should return 404 or pass through. One row means the domain resolves to this kennel.",
+      "description": "Zero or one row (CustomDomain is unique). Zero rows → the shim returns 404.",
       "columns": [
         {
           "name": "KennelSlug",
-          "type": "NVARCHAR(100)",
+          "type": "NVARCHAR(50)",
           "nullable": false,
           "description": "HC.Kennel.KennelUniqueShortName — the internal path segment to rewrite the request to"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Instead of ResolvedKennel on a runtime error (CATCH). PublicWebApi logs it as 'HC6 Public Web Error: resolveCustomDomain' and returns 400.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": false,
+          "description": "ERROR_MESSAGE()"
         }
       ]
     }
   ],
   "sideEffects": [],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@CustomDomain (line 2) has no SQL default. A caller that omits it fails with 'expects parameter' before the SP runs: PublicWebApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
+    },
+    {
+      "severity": "low",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 35-38 return { Success = 0, ErrorMessage } without an HC.ErrorLog row; PublicWebApi logs the envelope generically, without the hostname that failed."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove the KennelSlug column",
     "Never change the zero-row = no match contract — middleware depends on this",

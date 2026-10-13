@@ -1,0 +1,156 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_matchImportRows",
+  "version": "1.0.0",
+  "description": "Before an 'Import from file' is saved (E2.F2.S6, 2026-10-10): finds file rows that look like a live member of THIS kennel — same first AND last name, or same hash name, case-insensitive — but carry a DIFFERENT email, so the portal can ask the admin whether each is the same person and whether to use the new address. Only this kennel's members (HasherKennelMap.removed = 0, hasher not removed/deleted) are considered. canChangeEmail follows the 2026-09-23 ownership rule shared with hcportal_updateKennelHasher: the member has never signed in (no LastLoginDateTime and no HC.Device row), this kennel is their home (or they have none), and the new address is not already another account's. Reads only. Auth: HC6.ValidatePortalAuth with @publicKennelId in the token param string; the caller needs AppAccessFlags & 0x40000081 (authIsAdmin | authCanManagePublicWebContent | SuperAdmin) on the kennel.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: portal device id, validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: portal token; @publicKennelId is baked into its param string."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "The kennel the file is being imported into. Unknown or NULL returns 'No kennel with that id.'"
+    },
+    {
+      "name": "rowsJson",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "JSON array in grid order: [{firstName, lastName, hashName, eMail}, …]. Each value is trimmed (email lower-cased) and read as NVARCHAR(250); blanks become NULL. The array index is the rowNo echoed back. NULL is treated as []."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "Success = 0 with ErrorMessage on auth failure, unknown kennel, or missing permission (no further rowsets). On success Success = 1, ErrorMessage NULL, followed by rowset 1. On a runtime error the CATCH logs to HC.ErrorLog and returns a second envelope with Success = 0 and a friendly message — after Success = 1 if the error came from the matching query.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 ok, 0 refused/failed"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(255)",
+          "nullable": true,
+          "description": "Why, when Success = 0"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Matches",
+      "description": "At most one row per file row (name match beats hash-name match), for rows whose email is set, is not an @noemail.invalid placeholder, differs from the matched member's, and is not already any member's address here. ORDER BY rowNo.",
+      "columns": [
+        {
+          "name": "rowNo",
+          "type": "INT",
+          "nullable": false,
+          "description": "0-based index of the row in @rowsJson"
+        },
+        {
+          "name": "publicHasherId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "The matched member's HC.Hasher.PublicHasherId, lower-cased text"
+        },
+        {
+          "name": "hashName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "HC.Hasher.HashName"
+        },
+        {
+          "name": "firstName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "HC.Hasher.FirstName"
+        },
+        {
+          "name": "lastName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "HC.Hasher.LastName"
+        },
+        {
+          "name": "currentEmail",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "HC.Hasher.Email on file"
+        },
+        {
+          "name": "matchedBy",
+          "type": "VARCHAR(8)",
+          "nullable": false,
+          "description": "'name' | 'hashName'"
+        },
+        {
+          "name": "signedIn",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when the member has a LastLoginDateTime or any HC.Device row"
+        },
+        {
+          "name": "emailInUse",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when the file's address already belongs to any HC.Hasher"
+        },
+        {
+          "name": "canChangeEmail",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when the admin may replace the member's address with the file's (never signed in, home kennel here or none, address not in use)"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "None on success (reads only). On a runtime error: INSERT HC.ErrorLog."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Only one generated-email form recognised",
+      "detail": "Line 91 skips '%@noemail.invalid' only; the other generated forms HC6.IsGeneratedEmail knows (URC:…, removed_…, <GUID>@harriercentral.com, anonymous …) are offered as a new address. The CLAUDE.md rule keeps the generated-email test in one function."
+    },
+    {
+      "severity": "low",
+      "issue": "Non-sargable LOWER(Email) lookups on HC.Hasher",
+      "detail": "Lines 100 and 103 test LOWER(x.Email) = c.fileEmail against the whole HC.Hasher table, twice per candidate row; neither can use the Email index."
+    },
+    {
+      "severity": "low",
+      "issue": "Arbitrary pick between equal matches",
+      "detail": "Lines 80-83: ROW_NUMBER orders only by name-vs-hashName, so two members sharing a hash name (or a full name) are picked between arbitrarily."
+    },
+    {
+      "severity": "low",
+      "issue": "Hard-coded flag mask",
+      "detail": "Line 47 gates on AppAccessFlags & 0x40000081 rather than HC6.CheckKennelPermission, so mismanagement-role grants do not apply."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

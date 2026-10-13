@@ -1,0 +1,144 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getReportContext",
+  "version": "1.0.0",
+  "description": "What the SendRunCountsReport Azure Function needs before a web member's emailed run-counts report (E9.F7.S17, the app's floating-action-button report): the INTERNAL kennel id, the kennel's name, the caller's display name and email address — none of which the member web session holds, since it only carries public ids. Resolving them server-side keeps the internal id and the address out of the browser. Auth: HC6.ValidateAppAuth (spNumber 118, @param NULL); the hasher is the token's user. No permission gate. Read-only.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "The browser's HC.Device id (the web member session). No SQL default."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token signed for this SP (ValidateAppAuth spNumber 118, @param NULL). No SQL default."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "The kennel; NULL for the all-kennels report, signalled to the function as an empty GUID KennelId and the name 'All kennels'."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "AuthErrorEnvelope",
+      "description": "On a ValidateAppAuth failure: { success = 0, errorCode, errorType } then the detail at index 1; the SP RETURNs.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "ValidateAppAuth's error code."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "ValidateAppAuth's error type."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Error detail after the AuthErrorEnvelope (errorId, errorType, errorCode, errorTitle, errorUserMessage, errorProc)."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "On success: { success = 1, errorCode = NULL, errorType = NULL }.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "Always NULL."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "Always NULL."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ReportContext",
+      "description": "On success: one row for the caller (zero rows when the hasher row is Removed or Removed IS NULL — the WHERE is h.Removed = 0).",
+      "columns": [
+        {
+          "name": "KennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Kennel.id; '00000000-0000-0000-0000-000000000000' for all kennels — AND when @publicKennelId matches no live kennel (see codeSmells)."
+        },
+        {
+          "name": "KennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Kennel.KennelName, or 'All kennels'."
+        },
+        {
+          "name": "UserName",
+          "type": "NVARCHAR(501)",
+          "nullable": false,
+          "description": "Hasher.DisplayName."
+        },
+        {
+          "name": "EmailAddress",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Hasher.Email — may be a generated address (HC6.IsGeneratedEmail); the API mailer refuses those."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.ErrorLog ('<web>', userId, deviceId) then THROW in the CATCH. ValidateAppAuth logs its own failures."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId and @accessToken have no SQL default (line 18). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
+    },
+    {
+      "severity": "medium",
+      "issue": "Unknown kennel silently becomes the all-kennels report",
+      "detail": "Lines 44-50: @kennelId / @kennelName start as the empty GUID / 'All kennels' and are only overwritten when the kennel is found. A wrong, deleted or removed @publicKennelId therefore returns the all-kennels context with success = 1 instead of an error, and the member is emailed a different report from the one they asked for."
+    },
+    {
+      "severity": "low",
+      "issue": "Removed IS NULL hasher returns no row",
+      "detail": "Hasher.Removed is nullable; line 60 'h.Removed = 0' drops a NULL row, leaving success = 1 with an empty rowset 1 — the caller gets no context and no error."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

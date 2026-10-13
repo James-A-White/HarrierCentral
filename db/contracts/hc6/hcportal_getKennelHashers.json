@@ -1,14 +1,14 @@
 {
   "schema": "HC6",
   "name": "hcportal_getKennelHashers",
-  "version": "1.0.0",
-  "description": "Retrieves a list of all hashers (members and followers) for a specified kennel, including their membership status, run counts, payment history from the two most recent counted events, and credit balances. Requires portal access token validation and appropriate AppAccessFlags (0x40000019 permission check). @publicKennelId changed from NVARCHAR(250) to UNIQUEIDENTIFIER in HC6. Read-only query.",
+  "version": "1.1.0",
+  "description": "Returns the kennel's roster for the portal Members screen: every hasher with an HC.HasherKennelMap row in the kennel who is a current member (MembershipExpirationDate > now) or following (Following = 1), with profile, membership status, notification and email-alert preferences, historic and HC run/haring counts, credit and discount, and what they paid at the last two counted runs (eventNumber-PaymentTypeCode). Email is shown only for current members ('<hidden>' otherwise); the invite code only for hashers who have never logged in. Order of checks: @publicKennelId NULL, then HC6.ValidatePortalAuth (@publicKennelId as context), then kennel exists, then the gate: the caller's HKM.AppAccessFlags must have a bit of 0x40000019 (super admin | manage members | manage hash cash | admin). Read-only.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": "Device.id",
+      "mapsToColumn": null,
       "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
@@ -30,10 +30,20 @@
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "description": "Returned alone on: 'Null or invalid publicKennelId' (checked BEFORE auth); auth failure; 'Kennel not found'; 'You are not authorized to access Hasher information for <kennel>'; or from the CATCH (ERROR_MESSAGE(), not logged).",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Human-readable error message"
+        }
       ]
     },
     {
@@ -99,7 +109,7 @@
           "name": "inviteCode",
           "type": "NVARCHAR(50)",
           "nullable": true,
-          "description": "Invite/reset code if hasher has never logged in. Extracted from HC.Hasher.ResetCode by removing 'URC:' prefix. Empty string if hasher has previously logged in."
+          "description": "REPLACE(Hasher.ResetCode, 'URC:', '') when LastLoginDateTime IS NULL, else ''. A hasher without a compliant code shows the raw ResetCode (default '######')."
         },
         {
           "name": "isHomeKennel",
@@ -129,7 +139,7 @@
           "name": "notifications",
           "type": "VARCHAR(12)",
           "nullable": false,
-          "description": "Kennel-level notification preference derived from HC.HasherKennelMap.KennelNotificationPreference: 2='Off', 3='Silver Bell' (silent/in-app only), 4='6 hrs before' (push only within the 6-hour window before the run), else (0 'auto' or 1 'on')='On'. 'Auto' is not surfaced at kennel level — it only applies at the event level, where it falls back to this kennel default."
+          "description": "KennelNotificationPreference: 2 'Off', 3 'Silver Bell', 4 '6 hrs before', anything else (0, 1, NULL) 'On'"
         },
         {
           "name": "emailAlerts",
@@ -255,5 +265,32 @@
     "Never change a parameter type",
     "Never change a sentinel value meaning",
     "Never change the AppAccessFlags permission bitmask (0x40000019) without coordinating with all callers"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Removed kennel rows and removed/deleted accounts are listed",
+      "detail": "cte1 (lines 173-176) filters only on MembershipExpirationDate/Following: no `hkm.removed = 0`, no `h.Removed = 0`, no `h.deleted = 0`. A hasher removed from the kennel with Following still 1, or a GDPR-deleted account, appears on the roster."
+    },
+    {
+      "severity": "medium",
+      "issue": "Permission gate ignores HasherKennelMap.removed",
+      "detail": "Lines 80-88 read the caller's AppAccessFlags without `hkm.removed = 0`."
+    },
+    {
+      "severity": "medium",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 212-215 return {Success 0, ErrorMessage} with no HC.ErrorLog row."
+    },
+    {
+      "severity": "low",
+      "issue": "Next-run lookup uses the raw local column and depends on a past run",
+      "detail": "Lines 124-130 find the next run by EventStartDatetime > @lastEventDate; a kennel with no past counted run gets NULL nextEventDate/nextEventNumber even when a run is scheduled, and the comparison uses EventStartDatetime rather than EventStartDateTimeGmt/EventStartLocal."
+    },
+    {
+      "severity": "low",
+      "issue": "Validation before auth",
+      "detail": "Lines 43-47 return 'Null or invalid publicKennelId' before ValidatePortalAuth, unlike most HC6 portal SPs."
+    }
   ]
 }

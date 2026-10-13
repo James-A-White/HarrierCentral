@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_setHasherNotesSuppression",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Platform Admin override on shared run notes (E3.F4.S5): sets or clears bit 0x2000 of HC.Hasher.Preferences, which hides every note the hasher shares in every kennel. Requires HC.PlatformAdmin.CanEditKennel. Private notes are unaffected. No portal UI yet — callable from the portal shim.",
   "parameters": [
     {
@@ -23,21 +23,22 @@
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": "Hasher.id",
-      "description": "The hasher."
+      "description": "The hasher (HC.Hasher.id, not deleted). Required — no SQL default."
     },
     {
       "name": "suppressed",
       "type": "SMALLINT",
       "nullable": false,
       "mapsToColumn": "Hasher.Preferences",
-      "description": "1 hide, 0 allow (bit 0x2000)."
+      "description": "1 hide, 0 allow (bit 0x2000 = 8192 of HC.Hasher.Preferences). Required — no SQL default; anything but 0/1 is refused.",
+      "typeMismatch": "SMALLINT flag mapped onto one bit of the INT-bitfield Hasher.Preferences; the SP sets/clears only bit 0x2000 in place, leaving the other bits untouched."
     }
   ],
   "rowsets": [
     {
       "index": 0,
-      "name": "Success",
-      "description": "{ Success, ErrorMessage }",
+      "name": "Envelope",
+      "description": "Always one row. Success = 0 on auth failure, missing CanEditKennel, NULL hasherId or suppressed not 0/1, 'Hasher not found' (after ROLLBACK), or from the CATCH block (ROLLBACK, HC.ErrorLog row, ERROR_MESSAGE()).",
       "columns": [
         {
           "name": "Success",
@@ -47,7 +48,7 @@
         },
         {
           "name": "ErrorMessage",
-          "type": "NVARCHAR(500)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
           "description": ""
         }
@@ -55,9 +56,21 @@
     }
   ],
   "sideEffects": [
-    "UPDATE HC.Hasher.Preferences (bit 0x2000) — fires the hasher updatedAt trigger."
+    "UPDATE HC.Hasher SET Preferences |= 0x2000 or &= ~0x2000, updatedAt — fires the hasher updatedAt trigger, so the change syncs",
+    "On a runtime error: INSERT HC.ErrorLog after the ROLLBACK"
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "Line 4: @hasherId has no default; omitting it is SQL's 'expects parameter' refusal (an unlogged empty 500) and the SP's own check on line 44 never runs."
+    },
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "Line 5: @suppressed has no default; same consequence."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

@@ -1,244 +1,418 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getMyRunsFor",
-  "version": "1.0.0",
-  "description": "The app's 'My runs for <kennel|country>' drill-down (user_run_history_list_page / user_country_history_list_page), server-side: one row per run and per non-cancelled payment; @allRuns = 1 is the app's All Runs (attendance >= 0). The run's country is Event.CountryId. ValidateAppAuth sp 114.",
+  "version": "1.1.0",
+  "description": "The app's 'My runs for <kennel>' / 'My runs for <country>' drill-down (user_run_history_list_page.dart / user_country_history_list_page.dart), server-side. One row per run — and per non-cancelled payment where a run has more than one, exactly as the app's LEFT JOIN. @allRuns = 1 is the app's All Runs toggle: attendance >= 0 instead of >= 20, so every counted run of the kennel / country appears, with the member's row where one exists. The run's country is Event.CountryId, so a travelling kennel's runs sit under several countries. Counted, visible, non-removed runs that have started; no Event.deleted filter, to match the app. Auth: HC6.ValidateAppAuth (spNumber 114, @param NULL); scoped to the token's user. Read-only.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
-      "mapsToColumn": "Device.id",
-      "description": "The browser's device id"
+      "mapsToColumn": null,
+      "description": "The browser's HC.Device id. No SQL default."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Token for this SP's name, paramString = deviceSecret"
+      "description": "Short-lived token signed for this SP (ValidateAppAuth spNumber 114). No SQL default."
     },
     {
       "name": "publicKennelId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "Kennel.PublicKennelId",
-      "description": "one of the two"
+      "description": "The kennel (live). Give this OR @countryId; an unknown kennel with no @countryId → 1240."
     },
     {
       "name": "countryId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "Country.id",
-      "description": "one of the two"
+      "description": "The country (HC.Country.id, the RUN's Event.CountryId). Used when @publicKennelId is NULL or unknown. Not validated — an unknown id returns success with an empty header and no runs."
     },
     {
       "name": "allRuns",
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "0 my runs, 1 all runs"
+      "description": "0 = my runs (AttendenceState >= 20, default); 1 = all counted runs."
     }
   ],
   "rowsets": [
     {
       "index": 0,
-      "name": "Envelope",
-      "description": "success 1/0, errorCode, errorType",
+      "name": "AuthErrorEnvelope",
+      "description": "On a ValidateAppAuth failure: { success = 0, errorCode, errorType } then the detail at index 1; the SP RETURNs.",
       "columns": [
         {
           "name": "success",
           "type": "INT",
           "nullable": false,
-          "description": ""
+          "description": "Always 0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "ValidateAppAuth's error code."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "ValidateAppAuth's error type."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Error detail after the AuthErrorEnvelope (errorId, errorType, errorCode, errorTitle, errorUserMessage, errorProc)."
+    },
+    {
+      "index": 0,
+      "name": "NotFoundEnvelope",
+      "description": "When neither a live kennel nor a @countryId is given: { success = 0, errorCode = 1240, errorType = 12 } then the detail at index 1 (logged to HC.ErrorLog); RETURN.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "1240."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "12."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "After NotFoundEnvelope: 1240 / 12, 'Not found', 'That kennel or country could not be found.' (no debugMessage column)."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "On success, before the data rowsets: { success = 1, errorCode = NULL, errorType = NULL }.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
         },
         {
           "name": "errorCode",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "Always NULL."
         },
         {
           "name": "errorType",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "Always NULL."
         }
       ]
     },
     {
       "index": 1,
       "name": "Header",
-      "description": "Kind = kennel (name, logo, HcRuns, HcHaring, KennelCredit, currency) or country (CountryId, CountryName, FlagFile)",
+      "description": "On success: one row. Kind = 'kennel' (kennel columns filled, country columns NULL) when @publicKennelId resolved; else Kind = 'country' (country columns filled, kennel columns NULL — zero rows for an unknown @countryId). The NULL literals in the other branch are untyped.",
       "columns": [
         {
           "name": "Kind",
-          "type": "NVARCHAR(10)",
+          "type": "VARCHAR(7)",
           "nullable": false,
+          "description": "'kennel' or 'country'."
+        },
+        {
+          "name": "PublicKennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "Kennel.PublicKennelId."
+        },
+        {
+          "name": "KennelSlug",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Kennel.KennelUniqueShortName."
+        },
+        {
+          "name": "KennelShortName",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
           "description": ""
+        },
+        {
+          "name": "KennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelLogo",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "HcRuns",
+          "type": "INT",
+          "nullable": true,
+          "description": "The caller's HasherKennelMap.HcTotalRunCount (verified HC runs)."
+        },
+        {
+          "name": "HcHaring",
+          "type": "INT",
+          "nullable": true,
+          "description": "HcHaringCount."
+        },
+        {
+          "name": "HistoricalRuns",
+          "type": "INT",
+          "nullable": true,
+          "description": "HistoricalTotalRunCount."
+        },
+        {
+          "name": "HistoricalHaring",
+          "type": "INT",
+          "nullable": true,
+          "description": "HistoricalHaringCount."
+        },
+        {
+          "name": "IsEstimate",
+          "type": "INT",
+          "nullable": true,
+          "description": "HistoricalCountIsEstimate."
+        },
+        {
+          "name": "KennelCredit",
+          "type": "SMALLMONEY",
+          "nullable": true,
+          "description": "The caller's credit at the kennel."
+        },
+        {
+          "name": "DigitsAfterDecimal",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "COALESCE(Kennel, Country, 2)."
+        },
+        {
+          "name": "CurrencySymbol",
+          "type": "NVARCHAR(5)",
+          "nullable": true,
+          "description": "COALESCE(Kennel, Country, '$^')."
+        },
+        {
+          "name": "CountryId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "Country.id (country kind)."
+        },
+        {
+          "name": "CountryName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Country.CountryName."
+        },
+        {
+          "name": "FlagFile",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "Country.FlagFile."
         }
       ]
     },
     {
       "index": 2,
       "name": "Runs",
-      "description": "Newest first; the app's UserRunHistoryModel columns",
+      "description": "On success: one row per matching run (and per non-cancelled, non-removed HC.Payment on the member's HasherEventMap row), ORDER BY EventStartDatetimeGmt DESC, EventNumber DESC. The app's UserRunHistoryModel columns, camelCase.",
       "columns": [
         {
           "name": "totalRunsThisKennel",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "HasherEventMap.TotalRunsThisKennel — the member's run count at this run."
         },
         {
           "name": "totalHaringThisKennel",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "HasherEventMap.TotalHaringThisKennel."
         },
         {
           "name": "publicEventId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": ""
+          "description": "Event.PublicEventId."
         },
         {
           "name": "eventName",
           "type": "NVARCHAR(250)",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "Event.EventName."
         },
         {
           "name": "eventNumber",
-          "type": "INT",
-          "nullable": true,
-          "description": ""
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Event.EventNumber."
         },
         {
           "name": "countryName",
           "type": "NVARCHAR(250)",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "The RUN's Country.CountryName."
         },
         {
           "name": "flagFile",
-          "type": "NVARCHAR(250)",
+          "type": "NVARCHAR(100)",
           "nullable": true,
-          "description": ""
+          "description": "Country.FlagFile."
         },
         {
           "name": "countryCode",
-          "type": "NVARCHAR(10)",
-          "nullable": true,
-          "description": ""
+          "type": "NVARCHAR(5)",
+          "nullable": false,
+          "description": "Country.CountryCode."
         },
         {
           "name": "kennelName",
           "type": "NVARCHAR(250)",
-          "nullable": true,
+          "nullable": false,
           "description": ""
         },
         {
           "name": "kennelShortName",
-          "type": "NVARCHAR(100)",
-          "nullable": true,
+          "type": "NVARCHAR(25)",
+          "nullable": false,
           "description": ""
         },
         {
           "name": "kennelSlug",
-          "type": "NVARCHAR(100)",
-          "nullable": true,
-          "description": ""
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "Kennel.KennelUniqueShortName."
         },
         {
           "name": "kennelLogo",
-          "type": "NVARCHAR(1000)",
-          "nullable": true,
+          "type": "NVARCHAR(500)",
+          "nullable": false,
           "description": ""
         },
         {
           "name": "digitsAfterDecimal",
-          "type": "INT",
-          "nullable": true,
-          "description": ""
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "COALESCE(Kennel, run's Country, 2)."
         },
         {
           "name": "currencySymbol",
-          "type": "NVARCHAR(50)",
-          "nullable": true,
-          "description": ""
+          "type": "NVARCHAR(5)",
+          "nullable": false,
+          "description": "COALESCE(Kennel, run's Country, '$^')."
         },
         {
           "name": "eventStartDatetime",
           "type": "DATETIME2(7)",
-          "nullable": true,
-          "description": "local wall-clock"
+          "nullable": false,
+          "description": "CAST(Event.EventStartDatetime AS datetime2(7)) — local wall clock."
         },
         {
           "name": "extrasDescription",
-          "type": "NVARCHAR(500)",
+          "type": "NVARCHAR(250)",
           "nullable": true,
-          "description": ""
+          "description": "Event.ExtrasDescription."
         },
         {
           "name": "extrasPrice",
-          "type": "DECIMAL",
+          "type": "DECIMAL(10,4)",
           "nullable": true,
-          "description": ""
+          "description": "Event.EventPriceForExtras."
         },
         {
           "name": "hemId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": true,
-          "description": ""
+          "description": "HasherEventMap.id; NULL for a run the member has no row for (allRuns = 1)."
         },
         {
           "name": "attendenceState",
-          "type": "INT",
-          "nullable": true,
-          "description": ""
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "COALESCE(AttendenceState, 0)."
         },
         {
           "name": "isHare",
-          "type": "INT",
-          "nullable": true,
-          "description": ""
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "COALESCE(IsHare, 0)."
         },
         {
           "name": "creditAmount",
-          "type": "DECIMAL",
+          "type": "SMALLMONEY",
           "nullable": true,
-          "description": ""
+          "description": "Payment.CreditAmount; NULL without a payment."
         },
         {
           "name": "debitAmount",
-          "type": "DECIMAL",
+          "type": "SMALLMONEY",
           "nullable": true,
-          "description": ""
+          "description": "Payment.DebitAmount."
         },
         {
           "name": "creditAvailable",
-          "type": "DECIMAL",
+          "type": "SMALLMONEY",
           "nullable": true,
-          "description": ""
+          "description": "Payment.CreditAvailable."
         },
         {
           "name": "paymentType",
-          "type": "INT",
+          "type": "SMALLINT",
           "nullable": true,
-          "description": ""
+          "description": "Payment.PaymentType."
         },
         {
           "name": "doPayForExtras",
-          "type": "INT",
+          "type": "SMALLINT",
           "nullable": true,
-          "description": ""
+          "description": "Payment.DoPayForExtras."
         }
       ]
     }
   ],
-  "sideEffects": [],
-  "codeSmells": [],
+  "sideEffects": [
+    "INSERT HC.ErrorLog on the 1240 not-found path and in the CATCH (then THROW)."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId and @accessToken have no SQL default (lines 2-3). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
+    },
+    {
+      "severity": "low",
+      "issue": "'Exactly one' of kennel / country not enforced",
+      "detail": "The header says exactly one of @publicKennelId / @countryId, but both may be given (both filters apply, kennel header) and an unknown @countryId is not checked — success with an empty header rowset and no runs instead of 1240."
+    },
+    {
+      "severity": "low",
+      "issue": "Money columns are SMALLMONEY",
+      "detail": "creditAmount / debitAmount / creditAvailable / KennelCredit pass through HC.Payment / HasherKennelMap SMALLMONEY columns, where CLAUDE.md wants DECIMAL(10,4). A table-level issue surfaced here, not introduced by the SP."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

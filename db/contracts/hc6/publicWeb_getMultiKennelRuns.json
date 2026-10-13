@@ -1,22 +1,22 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getMultiKennelRuns",
-  "version": "1.0.0",
-  "description": "Returns upcoming or past events for a comma-separated list of kennel slugs (KennelUniqueShortName). Each event row includes kennel name, logo, and theme colours so mixed-kennel lists can render kennel badges without a second API call. Invalid, unknown, or deleted slugs are silently ignored. Supports optional total-event cap (@MaxEvents) and relative date boundary (@DaysOffset). Returns two rowsets: Rowset 0 is a total count sentinel (1 row, prevents 404 misread); Rowset 1 is the event rows. No authentication required. On validation error: returns { Success = 0, ErrorMessage } instead of the normal rowsets.",
+  "version": "1.1.0",
+  "description": "Returns upcoming or past runs for a comma-separated list of kennel slugs (KennelUniqueShortName). Each row carries the kennel's name, logo, colours and IANA timezone so mixed-kennel lists render kennel badges without a second call. Unknown, deleted or removed slugs are silently ignored. Upcoming = EventStartDatetimeGmt within the last 8 hours or later, ascending; past = before now, descending; optional @MaxEvents cap and @DaysOffset boundary. Description, URL and what3words are always NULL (list use only). Rowset 0 is a count sentinel so an empty list is not read as a 404. No authentication. Read-only.",
   "parameters": [
     {
       "name": "SlugList",
       "type": "NVARCHAR(MAX)",
       "nullable": false,
       "mapsToColumn": "Kennel.KennelUniqueShortName",
-      "description": "Comma-separated list of kennel slug values (KennelUniqueShortName). Split via STRING_SPLIT. Whitespace around values is trimmed with LTRIM/RTRIM. Required — returns { Success=0, ErrorMessage } if null or empty."
+      "description": "Comma-separated KennelUniqueShortName values (STRING_SPLIT on ',', each trimmed). Required — blank → ValidationError. No SQL default."
     },
     {
       "name": "IsFuture",
       "type": "SMALLINT",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "1 = return upcoming events (start >= 8 hours ago, i.e. same-day runs still visible). 0 = return past events (start < now)."
+      "description": "1 = return upcoming events (start >= 8 hours ago, i.e. same-day runs still visible). 0 = return past events (start < now). No SQL default."
     },
     {
       "name": "MaxEvents",
@@ -36,8 +36,27 @@
   "rowsets": [
     {
       "index": 0,
+      "name": "ValidationError",
+      "description": "Instead of the normal rowsets when a guard fails (SlugList blank; MaxEvents <= 0; DaysOffset <= 0; lines 36-51). Not logged to HC.ErrorLog. The SP returns.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "0."
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "VARCHAR(70)",
+          "nullable": false,
+          "description": "Fixed text describing the bad input."
+        }
+      ]
+    },
+    {
+      "index": 0,
       "name": "TotalCount",
-      "description": "Always exactly 1 row on success. Contains the total count of matching events (before @MaxEvents cap). The shim must never misread an empty Rowset 0 as 404 — this rowset always returns 1 row when the SP succeeds. On validation error: { Success=0, ErrorMessage } is returned instead.",
+      "description": "Always exactly one row on success: COUNT of matching runs before the @MaxEvents cap.",
       "columns": [
         {
           "name": "TotalMatchingEvents",
@@ -50,7 +69,7 @@
     {
       "index": 1,
       "name": "Events",
-      "description": "One row per event matching the query, ordered by EventStartDatetime ASC (upcoming) or DESC (past). Capped at @MaxEvents rows when provided. May be empty when no matching events exist (the TotalCount rowset still returns 1 row with TotalMatchingEvents = 0).",
+      "description": "One row per matching run, at most @MaxEvents, ORDER BY EventStartDatetimeGmt ASC (upcoming) or DESC (past). May be empty (rowset 0 still has one row).",
       "columns": [
         {
           "name": "KennelSlug",
@@ -127,8 +146,8 @@
         {
           "name": "EventStartDatetimeGmt",
           "type": "DATETIMEOFFSET(7)",
-          "nullable": true,
-          "description": "HC.Event.EventStartDatetimeGmt — explicit GMT datetime if set by the event creator. NULL for most events."
+          "nullable": false,
+          "description": "HC.Event.EventStartDatetimeGmt — the run's true UTC instant, maintained by trigger from Kennel → City → Timezone. The filter and sort key. Use it with KennelIANATimezone for display."
         },
         {
           "name": "KennelIANATimezone",
@@ -138,21 +157,21 @@
         },
         {
           "name": "EventTypeName",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(250)",
           "nullable": true,
           "description": "DomainValues.EventThemeType.EventEnumName — human-readable event theme type (e.g. 'Red Dress Run'). NULL when Event.ThemeRunType has no matching DomainValues row (ThemeRunType = 0 = normal run)."
         },
         {
           "name": "EventPriceForMembers",
           "type": "DECIMAL(10,4)",
-          "nullable": true,
-          "description": "COALESCE(Event.EventPriceForMembers, Kennel.DefaultEventPriceForMembers) — event-level price overrides kennel default. NULL when neither is set."
+          "nullable": false,
+          "description": "COALESCE(Event.EventPriceForMembers, Kennel.DefaultEventPriceForMembers) — event-level price overrides kennel default. NULL when neither is set. Never NULL: the kennel defaults are NOT NULL."
         },
         {
           "name": "EventPriceForNonMembers",
           "type": "DECIMAL(10,4)",
-          "nullable": true,
-          "description": "COALESCE(Event.EventPriceForNonMembers, Kennel.DefaultEventPriceForNonMembers) — event-level price overrides kennel default. NULL when neither is set."
+          "nullable": false,
+          "description": "COALESCE(Event.EventPriceForNonMembers, Kennel.DefaultEventPriceForNonMembers) — event-level price overrides kennel default. NULL when neither is set. Never NULL: the kennel defaults are NOT NULL."
         },
         {
           "name": "EventCurrencyType",
@@ -216,15 +235,15 @@
         },
         {
           "name": "w3wJson",
-          "type": "NVARCHAR",
+          "type": "INT",
           "nullable": true,
-          "description": "Always NULL. Placeholder for future what3words location data."
+          "description": "Always NULL (untyped NULL literal — SQL Server reports it as INT). Present for column-shape parity with publicWeb_getEvents."
         },
         {
           "name": "EventDescription",
-          "type": "NVARCHAR",
+          "type": "INT",
           "nullable": true,
-          "description": "Always NULL. Placeholder — event descriptions are not returned by this SP (use a dedicated detail SP)."
+          "description": "Always NULL (untyped NULL literal — SQL Server reports it as INT). Present for column-shape parity with publicWeb_getEvents."
         },
         {
           "name": "EventImage",
@@ -234,9 +253,9 @@
         },
         {
           "name": "EventUrl",
-          "type": "NVARCHAR",
+          "type": "INT",
           "nullable": true,
-          "description": "Always NULL. Placeholder for future event URL support."
+          "description": "Always NULL (untyped NULL literal — SQL Server reports it as INT). Present for column-shape parity with publicWeb_getEvents."
         },
         {
           "name": "Tags1",
@@ -275,24 +294,55 @@
           "description": "HC.Event.EventGeographicScope — scope code (1=normal, 2=local special, 3=regional, etc.). SMALLINT NOT NULL."
         }
       ]
+    },
+    {
+      "index": 0,
+      "name": "CatchEnvelope",
+      "description": "On a runtime error (CATCH, line 285): { Success = 0, ErrorMessage = ERROR_MESSAGE() }, possibly after rowsets already sent. NOT logged to HC.ErrorLog and not re-raised.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "0."
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "ERROR_MESSAGE()."
+        }
+      ]
     }
   ],
-  "sideEffects": [],
+  "sideEffects": [
+    "CREATE / DROP TABLE #ValidKennels (session temp table)."
+  ],
   "codeSmells": [
     {
       "severity": "medium",
-      "issue": "EventStartDatetime loses timezone offset via CAST to DATETIME2",
-      "detail": "EventStartDatetime and EventEndDatetime are DATETIMEOFFSET(7) in the table but are returned as DATETIME2(7) via CAST, stripping the timezone offset. Clients receive local time with no UTC indication. KennelIANATimezone is provided alongside for client-side offset reconstruction, but this is an implicit contract rather than a structured offset."
+      "issue": "CATCH does not log to HC.ErrorLog",
+      "detail": "The CATCH (lines 281-286) returns { Success = 0, ErrorMessage } without writing HC.ErrorLog and without THROW, so a timeout or bad input surfaces to the shim as a data rowset and leaves no server-side record (CLAUDE.md 'Every CATCH must log'). The temp table is dropped in the CATCH, so nothing leaks."
     },
     {
       "severity": "medium",
-      "issue": "@IsFuture uses an 8-hour lookback, not 'now'",
-      "detail": "The future boundary is DATEADD(HOUR, -8, @UtcNow) — events that started up to 8 hours ago are still treated as 'upcoming'. This allows same-day runs to remain visible for late joiners. Callers must be aware that 'IsFuture=1' includes recently-started events."
+      "issue": "Parameter without a default",
+      "detail": "@SlugList and @IsFuture have no SQL default (lines 2-3). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
     },
     {
       "severity": "low",
-      "issue": "Comma-separated slug list uses STRING_SPLIT — order not guaranteed",
-      "detail": "@SlugList is split via STRING_SPLIT(@SlugList, ',') which returns values in unspecified order. The join to HC.Kennel on KennelUniqueShortName is correct regardless of split order, but callers should not assume any ordering from the slug resolution step."
+      "issue": "Comma-delimited list parameter",
+      "detail": "@SlugList is split on ',' (line 103). CLAUDE.md requires '|' for delimited list parameters; slugs cannot contain commas today, so this is convention, not a live bug."
+    },
+    {
+      "severity": "low",
+      "issue": "EventStartDatetime loses timezone offset via CAST to DATETIME2",
+      "detail": "EventStartDatetime and EventEndDatetime are returned as DATETIME2(7) (CAST strips the offset, which on ~67% of rows is a spurious +00:00 anyway). That is the kennel's wall-clock time; EventStartDatetimeGmt (the instant) and KennelIANATimezone are returned alongside for display. Intended, but EventStartLocal is now the canonical wall-clock column."
+    },
+    {
+      "severity": "low",
+      "issue": "@IsFuture uses an 8-hour lookback, not 'now'",
+      "detail": "The future boundary is DATEADD(HOUR, -8, @UtcNow) — events that started up to 8 hours ago are still treated as 'upcoming'. This allows same-day runs to remain visible for late joiners. Callers must be aware that 'IsFuture=1' includes recently-started events."
     },
     {
       "severity": "low",

@@ -1,88 +1,95 @@
 {
   "schema": "HC6",
   "name": "publicWeb_savePasskey",
-  "version": "1.0.0",
-  "description": "Binds a verified WebAuthn credential to the calling browser's own HC.Device row. ValidateAppAuth spNumber 110.",
+  "version": "1.1.0",
+  "description": "Binds a WebAuthn credential to the calling browser's own HC.Device row (E9.F7.S6). The registration ceremony is verified by the Next.js route (@simplewebauthn/server) — SQL cannot check an attestation — so this SP proves the caller is a signed-in device (HC6.ValidateAppAuth, spNumber 110, token signed for 'publicWeb_savePasskey') and stores the key against THAT device (id = @deviceId AND UserId = caller) and no other. Reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": "Device.id",
-      "description": "The browser's device id"
+      "description": "The browser's device id No SQL default."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Token for this SP's name, paramString = deviceSecret"
+      "description": "Token for this SP's name, paramString = deviceSecret No SQL default."
     },
     {
       "name": "credentialId",
       "type": "NVARCHAR(500)",
       "nullable": false,
       "mapsToColumn": "Device.PasskeyCredentialId",
-      "description": "base64url"
+      "description": "base64url No SQL default."
     },
     {
       "name": "publicKey",
       "type": "NVARCHAR(2000)",
       "nullable": false,
       "mapsToColumn": "Device.PasskeyPublicKey",
-      "description": "base64url COSE key"
+      "description": "base64url COSE key No SQL default."
     },
     {
       "name": "counter",
       "type": "BIGINT",
       "nullable": false,
       "mapsToColumn": "Device.PasskeyCounter",
-      "description": ""
+      "description": "No SQL default."
     },
     {
       "name": "transports",
       "type": "NVARCHAR(100)",
       "nullable": true,
       "mapsToColumn": "Device.PasskeyTransports",
-      "description": "comma list"
+      "description": "Comma list of authenticator transports ('internal,hybrid'), a hint for the browser."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "Envelope",
-      "description": "success 1/0, errorCode, errorType",
+      "description": "Always first. success 1 after the commit; 0 with ValidateAppAuth's code/type on auth failure; 0 with 1210/12 when credentialId or publicKey is empty; 0 with 1500/5 from the CATCH.",
       "columns": [
         {
           "name": "success",
           "type": "INT",
           "nullable": false,
-          "description": ""
+          "description": "1 success, 0 failure"
         },
         {
           "name": "errorCode",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "NULL on success"
         },
         {
           "name": "errorType",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "NULL on success"
         }
       ]
     },
     {
       "index": 1,
       "ref": "StandardErrorResult",
-      "description": "Only when success = 0"
+      "description": "On auth failure (ValidateAppAuth detail) and on 1210 ('Passkey incomplete', logged first). The CATCH (1500/5) returns the envelope alone, with no detail rowset."
     }
   ],
   "sideEffects": [
-    "Updates HC.Device passkey columns"
+    "UPDATE HC.Device SET PasskeyCredentialId, PasskeyPublicKey, PasskeyCounter, PasskeyTransports WHERE id = @deviceId AND UserId = @userId (replaces any passkey this device held).",
+    "INSERT HC.ErrorLog on 1210 and in the CATCH (after ROLLBACK); ValidateAppAuth logs auth failures."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken, @credentialId, @publicKey, @counter (line 2-6) have no SQL default. A caller that omits one fails with 'expects parameter' before the SP runs: PublicWebAdminApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

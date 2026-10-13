@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_updateKennelRequest",
-  "version": "1.1.0",
-  "description": "Reviewer edits an open (status 0/1) kennel request before approval (E12.F1.S5). NULL keeps a field; '' clears an optional one. Region/city must agree with country/region; a country or region change clears what sits below it. Requires HC.PlatformAdmin with CanEditKennel = 1 (E12.F1).",
+  "version": "1.2.0",
+  "description": "A reviewer corrects an open (RequestStatus 0/1) kennel request before approving it (E12.F1.S5; website-read fields added 2026-10-10 for E12.F1.S10): requester details, kennel names and links, prices, location (country/region/city ids from our own tables), logo, founding date, run day/time, runs page and social links. NULL keeps a field; '' clears an optional one. User text arrives as NVARCHAR(MAX) and is LEN-checked against the column widths, so nothing is truncated silently. Region/city must agree with country/region; a country or region change clears what sits below it, and the Country/Region/City text columns are refreshed from the ids. The row is locked WITH (UPDLOCK, HOLDLOCK) for the edit. Replaces the UPDATE branch of the HC3W INSTEAD OF trigger. Auth: HC6.ValidatePortalAuth; caller must hold a live HC.PlatformAdmin row with CanEditKennel = 1.",
   "parameters": [
     {
       "name": "deviceId",
@@ -23,7 +23,7 @@
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": "OfficeForms_KennelImport.KennelImportId",
-      "description": ""
+      "description": "The request to edit. Required — no SQL default; must be open (RequestStatus 0 awaiting email or 1 new)."
     },
     {
       "name": "firstName",
@@ -89,20 +89,6 @@
       "description": "≤250"
     },
     {
-      "name": "hashCash",
-      "type": "NVARCHAR(MAX)",
-      "nullable": true,
-      "mapsToColumn": "OfficeForms_KennelImport.HashCash",
-      "description": "≤50, free text"
-    },
-    {
-      "name": "reviewNote",
-      "type": "NVARCHAR(MAX)",
-      "nullable": true,
-      "mapsToColumn": "OfficeForms_KennelImport.ReviewNote",
-      "description": "≤1000"
-    },
-    {
       "name": "countryId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
@@ -124,11 +110,25 @@
       "description": ""
     },
     {
+      "name": "hashCash",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.HashCash",
+      "description": "≤50, free text"
+    },
+    {
       "name": "nonMemberPrice",
       "type": "NVARCHAR(MAX)",
       "nullable": true,
       "mapsToColumn": "OfficeForms_KennelImport.NonMemberPrice",
       "description": "Visitors' run fee, ≤50; '' clears."
+    },
+    {
+      "name": "reviewNote",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.ReviewNote",
+      "description": "≤1000"
     },
     {
       "name": "logoUrl",
@@ -176,8 +176,8 @@
   "rowsets": [
     {
       "index": 0,
-      "name": "Success",
-      "description": "{ Success, ErrorMessage } — also the auth / CanEditKennel refusal.",
+      "name": "Envelope",
+      "description": "Always one row. Success = 0 on auth failure, missing CanEditKennel, any validation message (lengths, email shape, short name letters/digits only, https logo, founded date, run day 1-7, HH:mm, HC6.SocialLinksProblem, region/city consistency), 'Request not found' / 'Only an open request can be edited' (after ROLLBACK), or from the CATCH block (ROLLBACK, HC.ErrorLog row, ERROR_MESSAGE()).",
       "columns": [
         {
           "name": "Success",
@@ -187,7 +187,7 @@
         },
         {
           "name": "ErrorMessage",
-          "type": "NVARCHAR(500)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
           "description": "Why, for the reviewer"
         }
@@ -195,9 +195,16 @@
     }
   ],
   "sideEffects": [
-    "UPDATE EXT.OfficeForms_KennelImport (fields, and Country/Region/City text from the ids)"
+    "UPDATE EXT.OfficeForms_KennelImport (the given fields, location ids with dependent clears, updatedAt), then the Country/Region/City text columns from the ids — one transaction",
+    "On a runtime error: INSERT HC.ErrorLog after the ROLLBACK"
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "Line 4: @kennelImportId has no default. A client that omits it gets SQL's 'expects parameter' refusal (an unlogged empty 500); the SP's own 'kennelImportId is required' check on line 100 is unreachable for an omitted parameter."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

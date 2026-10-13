@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_submitTrackImport",
-  "version": "1.0.0",
-  "description": "Registers an uploaded track file (GPX/TCX/FIT or a Strava/Garmin zip) as an HC.TrackImport job for the caller (E5.F5.S7). The bytes are already in blob storage (container track-imports, uploaded with a SAS from GetTrackImportUploadToken, which minted @jobId). Idempotent on @jobId.",
+  "version": "1.1.0",
+  "description": "Registers an uploaded track file (GPX/TCX/FIT or a Strava/Garmin zip) as an HC.TrackImport job for the caller (E5.F5.S7). The bytes are already in blob storage (container track-imports, uploaded with a SAS from GetTrackImportUploadToken, which minted @jobId). Idempotent on @jobId. Auth: HC6.ValidateAppAuth (spNumber 96, @param NULL); no permission gate — the job is always the caller's. The ProcessTrackImport function then does the work in slices the app drives, with a timer backstop.",
   "parameters": [
     {
       "name": "deviceId",
@@ -50,41 +50,82 @@
   "rowsets": [
     {
       "index": 0,
-      "ref": "StandardErrorResult",
-      "description": "Auth failure or validation error."
-    },
-    {
-      "index": 0,
-      "name": "Success",
-      "description": "success = 1.",
+      "name": "ErrorEnvelope",
+      "description": "Every failure — auth, 1296 missing jobId (NULL or all-zero) or empty blobUrl (errorType 12), 1996 unhandled (errorType 19) — returns this, followed by the detail at index 1.",
       "columns": [
         {
           "name": "success",
           "type": "INT",
           "nullable": false,
-          "description": "1"
+          "description": "Always 0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "ValidateAppAuth code, 1296 (missing @jobId / @blobUrl) or 1996 (unhandled)."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "ValidateAppAuth type, 12 (missing parameter) or 19 (unhandled)."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Follows ErrorEnvelope: errorId, errorType, errorCode, errorTitle, errorUserMessage, errorProc. No debugMessage column."
+    },
+    {
+      "index": 0,
+      "name": "Success",
+      "description": "success = 1. Note: only ONE column — no errorCode / errorType.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
         }
       ]
     },
     {
       "index": 1,
       "name": "Job",
-      "description": "The job id.",
+      "description": "On success: the job id (the existing one when resubmitted).",
       "columns": [
         {
           "name": "jobId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": "HC.TrackImport.id"
+          "description": "@jobId echoed."
         }
       ]
     }
   ],
   "sideEffects": [
-    "Inserts one HC.TrackImport row (Status 0) unless @jobId already exists.",
-    "errorCode 1296 when @jobId or @blobUrl is missing."
+    "INSERT HC.TrackImport (id = @jobId, HasherId = caller, FileName = LEFT(@fileName, 250), BlobUrl, ByteSize); Status defaults to 0. Guarded by NOT EXISTS ... WITH (UPDLOCK, HOLDLOCK) in a transaction, so resubmitting the same @jobId is a no-op success.",
+    "INSERT HC.ErrorLog on 1296 and in the CATCH (after ROLLBACK)."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken, @jobId, @blobUrl (lines 2-5) have no SQL default. A client that omits one is refused by SQL before the procedure runs: no HC.ErrorLog row, an empty 500 in the app, and any graceful check inside is unreachable (CLAUDE.md, Rack of Lamb 2026-09-29)."
+    },
+    {
+      "severity": "low",
+      "issue": "Resubmitting another hasher's jobId reports success",
+      "detail": "Line 76 checks only id = @jobId, not HasherId; a caller that sends someone else's job id gets success and that id back without a row of their own. jobIds are server-minted GUIDs, so this is a correctness wrinkle rather than an exposure."
+    },
+    {
+      "severity": "low",
+      "issue": "Non-standard error types",
+      "detail": "Lines 62/87 use errorType 12 (missing parameter) and 19 (unhandled) rather than the standard 2 and 5."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

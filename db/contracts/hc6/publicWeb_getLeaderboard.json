@@ -1,0 +1,180 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getLeaderboard",
+  "version": "1.0.0",
+  "description": "The app's 'Get a Life' leaderboard for one kennel, for a web member (E9.F7.S12): hashers active anywhere in the last year (MAX(HasherKennelMap.DateOfLastRun) within a year) who have run with this kennel, with total, this-year and rolling-year run and haring counts, plus the home kennel's short name for the app's Show Kennels checkbox. The query is copied from HC6.hcapp_getLeaderboard so the two screens agree. Auth: HC6.ValidateAppAuth (spNumber 115, @param NULL); no permission gate beyond a signed-in device. Read-only. A kennel with ExcludeFromLeaderboard = 1 returns no rows.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "The browser's HC.Device id (the web member session). No SQL default."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token signed for this SP (ValidateAppAuth spNumber 115, @param NULL). No SQL default."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "The kennel. No SQL default; an unknown or removed kennel returns the success envelope and no rows."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "AuthErrorEnvelope",
+      "description": "On a ValidateAppAuth failure: { success = 0, errorCode, errorType } then the detail at index 1; the SP RETURNs.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "ValidateAppAuth's error code."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "ValidateAppAuth's error type."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Error detail after the AuthErrorEnvelope (errorId, errorType, errorCode, errorTitle, errorUserMessage, errorProc)."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "On success: { success = 1, errorCode = NULL, errorType = NULL }.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "Always NULL."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "Always NULL."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Leaderboard",
+      "description": "On success: one row per qualifying HasherKennelMap row of the kennel (DateOfLastRun set, not a placeholder or anonymous hasher), ORDER BY totalRunCount DESC, DisplayName.",
+      "columns": [
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(501)",
+          "nullable": false,
+          "description": "Hasher.DisplayName (persisted computed column)."
+        },
+        {
+          "name": "totalRunCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HcTotalRunCount + HistoricalTotalRunCount."
+        },
+        {
+          "name": "totalHaringCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HcHaringCount + HistoricalHaringCount."
+        },
+        {
+          "name": "ytdTotalRunCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HasherKennelMap.YtdTotalRunCount."
+        },
+        {
+          "name": "ytdHaringCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "HasherKennelMap.YtdHaringCount."
+        },
+        {
+          "name": "rollingYearTotalRunCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "COALESCE(HasherKennelMap.RollingYearTotalRunCount, 0)."
+        },
+        {
+          "name": "rollingYearHaringCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "COALESCE(HasherKennelMap.RollingYearHaringCount, 0)."
+        },
+        {
+          "name": "isHomeKennel",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when this kennel is the hasher's HomeKennelId."
+        },
+        {
+          "name": "homeKennelShortName",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "Kennel.KennelShortName of the hasher's home kennel; NULL when none."
+        },
+        {
+          "name": "isMe",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on the caller's own row."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.ErrorLog ('<web>', userId, deviceId) then THROW in the CATCH. ValidateAppAuth logs its own failures."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken and @publicKennelId have no SQL default (line 16). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
+    },
+    {
+      "severity": "low",
+      "issue": "Hasher id compared with kennel id",
+      "detail": "Line 72 'h.id != k.id' compares a hasher id with a kennel id — copied from hcapp_getLeaderboard. It presumably excludes a kennel's own placeholder hasher (one whose id equals the kennel's), but it reads like a typo; the 'Placeholder user for%' filter on line 73 may already cover it."
+    },
+    {
+      "severity": "low",
+      "issue": "Name filters as data rules",
+      "detail": "Lines 73-74 exclude placeholder and anonymous hashers by matching DisplayName / HashName text. A renamed placeholder would reach the leaderboard. Shared with hcapp_getLeaderboard, so any fix belongs in both — or in one shared view."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

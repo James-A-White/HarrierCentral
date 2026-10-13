@@ -1,0 +1,95 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_logWebError",
+  "version": "1.0.0",
+  "description": "Writes one public-web (Next.js) error into HC.ErrorLog, the same table every other component logs to, so tools/log_sweep.sh and the portal's Usage Data see web failures (E16.F3). Deliberately NOT behind ValidateAppAuth — the most valuable errors come from visitors with no session — and reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET, so only our own server can write here. Every value is trimmed, defaulted and cut to its column width; logging never breaks the page (the CATCH swallows).",
+  "parameters": [
+    {
+      "name": "source",
+      "type": "NVARCHAR(250)",
+      "nullable": false,
+      "mapsToColumn": "ErrorLog.ProcName",
+      "description": "Route or component that failed; blank → 'public-web'. No SQL default."
+    },
+    {
+      "name": "message",
+      "type": "NVARCHAR(250)",
+      "nullable": false,
+      "mapsToColumn": "ErrorLog.ErrorName",
+      "description": "One line, what went wrong; blank → 'Unhandled web error'. No SQL default."
+    },
+    {
+      "name": "detail",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "ErrorLog.ErrorDescription",
+      "description": "Stack or context; cut to 2500 (the column width)."
+    },
+    {
+      "name": "version",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "ErrorLog.HcVersion",
+      "description": "Web build, e.g. 'web 0.21.63'; blank → 'web'."
+    },
+    {
+      "name": "url",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "ErrorLog.string_1",
+      "description": "Page or endpoint; cut to 4000."
+    },
+    {
+      "name": "userId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "ErrorLog.userId",
+      "description": "Member's hasher id when a session was present."
+    },
+    {
+      "name": "deviceId",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "ErrorLog.deviceId",
+      "description": "Member's device id (text) when a session was present; NULL stored as ''."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "Always one row: Success 1 after the insert; Success 0 with ERROR_MESSAGE() when the insert itself failed (swallowed, not logged — there is nowhere left to log it).",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1/0"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "NULL on success"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.ErrorLog (id NEWID(), HcVersion, ErrorName, ErrorDescription, ProcName, userId, deviceId, string_1)."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@source, @message (line 26-27) have no SQL default. A caller that omits one fails with 'expects parameter' before the SP runs: PublicWebAdminApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

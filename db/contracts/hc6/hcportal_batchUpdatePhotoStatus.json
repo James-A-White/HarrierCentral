@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_batchUpdatePhotoStatus",
-  "version": "1.0.0",
-  "description": "Applies a batch of photo-status changes for a kennel in a single round-trip. Accepts a JSON array of {photoId, action} pairs. Auth is checked once at kennel level via AppAccessFlags. Set-based UPDATEs are used throughout. Partial failures (photo not found or belonging to a different kennel) are counted and reported; all valid items are always committed regardless. Caller must hold authIsAdmin (0x0001), authCanManagePublicWebContent (0x0080), or authIsSuperAdmin (0x40000000) in HC.HasherKennelMap.AppAccessFlags for the specified kennel. New for HC6 — no HC5 equivalent.",
+  "version": "1.1.0",
+  "description": "Applies a batch of photo-status changes for a kennel in a single round-trip. Accepts a JSON array of {photoId, action} pairs. Auth is checked once at kennel level via AppAccessFlags. Set-based UPDATEs are used throughout. Partial failures (photo not found or belonging to a different kennel) are counted and reported; all valid items are always committed regardless. Caller must hold authIsAdmin (0x0001), authCanManagePublicWebContent (0x0080), or authIsSuperAdmin (0x40000000) in HC.HasherKennelMap.AppAccessFlags for the specified kennel. Auth: HC6.ValidatePortalAuth with NULL callerParamString (the token is not bound to the kennel). Permission mask tested: AppAccessFlags & 0x40000081 (the header comment's 0x0004 'authCanManageRuns' is stale). New for HC6 — no HC5 equivalent.",
   "parameters": [
     {
       "name": "deviceId",
@@ -30,14 +30,14 @@
       "type": "NVARCHAR(MAX)",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "JSON array of photo update objects: [{\"photoId\":\"<uuid>\",\"action\":<1-6>}, ...]. Action codes: 1=soft-delete (sets DeletedAt), 2=private (Status=0), 3=share (Status=2), 4=gallery (Status=3), 5=home_gallery (Status=4), 6=event_cover (Status=5, propagates COALESCE(EditedBlobUrl, BlobUrl) to HC.Event.EventCoverPhotoUrl). Items with invalid photoId UUIDs or action values outside 1-6 are silently dropped before counting. NULL or empty string returns Success=1 with zero counts."
+      "description": "JSON array of photo update objects: [{\"photoId\":\"<uuid>\",\"action\":<1-6>}, ...]. Action codes: 1=soft-delete (sets DeletedAt), 2=private (Status=0), 3=share (Status=2), 4=gallery (Status=3), 5=home_gallery (Status=4), 6=event_cover (Status=5, and copies COALESCE(EditedBlobUrl, BlobUrl) to HC.Event.EventCoverPhotoUrl). Items with an invalid photoId or an action outside 1-6 are silently dropped before counting; if none remain the SP returns Success=1 with zero counts. NULL or blank returns 'updates is required'. A non-numeric or > 255 action value fails the OPENJSON ... WITH (action TINYINT) conversion and lands in CATCH."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on auth failure, validation error, or unhandled CATCH. Mutually exclusive with SuccessEnvelope. All error paths (ValidatePortalAuth failure, missing/invalid publicKennelId, kennel not found, missing updates, permission denied) return this shape. Also returned from the CATCH block on runtime error.",
+      "description": "Returned on auth failure, 'publicKennelId is required' (NULL or empty GUID), 'Kennel not found.', 'updates is required', 'You are not authorised to review photos for this kennel.', or a runtime error from CATCH (ERROR_MESSAGE(), not logged). Mutually exclusive with SuccessEnvelope.",
       "columns": [
         {
           "name": "Success",
@@ -47,7 +47,7 @@
         },
         {
           "name": "ErrorMessage",
-          "type": "NVARCHAR(255)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
           "description": "Human-readable error description. From ValidatePortalAuth output on auth failure; literal string on validation errors; ERROR_MESSAGE() on runtime error."
         }
@@ -82,14 +82,25 @@
   "sideEffects": [
     "For action=1 (soft-delete): sets KennelPhotos.DeletedAt = GETUTCDATE() and KennelPhotos.UpdatedAt = GETUTCDATE() for matched rows.",
     "For actions 2-6 (status changes): sets KennelPhotos.Status to the mapped value (0/2/3/4/5), clears KennelPhotos.DeletedAt to NULL, and sets KennelPhotos.UpdatedAt = GETUTCDATE() for matched rows.",
-    "For action=6 (event_cover): additionally propagates COALESCE(KennelPhotos.EditedBlobUrl, KennelPhotos.BlobUrl) to HC.Event.EventCoverPhotoUrl, preferring the edited/cropped version when one exists, within the same transaction.",
-    "All changes are committed in a single transaction. If any statement fails (CATCH block), the entire transaction is rolled back."
+    "For action=6 (event_cover): additionally propagates COALESCE(KennelPhotos.EditedBlobUrl, KennelPhotos.BlobUrl) to HC.Event.EventCoverPhotoUrl, preferring the edited/cropped version when one exists, within the same transaction. HC.Event.EventCoverPhotoUrl is not in db/schema/tables/HC.Event.Table.sql and no ALTER for it was found under db/hc6/*/archive/ (it predates the archive convention).",
+    "All changes are committed in a single transaction. If any statement fails (CATCH block), the entire transaction is rolled back.",
+    "HC.KennelPhotos trigger (Status/DeletedAt changes) refreshes the run's activity counts on HC.Event via HC6.nonApi_refreshEventActivity, so run cards resync"
   ],
   "codeSmells": [
     {
       "severity": "medium",
-      "issue": "Non-standard error envelope — not using ValidatePortalAuth StandardErrorResult",
-      "detail": "Portal SPs that call HC6.ValidatePortalAuth typically propagate the full StandardErrorResult rowset (6 columns: errorId, errorType, errorTitle, errorUserMessage, debugMessage, errorProc) when auth fails. This SP instead returns a simplified 2-column envelope (Success=0, ErrorMessage) across all error paths, including auth failure. This is an intentional design choice per the header comment but is inconsistent with other portal SPs. Callers cannot distinguish an auth failure from a validation error without inspecting ErrorMessage content."
+      "issue": "CATCH does not log to HC.ErrorLog",
+      "detail": "Lines 166-169 roll back and return ERROR_MESSAGE() without writing HC.ErrorLog, so a bad JSON payload or conversion failure leaves no server-side record."
+    },
+    {
+      "severity": "medium",
+      "issue": "Permission read straight from AppAccessFlags",
+      "detail": "Lines 78-88 test HasherKennelMap.AppAccessFlags & 0x40000081 directly instead of HC6.CheckKennelPermission, so Mismanagement roles (the other independent grantor) are ignored. The header comment (lines 20-22) names 0x0004 authCanManageRuns, which the code does not test."
+    },
+    {
+      "severity": "low",
+      "issue": "Event cover not cleared from the previous cover photo",
+      "detail": "Action 6 (lines 154-159) sets Status=5 and copies the URL to HC.Event but leaves any earlier Status=5 photo for the same run as a cover too; two items with action 6 for one run in a batch make the winner arbitrary."
     },
     {
       "severity": "low",
@@ -100,11 +111,6 @@
       "severity": "low",
       "issue": "TINYINT used in temp table for action column",
       "detail": "The #Updates temp table declares action as TINYINT. The project standard is SMALLINT for boolean/small integer columns; TINYINT is not a standard type in this codebase. Harmless in practice (TINYINT supports values 0-255, more than sufficient for 1-6), but inconsistent."
-    },
-    {
-      "severity": "low",
-      "issue": "DROP TABLE after RETURN in early-exit paths may not execute",
-      "detail": "The final 'DROP TABLE IF EXISTS #Updates' at line 170 is outside the TRY/CATCH block and runs only when execution reaches it. The early-exit RETURN statements at lines 53, 60, 69, 75, 88 all fire before the temp table is created, so no leak. The RETURN at line 114 (empty parsed batch) does fire after the temp table exists — but in that path, DROP is called explicitly before the RETURN. The CATCH block does not DROP the temp table, but since the temp table is session-scoped it will be cleaned up when the connection closes. Not a leak, but a minor inconsistency in cleanup discipline."
     }
   ],
   "breakingChanges": [

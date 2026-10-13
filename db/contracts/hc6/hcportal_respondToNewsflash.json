@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_respondToNewsflash",
-  "version": "1.0.0",
-  "description": "Records the authenticated user's response to a newsflash. Upserts a single HC.PortalNewsflashRead row per user per newsflash. 'I've read it' (@isDismissed=1) permanently dismisses the newsflash. 'Read Later' (@isDismissed=0) snoozes it until the next calendar day (NextShowDate = tomorrow's UTC date). Responds to soft-deleted newsflashes: a user may dismiss a newsflash that was deleted after it was shown to them.",
+  "version": "1.1.0",
+  "description": "Records the authenticated user's response to a newsflash. Upserts a single HC.PortalNewsflashRead row per user per newsflash. 'I've read it' (@isDismissed=1) permanently dismisses the newsflash. 'Read Later' (@isDismissed=0) snoozes it until the next calendar day (NextShowDate = tomorrow's UTC date). Responds to soft-deleted newsflashes: a user may dismiss a newsflash that was deleted after it was shown to them. Device-bound portal auth via HC6.ValidatePortalAuth; any signed-in portal user, for themselves.",
   "parameters": [
     {
       "name": "deviceId",
@@ -27,27 +27,54 @@
     },
     {
       "name": "isDismissed",
-      "type": "BIT",
+      "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": "PortalNewsflashRead.IsDismissed",
-      "description": "Required: 1 = permanently dismissed ('I've read it'); 0 = snoozed until tomorrow ('Read Later'). Validated for NULL before auth."
+      "description": "Required: 1 = permanently dismissed ('I've read it'); 0 = snoozed until tomorrow ('Read Later'). Validated for NULL before auth.",
+      "typeMismatch": "SMALLINT parameter vs PortalNewsflashRead.IsDismissed BIT; any non-zero value is stored as 1."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "SuccessEnvelope",
-      "description": "Returned on any outcome — success, validation failure, auth failure, or runtime error.",
+      "description": "Returned on every outcome: success, NULL @newsflashId / @isDismissed (checked BEFORE auth), auth failure, 'Newsflash not found', or from the CATCH block (ERROR_MESSAGE()).",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "1 on success, 0 on any error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "NULL on success, error message on failure" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 on any error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "NULL on success, error message on failure"
+        }
       ]
     }
   ],
   "sideEffects": [
     "UPSERT HC.PortalNewsflashRead (NewsflashId, HasherId, IsDismissed, NextShowDate, UpdatedAt) — UPDATE if row exists, INSERT otherwise"
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Check-then-INSERT on a UNIQUE key without UPDLOCK, HOLDLOCK",
+      "detail": "Lines 75-93: IF EXISTS … ELSE INSERT on HC.PortalNewsflashRead, which has UNIQUE (NewsflashId, HasherId), with no lock hint on the existence check. Two concurrent responses (double tap, two tabs) can both insert and the second fails with a duplicate-key error."
+    },
+    {
+      "severity": "medium",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 99-102: CATCH returns the envelope without an HC.ErrorLog row, so the duplicate-key failure above leaves no trace."
+    },
+    {
+      "severity": "low",
+      "issue": "@isDismissed not range-checked",
+      "detail": "Line 6/70-73: a value other than 0 or 1 (e.g. 2) is stored as IsDismissed = 1 (BIT) but with a snooze NextShowDate, a combination the readers never expect."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",
