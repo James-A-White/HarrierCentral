@@ -10,8 +10,9 @@ AS
 -- Description: Returns the ResetCode (invite/QR code) for the Hasher
 --   identified by the given SupportCode. The SupportCode is a short
 --   numeric code visible on the user's profile and used for admin-
---   assisted device re-authorisation. Any authenticated user may call
---   this endpoint — the SupportCode is not a secret.
+--   assisted device re-authorisation. Platform admins only (HC.PlatformAdmin,
+--   2026-10-13; errorCode 1312) — until then any authenticated user could
+--   call it, and the reset code it returns signs a phone in as that user.
 -- Parameters:
 --   @deviceId    - Registered device UUID
 --   @accessToken - Token validated against DeviceSecret
@@ -64,6 +65,24 @@ IF (@errorCode IS NOT NULL)
 BEGIN
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            @errorTitle AS errorTitle, @errorMsg AS errorUserMessage, @procName AS errorProc;
+    RETURN;
+END
+
+-- Platform admins only (2026-10-13). A reset code signs a phone in as its
+-- owner, so this lookup is an account takeover in the wrong hands. It was
+-- open to every signed-in device; the support code is the only thing that
+-- stood in the way, and a hasher can be talked into reading theirs out.
+IF NOT EXISTS (SELECT 1 FROM HC.PlatformAdmin pa
+               WHERE pa.UserId = @userId AND pa.removed = 0)
+BEGIN
+    SET @errorCode = 1312; SET @errorType = 13; SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, string_1)
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not authorised to look up reset codes',
+            'Caller is not a platform admin', @procName, @userId, @supportCode);
+    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+           'Not authorised' AS errorTitle,
+           'Only Harrier Central support can look up reset codes.' AS errorUserMessage,
+           @procName AS errorProc;
     RETURN;
 END
 
