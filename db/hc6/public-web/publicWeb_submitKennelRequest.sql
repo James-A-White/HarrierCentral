@@ -164,8 +164,13 @@ IF (@errorCode IS NULL
 
 IF (@errorCode IS NOT NULL)
 BEGIN
+    -- The errorId used to be a fresh NEWID() with no row behind it
+    -- (2026-10-13): it now names the logged refusal.
+    DECLARE @refusalId UNIQUEIDENTIFIER = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@refusalId, '<web>', 'Kennel request refused', CONCAT(@errorCode, ': ', @message), @procName, NULL);
     SELECT 0 AS success, @errorCode AS errorCode, 2 AS errorType;
-    SELECT NEWID() AS errorId, 2 AS errorType, @errorCode AS errorCode,
+    SELECT @refusalId AS errorId, 2 AS errorType, @errorCode AS errorCode,
            N'Please check the form' AS errorTitle, @message AS errorUserMessage,
            @procName AS errorProc;
     RETURN;

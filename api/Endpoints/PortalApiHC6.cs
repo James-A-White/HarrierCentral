@@ -183,6 +183,11 @@ namespace HcWebApi.Endpoints
             catch (Exception ex)
             {
                 log.LogError("PortalApiHC6 error: {Message}", ex.Message);
+                // A THROWN error (an SP outside its own TRY, a refused call for a
+                // missing parameter, a timeout) reached only ILogger until
+                // 2026-10-13, so it left no HC.ErrorLog row. The Success = 0
+                // envelope path above was already logged; this is the other half.
+                await LogErrorAsync(connectionString, queryType, deviceId, $"Unhandled exception: {ex.Message}");
                 return new ObjectResult(new { success = false, message = "An unexpected error occurred." }) { StatusCode = 500 };
             }
         }

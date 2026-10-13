@@ -561,6 +561,13 @@ Rules for the wrapper:
   Use the proc-name variable the SP actually declares (`@procName` / `@effectiveProcName` /
   `@procName_self`, or `OBJECT_NAME(@@PROCID)` if none), and `@userId` or `NULL`.
 - **Every CATCH must log to `HC.ErrorLog`** so the failure is diagnosable server-side.
+- The API shims also log, so a CATCH that RE-THROWS, or returns the
+  `Success = 0` envelope with `ERROR_MESSAGE()`, is traced too (the shim
+  writes the row, without the SP's own context). Since 2026-10-13 every shim
+  writes a THROWN error to `HC.ErrorLog` as well. Check with:
+  ```bash
+  python3 tools/catch_log_scan.py     # MUST print nothing
+  ```
 
 ### Never roll back an error log — `ROLLBACK` comes BEFORE the `INSERT HC.ErrorLog`
 

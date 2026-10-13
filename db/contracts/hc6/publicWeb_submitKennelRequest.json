@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "publicWeb_submitKennelRequest",
-  "version": "1.4.0",
-  "description": "hashruns.org/add-kennel (E12.F1.S7): stores a request to add a kennel in EXT.OfficeForms_KennelImport as RequestStatus 0 (awaiting email) with a six-digit ConfirmCode; it reaches the review queue only when publicWeb_confirmKennelRequest gets the code back. Guards, in order, before any transaction: required fields and widths (LEN against the column, never a silent cut); the location must exist and agree (region in country, city in region, or free-text city); run fees and membership fields are numbers / a valid type; the three opt-in answers are present; at most five requests per SubmitIp per day. The same email + short name within 30 days with status 0 or 1 is the same request: status 0 gets a fresh code on the existing row, status 1 is reported as already submitted with no code. No device token: reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET (the Next.js route adds a honeypot, time-to-submit and per-IP limits in front). The API emails the code and removes confirmCode from the reply, adding codeSent. Replaces EXT.ImportNewKennel.",
+  "version": "1.5.0",
+  "description": "hashruns.org/add-kennel (E12.F1.S7): stores a request to add a kennel in EXT.OfficeForms_KennelImport as RequestStatus 0 (awaiting email) with a six-digit ConfirmCode; it reaches the review queue only when publicWeb_confirmKennelRequest gets the code back. Guards, in order, before any transaction: required fields and widths (LEN against the column, never a silent cut); the location must exist and agree (region in country, city in region, or free-text city); run fees and membership fields are numbers / a valid type; the three opt-in answers are present; at most five requests per SubmitIp per day. The same email + short name within 30 days with status 0 or 1 is the same request: status 0 gets a fresh code on the existing row, status 1 is reported as already submitted with no code. No device token: reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET (the Next.js route adds a honeypot, time-to-submit and per-IP limits in front). The API emails the code and removes confirmCode from the reply, adding codeSent. Replaces EXT.ImportNewKennel. Validation refusals are logged to HC.ErrorLog since 2026-10-13, and the returned errorId names that row (it was a fresh NEWID() with no row).",
   "parameters": [
     {
       "name": "firstName",
@@ -338,11 +338,6 @@
     "PublicWebAdminApi emails the confirmation code (KennelRequestEmails.SendConfirmCodeAsync) and logs 'Kennel request code email not sent' to HC.ErrorLog when a new request's email fails."
   ],
   "codeSmells": [
-    {
-      "severity": "low",
-      "issue": "errorId returned for a row that does not exist",
-      "detail": "Validation refusals (lines 165-171) return errorId = NEWID() without an HC.ErrorLog insert. The client holds an id nothing can look up. Refusals are expected user input, so not logging them is reasonable — but the id should then be NULL."
-    },
     {
       "severity": "low",
       "issue": "Location names cut silently to 50",

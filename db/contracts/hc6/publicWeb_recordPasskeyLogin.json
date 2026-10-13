@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "publicWeb_recordPasskeyLogin",
-  "version": "1.1.0",
-  "description": "After a passkey assertion has been verified by the Next.js route: stores the new signature counter (a counter that does not advance is the clone signal, and the ROUTE refuses it — this SP does not compare), stamps Device.LastLogin, and writes an HC.LaunchAndLogin row so the Usage Data dashboard sees web sign-ins like any other. No device token: reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET.",
+  "version": "1.2.0",
+  "description": "After a passkey assertion has been verified by the Next.js route: stores the new signature counter (a counter that does not advance is the clone signal, and the ROUTE refuses it — this SP does not compare), stamps Device.LastLogin, and writes an HC.LaunchAndLogin row so the Usage Data dashboard sees web sign-ins like any other. No device token: reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET. The unknown-device refusal (1211) is logged to HC.ErrorLog since 2026-10-13.",
   "parameters": [
     {
       "name": "credentialId",
@@ -56,11 +56,6 @@
       "severity": "medium",
       "issue": "Parameter without a default",
       "detail": "@credentialId, @counter (line 2-3) have no SQL default. A caller that omits one fails with 'expects parameter' before the SP runs: PublicWebAdminApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
-    },
-    {
-      "severity": "low",
-      "issue": "Not-found refusal is not logged",
-      "detail": "Lines 29-33 return { 0, 1211, 12 } with no HC.ErrorLog row, so a passkey whose device row has gone cannot be traced server-side."
     },
     {
       "severity": "low",

@@ -28,6 +28,9 @@ BEGIN TRY
 
     IF (@userId IS NULL)
     BEGIN
+        -- Logged since 2026-10-13: a passkey sign-in for an unknown device.
+        INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+        VALUES (NEWID(), '<web>', 'Passkey login for unknown device', NULL, @procName, NULL);
         SELECT 0 AS success, 1211 AS errorCode, 12 AS errorType;
         RETURN;
     END

@@ -43,5 +43,10 @@ BEGIN TRY
 END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
-    -- Return no rows on error — caller treats as invalid token
+    -- Logged since 2026-10-13: a database fault here returned no rows, the
+    -- page said "invalid or expired link", and nothing recorded why.
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<web>', 'Unhandled error in publicWeb_redeemAdminToken',
+            ERROR_MESSAGE(), OBJECT_NAME(@@PROCID), NULL);
+    -- Still no rows: the caller treats that as an invalid token.
 END CATCH

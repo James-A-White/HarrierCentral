@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "publicWeb_markChatRead",
-  "version": "1.0.0",
-  "description": "A web member opened a run or kennel chat (E9.F7.S15): resolves the public id and EXECs the app's own hcapp_markEventChatRead (@kind 'run') or hcapp_markKennelChatRead (@kind 'kennel'), so read state is one rule for both clients. Rooms are marked read by hcapp_getRoomMessages and DMs by hcapp_getDirectMessages, so 'room' and 'dm' are refused here. The token must be signed for the inner SP the kind selects; auth lives there. Reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET. Since 2026-10-03 every parameter has a default and @roomType / @threadId are accepted but unused, because the web's shared chatIds() sends every kind's id and a JSON null used to fail the call with 'too many arguments'.",
+  "version": "1.1.0",
+  "description": "A web member opened a run or kennel chat (E9.F7.S15): resolves the public id and EXECs the app's own hcapp_markEventChatRead (@kind 'run') or hcapp_markKennelChatRead (@kind 'kennel'), so read state is one rule for both clients. Rooms are marked read by hcapp_getRoomMessages and DMs by hcapp_getDirectMessages, so 'room' and 'dm' are refused here. The token must be signed for the inner SP the kind selects; auth lives there. Reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET. Since 2026-10-03 every parameter has a default and @roomType / @threadId are accepted but unused, because the web's shared chatIds() sends every kind's id and a JSON null used to fail the call with 'too many arguments'. The bad-request refusal (1230) is logged to HC.ErrorLog since 2026-10-13.",
   "parameters": [
     {
       "name": "deviceId",
@@ -224,11 +224,6 @@
     "On an error that escapes the inner SP the CATCH rolls back, logs 'Unhandled error in publicWeb_markChatRead' to HC.ErrorLog (HcVersion '<web>', deviceId) and returns the envelope { success 0, errorCode 1500, errorType 5 } alone (no detail rowset)."
   ],
   "codeSmells": [
-    {
-      "severity": "low",
-      "issue": "Refusal is neither logged nor detailed",
-      "detail": "Lines 36-40 return { success 0, 1230, 12 } without an HC.ErrorLog row or a detail rowset, unlike every other wrapper in this family. The web ignores the reply (.catch(() => undefined)), so a run or kennel that stops resolving would go unnoticed."
-    },
     {
       "severity": "low",
       "issue": "Dead inputs",

@@ -35,6 +35,11 @@ BEGIN TRY
 
     IF ((@kind = 'run' AND @eventId IS NULL) OR (@kind = 'kennel' AND @kennelId IS NULL) OR @kind NOT IN ('run', 'kennel'))
     BEGIN
+        -- Logged since 2026-10-13 (the web ignores the reply, so this row is
+        -- the only trace of a bad request).
+        INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, deviceId)
+        VALUES (NEWID(), '<web>', 'Bad chat read request',
+                CONCAT('kind=', COALESCE(@kind, 'null')), @procName, NULL, @deviceId);
         SELECT 0 AS success, 1230 AS errorCode, 12 AS errorType;
         RETURN;
     END

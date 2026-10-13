@@ -325,7 +325,37 @@ namespace HcWebApi.Endpoints
             catch (Exception ex)
             {
                 log.LogError("AppApiHC6 SP error: {Message}", ex.Message);
+                // Until 2026-10-13 a THROWN error reached only ILogger: the app saw
+                // an empty 500 and HC.ErrorLog had no row (ValidateAppAuth and
+                // CheckKennelPermission run outside the SPs' own TRY blocks, and a
+                // call missing a parameter with no default is refused before the
+                // SP starts). Every such failure now leaves a row.
+                await LogSpExceptionAsync(connectionString, (string?)data.queryType, (string?)data.deviceId, ex);
                 return new StatusCodeResult(500);
+            }
+        }
+
+        /// Writes an SP exception that escaped to the shim into HC.ErrorLog, via
+        /// nonApi_logPortalError (a plain insert, as the portal and web shims use).
+        /// ProcName is the bare hcapp_ name so these rows group with the SP's own.
+        private async Task LogSpExceptionAsync(string connectionString, string? queryType, string? deviceId, Exception ex)
+        {
+            try
+            {
+                string name = $"hcapp_{queryType ?? "unknown"}";
+                using SqlConnection conn = new(connectionString);
+                await conn.OpenAsync();
+                using SqlCommand cmd = new("[HC6].[nonApi_logPortalError]", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@errorName",        $"Unhandled exception in {name}");
+                cmd.Parameters.AddWithValue("@errorDescription", $"{ex.Message} (deviceId={deviceId ?? "none"})");
+                cmd.Parameters.AddWithValue("@procName",         name);
+                cmd.Parameters.AddWithValue("@userId",           DBNull.Value);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception logEx)
+            {
+                log.LogError("Failed to write to ErrorLog: {Message}", logEx.Message);
             }
         }
 
