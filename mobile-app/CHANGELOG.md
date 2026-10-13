@@ -1,3 +1,10 @@
+## 3.1.9+1472 (2026-10-13)
+
+### Fixes
+
+- **Membership**: the kennel list, kennel page and check-in member count work out
+  membership from the expiry date, so a lapsed membership shows as lapsed straight away.
+
 ## 3.1.9+1471 (2026-10-13)
 
 ### Fixes

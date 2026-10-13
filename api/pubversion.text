@@ -1,3 +1,8 @@
+1.0.61+105
+    • App and portal APIs write a procedure's thrown error to HC.ErrorLog (was Azure log only: empty 500, no row)
+    • Public-web replies never carry a phone's push token (chat send and react)
+    • Nightly 03:10 job: member-standing sweep step removed (bit retired); run-count recompute unchanged
+
 1.0.61+104
     • Nullability of the result-set helpers matches rows that may carry NULL columns (PortalApiHC6, KennelRequestEmails, PublicWebAdminApi); no behaviour change, zero warnings.
 
