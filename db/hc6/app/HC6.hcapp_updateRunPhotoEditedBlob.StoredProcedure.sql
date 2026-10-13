@@ -112,10 +112,15 @@ BEGIN TRY
     DECLARE @originalUrl   NVARCHAR(500);
     DECLARE @previousEdit  NVARCHAR(500);
     DECLARE @eventId       UNIQUEIDENTIFIER;
+    -- One transaction (2026-10-13): the photo row and the run's cover copy
+    -- change together, or neither does. They were two separate statements,
+    -- so a failure between them left the cover showing the old crop.
+    BEGIN TRANSACTION;
+
     SELECT @originalUrl  = BlobUrl,
            @previousEdit = EditedBlobUrl,
            @eventId      = EventId
-      FROM HC.KennelPhotos
+      FROM HC.KennelPhotos WITH (UPDLOCK, HOLDLOCK)
      WHERE id = @photoId AND KennelId = @kennelId;
 
     UPDATE HC.KennelPhotos
@@ -127,6 +132,7 @@ BEGIN TRY
     IF (@@ROWCOUNT = 0)
     BEGIN
         SET @errorCode = 4040; SET @errorType = 3; SET @errorId = NEWID();
+        ROLLBACK TRANSACTION;   -- FIRST: the log row must survive
         INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
         VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Photo not found',
                 'No photo matched @photoId + @kennelId', @procName, @userId);
@@ -156,10 +162,13 @@ BEGIN TRY
                     AND EventCoverPhotoUrl = @previousEdit));
     END
 
+    COMMIT TRANSACTION;
+
     SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;
 
 END TRY
 BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;   -- before the log, so it survives
     SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
     VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);

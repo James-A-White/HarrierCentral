@@ -209,8 +209,12 @@ BEGIN TRY
         -- Duplicate email check
         IF (@email IS NOT NULL)
         BEGIN
+            -- Locked (2026-10-13): two sign-ups racing with one address both
+            -- passed this check, and the loser hit IX_HasherUniqueEmail as an
+            -- unhandled 1910 instead of the 10005 the app turns into "we
+            -- have emailed you an invite code". Now the second waits and gets 10005.
             IF EXISTS (
-                SELECT 1 FROM HC.Hasher h
+                SELECT 1 FROM HC.Hasher h WITH (UPDLOCK, HOLDLOCK)
                 WHERE h.Email = TRIM(@email)
                   AND h.id <> COALESCE(@targetUserId, '00000000-0000-0000-0000-000000000000')
                   AND h.Removed = 0

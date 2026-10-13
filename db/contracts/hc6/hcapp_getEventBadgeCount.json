@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_getEventBadgeCount",
-  "version": "1.4.0",
-  "description": "Returns unread event message badge counts for the authenticated user. Three modes controlled by parameters: (1) reset all badge counts across every thread kind — run, kennel, room and direct message — and return a zero sentinel row; (2) query (and optionally reset) the badge count for a specific event; (3) return badge counts for all events where the user has a badge count row. Read SP — no success envelope; always returns a data or error rowset. Mode 3's query now lives in HC6.UserUnreadChatThreads (2026-09-28), the one definition of unread chat shared with the app-icon total HC6.UserUnreadChatTotal; output unchanged (verified row-for-row for three accounts). Auth: HC6.ValidateAppAuth (spNumber 63, @param NULL); no permission gate — every row is the caller's own.",
+  "version": "1.5.0",
+  "description": "Returns unread event message badge counts for the authenticated user. Three modes controlled by parameters: (1) reset all badge counts across every thread kind — run, kennel, room and direct message — and return a zero sentinel row; (2) query (and optionally reset) the badge count for a specific event; (3) return badge counts for all events where the user has a badge count row. Read SP — no success envelope; always returns a data or error rowset. Mode 3's query now lives in HC6.UserUnreadChatThreads (2026-09-28), the one definition of unread chat shared with the app-icon total HC6.UserUnreadChatTotal; output unchanged (verified row-for-row for three accounts). Auth: HC6.ValidateAppAuth (spNumber 63, @param NULL); no permission gate — every row is the caller's own. Since 2026-10-13 its read-marker MERGE holds HOLDLOCK and its four guarded INSERTs check existence WITH (UPDLOCK, HOLDLOCK), so concurrent calls cannot create duplicate HC.EventMessageBadgeCounts rows.",
   "parameters": [
     {
       "name": "deviceId",
@@ -266,11 +266,6 @@
       "severity": "medium",
       "issue": "Mode 1 is five auto-committed statements, not one unit",
       "detail": "Lines 125-243 run an UPDATE and four INSERTs with no BEGIN TRANSACTION; SET XACT_ABORT ON makes a failing statement abort the batch, but the statements before it stay committed, so 'mark all read' can half-apply (runs cleared, rooms not). The CATCH logs and re-throws, so the client retries and the remainder catches up."
-    },
-    {
-      "severity": "low",
-      "issue": "Mode 2 MERGE without HOLDLOCK",
-      "detail": "Lines 274-281 match on (UserId, EventId) with no UPDLOCK/HOLDLOCK hint; two phones of the same hasher opening the chat at once can both take the NOT MATCHED branch and insert duplicate badge rows, after which the SELECT at lines 284-288 returns two rows."
     },
     {
       "severity": "medium",

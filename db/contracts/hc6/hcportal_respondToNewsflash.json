@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_respondToNewsflash",
-  "version": "1.1.0",
-  "description": "Records the authenticated user's response to a newsflash. Upserts a single HC.PortalNewsflashRead row per user per newsflash. 'I've read it' (@isDismissed=1) permanently dismisses the newsflash. 'Read Later' (@isDismissed=0) snoozes it until the next calendar day (NextShowDate = tomorrow's UTC date). Responds to soft-deleted newsflashes: a user may dismiss a newsflash that was deleted after it was shown to them. Device-bound portal auth via HC6.ValidatePortalAuth; any signed-in portal user, for themselves.",
+  "version": "1.2.0",
+  "description": "Records the authenticated user's response to a newsflash. Upserts a single HC.PortalNewsflashRead row per user per newsflash. 'I've read it' (@isDismissed=1) permanently dismisses the newsflash. 'Read Later' (@isDismissed=0) snoozes it until the next calendar day (NextShowDate = tomorrow's UTC date). Responds to soft-deleted newsflashes: a user may dismiss a newsflash that was deleted after it was shown to them. Device-bound portal auth via HC6.ValidatePortalAuth; any signed-in portal user, for themselves. Since 2026-10-13 the existence check holds UPDLOCK, HOLDLOCK, so a double tap updates the row instead of hitting UQ_PortalNewsflashRead_Newsflash_Hasher.",
   "parameters": [
     {
       "name": "deviceId",
@@ -59,11 +59,6 @@
     "UPSERT HC.PortalNewsflashRead (NewsflashId, HasherId, IsDismissed, NextShowDate, UpdatedAt) — UPDATE if row exists, INSERT otherwise"
   ],
   "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "Check-then-INSERT on a UNIQUE key without UPDLOCK, HOLDLOCK",
-      "detail": "Lines 75-93: IF EXISTS … ELSE INSERT on HC.PortalNewsflashRead, which has UNIQUE (NewsflashId, HasherId), with no lock hint on the existence check. Two concurrent responses (double tap, two tabs) can both insert and the second fails with a duplicate-key error."
-    },
     {
       "severity": "medium",
       "issue": "CATCH block does not log to HC.ErrorLog",

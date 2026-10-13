@@ -83,15 +83,21 @@ DECLARE @outcome NVARCHAR(10), @threadId UNIQUEIDENTIFIER, @newRequest SMALLINT 
 DECLARE @mineSince DATETIMEOFFSET(7), @mineRemoved SMALLINT, @mineIgnore SMALLINT, @mineThread UNIQUEIDENTIFIER, @mineExists SMALLINT = 0;
 DECLARE @theirSince DATETIMEOFFSET(7), @theirRemoved SMALLINT, @theirIgnore SMALLINT, @theirThread UNIQUEIDENTIFIER, @theirExists SMALLINT = 0;
 
-SELECT @mineExists = 1, @mineSince = FriendSince, @mineRemoved = Removed, @mineIgnore = Ignore, @mineThread = ThreadId
-FROM HC.HasherFriendMap WHERE UserId = @userId AND Friend_UserId = @targetId;
-SELECT @theirExists = 1, @theirSince = FriendSince, @theirRemoved = Removed, @theirIgnore = Ignore, @theirThread = ThreadId
-FROM HC.HasherFriendMap WHERE UserId = @targetId AND Friend_UserId = @userId;
 
 DECLARE @pref SMALLINT = HC6.DirectMessagePreference(@targetPrefs);
 
 BEGIN TRY
     BEGIN TRANSACTION;
+
+    -- Read both rows INSIDE the transaction, locked (2026-10-13). They were
+    -- read before it, unlocked, so a double tap saw "no request yet" twice
+    -- and the second INSERT hit IX_HasherFriendMap (UserId, Friend_UserId).
+    -- Locked, the second call waits for the first, sees its row and gets
+    -- the same outcome: starting a DM is idempotent.
+    SELECT @mineExists = 1, @mineSince = FriendSince, @mineRemoved = Removed, @mineIgnore = Ignore, @mineThread = ThreadId
+    FROM HC.HasherFriendMap WITH (UPDLOCK, HOLDLOCK) WHERE UserId = @userId AND Friend_UserId = @targetId;
+    SELECT @theirExists = 1, @theirSince = FriendSince, @theirRemoved = Removed, @theirIgnore = Ignore, @theirThread = ThreadId
+    FROM HC.HasherFriendMap WITH (UPDLOCK, HOLDLOCK) WHERE UserId = @targetId AND Friend_UserId = @userId;
 
     IF (@mineIgnore = 1)
         SET @outcome = 'blocked';

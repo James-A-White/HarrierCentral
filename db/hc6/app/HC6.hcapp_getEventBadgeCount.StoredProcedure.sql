@@ -175,7 +175,7 @@ BEGIN
         SELECT 1 FROM HC.HasherKennelMap hkm
         WHERE hkm.KennelId = t.KennelId AND hkm.UserId = @userId)
       AND NOT EXISTS (
-        SELECT 1 FROM HC.EventMessageBadgeCounts embc
+        SELECT 1 FROM HC.EventMessageBadgeCounts embc WITH (UPDLOCK, HOLDLOCK)
         WHERE embc.UserId = @userId
           AND embc.KennelId = t.KennelId
           AND embc.EventId IS NULL);
@@ -195,7 +195,7 @@ BEGIN
     ) AS t
     WHERE HC6.UserMayEnterChatRoom(@userId, t.MessageType) = 1
       AND NOT EXISTS (
-        SELECT 1 FROM HC.EventMessageBadgeCounts embc
+        SELECT 1 FROM HC.EventMessageBadgeCounts embc WITH (UPDLOCK, HOLDLOCK)
         WHERE embc.UserId = @userId
           AND embc.EventId IS NULL AND embc.KennelId IS NULL
           AND embc.ThreadId IS NULL
@@ -214,7 +214,7 @@ BEGIN
     ) AS t
     WHERE f.UserId = @userId AND f.ThreadId IS NOT NULL AND t.MaxSeq IS NOT NULL
       AND NOT EXISTS (
-        SELECT 1 FROM HC.EventMessageBadgeCounts embc
+        SELECT 1 FROM HC.EventMessageBadgeCounts embc WITH (UPDLOCK, HOLDLOCK)
         WHERE embc.UserId = @userId AND embc.ThreadId = f.ThreadId
           AND embc.EventId IS NULL AND embc.KennelId IS NULL AND embc.MessageType = 0);
 
@@ -239,7 +239,7 @@ BEGIN
                        WHERE hem.EventId = e.id AND hem.UserId = @userId)
           )
       AND NOT EXISTS (
-        SELECT 1 FROM HC.EventMessageBadgeCounts embc
+        SELECT 1 FROM HC.EventMessageBadgeCounts embc WITH (UPDLOCK, HOLDLOCK)
         WHERE embc.UserId = @userId AND embc.EventId = t.EventId);
 
     SELECT 0 AS BadgeCount, '00000000-0000-0000-0000-000000000000' AS PublicEventId;
@@ -271,7 +271,7 @@ BEGIN
 
     IF (@resetBadgeCount != 0)
     BEGIN
-        MERGE INTO HC.EventMessageBadgeCounts AS Target
+        MERGE INTO HC.EventMessageBadgeCounts WITH (HOLDLOCK) AS Target
         USING (VALUES (@userId, @eventId, COALESCE(@messageSequenceCount, 0))) AS Source (UserId, EventId, LastSequenceCount)
         ON (Target.UserId = Source.UserId AND Target.EventId = Source.EventId)
         WHEN MATCHED THEN

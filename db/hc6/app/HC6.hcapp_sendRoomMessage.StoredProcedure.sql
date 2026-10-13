@@ -202,7 +202,7 @@ BEGIN TRY
     -- global room and every future DM has EventId and KennelId both NULL,
     -- so without them a hasher would hold ONE badge row shared by this room,
     -- every role room, and every private conversation they ever have.
-    MERGE INTO HC.EventMessageBadgeCounts AS Target
+    MERGE INTO HC.EventMessageBadgeCounts WITH (HOLDLOCK) AS Target
     USING (VALUES (@userId, @seq)) AS Source (UserId, LastSequenceCount)
     ON (Target.UserId = Source.UserId
         AND Target.EventId IS NULL

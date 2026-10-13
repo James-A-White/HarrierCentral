@@ -174,7 +174,7 @@ BEGIN TRY
     FROM HC.EventMessage em WHERE em.id = @messageId;
 
     -- Sender never sees their own message as unread
-    MERGE INTO HC.EventMessageBadgeCounts AS Target
+    MERGE INTO HC.EventMessageBadgeCounts WITH (HOLDLOCK) AS Target
     USING (VALUES (@userId, @kennelId, @messageSequenceCount)) AS Source (UserId, KennelId, LastSequenceCount)
     ON (Target.UserId = Source.UserId AND Target.KennelId = Source.KennelId)
     WHEN MATCHED THEN

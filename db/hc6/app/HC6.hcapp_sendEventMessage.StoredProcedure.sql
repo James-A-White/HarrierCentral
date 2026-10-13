@@ -251,7 +251,7 @@ BEGIN TRY
     SELECT @messageSequenceCount = em.MessageSequenceCount FROM HC.EventMessage em WHERE em.id = @messageId;
 
     -- Update sender's own badge count (sender never sees their own message as unread)
-    MERGE INTO HC.EventMessageBadgeCounts AS Target
+    MERGE INTO HC.EventMessageBadgeCounts WITH (HOLDLOCK) AS Target
     USING (VALUES (@userId, @eventId, @messageSequenceCount)) AS Source (UserId, EventId, LastSequenceCount)
     ON (Target.UserId = Source.UserId AND Target.EventId = Source.EventId)
     WHEN MATCHED THEN

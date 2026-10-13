@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_startDirectMessage",
-  "version": "1.2.0",
-  "description": "The door to a direct message (E9.F1.S19) from 'Message <name>' in any chat, or the chat bubble on a hasher list (E9.F1.S32). Auth: HC6.ValidateAppAuth (spNumber 129, @param NULL); no permission gate — the target's DM preference (HC6.DirectMessagePreference over Hasher.Preferences bits 0x4000|0x8000) and the pair's HC.HasherFriendMap rows decide. Outcome: open (already friends, target accepts anyone, or the target had already asked the caller — both rows get FriendSince and a shared ThreadId, minted if new), requested (target is friends-only and a request is now or already on file; ALSO returned when the target has blocked the caller or declined, with nothing written, so neither is revealed), refused (target accepts nobody), blocked (the caller has blocked the target). A new request returns push rowsets 2-3, which the API sends and strips.",
+  "version": "1.3.0",
+  "description": "The door to a direct message (E9.F1.S19) from 'Message <name>' in any chat, or the chat bubble on a hasher list (E9.F1.S32). Auth: HC6.ValidateAppAuth (spNumber 129, @param NULL); no permission gate — the target's DM preference (HC6.DirectMessagePreference over Hasher.Preferences bits 0x4000|0x8000) and the pair's HC.HasherFriendMap rows decide. Outcome: open (already friends, target accepts anyone, or the target had already asked the caller — both rows get FriendSince and a shared ThreadId, minted if new), requested (target is friends-only and a request is now or already on file; ALSO returned when the target has blocked the caller or declined, with nothing written, so neither is revealed), refused (target accepts nobody), blocked (the caller has blocked the target). A new request returns push rowsets 2-3, which the API sends and strips. Since 2026-10-13 both HasherFriendMap rows are read inside the transaction WITH (UPDLOCK, HOLDLOCK), so a double tap waits for the first call and returns the same outcome (idempotent) instead of hitting IX_HasherFriendMap.",
   "parameters": [
     {
       "name": "deviceId",
@@ -191,11 +191,6 @@
     "INSERT HC.ErrorLog on 2002 and in the CATCH (after ROLLBACK)."
   ],
   "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "Check-then-INSERT on a UNIQUE key without UPDLOCK",
-      "detail": "Lines 86-89 read the pair's HasherFriendMap rows OUTSIDE the transaction and with no UPDLOCK/HOLDLOCK; line 112 then INSERTs (UserId, Friend_UserId), which IX_HasherFriendMap makes unique. A double tap (or two devices) can both see no row and both insert: the second hits a duplicate-key error and lands in the CATCH as 2003 'Something went wrong'. The 'open' path is protected by MERGE WITH (HOLDLOCK); the request path is not."
-    },
     {
       "severity": "low",
       "issue": "Uppercase ids in client rowsets",

@@ -146,7 +146,7 @@ BEGIN TRY
 
     -- The sender never sees their own message as unread. Keyed on the full
     -- thread identity, like the room MERGE and for the same reason.
-    MERGE INTO HC.EventMessageBadgeCounts AS Target
+    MERGE INTO HC.EventMessageBadgeCounts WITH (HOLDLOCK) AS Target
     USING (VALUES (@userId, @seq)) AS Source (UserId, LastSequenceCount)
     ON (Target.UserId = Source.UserId AND Target.EventId IS NULL AND Target.KennelId IS NULL
         AND Target.ThreadId = @threadId AND Target.MessageType = 0)

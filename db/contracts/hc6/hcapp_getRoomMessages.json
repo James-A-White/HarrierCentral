@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_getRoomMessages",
-  "version": "1.0.0",
-  "description": "Reads one platform-wide chat room (HC.EventMessage rows with EventId, KennelId AND ThreadId all NULL and MessageType = @roomType), newest first, and optionally marks it read (@markRead = 1 advances the caller's HC.EventMessageBadgeCounts row for the room to the newest sequence). The twin of hcapp_sendRoomMessage; the message rowset has the shape the chat UI already reads for kennel and event threads. Authorization: HC6.UserMayEnterChatRoom(@userId, @roomType) — the same gate as sending; a hasher without the room's role gets errorCode 1944 (errorType 13), never an empty list. Messages from a hasher the reader has blocked are hidden (E9.F1.S16). Auth: HC6.ValidateAppAuth (spNumber 105, @param NULL).",
+  "version": "1.1.0",
+  "description": "Reads one platform-wide chat room (HC.EventMessage rows with EventId, KennelId AND ThreadId all NULL and MessageType = @roomType), newest first, and optionally marks it read (@markRead = 1 advances the caller's HC.EventMessageBadgeCounts row for the room to the newest sequence). The twin of hcapp_sendRoomMessage; the message rowset has the shape the chat UI already reads for kennel and event threads. Authorization: HC6.UserMayEnterChatRoom(@userId, @roomType) — the same gate as sending; a hasher without the room's role gets errorCode 1944 (errorType 13), never an empty list. Messages from a hasher the reader has blocked are hidden (E9.F1.S16). Auth: HC6.ValidateAppAuth (spNumber 105, @param NULL). Since 2026-10-13 its MERGE into HC.EventMessageBadgeCounts holds HOLDLOCK: the table has no unique key on (UserId, EventId, KennelId, ThreadId, MessageType), and two concurrent MERGEs could each insert a row.",
   "parameters": [
     {
       "name": "deviceId",
@@ -58,23 +58,108 @@
       "name": "Messages",
       "description": "Live messages of the room the reader may see, ORDER BY createdAt DESC. Empty when nothing is newer than @sinceSequenceCount.",
       "columns": [
-        { "name": "id", "type": "NVARCHAR(36)", "nullable": false, "description": "EventMessage.id, UPPER-cased text (the app lowercases on arrival)." },
-        { "name": "type", "type": "NVARCHAR(4)", "nullable": false, "description": "Literal 'text' on every row." },
-        { "name": "text", "type": "NVARCHAR(500)", "nullable": false, "description": "EventMessage.MessageContent." },
-        { "name": "roomId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Always the zero UUID '00000000-0000-0000-0000-000000000000' — a room has no public id; the client keys on @roomType." },
-        { "name": "createdAt", "type": "BIGINT", "nullable": false, "description": "Epoch milliseconds of EventMessage.createdAt." },
-        { "name": "authorId", "type": "NVARCHAR(36)", "nullable": false, "description": "Hasher.PublicHasherId, UPPER-cased text." },
-        { "name": "authorFirstName", "type": "NVARCHAR", "nullable": false, "description": "Hasher.DisplayName (persisted computed column)." },
-        { "name": "authorImageUrl", "type": "NVARCHAR(1000)", "nullable": true, "description": "Hasher.Photo." },
-        { "name": "sequenceCount", "type": "INT", "nullable": false, "description": "EventMessage.MessageSequenceCount — the delta watermark." },
-        { "name": "messageKind", "type": "SMALLINT", "nullable": false, "description": "EventMessage.MessageKind: 0 text, 1 photo, 2 location." },
-        { "name": "canDelete", "type": "SMALLINT", "nullable": false, "description": "1 when the caller wrote it or may moderate (HC6.nonApi_mayModerateChat with no scope: SuperAdmin only)." },
-        { "name": "replyToMessageId", "type": "NVARCHAR(36)", "nullable": true, "description": "EventMessage.ReplyToMessageId, UPPER-cased; NULL when not a reply (E9.F1.S21)." },
-        { "name": "replyToText", "type": "NVARCHAR(200)", "nullable": true, "description": "First 200 characters of the quoted message; NULL when not a reply or the original was removed." },
-        { "name": "replyToKind", "type": "SMALLINT", "nullable": true, "description": "The quoted message's MessageKind." },
-        { "name": "replyToAuthor", "type": "NVARCHAR", "nullable": true, "description": "The quoted message's author DisplayName." },
-        { "name": "replyToRemoved", "type": "SMALLINT", "nullable": false, "description": "1 when the quoted message exists but was removed." },
-        { "name": "reactions", "type": "NVARCHAR(MAX)", "nullable": true, "description": "EventMessage.ReactionsJson (E9.F1.S22)." }
+        {
+          "name": "id",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "EventMessage.id, UPPER-cased text (the app lowercases on arrival)."
+        },
+        {
+          "name": "type",
+          "type": "NVARCHAR(4)",
+          "nullable": false,
+          "description": "Literal 'text' on every row."
+        },
+        {
+          "name": "text",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "EventMessage.MessageContent."
+        },
+        {
+          "name": "roomId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Always the zero UUID '00000000-0000-0000-0000-000000000000' — a room has no public id; the client keys on @roomType."
+        },
+        {
+          "name": "createdAt",
+          "type": "BIGINT",
+          "nullable": false,
+          "description": "Epoch milliseconds of EventMessage.createdAt."
+        },
+        {
+          "name": "authorId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "Hasher.PublicHasherId, UPPER-cased text."
+        },
+        {
+          "name": "authorFirstName",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Hasher.DisplayName (persisted computed column)."
+        },
+        {
+          "name": "authorImageUrl",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Hasher.Photo."
+        },
+        {
+          "name": "sequenceCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "EventMessage.MessageSequenceCount — the delta watermark."
+        },
+        {
+          "name": "messageKind",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "EventMessage.MessageKind: 0 text, 1 photo, 2 location."
+        },
+        {
+          "name": "canDelete",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 when the caller wrote it or may moderate (HC6.nonApi_mayModerateChat with no scope: SuperAdmin only)."
+        },
+        {
+          "name": "replyToMessageId",
+          "type": "NVARCHAR(36)",
+          "nullable": true,
+          "description": "EventMessage.ReplyToMessageId, UPPER-cased; NULL when not a reply (E9.F1.S21)."
+        },
+        {
+          "name": "replyToText",
+          "type": "NVARCHAR(200)",
+          "nullable": true,
+          "description": "First 200 characters of the quoted message; NULL when not a reply or the original was removed."
+        },
+        {
+          "name": "replyToKind",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "The quoted message's MessageKind."
+        },
+        {
+          "name": "replyToAuthor",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "The quoted message's author DisplayName."
+        },
+        {
+          "name": "replyToRemoved",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 when the quoted message exists but was removed."
+        },
+        {
+          "name": "reactions",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "EventMessage.ReactionsJson (E9.F1.S22)."
+        }
       ]
     },
     {
@@ -82,8 +167,18 @@
       "name": "Badge",
       "description": "One row, computed BEFORE the mark so the caller learns what it had to clear.",
       "columns": [
-        { "name": "unreadCount", "type": "INT", "nullable": false, "description": "Live messages by others, not blocked, above the caller's LastSequenceCount for this room (0 when no badge row)." },
-        { "name": "newestSequenceCount", "type": "INT", "nullable": false, "description": "MAX(MessageSequenceCount) of live messages in the room; 0 when the room is empty." }
+        {
+          "name": "unreadCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Live messages by others, not blocked, above the caller's LastSequenceCount for this room (0 when no badge row)."
+        },
+        {
+          "name": "newestSequenceCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "MAX(MessageSequenceCount) of live messages in the room; 0 when the room is empty."
+        }
       ]
     },
     {
@@ -91,7 +186,12 @@
       "name": "RemovedMessageIds",
       "description": "Every removed message in the room (Removed = 1), so a client drops any it already drew. Find it by column name.",
       "columns": [
-        { "name": "removedId", "type": "NVARCHAR(36)", "nullable": false, "description": "EventMessage.id, UPPER-cased." }
+        {
+          "name": "removedId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "EventMessage.id, UPPER-cased."
+        }
       ]
     },
     {
@@ -99,8 +199,18 @@
       "name": "ReactionUpdates",
       "description": "ALWAYS present (empty when @reactionsSince is NULL or nothing changed): { id, reactions } for live messages at or below @sinceSequenceCount whose ReactionsUpdatedAt is after @reactionsSince.",
       "columns": [
-        { "name": "id", "type": "NVARCHAR(36)", "nullable": false, "description": "EventMessage.id, UPPER-cased." },
-        { "name": "reactions", "type": "NVARCHAR(MAX)", "nullable": true, "description": "EventMessage.ReactionsJson." }
+        {
+          "name": "id",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "EventMessage.id, UPPER-cased."
+        },
+        {
+          "name": "reactions",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "EventMessage.ReactionsJson."
+        }
       ]
     },
     {
@@ -108,7 +218,12 @@
       "name": "ReactionsAsOf",
       "description": "One row — the server time to pass back as @reactionsSince.",
       "columns": [
-        { "name": "reactionsAsOf", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "SYSDATETIMEOFFSET()." }
+        {
+          "name": "reactionsAsOf",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "SYSDATETIMEOFFSET()."
+        }
       ]
     }
   ],
@@ -122,11 +237,6 @@
       "severity": "low",
       "issue": "Zero-UUID sentinel as roomId",
       "detail": "Line 99 returns the literal zero UUID as roomId on every row so the column shape matches the kennel and event readers; the client must key on @roomType instead and must not treat it as a real id."
-    },
-    {
-      "severity": "low",
-      "issue": "MERGE without HOLDLOCK on a non-unique key",
-      "detail": "Lines 149-161 match the badge row on (UserId, three NULLs, MessageType) with no UPDLOCK/HOLDLOCK hint; two phones of the same hasher marking the room read at once can both take the NOT MATCHED branch and insert duplicate badge rows. The read at lines 85-90 then picks one of them arbitrarily."
     }
   ],
   "breakingChangeRules": [
