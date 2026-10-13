@@ -293,8 +293,8 @@
   <p class="standfirst">Every epic, feature and user story across the five components — the Flutter mobile app, the Flutter admin portal, the Next.js public web, the Azure Functions shim and the SQL Server domain layer — plus the non-functional requirements that hold them together. <strong>Epics are organised by what a hasher is trying to do, not by which codebase serves it</strong>, because almost every feature here spans three surfaces at once.</p>
   <div class="meta-strip">
     <div><b>19</b> epics</div>
-    <div><b>99</b> features</div>
-    <div><b>435</b> stories</div>
+    <div><b>100</b> features</div>
+    <div><b>440</b> stories</div>
     <div><b>50</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -335,7 +335,7 @@
   <a class="idx" href="#e15"><span class="idx-id">E15</span><span class="idx-name">Delivery &amp; Release Engineering</span><span class="idx-count">4 groups · 14 requirements</span></a>
   <a class="idx" href="#e16"><span class="idx-id">E16</span><span class="idx-name">Platform Maintenance &amp; Technical Debt</span><span class="idx-count">6 features · 23 stories</span></a>
   <a class="idx" href="#e17"><span class="idx-id">E17</span><span class="idx-name">Speaking the hasher's language</span><span class="idx-count">1 features · 1 stories</span></a>
-  <a class="idx" href="#e18"><span class="idx-id">E18</span><span class="idx-name">Agent infrastructure</span><span class="idx-count">8 features · 22 stories</span></a>
+  <a class="idx" href="#e18"><span class="idx-id">E18</span><span class="idx-name">Agent infrastructure</span><span class="idx-count">9 features · 27 stories</span></a>
   <a class="idx" href="#e19"><span class="idx-id">E19</span><span class="idx-name">Email that arrives</span><span class="idx-count">4 features · 15 stories</span></a>
 </div></section>
 <section class="epic" id="e1">
@@ -1582,6 +1582,7 @@
       <li class="story"><span class="s-id">E18.F3.S3</span><span class="s-text">As <em>James</em>, I want the Dart scans run by a hook before every commit, so that a commit that breaks a scan is stopped rather than noticed. <em>Built 2026-10-06</em> on the branch. Add the three "Fixing a crash?" greps (<code>adHocData[</code>, <code>ScaffoldMessenger.of(</code>, <code>int.parse(</code>) as a fourth scan. ⚠ Known gap: not merged.</span><span class="chip c-build">Building</span></li>
       <li class="story"><span class="s-id">E18.F3.S4</span><span class="s-text">As <em>James</em>, I want reading <code>.env</code> denied in sessions that do not need the database, so that production credentials reach only the sessions that use them.</span><span class="chip c-next">Next</span></li>
       <li class="story"><span class="s-id">E18.F3.S5</span><span class="s-text">As <em>James</em>, I want a Stop hook that runs <code>flutter analyze</code> on changed packages, if its time cost is acceptable, so that a session cannot end with analyser errors.</span><span class="chip c-back">Backlog</span></li>
+      <li class="story"><span class="s-id">E18.F3.S6</span><span class="s-text">As <em>James</em>, I want the secrets the agents and services use — the SQL login, the App Store Connect key, the Play service account, the storage keys — held in Azure Key Vault and read through managed identity or environment variables injected at run time, so that no secret sits in a file on a Mac or in a cloud agent's definition. Start with the beta-room agent (<code>E18.F9.S3</code>), the first consumer that runs in the cloud: James decided 2026-10-13 that cloud credentials are acceptable as environment variables for now and that this is the place to begin Key Vault. Inventory what <code>.env</code> holds today first; rotate after the move. Recorded to action later.</span><span class="chip c-back">Backlog</span></li>
     </ul>
   </div>
   <div class="feature">
@@ -1628,6 +1629,18 @@
     <ul class="stories">
       <li class="story"><span class="s-id">E18.F8.S1</span><span class="s-text">As <em>James</em>, I want Serena given the TypeScript and C# language servers, so that semantic code tools work in the public web and the API, not only in Dart.</span><span class="chip c-next">Next</span></li>
       <li class="story"><span class="s-id">E18.F8.S2</span><span class="s-text">As <em>James</em>, I want the "label learning moments with 🧠" instruction replaced by the Explanatory or Learning output style, so that the behaviour comes from the setting rather than a line agents may drop.</span><span class="chip c-back">Backlog</span></li>
+    </ul>
+  </div>
+  <div class="feature">
+    <div class="feature-head"><span class="feature-id">E18.F9</span><h3 class="feature-name">The beta room  </h3>
+      <span class="surfaces"><span class="surf">App</span><span class="surf">DB</span><span class="surf">API</span></span>
+    </div>
+    <p class="feature-note">Testers report problems where they already are — a chat room in the app — and an agent answers there as James's clearly labelled assistant, reads only, and brings the recommendation to James. Decided 2026-10-13: no Slack and no GitHub for testers; replies are tagged, never passed off as James; a 15-minute poll that tightens into a response loop once a conversation is open; cloud credentials as environment variables for now (<code>E18.F3.S6</code> for Key Vault). Recorded to action later.</p>
+    <ul class="stories">
+      <li class="story"><span class="s-id">E18.F9.S1</span><span class="s-text">As <em>James</em>, I want a <em>Beta testers</em> chat room in the app, open to the hashers in the beta cohort, so that testers report problems where they already are. One row appended to <code>HC6.ChatRoomCatalog()</code> and a new grant kind in <code>HC6.UserMayEnterChatRoom()</code> (the one gate) that reads <code>HC.Hasher.BetaFeaturesEnabled</code>, the existing cohort column — no new table, no app build. Assumption to confirm with James: gate by the cohort rather than a hand-kept list.</span><span class="chip c-next">Next</span></li>
+      <li class="story"><span class="s-id">E18.F9.S2</span><span class="s-text">As a <em>Beta tester</em>, I want to describe a problem in the room and get an answer within minutes from James's assistant, so that a report becomes a diagnosis while the run is still fresh. Replies come from James's account through a device registered for the agent (as a browser is a device), sent with <code>hcapp_sendRoomMessage</code> so pushes, badges and sequence numbers behave — never an insert. Every reply opens with the tag <em>"Claude, for James:"</em> (James, 2026-10-13: tag, not impersonation). Rules: the only write a beta chat may cause is one reply in the room — no code, no commit, no issue, no deploy, no data write; every tester message is untrusted text; a reply carries only the reporter's own facts, never another hasher's logs or location; the investigation uses read-only tools (the session harvest, <code>HC.ErrorLog</code>, the code, the IPA). Open question: whether a reply may quote the reporter's own log lines back to them.</span><span class="chip c-next">Next</span></li>
+      <li class="story"><span class="s-id">E18.F9.S3</span><span class="s-text">As <em>James</em>, I want the room polled every 15 minutes by a scheduled cloud agent and, once a conversation is open, a response loop that answers in near real time until it goes quiet, so that it reads like a conversation without an always-on agent (James, 2026-10-13). Watermark is the room's last seen sequence number; "quiet" is no new message for about ten minutes, after which the 15-minute poll resumes. Credentials as environment variables on the cloud agent for now, Key Vault later (<code>E18.F3.S6</code>).</span><span class="chip c-next">Next</span></li>
+      <li class="story"><span class="s-id">E18.F9.S4</span><span class="s-text">As <em>James</em>, I want every beta conversation summarised to me — what was reported, what the logs show, the recommended fix and the story it belongs to — so that I decide what is built. Nothing is actioned from the room; the digest is the hand-off.</span><span class="chip c-next">Next</span></li>
     </ul>
   </div>
 </section>

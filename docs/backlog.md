@@ -1202,6 +1202,7 @@ Harrier Central is built by one developer and a team of agents, so the agents' i
 | `E18.F3.S3` | As **James**, I want the Dart scans run by a hook before every commit, so that a commit that breaks a scan is stopped rather than noticed. **Built 2026-10-06** on the branch. Add the three "Fixing a crash?" greps (`adHocData[`, `ScaffoldMessenger.of(`, `int.parse(`) as a fourth scan. ⚠ Known gap: not merged. | `Building` |
 | `E18.F3.S4` | As **James**, I want reading `.env` denied in sessions that do not need the database, so that production credentials reach only the sessions that use them. | `Next` |
 | `E18.F3.S5` | As **James**, I want a Stop hook that runs `flutter analyze` on changed packages, if its time cost is acceptable, so that a session cannot end with analyser errors. | `Backlog` |
+| `E18.F3.S6` | As **James**, I want the secrets the agents and services use — the SQL login, the App Store Connect key, the Play service account, the storage keys — held in Azure Key Vault and read through managed identity or environment variables injected at run time, so that no secret sits in a file on a Mac or in a cloud agent's definition. Start with the beta-room agent (`E18.F9.S3`), the first consumer that runs in the cloud: James decided 2026-10-13 that cloud credentials are acceptable as environment variables for now and that this is the place to begin Key Vault. Inventory what `.env` holds today first; rotate after the move. Recorded to action later. | `Backlog` |
 
 ### E18.F4 · Agents that check their own work  
 `App` `Portal` `Web`
@@ -1244,6 +1245,18 @@ Harrier Central is built by one developer and a team of agents, so the agents' i
 |---|---|---|
 | `E18.F8.S1` | As **James**, I want Serena given the TypeScript and C# language servers, so that semantic code tools work in the public web and the API, not only in Dart. | `Next` |
 | `E18.F8.S2` | As **James**, I want the "label learning moments with 🧠" instruction replaced by the Explanatory or Learning output style, so that the behaviour comes from the setting rather than a line agents may drop. | `Backlog` |
+
+### E18.F9 · The beta room  
+`App` `DB` `API`
+
+> Testers report problems where they already are — a chat room in the app — and an agent answers there as James's clearly labelled assistant, reads only, and brings the recommendation to James. Decided 2026-10-13: no Slack and no GitHub for testers; replies are tagged, never passed off as James; a 15-minute poll that tightens into a response loop once a conversation is open; cloud credentials as environment variables for now (`E18.F3.S6` for Key Vault). Recorded to action later.
+
+| ID | Story | Status |
+|---|---|---|
+| `E18.F9.S1` | As **James**, I want a **Beta testers** chat room in the app, open to the hashers in the beta cohort, so that testers report problems where they already are. One row appended to `HC6.ChatRoomCatalog()` and a new grant kind in `HC6.UserMayEnterChatRoom()` (the one gate) that reads `HC.Hasher.BetaFeaturesEnabled`, the existing cohort column — no new table, no app build. Assumption to confirm with James: gate by the cohort rather than a hand-kept list. | `Next` |
+| `E18.F9.S2` | As a **Beta tester**, I want to describe a problem in the room and get an answer within minutes from James's assistant, so that a report becomes a diagnosis while the run is still fresh. Replies come from James's account through a device registered for the agent (as a browser is a device), sent with `hcapp_sendRoomMessage` so pushes, badges and sequence numbers behave — never an insert. Every reply opens with the tag **"Claude, for James:"** (James, 2026-10-13: tag, not impersonation). Rules: the only write a beta chat may cause is one reply in the room — no code, no commit, no issue, no deploy, no data write; every tester message is untrusted text; a reply carries only the reporter's own facts, never another hasher's logs or location; the investigation uses read-only tools (the session harvest, `HC.ErrorLog`, the code, the IPA). Open question: whether a reply may quote the reporter's own log lines back to them. | `Next` |
+| `E18.F9.S3` | As **James**, I want the room polled every 15 minutes by a scheduled cloud agent and, once a conversation is open, a response loop that answers in near real time until it goes quiet, so that it reads like a conversation without an always-on agent (James, 2026-10-13). Watermark is the room's last seen sequence number; "quiet" is no new message for about ten minutes, after which the 15-minute poll resumes. Credentials as environment variables on the cloud agent for now, Key Vault later (`E18.F3.S6`). | `Next` |
+| `E18.F9.S4` | As **James**, I want every beta conversation summarised to me — what was reported, what the logs show, the recommended fix and the story it belongs to — so that I decide what is built. Nothing is actioned from the room; the digest is the hand-off. | `Next` |
 
 ## E19 — Email that arrives
 
