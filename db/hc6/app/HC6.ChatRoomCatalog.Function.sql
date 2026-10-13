@@ -104,9 +104,10 @@ RETURN
             -- Beta testers (E18.F9, James 2026-10-13): the hashers in the
             -- beta cohort report problems here and James's assistant answers,
             -- tagged "Claude, for James:" and sent from James's account
-            -- through an ordinary device. No coin yet — clients draw the
-            -- forum glyph until one is struck. Mask 0x2 is the pin mirror
+            -- through an ordinary device. Coin: gold spanner and screwdriver
+            -- on magenta (James, 2026-10-13). Mask 0x2 is the pin mirror
             -- only (UnpinnedAppAccessRooms), never a grant.
-            (8,  N'Beta Testers',            'beta',  0x00000002,   70,  NULL)
+            (8,  N'Beta Testers',            'beta',  0x00000002,   70,
+                 N'https://harriercentral.blob.core.windows.net/chat-room-icons/beta-testers.png')
         ) AS c (RoomType, RoomName, GrantColumn, GrantMask, SortOrder, IconUrl);
 GO
