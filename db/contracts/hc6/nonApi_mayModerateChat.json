@@ -1,0 +1,59 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_mayModerateChat",
+  "version": "1.0.0",
+  "description": "May this user delete ANYONE's message in this thread? (E9.F1.S14.) The one place the rule lives: the chat message readers call it once per fetch to fill canDelete, and nonApi_deleteChatMessage calls it before removing a message. Run chat (@eventId set) ⇒ the moderateChat permission function in the RUN'S kennel; kennel chat (@kennelId set, @eventId NULL) ⇒ moderateChat in that kennel; room or DM (both NULL) ⇒ platform admins only (HC.PlatformAdmin, removed = 0), because rooms span kennels and a DM belongs to no kennel. A platform admin passes everything without a kennel check. moderateChat is an HC.PermissionFunction row (defaults: GM, Web Meister, the Manage chat flag 0x200) resolved through HC6.CheckKennelPermission, so a kennel can widen or narrow it like any other function. Internal (EXEC from other SPs); no auth of its own. Returns nothing; the answer is the @allowed OUTPUT (1/0, never NULL). Until 2026-09-30 the platform check read AppAccessFlags 0x40000000 on any kennel row — the kennel-FOUNDER grant held by 294 hashers.",
+  "parameters": [
+    {
+      "name": "userId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Hasher.id",
+      "description": "The internal id of the hasher asking. NULL ⇒ @allowed = 0."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.id",
+      "description": "The run whose chat it is. When set, @kennelId is overwritten with the run's kennel. Default NULL."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.id",
+      "description": "The kennel whose chat it is; ignored when @eventId is set. Default NULL. Both NULL ⇒ a room or a DM."
+    },
+    {
+      "name": "allowed",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "OUTPUT: 1 when the user may moderate the thread, otherwise 0. Always set (COALESCEd to 0)."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "Reads HC.PlatformAdmin, HC.Event; EXECs HC6.CheckKennelPermission (functionKey 'moderateChat'). Writes nothing."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@userId has no SQL default. Called only by EXEC from other HC6 SPs (chat readers, nonApi_deleteChatMessage), which always pass it. A call that omits one fails before the body runs — no HC.ErrorLog row, no graceful check (CLAUDE.md 'SP parameter with NO default')."
+    },
+    {
+      "severity": "low",
+      "issue": "SP body not wrapped in TRY/CATCH",
+      "detail": "No TRY/CATCH anywhere in the body (lines 32–57). It is a pure read helper that runs inside the calling SP's TRY, so a runtime error here surfaces through the caller's CATCH; it would not be attributed to this proc in HC.ErrorLog."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_listDevices",
+  "version": "1.0.0",
+  "description": "Everything that can get into the calling hasher's account (E9.F7.S19): every HC.Device row owned by the token's user, with whether it holds a passkey and whether it has been signed out. Read-only. Auth: HC6.ValidateAppAuth (spNumber 121, @param NULL); @userId comes from the token and the query is scoped to it — no caller-supplied user. No 'active in the last N days' cut-off: a row leaves the list only when it is both signed out (removed = 1) and holds no passkey. Supersedes hcapp_listPasskeys for new clients; that SP stays for builds 1390/1391.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Registered device. Default NULL (ValidateAppAuth then fails gracefully). Also used to flag IsThisDevice."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret). Default NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Auth failure (ValidateAppAuth) returns the error detail alone and the SP returns."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "On success: emitted before the query runs.",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "errorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Always NULL." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Devices",
+      "description": "One row per device, most recent sign-in first. WHERE d.UserId = @userId AND (d.removed = 0 OR d.PasskeyCredentialId IS NOT NULL).",
+      "columns": [
+        { "name": "DeviceId", "type": "NVARCHAR(40)", "nullable": false, "description": "Device.id as text." },
+        { "name": "Label", "type": "NVARCHAR", "nullable": false, "description": "'<OperatingSystem or Harrier Central/Browser> on <platform>' — built from Device.OperatingSystem, IsMobile and HC6.DevicePlatformName(DeviceData)." },
+        { "name": "Platform", "type": "NVARCHAR", "nullable": true, "description": "HC6.DevicePlatformName(Device.DeviceData)." },
+        { "name": "IsThisDevice", "type": "INT", "nullable": false, "description": "1 when the row is the calling @deviceId." },
+        { "name": "LastLogin", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "Device.LastLogin." },
+        { "name": "IsMobile", "type": "SMALLINT", "nullable": false, "description": "ISNULL(Device.IsMobile, 0)." },
+        { "name": "AppVersion", "type": "NVARCHAR(25)", "nullable": true, "description": "Device.Version as of the last sign-in; NULL when blank (564 rows platform-wide)." },
+        { "name": "AppBuild", "type": "NVARCHAR(25)", "nullable": true, "description": "Device.BuildNumber as of the last sign-in; NULL when blank." },
+        { "name": "HasPasskey", "type": "INT", "nullable": false, "description": "1 when Device.PasskeyCredentialId is set. The credential id and public key never leave the server." },
+        { "name": "IsSignedOut", "type": "INT", "nullable": false, "description": "1 when Device.SignedOutAt is set — deliberately NOT from `removed`, which 300 legacy rows carry without meaning." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "None on success. INSERT HC.ErrorLog then THROW on an unhandled error."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Success envelope emitted before the query",
+      "detail": "Line 62 sends {success:1} before the SELECT at line 64. If the query fails, the CATCH logs and re-raises, so the client receives a success envelope followed by an HTTP 500."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

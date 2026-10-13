@@ -1,70 +1,58 @@
 {
   "schema": "HC6",
   "name": "hcapp_setDirectMessagePreference",
-  "version": "1.0.0",
-  "description": "Who may message the caller: 0 friends only (default), 1 anyone, 2 nobody. Two bits of HC.Hasher.Preferences (0x4000|0x8000), read-modify-written server-side. E9.F1.S18.",
+  "version": "1.1.0",
+  "description": "Records who may send the caller a direct message (E9.F1.S18): 0 friends only (the default), 1 anyone, 2 nobody. Stored in two bits of HC.Hasher.Preferences (0x4000|0x8000) which the SP read-modify-writes so no other bit is touched (the bitfield is overwritten whole by addEditUser, so every writer owns only its own bits — 2026-09-27 rule). The Hasher table's trigger moves updatedAt, so the phone receives the value in its next user sync. Auth: device-bound token via HC6.ValidateAppAuth (spNumber 128, @param NULL); the caller's own row only, no permission gate. Not transacted (a single UPDATE).",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Registered device"
+      "description": "Registered device. Default NULL (ValidateAppAuth then fails gracefully)."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Short-lived token (standard, device secret)"
+      "description": "Short-lived token (standard, device secret). Default NULL."
     },
     {
       "name": "preference",
       "type": "SMALLINT",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Hasher.Preferences",
-      "description": "0|1|2"
+      "description": "0 friends only, 1 anyone, 2 nobody. Default NULL; NULL or any other value is refused with 2000. Written as (@preference * 16384) into bits 0x4000|0x8000 of the INT Preferences column."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "ref": "StandardErrorResult",
-      "description": "Auth failure returns the detail alone; other refusals return {success:0, errorCode, errorType} then the detail: 2000 bad value (2), 2001 unhandled (5)"
+      "description": "Auth failure (ValidateAppAuth) returns the error detail ALONE at index 0 — no envelope. Other failures return {success:0, errorCode, errorType} at index 0 then this detail at index 1: 2000 'Bad preference' (errorType 2, logged), 2001 unhandled (errorType 5, CATCH, logged)."
     },
     {
       "index": 0,
       "name": "Envelope",
+      "description": "On success.",
       "columns": [
-        {
-          "name": "success",
-          "type": "INT",
-          "nullable": false,
-          "description": "1 ok"
-        },
-        {
-          "name": "errorMessage",
-          "type": "NVARCHAR(MAX)",
-          "nullable": true,
-          "description": "NULL on success"
-        }
+        { "name": "success", "type": "INT", "nullable": false, "description": "1" },
+        { "name": "errorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "NULL on success" }
       ]
     },
     {
       "index": 1,
       "name": "Preference",
+      "description": "On success: the value now stored, decoded from the row by HC6.DirectMessagePreference(Preferences).",
       "columns": [
-        {
-          "name": "Preference",
-          "type": "SMALLINT",
-          "nullable": false,
-          "description": "the value now stored"
-        }
+        { "name": "Preference", "type": "SMALLINT", "nullable": false, "description": "0 friends only, 1 anyone, 2 nobody." }
       ]
     }
   ],
   "sideEffects": [
-    "UPDATE HC.Hasher.Preferences bits 0x4000|0x8000"
+    "UPDATE HC.Hasher SET Preferences = (Preferences & ~0xC000) | (@preference * 0x4000) WHERE id = @userId (line 56); the table trigger stamps updatedAt so the row re-syncs to the hasher's devices.",
+    "INSERT HC.ErrorLog on refusal (line 45) and in the CATCH (line 65)."
   ],
   "codeSmells": [],
   "breakingChangeRules": [

@@ -1,0 +1,67 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_saveAzureDailyCost",
+  "version": "1.0.0",
+  "description": "Upserts Azure cost per UTC day per service into LOG.AzureDailyCost (2026-10-05). The API's AzureDailyCost timer reads Azure Cost Management every six hours and re-sends the last week, because a day's figure keeps settling for about a day after it ends; every row sent gets a fresh RetrievedAt, which is how the monitor tells a settled day from one still filling in. Takes a JSON array [{date, service, cost, currency}, …]; rows with no date or cost are dropped, duplicates of one (date, service) are SUMMED (Cost Management can split a service across rows), a blank service becomes 'Unassigned', the currency is cut to 3 characters ('???' when missing). A NULL or non-JSON payload is refused before the TRY: one HC.ErrorLog row ('Azure cost save refused') and a zero summary row, no THROW. Called by the API only; no auth. A runtime error inside the TRY is rolled back, logged and re-thrown.",
+  "parameters": [
+    {
+      "name": "costsJson",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "AzureDailyCost.CostDate",
+      "description": "JSON array of {\"date\":\"YYYY-MM-DD\",\"service\":\"SQL Database\",\"cost\":0.831,\"currency\":\"GBP\"}. NULL or not JSON ⇒ refused (logged, zero summary). Default NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "SaveSummary",
+      "description": "Always exactly one row on success and on the refused-input path (none when the CATCH re-throws).",
+      "columns": [
+        {
+          "name": "daysSaved",
+          "type": "INT",
+          "nullable": false,
+          "description": "Distinct CostDate values upserted (0 when refused)."
+        },
+        {
+          "name": "rowsSaved",
+          "type": "INT",
+          "nullable": false,
+          "description": "(date, service) rows upserted (0 when refused)."
+        },
+        {
+          "name": "firstDate",
+          "type": "DATE",
+          "nullable": true,
+          "description": "Earliest CostDate in the payload; NULL when refused or empty."
+        },
+        {
+          "name": "lastDate",
+          "type": "DATE",
+          "nullable": true,
+          "description": "Latest CostDate in the payload; NULL when refused or empty."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "MERGE LOG.AzureDailyCost WITH (HOLDLOCK) on (CostDate, ServiceName): UPDATE Cost, Currency, RetrievedAt = SYSUTCDATETIME() when matched; INSERT when not (RetrievedAt from the table default). Inside a transaction.",
+    "Refused input: inserts one HC.ErrorLog row (HcVersion '<api>', 'Azure cost save refused') and returns the zero summary — no THROW.",
+    "On any runtime error inside the TRY: rolls back, inserts one HC.ErrorLog row (HcVersion '<api>'), then THROWs."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "FLOAT for money in the JSON parse",
+      "detail": "OPENJSON … WITH (cost FLOAT '$.cost') at line 37 reads and SUMs the cost as FLOAT before CAST(SUM(j.cost) AS DECIMAL(10,4)) at line 34. The column and the stored value are DECIMAL(10,4), and at four decimal places the binary rounding of a handful of pence is invisible, but CLAUDE.md lists FLOAT for money as a smell on sight; DECIMAL(12,8) in the WITH clause would remove it."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

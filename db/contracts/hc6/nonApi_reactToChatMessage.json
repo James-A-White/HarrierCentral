@@ -1,0 +1,114 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_reactToChatMessage",
+  "version": "1.0.0",
+  "description": "Adds or removes ONE reaction by ONE hasher on ONE chat message (E9.F1.S22). The one place HC.EventMessage.ReactionsJson is written; the hcapp_ / hcportal_ / publicWeb_ wrappers authenticate and reply, this decides. Storage is a JSON column {\"beer\":[\"<PublicHasherId>\",…],\"thumbs\":[…]} keyed by the HC6.ChatReactionCatalog() ASCII code (an emoji equals '' in this collation) and holding PUBLIC hasher ids (what a chat message carries as its authorId, so a client can tell 'mine' without a lookup). Read-modify-write under UPDLOCK, HOLDLOCK on the message row; the JSON is rebuilt in catalog order by hand (FOR JSON cannot make a dynamic-key object); a malformed stored value is treated as empty rather than failing the tap. ReactionsUpdatedAt is stamped so the readers can hand back reactions on messages a client already holds. Who may react: anyone who may READ the message — a room by HC6.UserMayEnterChatRoom, a DM by holding an HC.HasherFriendMap row for the thread, a run or kennel chat with no gate — except a message from a hasher the caller has blocked (HasherFriendMap.Ignore = 1). A removed message cannot be reacted to. Internal (EXEC from the wrappers); no auth of its own. Returns nothing; everything comes back in OUTPUT parameters: @outcome 1 ok, 2 no such message (or removed, or NULL inputs), 3 not allowed (or caller has no HC.Hasher row), 4 unknown reaction code.",
+  "parameters": [
+    {
+      "name": "userId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Hasher.id",
+      "description": "Internal id of the hasher reacting. NULL ⇒ @outcome 2."
+    },
+    {
+      "name": "messageId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "EventMessage.id",
+      "description": "The message. NULL or unknown or Removed = 1 ⇒ @outcome 2."
+    },
+    {
+      "name": "reaction",
+      "type": "NVARCHAR(20)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "A Code from HC6.ChatReactionCatalog(). Anything else ⇒ @outcome 4."
+    },
+    {
+      "name": "on",
+      "type": "SMALLINT",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "1 = add the reaction, anything else = remove it. Idempotent either way."
+    },
+    {
+      "name": "outcome",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "OUTPUT: 1 ok, 2 no such message, 3 not allowed, 4 unknown reaction. Always set."
+    },
+    {
+      "name": "reactions",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.ReactionsJson",
+      "description": "OUTPUT: the message's ReactionsJson after the change (NULL when the last reaction was removed, or on any outcome other than 1)."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.EventId",
+      "description": "OUTPUT: the run of a run-chat message, for the caller's push detail. NULL for kennel chat, rooms and DMs."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.KennelId",
+      "description": "OUTPUT: the kennel of a kennel-chat message. NULL otherwise."
+    },
+    {
+      "name": "threadId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.ThreadId",
+      "description": "OUTPUT: the DM thread of a direct message. NULL otherwise."
+    },
+    {
+      "name": "messageType",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.MessageType",
+      "description": "OUTPUT: the message's type (a room's type for room messages)."
+    },
+    {
+      "name": "authorId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.UserId",
+      "description": "OUTPUT: internal id of the message's author (set as soon as the message is found, even when the outcome is 3)."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "UPDATE HC.EventMessage SET ReactionsJson, ReactionsUpdatedAt = SYSDATETIMEOFFSET() WHERE id = @messageId, inside its own BEGIN/COMMIT TRANSACTION with the row read under UPDLOCK, HOLDLOCK.",
+    "Reads HC6.ChatReactionCatalog(), HC.EventMessage, HC.HasherFriendMap, HC.Hasher; calls HC6.UserMayEnterChatRoom for room messages."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@userId, @messageId, @reaction, @on have no SQL default. Called only by EXEC from the hcapp_/hcportal_/publicWeb_ reaction wrappers, which pass all four. A call that omits one fails before the body runs — no HC.ErrorLog row, no graceful check (CLAUDE.md 'SP parameter with NO default')."
+    },
+    {
+      "severity": "low",
+      "issue": "SP body not wrapped in TRY/CATCH, with its own transaction",
+      "detail": "BEGIN TRANSACTION (line 82) … COMMIT (line 120) with SET XACT_ABORT ON but no TRY/CATCH. A runtime error inside the transaction aborts it and propagates to the wrapper's CATCH, which rolls back and logs under the WRAPPER'S name; nothing is recorded against this proc. Acceptable while every caller has a CATCH, but it is the pattern CLAUDE.md asks to flag on sight."
+    },
+    {
+      "severity": "low",
+      "issue": "Public hasher ids are stored UPPERCASE in ReactionsJson",
+      "detail": "Line 79 UPPERs the caller's PublicHasherId and line 95 UPPERs every id read back, so the JSON always carries uppercase GUIDs. Consistent within SQL, but the rest of the platform keeps ids lowercase at the door (CLAUDE.md 'Ids are lowercase, everywhere'); a client comparing its own lowercase public id to these strings must normalise first (the app's lowerGuidsInPlace on the reply handles columns, not strings embedded in JSON — verify on the client)."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

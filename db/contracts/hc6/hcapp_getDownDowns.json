@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_getDownDowns",
-  "version": "1.0.0",
-  "description": "Returns all DownDown charges for a run (including pending, done, and cancelled), with each charge's list of named hashers. Returns two result rowsets on success. Auth: GM (MismanagementRoles bit 0x02) or RA (0x08). Intended for the run admin / RA screen. Read-only SP — no success envelope. New feature — no HC5 equivalent.",
+  "version": "1.1.0",
+  "description": "Returns all DownDown charges for a run (pending, done and cancelled), with each charge's list of named in-app hashers; names of people who are not registered users travel in the charge's externalNames JSON. Two rowsets on success. Gate: HC6.CheckKennelPermission 'manageDownDowns' on @kennelId (feature 'Manage Down Downs': the GM / VGM / RA / Beermeister roles or the Manage Awards flag, SuperAdmin always) — errorCode 1336, errorType 3 otherwise. Auth: HC6.ValidateAppAuth (spNumber 56, @param NULL). Read SP — no success envelope on the happy path. New feature — no HC5 equivalent.",
   "parameters": [
     {
       "name": "deviceId",
@@ -37,11 +37,26 @@
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Compact error envelope returned on auth, validation, or role failure: { success=0, errorCode, errorType }. Followed by StandardErrorResult at index 1. Mutually exclusive with DownDowns rowset.",
+      "description": "Compact error envelope on auth failure (ValidateAppAuth), missing ids (1234/2) or no permission (1336/3): { success=0, errorCode, errorType }, followed by StandardErrorResult at index 1. Mutually exclusive with the DownDowns rowset. Runtime errors are logged to HC.ErrorLog and re-thrown (THROW).",
       "columns": [
-        { "name": "success", "type": "SMALLINT", "nullable": false, "description": "Always 0 on error." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Numeric error code."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification code."
+        }
       ]
     },
     {
@@ -90,6 +105,12 @@
           "type": "NVARCHAR(MAX)",
           "nullable": true,
           "description": "HC.DownDowns.ChargePhotoUrl — blob URL of an attached charge photo, or NULL."
+        },
+        {
+          "name": "externalNames",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "HC.DownDowns.ExternalNames — JSON array of names charged who are NOT registered users, e.g. [\"Dizzy Lizzy\"]; NULL when none. A charge may mix these with DownDownHashers rows."
         },
         {
           "name": "createdByDisplayName",
@@ -143,9 +164,15 @@
     }
   ],
   "sideEffects": [
-    "Writes to HC.ErrorLog on auth, validation, or role errors."
+    "EXEC HC6.CheckKennelPermission ('manageDownDowns'), line 89",
+    "INSERT HC.ErrorLog on missing ids (line 75) and no permission (line 94), and from the CATCH block (lines 138-140, after ROLLBACK)"
   ],
   "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "All four parameters (lines 3-6) have no SQL default. A client that omits @kennelId or @eventId gets 'expects parameter' — an unlogged empty 500 before the SP runs, so the graceful 1234 'Missing parameter' check at line 71 is unreachable for an omitted parameter."
+    },
     {
       "severity": "medium",
       "issue": "IsDone and IsCancelled columns are BIT, not SMALLINT",

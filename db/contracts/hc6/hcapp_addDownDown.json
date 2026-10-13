@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_addDownDown",
-  "version": "1.1.0",
-  "description": "Records a new DownDown charge for one or more hashers at a run. Any authenticated user may submit, checked in or not. Where COALESCE(Event.CanEditRunAttendence, Kennel.CanEditRunAttendence) = 1 (the kennel lets hashers set their own attendance), a caller below At Hash is checked in (AttendenceState 20, RSVP Yes) via HC6.nonApi_ensureTrackAttendance first; otherwise their attendance is left as it was (1.1.0, 2026-09-12; 1.0.0 refused anyone below At Hash with errorCode 1335). Creates one HC.DownDowns row and one HC.DownDownHashers row per hasher in @hasherIds. Returns the new DownDown ID on success via the adHocDataId pattern. New feature — no HC5 equivalent.",
+  "version": "1.2.0",
+  "description": "Records a DownDown charge against one or more people at a run. Anyone authenticated may submit, checked in or not. Targets are registered hashers (@hasherIds, pipe-delimited UUIDs), people not in the app (@externalNames, a JSON array of names, stored on HC.DownDowns.ExternalNames), or a mix — at least one valid target is required, together with @kennelId, @eventId and a non-blank @chargeText (else 1234 / errorType 2). Where COALESCE(Event.CanEditRunAttendence, Kennel.CanEditRunAttendence) = 1 the caller is checked in first via HC6.nonApi_ensureTrackAttendance (At Hash / RSVP Yes, run counts recomputed, an admin's removal left alone); otherwise attendance is untouched (1.1.0, James 2026-09-12; 1.0.0 refused anyone below At Hash). Creates one HC.DownDowns row and one HC.DownDownHashers row per valid hasher UUID and returns the new id as rowset 0 { downDownId }. Auth: HC6.ValidateAppAuth (spNumber 55, standard token). No permission gate. Blank test is LEN()-based so an emoji-only charge survives the collation. New feature — no HC5 equivalent.",
   "parameters": [
     {
       "name": "deviceId",
@@ -37,14 +37,14 @@
       "type": "NVARCHAR(MAX)",
       "nullable": false,
       "mapsToColumn": "DownDownHashers.HasherId",
-      "description": "Pipe-delimited list of hasher UUID strings to charge. Each valid UUID produces one DownDownHashers row. Invalid UUIDs are silently skipped via TRY_CAST. Required — empty string triggers validation error."
+      "description": "Pipe-delimited list of hasher UUID strings to charge; each valid UUID produces one DownDownHashers row, invalid values are silently skipped via TRY_CAST. May be empty or NULL when @externalNames supplies the targets. No default."
     },
     {
       "name": "chargeText",
       "type": "NVARCHAR(MAX)",
       "nullable": false,
       "mapsToColumn": "DownDowns.ChargeText",
-      "description": "Description of the charge. Required — empty or whitespace-only triggers validation error."
+      "description": "Description of the charge. Required — NULL, empty or whitespace-only triggers 1234. No default."
     },
     {
       "name": "songChoice",
@@ -66,45 +66,77 @@
       "nullable": true,
       "mapsToColumn": "DownDowns.ChargePhotoUrl",
       "description": "Optional blob URL of an attached charge photo. Stored as NULL if blank."
+    },
+    {
+      "name": "externalNames",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "DownDowns.ExternalNames",
+      "description": "Optional JSON array of names for people not in the app, e.g. [\"Dizzy Lizzy\",\"Two-Buck Chuck\"]. Counted only when ISJSON = 1 and the entry is non-blank; stored verbatim on the DownDowns row when at least one such name exists, otherwise NULL. Default NULL."
     }
   ],
   "rowsets": [
     {
       "index": 0,
-      "name": "AuthError",
-      "description": "Returned (as two rowsets at index 0 and 1) when HC6.ValidateAppAuth fails. Rowset 0 is the compact envelope { success=0, errorCode, errorType }; rowset 1 is the standard error detail. Mutually exclusive with all success rowsets."
-    },
-    {
-      "index": 0,
-      "name": "ValidationError",
-      "description": "Returned (as two rowsets at index 0 and 1) when required parameters are missing/blank or the caller did not attend the run (AttendenceState < 20). Rowset 0: { success=0, errorCode, errorType }. Rowset 1: standard error detail. Mutually exclusive with success rowset."
-    },
-    {
-      "index": 0,
-      "name": "Success",
-      "description": "Returned on successful insert. Single row containing the new DownDown ID. Mutually exclusive with error rowsets.",
+      "name": "ErrorEnvelope",
+      "description": "On any failure: { success = 0, errorCode, errorType } followed by the error detail at index 1. ValidateAppAuth 1155 invalid token (errorType 1) / 1355 device not registered (3) / 1255 signed out (7); 1234 missing parameter or no target (2); 1933 unhandled (5).",
       "columns": [
         {
-          "name": "downDownId",
-          "type": "UNIQUEIDENTIFIER",
+          "name": "success",
+          "type": "INT",
           "nullable": false,
-          "description": "The newly created HC.DownDowns.id (NEWID() generated inside the SP)."
+          "description": "Always 0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "See description."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 / 3 / 7 auth; 2 validation; 5 unhandled."
         }
       ]
     },
     {
       "index": 1,
       "ref": "StandardErrorResult",
-      "description": "Returned (at index 1) alongside the compact error envelope (index 0) on any auth, validation, or unhandled error."
+      "description": "Error detail after the ErrorEnvelope on every failure path (errorId, errorType, errorCode, errorTitle, errorUserMessage, errorProc)."
+    },
+    {
+      "index": 0,
+      "name": "Success",
+      "description": "On success the ONLY rowset: the new charge's id (no success envelope).",
+      "columns": [
+        {
+          "name": "downDownId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The newly created HC.DownDowns.id (NEWID() inside the SP)."
+        }
+      ]
     }
   ],
   "sideEffects": [
-    "When the kennel or run allows self-set attendance, checks the caller in to the event (inserts or raises their HC.HasherEventMap row to AttendenceState 20 / RsvpState 3 via HC6.nonApi_ensureTrackAttendance, then recomputes their run counts) if they were below At Hash. A row an admin removed is left alone. No attendance change otherwise.",
-    "Inserts one row into HC.DownDowns.",
-    "Inserts one row into HC.DownDownHashers per valid UUID in @hasherIds.",
-    "Writes to HC.ErrorLog on validation or unhandled errors."
+    "When the run or kennel allows self-set attendance, EXEC HC6.nonApi_ensureTrackAttendance (own transaction, BEFORE the charge transaction, result row swallowed): inserts or raises the caller's HC.HasherEventMap row to AttendenceState 20 / RsvpState 3 and recomputes their run counts; a row an admin removed is left alone.",
+    "INSERT HC.DownDowns (id, EventId, KennelId, ChargeText, SongChoice, SongId, IsDone = 0, CreatedByUserId, ChargePhotoUrl, ExternalNames) — inside a transaction.",
+    "INSERT HC.DownDownHashers (DownDownId, HasherId) per valid UUID in @hasherIds — same transaction.",
+    "INSERT HC.ErrorLog on 1234 and in the CATCH (after ROLLBACK)."
   ],
   "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken, @kennelId, @eventId, @hasherIds, @chargeText (lines 3-8) have no SQL default. A client that omits any of them is refused by SQL BEFORE the procedure runs: no HC.ErrorLog row, an empty 500 in the app, and the SP's own graceful checks are unreachable (CLAUDE.md, Rack of Lamb 2026-09-29). The app always sends all six today; the graceful 1234 check at line 101 covers only NULL VALUES, not omission."
+    },
+    {
+      "severity": "medium",
+      "issue": "Self check-in runs outside TRY/CATCH and in its own transaction",
+      "detail": "Lines 129-139: the EXEC HC6.nonApi_ensureTrackAttendance happens before BEGIN TRY. An error inside it is an unlogged raw 500 for this call, and because it commits on its own, a later failure of the charge INSERT (1933) leaves the caller checked in with no charge recorded."
+    },
     {
       "severity": "medium",
       "issue": "IsDone and IsCancelled columns are BIT in the table, not SMALLINT",
@@ -117,8 +149,8 @@
     },
     {
       "severity": "low",
-      "issue": "No minimum hasher count enforcement",
-      "detail": "If @hasherIds contains only invalid UUIDs (all fail TRY_CAST), the DownDowns row is still inserted with zero DownDownHashers rows. The SP does not validate that at least one hasher was successfully inserted."
+      "issue": "errorCode 1933 is shared with other SPs' CATCH blocks",
+      "detail": "Line 169: the unhandled-error code 1933 is also used by hcapp_batchUpdatePhotoStatus and hcapp_cancelDownDown, so the code alone does not identify the SP in HC.ErrorLog (errorProc does)."
     }
   ],
   "breakingChanges": []

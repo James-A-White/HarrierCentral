@@ -1,0 +1,98 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_recordRunsPageJob",
+  "version": "1.0.0",
+  "description": "Writes one HC.IntegrationJob row (IntegrationId 6, 'Runs page') per runs-page import — a timer run, an 'import now', or a portal Test that imported (2026-10-05). It feeds the AI tile on the portal's Usage Data monitor, which replaced the Facebook tile. For integration 6 the columns mean: RecordsRead = runs the model found; RecordsWritten = runs inserted + updated; RecordsSuccessInfo = '<inserted>|<updated>', machine-read by hcportal_getUsageData for the 14-day split (this SP is the only writer; change both together). SequenceNumber is MAX + 1 for integration 6 under UPDLOCK, HOLDLOCK. Counts are clamped to SMALLINT (LEAST(…, 32767)) and the info strings cut to 4000 because that is what HC.IntegrationJob holds. Called by the API only; no auth. Returns nothing; a runtime error is rolled back, logged to HC.ErrorLog and re-thrown.",
+  "parameters": [
+    {
+      "name": "startedAt",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": "IntegrationJob.startedAt",
+      "description": "When the import began. NULL ⇒ now (the row then has startedAt = endedAt). Default NULL."
+    },
+    {
+      "name": "runsFound",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "IntegrationJob.RecordsRead",
+      "description": "Runs the model read off the pages. Clamped to 32767. Column is SMALLINT.",
+      "typeMismatch": "Parameter INT vs column SMALLINT — clamped with LEAST(…, 32767) in the SP."
+    },
+    {
+      "name": "runsInserted",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "IntegrationJob.RecordsSuccessInfo",
+      "description": "New HC runs. Summed into RecordsWritten (SMALLINT, clamped) and written verbatim into RecordsSuccessInfo as '<inserted>|<updated>'."
+    },
+    {
+      "name": "runsUpdated",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "IntegrationJob.RecordsSuccessInfo",
+      "description": "Imported runs refreshed. See @runsInserted."
+    },
+    {
+      "name": "errorCount",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "IntegrationJob.ErrorCount",
+      "description": "Errors during the run. Clamped to 32767.",
+      "typeMismatch": "Parameter INT vs column SMALLINT — clamped."
+    },
+    {
+      "name": "errorInfo",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "IntegrationJob.ErrorInfo",
+      "description": "Error detail; cut to 4000.",
+      "typeMismatch": "Parameter NVARCHAR(MAX) vs column NVARCHAR(4000) — trimmed with LEFT."
+    },
+    {
+      "name": "kennelsSucceeded",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "IntegrationJob.KennelsSucceeded",
+      "description": "Kennels whose page imported cleanly. Clamped to 32767.",
+      "typeMismatch": "Parameter INT vs column SMALLINT — clamped."
+    },
+    {
+      "name": "kennelsSucceededInfo",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "IntegrationJob.KennelsSucceededInfo",
+      "description": "Their names/ids; cut to 4000.",
+      "typeMismatch": "Parameter NVARCHAR(MAX) vs column NVARCHAR(4000) — trimmed with LEFT."
+    },
+    {
+      "name": "kennelsFailed",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "IntegrationJob.KennelsFailed",
+      "description": "Kennels whose page failed. Clamped to 32767.",
+      "typeMismatch": "Parameter INT vs column SMALLINT — clamped."
+    },
+    {
+      "name": "kennelsFailedInfo",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "IntegrationJob.KennelsFailedInfo",
+      "description": "Their names/ids and reasons; cut to 4000.",
+      "typeMismatch": "Parameter NVARCHAR(MAX) vs column NVARCHAR(4000) — trimmed with LEFT."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "Inserts one HC.IntegrationJob row (IntegrationId 6, endedAt = SYSDATETIMEOFFSET(), RecordsFailedInfo NULL) inside a transaction; the sequence read takes UPDLOCK, HOLDLOCK on HC.IntegrationJob rows for integration 6.",
+    "On any runtime error: rolls back, inserts one HC.ErrorLog row (HcVersion '<api>'), then THROWs."
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

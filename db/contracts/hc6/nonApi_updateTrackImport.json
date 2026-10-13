@@ -1,85 +1,92 @@
 {
   "schema": "HC6",
   "name": "nonApi_updateTrackImport",
-  "version": "1.0.0",
-  "description": "The import processor's progress write: after each activity, and on completion or failure. NULL leaves a column unchanged. Status 1 stamps StartedAt; 2/3 stamp ProcessedAt.",
+  "version": "1.1.0",
+  "description": "The track-import processor's progress write (E5.F5.S7): after each slice of activities, and on completion or failure. A NULL parameter leaves its column as it is (ISNULL(@x, column)); @status is always written. Status 1 (processing) stamps StartedAt = SYSUTCDATETIME(); 2 (done) and 3 (failed) stamp ProcessedAt. Called by the API's ProcessTrackImport function and the nightly backstop; internal, no auth. Returns nothing; a runtime error is logged to HC.ErrorLog and re-thrown. HC.TrackImport is not a synced table, so nothing re-syncs.",
   "parameters": [
     {
       "name": "id",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": "TrackImport.id",
-      "description": ""
+      "description": "The HC.TrackImport row (the upload)."
     },
     {
       "name": "status",
       "type": "SMALLINT",
       "nullable": false,
       "mapsToColumn": "TrackImport.Status",
-      "description": "0..3"
+      "description": "0 queued, 1 processing, 2 done, 3 failed. Always written."
     },
     {
       "name": "kind",
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": "TrackImport.Kind",
-      "description": ""
+      "description": "The file kind the processor detected (0 unknown until read). NULL keeps."
     },
     {
       "name": "nextIndex",
       "type": "INT",
       "nullable": true,
       "mapsToColumn": "TrackImport.NextIndex",
-      "description": ""
+      "description": "Index of the next activity to process — the resume point for the next slice. NULL keeps. Column is NOT NULL with default 0."
     },
     {
       "name": "activityCount",
       "type": "INT",
       "nullable": true,
       "mapsToColumn": "TrackImport.ActivityCount",
-      "description": ""
+      "description": "Activities found in the file. NULL keeps."
     },
     {
       "name": "importedCount",
       "type": "INT",
       "nullable": true,
       "mapsToColumn": "TrackImport.ImportedCount",
-      "description": ""
+      "description": "Activities imported as tracks. NULL keeps."
     },
     {
       "name": "skippedCount",
       "type": "INT",
       "nullable": true,
       "mapsToColumn": "TrackImport.SkippedCount",
-      "description": ""
+      "description": "Activities skipped (no matching run, duplicate…). NULL keeps."
     },
     {
       "name": "heldCount",
       "type": "INT",
       "nullable": true,
       "mapsToColumn": "TrackImport.HeldCount",
-      "description": ""
+      "description": "Activities held for the hasher to resolve. NULL keeps."
     },
     {
       "name": "resultJson",
       "type": "NVARCHAR(MAX)",
       "nullable": true,
       "mapsToColumn": "TrackImport.ResultJson",
-      "description": ""
+      "description": "Per-activity outcome JSON shown to the hasher. NULL keeps."
     },
     {
       "name": "errorMessage",
       "type": "NVARCHAR(2500)",
       "nullable": true,
       "mapsToColumn": "TrackImport.ErrorMessage",
-      "description": ""
+      "description": "Why the import failed (status 3). NULL keeps. Matches the column (NVARCHAR(2500))."
     }
   ],
   "rowsets": [],
   "sideEffects": [
-    "Updates one HC.TrackImport row."
+    "UPDATE one HC.TrackImport row (Status, Kind, NextIndex, ActivityCount, ImportedCount, SkippedCount, HeldCount, ResultJson, ErrorMessage, StartedAt, ProcessedAt).",
+    "On any runtime error: rolls back if a transaction is open, inserts one HC.ErrorLog row (HcVersion '<unknown>'), then THROWs."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@id, @status have no SQL default. Called only by the API's import processor, which always passes both. A call that omits one fails before the body runs — no HC.ErrorLog row, no graceful check (CLAUDE.md 'SP parameter with NO default')."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

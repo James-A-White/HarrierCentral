@@ -25,9 +25,19 @@ class WatchBridgeService extends GetxService {
 
   bool get _supported => Platform.isIOS;
 
-  // pushState fires every second while tracking — a channel-level failure
-  // (no watch paired, plugin missing) would otherwise spam the harvest log.
-  bool _pushFailureLogged = false;
+  // Push bookkeeping for the session log. pushState fires every second
+  // while tracking, so the harvest gets ONE line for the first accepted
+  // push, one per DISTINCT refusal reason (capped), and a tally at the end —
+  // never a line per tick. Until 2026-10-13 nothing at all was logged when
+  // WatchConnectivity refused a push (watch app not installed, session not
+  // activated, payload rejected): an hour of pushes to a silent wrist left
+  // no trace (Kilty, Glasgow run 2239, 2026-10-12).
+  bool _pushFailureLogged = false; // channel-level (plugin missing) — once
+  int _pushOk = 0;
+  int _pushFailed = 0;
+  String? _lastPushWhy;
+  final Set<String> _loggedPushWhys = <String>{};
+  static const int _maxLoggedPushWhys = 4;
 
   // Session context captured at startSession so marks and broadcasts keep
   // working after the live-run page (and its controller) are gone.
@@ -94,6 +104,11 @@ class WatchBridgeService extends GetxService {
       _cntFalses = 0;
       _cntOtherMarks = 0;
       _cntPhotos = 0;
+      _pushOk = 0;
+      _pushFailed = 0;
+      _lastPushWhy = null;
+      _loggedPushWhys.clear();
+      unawaited(_logSessionInfo());
     }
     _eventName = eventName;
     _sessionSlots = slots;
@@ -108,6 +123,79 @@ class WatchBridgeService extends GetxService {
     // first fire (1s) catches the fresh session either way.
     if (_locationService?.joinRunTracking.value == true) {
       _tick();
+    }
+  }
+
+  /// Announces a session that no Live Run controller will announce — auto
+  /// start fired with the page closed (`AutoStartMonitor._trigger`). The
+  /// controller is page-scoped, so until 2026-10-13 such a run never reached
+  /// the wrist until Live Run was opened. The kennel's slots and units come
+  /// from the local run aggregate; a run the phone cannot find still gets a
+  /// session with the default slots, so the wrist shows the run either way.
+  /// A session already live (a controller was open and announced it on the
+  /// same tick) is left alone.
+  Future<void> startSessionForEvent({
+    required HcId eventId,
+    required String eventName,
+    required DateTime startedAt,
+  }) async {
+    if (!_supported) return;
+    if (_pushTimer != null) return; // the controller got there first
+    String name = eventName;
+    List<TrailSlot> slots = TrailSlot.defaults;
+    int? unitsPref;
+    try {
+      final List<RunDetailsAggregate> runs =
+          await QueryRuns.getRunDetailsAggregates(
+            true,
+            eventId: eventId,
+            queryType: EnumRunQueryType.singleRun,
+            runsTimeScope: RunsTimeScope.future,
+            runsToDisplay: RunsToDisplay.allRuns,
+          );
+      if (runs.isNotEmpty) {
+        final RunDetailsAggregate run = runs.first;
+        name = run.event.eventName;
+        slots = run.kennel.trailSlots;
+        unitsPref = run.extensions.distanceUnitsPref;
+      }
+    } catch (e, st) {
+      BootLogger.logError(
+        '[WatchBridge] run lookup for the wrist failed',
+        e,
+        st,
+      );
+    }
+    if (_pushTimer != null) return; // announced while we were looking
+    final LocationService? loc = _locationService;
+    if (loc == null || !loc.joinRunTracking.value) return; // already over
+    BootLogger.logBreadcrumb('[WatchBridge] session announced by auto start');
+    startSession(
+      eventName: name,
+      slots: slots,
+      startedAt: startedAt,
+      kennelDistanceUnitsPref: unitsPref,
+    );
+  }
+
+  /// One line per session on what WatchConnectivity thinks of the pairing.
+  /// `installed=false` is the silent-wrist case: a watch app not (yet)
+  /// installed, or mid-update after a phone-side upgrade.
+  Future<void> _logSessionInfo() async {
+    try {
+      final dynamic raw = await _channel.invokeMethod<dynamic>('sessionInfo');
+      final Map<String, dynamic> info = raw is Map
+          ? Map<String, dynamic>.from(raw)
+          : <String, dynamic>{};
+      BootLogger.logBreadcrumb(
+        '[WatchBridge] session start: paired=${info['paired']} '
+        'installed=${info['watchAppInstalled']} '
+        'reachable=${info['reachable']} '
+        'activation=${info['activationState']} '
+        'supported=${info['supported']}',
+      );
+    } catch (e) {
+      BootLogger.logBreadcrumb('[WatchBridge] session start: info failed: $e');
     }
   }
 
@@ -127,7 +215,9 @@ class WatchBridgeService extends GetxService {
       case 'PHO':
         _cntPhotos++;
       case 'GLY':
-        (segs.length > 1 && segs[1] == 'check') ? _cntChecks++ : _cntOtherMarks++;
+        (segs.length > 1 && segs[1] == 'check')
+            ? _cntChecks++
+            : _cntOtherMarks++;
       case 'TXT':
         (segs.length > 1 && segs[1] == 'FT') ? _cntFalses++ : _cntOtherMarks++;
       case 'CHK':
@@ -145,8 +235,8 @@ class WatchBridgeService extends GetxService {
 
   LiveRunGeneralController? get _liveController =>
       Get.isRegistered<LiveRunGeneralController>()
-          ? Get.find<LiveRunGeneralController>()
-          : null;
+      ? Get.find<LiveRunGeneralController>()
+      : null;
 
   void _tick() {
     final loc = _locationService;
@@ -160,16 +250,18 @@ class WatchBridgeService extends GetxService {
     _lastElapsedSec = _startedAt == null
         ? 0
         : DateTime.now().difference(_startedAt!).inSeconds;
-    unawaited(_send(<String, Object?>{
-      'phase': 'tracking',
-      'tracking': true,
-      'paused': loc.isPaused.value,
-      'distanceKm': _lastDistanceKm,
-      'elapsedSec': _lastElapsedSec,
-      'eventName': _eventName,
-      'imperial': _imperial,
-      'powerSaver': (getIntPref(IntPrefsEnum.trackingQuality) ?? 2) == 0,
-    }));
+    unawaited(
+      _send(<String, Object?>{
+        'phase': 'tracking',
+        'tracking': true,
+        'paused': loc.isPaused.value,
+        'distanceKm': _lastDistanceKm,
+        'elapsedSec': _lastElapsedSec,
+        'eventName': _eventName,
+        'imperial': _imperial,
+        'powerSaver': (getIntPref(IntPrefsEnum.trackingQuality) ?? 2) == 0,
+      }),
+    );
   }
 
   /// Ends the broadcast loop. A session that actually tracked gets a totals
@@ -191,21 +283,27 @@ class WatchBridgeService extends GetxService {
       if (sec > _lastElapsedSec) _lastElapsedSec = sec;
     }
     _startedAt = null;
+    BootLogger.logBreadcrumb(
+      '[WatchBridge] session ended: pushes ok=$_pushOk failed=$_pushFailed'
+      '${_lastPushWhy == null ? '' : ' lastWhy=$_lastPushWhy'}',
+    );
     if (_sessionSawTracking) {
       _sessionSawTracking = false;
       _summaryOnWrist = true;
-      unawaited(_send(<String, Object?>{
-        'phase': 'summary',
-        'tracking': false,
-        'eventName': _eventName,
-        'distanceKm': _lastDistanceKm,
-        'imperial': _imperial,
-        'elapsedSec': _lastElapsedSec,
-        'checks': _cntChecks,
-        'falses': _cntFalses,
-        'otherMarks': _cntOtherMarks,
-        'photos': _cntPhotos,
-      }));
+      unawaited(
+        _send(<String, Object?>{
+          'phase': 'summary',
+          'tracking': false,
+          'eventName': _eventName,
+          'distanceKm': _lastDistanceKm,
+          'imperial': _imperial,
+          'elapsedSec': _lastElapsedSec,
+          'checks': _cntChecks,
+          'falses': _cntFalses,
+          'otherMarks': _cntOtherMarks,
+          'photos': _cntPhotos,
+        }),
+      );
     } else {
       unawaited(pushIdle());
     }
@@ -215,16 +313,45 @@ class WatchBridgeService extends GetxService {
 
   /// Broadcasts a state map to the watch. Safe to call unconditionally —
   /// no-ops on Android and swallows channel errors (no paired watch, etc.).
+  ///
+  /// The native side answers "" when WatchConnectivity accepted the context
+  /// and otherwise WHY not (the WCError name). The first acceptance and each
+  /// distinct refusal go to the session log once; the tally goes out with
+  /// the session-ended line.
   Future<void> _send(Map<String, Object?> state) async {
     if (!_supported) return;
     try {
-      await _channel.invokeMethod<bool>('updateState', state);
+      final dynamic res = await _channel.invokeMethod<dynamic>(
+        'updateState',
+        state,
+      );
+      final String why = res is String ? res : (res == true ? '' : 'refused');
+      if (why.isEmpty) {
+        if (_pushOk == 0) {
+          BootLogger.logBreadcrumb(
+            '[WatchBridge] first push accepted (phase=${state['phase']})',
+          );
+        }
+        _pushOk++;
+        return;
+      }
+      _pushFailed++;
+      _lastPushWhy = why;
+      if (_loggedPushWhys.length < _maxLoggedPushWhys &&
+          _loggedPushWhys.add(why)) {
+        BootLogger.logBreadcrumb(
+          '[WatchBridge] push refused: $why (phase=${state['phase']})',
+        );
+      }
     } catch (e) {
       // Missing plugin / no watch — never let the wrist break the run.
       if (!_pushFailureLogged) {
         _pushFailureLogged = true;
         BootLogger.logError(
-            '[WatchBridge] pushState failed (logged once)', e, null);
+          '[WatchBridge] pushState failed (logged once)',
+          e,
+          null,
+        );
       }
     }
   }
@@ -269,7 +396,8 @@ class WatchBridgeService extends GetxService {
     if (type == null) return {'ok': false, 'why': 'no-type'};
 
     final controller = _liveController;
-    final slots = controller?.run.kennel.trailSlots ??
+    final slots =
+        controller?.run.kennel.trailSlots ??
         (_sessionSlots.isNotEmpty ? _sessionSlots : TrailSlot.defaults);
     final slot = _resolveSlot(slots, type);
     if (slot == null) return {'ok': false, 'why': 'no-slot'};
@@ -368,7 +496,9 @@ class WatchBridgeService extends GetxService {
   }
 
   TrailSlot? _firstWhereOrNull(
-      List<TrailSlot> slots, bool Function(TrailSlot) test) {
+    List<TrailSlot> slots,
+    bool Function(TrailSlot) test,
+  ) {
     for (final s in slots) {
       if (test(s)) return s;
     }

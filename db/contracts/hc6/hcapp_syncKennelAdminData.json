@@ -1315,4 +1315,4 @@
     "isMember in HasherKennelMap rowset is now computed dynamically (CASE WHEN MembershipExpirationDate > GETDATE() THEN 1 ELSE 0 END) instead of returning the stored HasherKennelMap.IsMember SMALLINT column. The stored column can be stale; the computed value reflects current membership state. Column type changes from SMALLINT to INT.",
     "@procName parameter widened from NVARCHAR(100) in HC5 to NVARCHAR(128) in HC6, matching OBJECT_NAME() return type."
   ]
-}\n
+}

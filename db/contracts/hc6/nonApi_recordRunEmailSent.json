@@ -1,0 +1,119 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_recordRunEmailSent",
+  "version": "1.0.0",
+  "description": "Records that a run email went out (E9.F6.S8). For @kind 'send': bumps HC.Event.EmailSendCount, stamps EmailLastSentAt and EmailLastSentCount (the Event updatedAt trigger fires, so the run re-syncs to phones), and when @saveInstruction = 1 stores @instruction on HC.Kennel.RunEmailInstruction as the kennel's default drafting instruction (blank clears it). For every kind ('send', 'preview', 'announcement') writes one LOG.GeneralLog row (LogSource 'RunEmail', StrParam1 = event id, Data = JSON {kind, sender, recipients, subject, audit, movedIn, movedOut}) for the audit trail and the Usage Data 'Email' row; 'preview' and 'announcement' log only. Called by the RunEmail API endpoint after the send was handed to the mail service — internal only, no device auth. @recipientCount is required (THROW ⇒ caught ⇒ Success 0 envelope, logged); @eventId is required for a send.",
+  "parameters": [
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.id",
+      "description": "The run. Required when @kind = 'send' (else the envelope says 'eventId is required for a send'); may be NULL for an announcement. Default NULL."
+    },
+    {
+      "name": "userId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "The sender, for the log line and HC.ErrorLog.userId. Default NULL."
+    },
+    {
+      "name": "recipientCount",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Event.EmailLastSentCount",
+      "description": "How many addresses the send went to. Required: NULL ⇒ Success 0 'recipientCount is required'. Default NULL."
+    },
+    {
+      "name": "instruction",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.RunEmailInstruction",
+      "description": "The drafting instruction used; stored on the kennel only when @saveInstruction = 1 and @kind = 'send'. Trimmed; blank ⇒ NULL (clears). Matches the column (NVARCHAR(500)). Default NULL."
+    },
+    {
+      "name": "saveInstruction",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "1 = store @instruction as the kennel default. Default 0."
+    },
+    {
+      "name": "kind",
+      "type": "NVARCHAR(20)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "'send' (default) | 'preview' | 'announcement'. Only 'send' touches HC.Event / HC.Kennel; any other value logs with the 'Run email sent' message but writes nothing else."
+    },
+    {
+      "name": "subject",
+      "type": "NVARCHAR(200)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "The email subject, logged (LEFT 200) in the JSON. Default NULL."
+    },
+    {
+      "name": "auditPath",
+      "type": "NVARCHAR(400)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Blob path of the audit copy (EmailAudit container), logged. Default NULL."
+    },
+    {
+      "name": "movedIn",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Recipients the admin moved IN for this send (audience overrides), logged. Default 0."
+    },
+    {
+      "name": "movedOut",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Recipients the admin moved OUT for this send, logged. Default 0."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Always exactly one row: the standard { Success, ErrorMessage } envelope, from the TRY on success or the CATCH on failure.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 when the CATCH block ran."
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success; ERROR_MESSAGE() from the CATCH block on failure."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "@kind = 'send': UPDATE HC.Event SET EmailSendCount += 1, EmailLastSentAt = SYSDATETIMEOFFSET(), EmailLastSentCount = @recipientCount — fires the Event updatedAt trigger (row re-syncs).",
+    "@kind = 'send' AND @saveInstruction = 1: UPDATE HC.Kennel SET RunEmailInstruction (the Kennel trigger stamps updatedAt — the kennel row re-syncs).",
+    "Inserts one LOG.GeneralLog row (LogSource 'RunEmail') for every kind.",
+    "On any runtime error (including the two THROWs for missing inputs): rolls back if a transaction is open, inserts one HC.ErrorLog row (HcVersion '<api>', userId, eventId), returns the envelope with Success 0."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Three writes with no transaction",
+      "detail": "The HC.Event update (lines 42–46), the HC.Kennel update (49–51) and the LOG.GeneralLog insert (54–65) are not wrapped in BEGIN/COMMIT TRANSACTION. With XACT_ABORT ON and no transaction each statement commits on its own, so a failure at the kennel update or the log insert leaves the send count already bumped with no audit row. The CATCH's 'IF @@TRANCOUNT > 0 ROLLBACK' therefore never has anything to roll back."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

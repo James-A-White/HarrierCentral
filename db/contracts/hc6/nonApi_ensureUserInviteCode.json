@@ -1,0 +1,47 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_ensureUserInviteCode",
+  "version": "1.0.0",
+  "description": "Internal (no auth). Guarantees the hasher holds a COMPLIANT invite code (HC.Hasher.ResetCode = 'URC:' + exactly six A-Z, checked in binary collation) and optionally rotates a compliant code older than @rotateIfOlderThanMinutes. The app's only account-recovery route is 'email me my invite code', so every live account must hold a usable one; this SP is the single place that defines compliant and mints a replacement (six random uppercase letters, up to ten attempts against a collision). Non-compliant covers the column default '######', NULL/empty, no 'URC:' prefix and anything not six uppercase letters. Removed accounts (Removed <> 0) are never touched. Callers: nonApi_getUserInviteCode (rotate at 10080 min), nonApi_getUserInviteCodeByPublicHasherId (no rotation), hcportal_approveKennelRequest, hcportal_bulkAddHashers, hcportal_getInviteEmailList, publicWeb_issuePasskeyInviteCode. Returns nothing — read HC.Hasher.ResetCode afterwards.",
+  "parameters": [
+    {
+      "name": "userId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Hasher.id",
+      "description": "The hasher. No live row (Removed <> 0 or unknown) = silent no-op; the caller reports not found."
+    },
+    {
+      "name": "rotateIfOlderThanMinutes",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "NULL (default) = only replace a non-compliant code. A number also rotates a compliant code whose ResetCodeLastUpdated is older than that many minutes (or NULL). Pass NULL when the caller must NOT invalidate a code the user may just have been sent."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "UPDATE HC.Hasher SET ResetCode = 'URC:' + <6 letters>, ResetCodeLastUpdated = GETDATE() WHERE id = @userId AND Removed = 0 — fires the Hasher updatedAt trigger, so the hasher row re-syncs (the hashers rowset is global; ResetCode itself is never synced).",
+    "INSERT HC.ErrorLog ('Invite code generation exhausted') when ten consecutive candidates collide.",
+    "CATCH: ROLLBACK if any, INSERT HC.ErrorLog ('<unknown>'), THROW."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@userId (line 2) has no SQL default. Every caller is an SP that always supplies it, so no client reaches the unlogged 500."
+    },
+    {
+      "severity": "low",
+      "issue": "Staleness measured with GETDATE() against a DATETIMEOFFSET column",
+      "detail": "Line 70: DATEDIFF(minute, @lastUpdated, GETDATE()) compares a DATETIMEOFFSET(7) with server-local DATETIME; the write at line 98 also uses GETDATE(), so the two agree as long as the server stays on UTC."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

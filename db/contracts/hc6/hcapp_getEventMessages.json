@@ -1,29 +1,29 @@
 {
   "schema": "HC6",
   "name": "hcapp_getEventMessages",
-  "version": "1.0.0",
-  "description": "Returns all messages for a specific event, ordered newest first. Auth token is event-bound: compound of DeviceSecret + CAST(@eventId AS NVARCHAR(50)). Author data is returned as flat columns (authorId, authorFirstName, authorImageUrl) rather than a nested JSON string. hcapp_getEventMessages and hcapp_getEventMessages2 are merged into this single SP. 2026-09-30: every message row also carries replyToMessageId, replyToText (NULL when deleted), replyToKind, replyToAuthor, replyToRemoved and reactions (E9.F1.S21/S22).",
+  "version": "1.1.0",
+  "description": "Returns the messages of a run's chat thread, newest first, with author identity as flat columns (authorId, authorFirstName, authorImageUrl); HC5's hcapp_getEventMessages and hcapp_getEventMessages2 are merged into this one SP. A delta fetch (@sinceSequenceCount) returns only newer messages; the removed-id, reaction-update and reactionsAsOf rowsets follow every call. Every message row carries messageKind, canDelete (E9.F1.S11-S14, 2026-09-29), replyToMessageId, replyToText (NULL when deleted), replyToKind, replyToAuthor, replyToRemoved and reactions (E9.F1.S21/S22, 2026-09-30). Messages from a hasher the reader has blocked are hidden (E9.F1.S16). Auth: HC6.ValidateAppAuth (spNumber 60, @param NULL) — the token is the standard device-secret token, NOT bound to the event (the HC5 intent was never implemented). No permission gate: any authenticated user may read any run's thread.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": "Device.id",
-      "description": "Registered device UUID for auth lookup."
+      "mapsToColumn": null,
+      "description": "Registered device. Default NULL (auth failure)."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Event-bound access token. Validated against DeviceSecret + CAST(@eventId AS NVARCHAR(50)) inside HC6.ValidateAppAuth (SP number 60)."
+      "description": "Short-lived token (standard, device secret — @param NULL). Default NULL."
     },
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "EventMessage.EventId",
-      "description": "Internal event ID to retrieve messages for. A NULL value passes the zero UUID as the token suffix before the explicit null check fires, causing an auth failure before the null validation error is reached."
+      "description": "HC.Event.id of the run whose thread to read. NULL: errorCode 1260, errorType 12 (logged). The zero UUID is NOT normalised and simply matches nothing."
     },
     {
       "name": "sinceSequenceCount",
@@ -44,7 +44,7 @@
     {
       "index": 0,
       "name": "AuthOrValidationError",
-      "description": "Returned when ValidateAppAuth fails (auth) or @eventId is NULL (param validation). errorType 11 = auth failure from ValidateAppAuth; errorType 12 = null @eventId. SP RETURNs after either error.",
+      "description": "On auth failure (ValidateAppAuth) or NULL @eventId (errorCode 1260, errorType 12): the error detail alone, no envelope; the SP RETURNs. Runtime errors are logged to HC.ErrorLog and re-thrown (THROW).",
       "columns": [
         {
           "name": "errorId",
@@ -87,7 +87,7 @@
     {
       "index": 0,
       "name": "Messages",
-      "description": "All messages for the event on success, ordered by createdAt DESC. Author identity is returned as flat columns joined from HC.Hasher.",
+      "description": "Live messages of the run thread the reader may see, ORDER BY createdAt DESC. Empty when nothing is newer than @sinceSequenceCount.",
       "columns": [
         {
           "name": "id",
@@ -127,15 +127,21 @@
         },
         {
           "name": "authorFirstName",
-          "type": "NVARCHAR(MAX)",
-          "nullable": true,
-          "description": "Hasher.DisplayName — computed persisted column derived from HashName/FirstName/LastName. Nullable when all name fields are empty (falls back to '<no names provided>')."
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Hasher.DisplayName — persisted computed column, never NULL (falls back to '<no names provided>')."
         },
         {
           "name": "authorImageUrl",
           "type": "NVARCHAR(1000)",
           "nullable": true,
           "description": "Hasher.Photo. NULL when hasher has no profile photo."
+        },
+        {
+          "name": "sequenceCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "EventMessage.MessageSequenceCount — the delta watermark."
         },
         {
           "name": "messageKind",
@@ -148,13 +154,49 @@
           "type": "SMALLINT",
           "nullable": false,
           "description": "1 when the caller wrote it or may moderate this thread (HC6.nonApi_mayModerateChat)"
+        },
+        {
+          "name": "replyToMessageId",
+          "type": "NVARCHAR(36)",
+          "nullable": true,
+          "description": "EventMessage.ReplyToMessageId, UPPER-cased; NULL when not a reply (E9.F1.S21)."
+        },
+        {
+          "name": "replyToText",
+          "type": "NVARCHAR(200)",
+          "nullable": true,
+          "description": "First 200 characters of the quoted message; NULL when not a reply or the original was removed."
+        },
+        {
+          "name": "replyToKind",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "The quoted message's MessageKind."
+        },
+        {
+          "name": "replyToAuthor",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "The quoted message's author DisplayName."
+        },
+        {
+          "name": "replyToRemoved",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 when the quoted message exists but was removed."
+        },
+        {
+          "name": "reactions",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "EventMessage.ReactionsJson (E9.F1.S22)."
         }
       ]
     },
     {
       "index": 1,
       "name": "RemovedMessageIds",
-      "description": "LAST rowset (added 2026-09-29, E9.F1.S13/S14): every removed message in this thread, so a client drops any it already drew. Find it by column name, not position.",
+      "description": "Every removed message in this thread (Removed = 1), so a client drops any it already drew — a delta by sequence number never sees a deletion (E9.F1.S13/S14). Find it by column name.",
       "columns": [
         {
           "name": "removedId",
@@ -165,9 +207,9 @@
       ]
     },
     {
-      "index": "last-1",
+      "index": 2,
       "name": "ReactionUpdates",
-      "description": "Added 2026-09-30 (E9.F1.S22), ALWAYS present, after every older rowset: { id, reactions } for messages the client already holds whose reactions changed after @reactionsSince. Find by column.",
+      "description": "ALWAYS present (empty when @reactionsSince is NULL or nothing changed): { id, reactions } for live messages at or below @sinceSequenceCount whose ReactionsUpdatedAt is after @reactionsSince (E9.F1.S22).",
       "columns": [
         {
           "name": "id",
@@ -184,7 +226,7 @@
       ]
     },
     {
-      "index": "last",
+      "index": 3,
       "name": "ReactionsAsOf",
       "description": "One row { reactionsAsOf } — server time; pass back as @reactionsSince.",
       "columns": [
@@ -198,35 +240,21 @@
     }
   ],
   "sideEffects": [
-    "Inserts a row into HC.ErrorLog when @eventId is NULL"
+    "EXEC HC6.nonApi_mayModerateChat (event scope) to decide canDelete, line 98",
+    "INSERT HC.ErrorLog on NULL eventId (line 90) and from the CATCH block (lines 154-156, after ROLLBACK)"
   ],
   "codeSmells": [
     {
-      "severity": "medium",
-      "issue": "NULL @eventId may cause auth failure before param validation",
-      "detail": "When @eventId is NULL, @paramSuffix is set to the zero UUID string ('00000000-0000-0000-0000-000000000000') and passed to ValidateAppAuth. If the token was not generated for that zero UUID, ValidateAppAuth will return an auth error (errorType 11) before the explicit @eventId IS NULL check fires. The caller sees an auth error instead of a parameter error, which is misleading."
-    },
-    {
-      "severity": "low",
-      "issue": "No TRY/CATCH block",
-      "detail": "The SP has SET XACT_ABORT ON but no TRY/CATCH wrapper. An unhandled runtime error (e.g. INNER JOIN against a missing Hasher row due to data integrity issue) will surface as a raw SQL exception rather than a structured error rowset."
-    },
-    {
-      "severity": "low",
-      "issue": "Removed messages not filtered from result",
-      "detail": "EventMessage has a Removed column (SMALLINT). The SELECT does not filter WHERE msg.Removed = 0, so soft-deleted messages are returned to the caller."
-    },
-    {
       "severity": "low",
       "issue": "id and authorId returned as uppercased strings, not typed UNIQUEIDENTIFIER",
-      "detail": "UPPER(msg.id) and UPPER(h.PublicHasherId) cause SQL Server to return these as NVARCHAR rather than UNIQUEIDENTIFIER. Flutter callers must normalise to lowercase using normalizeUuid() / .asUuid before comparison or map lookup."
+      "detail": "UPPER(msg.id), UPPER(h.PublicHasherId) and UPPER(msg.ReplyToMessageId) (lines 101, 106, 112) return NVARCHAR in upper case, not UNIQUEIDENTIFIER; the app relies on lowerGuidsInPlace at the door (CLAUDE.md 'Ids are lowercase, everywhere')."
     }
   ],
   "breakingChanges": [
     "HC5 hcapp_getEventMessages 'author' column (nested JSON string via FOR JSON PATH) removed — replaced with three flat columns: authorId (UNIQUEIDENTIFIER), authorFirstName (DisplayName), authorImageUrl (Photo)",
     "HC5 hcapp_getEventMessages2 SP removed — its flat-column behaviour is now the only rowset format returned by this SP",
     "Error rowset shape changed: HC5 included debugMessage column; HC6 error rowset omits debugMessage and adds errorCode",
-    "Auth token compound formula unchanged (DeviceSecret + CAST(@eventId AS NVARCHAR(50))), but token is now validated via centralised HC6.ValidateAppAuth instead of inline logic",
+    "Token is the standard device-secret token validated by HC6.ValidateAppAuth with @param NULL; HC5's intent to bind the token to the eventId was never implemented, so no caller depended on it.",
     "2026-09-29 (E9.F1.S11-S14): additive — see docs/chat_photos_location_delete_plan.md"
   ]
 }

@@ -1,0 +1,48 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_sweepMemberStanding",
+  "version": "1.0.0",
+  "description": "Daily sweep for the AUTOMATED MEMBER bit (0x0001) of HC.HasherKennelMap.KennelStanding across every row. Sets the bit where membership is current (MembershipExpirationDate >= now minus @graceDays — catches backdated fixes); clears it where membership lapsed more than @graceDays ago or has no expiry. Manual bits (ALUMNI 0x0002, TRUSTED 0x0004, ADMIN 0x0100) are never touched, so lapsed members granted standing keep content access. Only rows whose standing actually changes are written, and those are restamped by the HKM updatedAt trigger — desired, so access changes replicate to clients. Row-wise equivalent: nonApi_syncMemberStandingBit. Scheduled by the API shim's MemberStandingSweep timer (03:10 UTC); no auth. Returns one row { rowsChanged }. A runtime error is logged to HC.ErrorLog and re-thrown so the Function still fails visibly (until 2026-09-23 a failure here was a 'Failed' tile with no row anywhere).",
+  "parameters": [
+    {
+      "name": "graceDays",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Keep MEMBER for this many days past MembershipExpirationDate. Default 0."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "SweepResult",
+      "description": "Always exactly one row on success (none when the CATCH re-throws).",
+      "columns": [
+        {
+          "name": "rowsChanged",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC.HasherKennelMap rows whose KennelStanding was changed this run."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.HasherKennelMap SET KennelStanding = KennelStanding | 1 or & ~1 WHERE the result differs — trgUpdateModifiedOnDateForHasherKennelMap restamps updatedAt on every changed row (they re-sync).",
+    "On any runtime error: rolls back if a transaction is open (none is opened here), inserts one HC.ErrorLog row (HcVersion '<unknown>'), then THROWs."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "GETDATE() (server local DATETIME) compared with a DATETIMEOFFSET(7) column",
+      "detail": "Line 25: @cutoff DATETIMEOFFSET(7) = DATEADD(DAY, -@graceDays, GETDATE()). GETDATE() is the server's local clock converted implicitly with the server offset; MembershipExpirationDate is an instant. On Azure SQL the server clock is UTC so the result is right today, but SYSUTCDATETIME() / SYSDATETIMEOFFSET() say what is meant. nonApi_syncMemberStandingBit has the same comparison, so the two stay consistent either way."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

@@ -1,76 +1,79 @@
 {
   "schema": "HC6",
   "name": "hcapp_getChatPhotoUploadToken",
-  "version": "1.0.0",
-  "description": "Auth for one chat photo upload. The API function GetChatPhotoUploadToken signs a 15-minute write-only SAS for chat-photos/<yyyy>/<MM>/<userId>-<photoGuid>.jpg using the userId returned here. No DB writes. E9.F1.S11.",
+  "version": "1.1.0",
+  "description": "Authenticates a request to upload one chat photo (E9.F1.S11). Called by the API function GetChatPhotoUploadToken, which then signs a 15-minute, write-only SAS for chat-photos/<yyyy>/<MM>/<userId>-<photoGuid>.jpg using the userId returned here. The path carries the uploader's id from the token, never from the request, so a hasher can only write under their own name. Posting the photo to a chat is a separate act gated by the send SPs. Auth: HC6.ValidateAppAuth (spNumber 124, @param NULL). No DB writes on success.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Registered device"
+      "description": "Registered device. Default NULL (a NULL is refused by ValidateAppAuth as 'Device not registered')."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Short-lived token"
+      "description": "Short-lived token (standard, device secret). Default NULL."
     },
     {
       "name": "photoGuid",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Client-chosen; names the file. Null/empty → 1984"
+      "description": "Client-chosen GUID that names the blob. Default NULL; NULL or the zero UUID is refused with errorCode 1984 / errorType 2 (logged). Not stored by this SP — the API uses it to build the blob path."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "Envelope",
+      "description": "Always rowset 0. { success = 1, errorCode NULL, errorType NULL } on success; { success = 0, errorCode, errorType } on auth failure (codes from ValidateAppAuth) or missing photoGuid (1984 / 2).",
       "columns": [
         {
           "name": "success",
           "type": "INT",
           "nullable": false,
-          "description": "1 ok"
+          "description": "1 on success, 0 on failure."
         },
         {
           "name": "errorCode",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "NULL on success. 1984 = missing photoGuid; 1124 / 1224 / 1324 from ValidateAppAuth (bad token / signed out / device not registered)."
         },
         {
           "name": "errorType",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "NULL on success. 2 = validation; 1 / 7 / 3 from ValidateAppAuth."
         }
       ]
     },
     {
       "index": 1,
       "name": "Caller",
-      "description": "On success",
+      "description": "On success only.",
       "columns": [
         {
           "name": "userId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": "The token's user"
+          "description": "The token's user (HC.Device.UserId) — becomes the uploader segment of the blob path."
         }
       ]
     },
     {
       "index": 1,
       "ref": "StandardErrorResult",
-      "description": "On failure"
+      "description": "On failure, after the success = 0 envelope."
     }
   ],
-  "sideEffects": [],
+  "sideEffects": [
+    "INSERT HC.ErrorLog on missing photoGuid (line 52) and, with THROW, on an unhandled error (line 69). Nothing is written on success."
+  ],
   "codeSmells": [],
   "breakingChangeRules": [
     "Never remove a column from any rowset",

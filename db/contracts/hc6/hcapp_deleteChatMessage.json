@@ -1,65 +1,67 @@
 {
   "schema": "HC6",
   "name": "hcapp_deleteChatMessage",
-  "version": "1.0.0",
-  "description": "Deletes one chat message (run, kennel or room) for everyone: the caller's own, or anyone's if they moderate the thread (moderateChat in the kennel; SuperAdmin for rooms). Soft delete via HC6.nonApi_deleteChatMessage. Idempotent. E9.F1.S13/S14.",
+  "version": "1.1.0",
+  "description": "Deletes one chat message — run, kennel or room — for everyone (E9.F1.S13/S14, 2026-09-29): the caller's own, or anyone's if they moderate that thread (moderateChat in the kennel; SuperAdmin for rooms). The rule lives in HC6.nonApi_deleteChatMessage; this SP authenticates and replies. Auth: HC6.ValidateAppAuth (spNumber 123, standard token — the server decides who may remove the message from the token's user, so binding the token to the message id would add a failure mode without removing a risk). Soft delete (EventMessage.Removed = 1); idempotent — already gone reads as 1 from the helper or 1981 'not found'.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Registered device"
+      "description": "Registered device. Default NULL."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Short-lived token"
+      "description": "Short-lived token (standard, device secret). Default NULL."
     },
     {
       "name": "messageId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "EventMessage.id",
-      "description": "The message to delete"
+      "description": "The message to delete (HC.EventMessage.id). Default NULL → 1980 'Missing fields' (errorType 2)."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "ref": "StandardErrorResult",
-      "description": "Auth failure (ValidateAppAuth) returns the error detail alone."
+      "description": "Auth failure (ValidateAppAuth 1223 / 1323 / 1223 signed out) returns the error detail ALONE — no envelope row before it."
     },
     {
       "index": 0,
       "name": "Envelope",
+      "description": "Success envelope, or the compact failure envelope followed by the detail at index 1.",
       "columns": [
         {
           "name": "success",
           "type": "INT",
           "nullable": false,
-          "description": "1 deleted (or already was), 0 refused"
+          "description": "1 deleted (or already was); 0 refused."
         },
         {
           "name": "errorMessage",
           "type": "NVARCHAR(MAX)",
           "nullable": true,
-          "description": "NULL on success"
+          "description": "NULL on success. On failure this column is absent: the row is { success = 0, errorCode, errorType } — 1980 missing id (2), 1981 not found (3), 1982 not allowed (3), 1983 unhandled (5)."
         }
       ]
     },
     {
       "index": 1,
       "ref": "StandardErrorResult",
-      "description": "After a 0 envelope: 1980 missing id, 1981 not found, 1982 not allowed (errorType 3), 1983 unhandled (5)."
+      "description": "After a { success = 0 } envelope: 1980, 1981, 1982 (errorId from nonApi_deleteChatMessage) or 1983."
     }
   ],
   "sideEffects": [
-    "HC.EventMessage.Removed = 1, updatedAt",
-    "trgEventMessageActivityCount refreshes the run card's chat count",
-    "LOG.GeneralLog line with the removed text when a moderator removes someone else's message"
+    "EXEC HC6.nonApi_deleteChatMessage (@userId, @messageId, caller name, HcVersion) — sets HC.EventMessage.Removed = 1 and updatedAt; writes HC.ErrorLog itself on a refusal and returns the errorId.",
+    "trgEventMessageActivityCount refreshes the run card's chat count.",
+    "LOG.GeneralLog line with the removed text when a moderator removes someone else's message.",
+    "INSERT HC.ErrorLog on 1980 (pre-flight) and in the CATCH."
   ],
   "codeSmells": [],
   "breakingChangeRules": [

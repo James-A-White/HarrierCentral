@@ -23,6 +23,11 @@ AS
 --     'mm'       → MismanagementRoles  (club offices)
 --     'platform' → HC.PlatformAdmin    (no bitfield; GrantMask is only the
 --                  pin-mirror bit, stored in UnpinnedAppAccessRooms)
+--     'beta'     → HC.Hasher.BetaFeaturesEnabled non-empty — the beta
+--                  cohort James keeps by hand (2026-10-13). No bitfield;
+--                  GrantMask is again only the pin-mirror bit in
+--                  UnpinnedAppAccessRooms, disjoint from 'platform' (0x1)
+--                  and the founder flag (0x40000000).
 --   ⚠ The two collide: 0x08 is ManageHashCash in AppAccessFlags but RA in
 --   MismanagementRoles. A room must say which column it reads, never just
 --   which bit. See /hc-authorizations.
@@ -95,6 +100,14 @@ RETURN
             -- separate Communications role (0x00100000, 13 people) which is
             -- NOT included — add 0x00100000 to this mask if it should be.
             (6,  N'Web & Social Media',      'mm',    0x02001000,   60,
-                 N'https://harriercentral.blob.core.windows.net/chat-room-icons/web-social-v2.png')
+                 N'https://harriercentral.blob.core.windows.net/chat-room-icons/web-social-v2.png'),
+            -- Beta testers (E18.F9, James 2026-10-13): the hashers in the
+            -- beta cohort report problems here and James's assistant answers,
+            -- tagged "Claude, for James:" and sent from James's account
+            -- through an ordinary device. Coin: gold spanner and screwdriver
+            -- on magenta (James, 2026-10-13). Mask 0x2 is the pin mirror
+            -- only (UnpinnedAppAccessRooms), never a grant.
+            (8,  N'Beta Testers',            'beta',  0x00000002,   70,
+                 N'https://harriercentral.blob.core.windows.net/chat-room-icons/beta-testers.png')
         ) AS c (RoomType, RoomName, GrantColumn, GrantMask, SortOrder, IconUrl);
 GO

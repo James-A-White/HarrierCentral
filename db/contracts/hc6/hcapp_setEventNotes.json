@@ -1,115 +1,98 @@
 {
   "schema": "HC6",
   "name": "hcapp_setEventNotes",
-  "version": "1.0.0",
-  "description": "The hasher's own private notes on a run (E3.F4.S5). Writes HasherEventMap.Notes on their row for the event (blank clears), then hands the changed row back through hcapp_syncUserData. Requires an existing attendance row (RSVPed, attended or tracked) — errorCode 1200 otherwise.",
+  "version": "1.1.0",
+  "description": "The hasher's own notes on a run (E3.F4.S5). Writes Notes (blank clears it, trimmed) and optionally NotesVisibility on the caller's own HasherEventMap row for @eventId, then hands the changed row back through hcapp_syncUserData so every device they own sees it. The row must already exist — notes belong to a run they RSVPed to, attended or tracked (errorCode 1200 otherwise); where a hasher has several rows on the run the one with the highest AttendenceState is written. Auth: device-bound token via HC6.ValidateAppAuth (spNumber 100, @param NULL); the caller's own row only, no permission gate. Blank test is LEN()-based so an emoji-only note survives the SQL_Latin1_General_CP1_CI_AS collation (2026-09-19).",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Device-bound auth."
+      "description": "Registered device. No SQL default."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Standard token: userId#hcapp_setEventNotes#timeBlocks#deviceSecret."
+      "description": "Standard token: userId#hcapp_setEventNotes#timeBlocks#deviceSecret. No SQL default."
     },
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": "HasherEventMap.EventId",
-      "description": "The run."
+      "description": "The run. No SQL default; NULL finds no row and is refused with 1200."
     },
     {
       "name": "notes",
       "type": "NVARCHAR(4000)",
-      "nullable": true,
+      "nullable": false,
       "mapsToColumn": "HasherEventMap.Notes",
-      "description": "Up to 4000 characters; NULL or blank clears. Trimmed."
+      "description": "Up to 4000 characters (the column width); NULL or blank clears. Trimmed. No SQL default — the client must pass it (NULL is fine) or the call fails before the SP runs."
     },
     {
       "name": "hasherEventMapUpdatedAfter",
       "type": "NVARCHAR(50)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "The app's HEM sync watermark, passed to hcapp_syncUserData."
+      "description": "The app's HEM sync watermark, passed to hcapp_syncUserData as-is (NOT coalesced to 'ignore' here). No SQL default."
     },
     {
       "name": "notesVisibility",
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": "HasherEventMap.NotesVisibility",
-      "description": "0 private, 1 shared with the kennel and the web; NULL keeps. Effective only while neither admin override bit is set (HasherKennelMap.KennelStanding & 0x1000, Hasher.Preferences & 0x2000)."
+      "description": "0 private, 1 shared with the kennel and the web; NULL (the default) or any other value keeps the stored value. Shared is effective only while neither admin override is set (HasherKennelMap.KennelStanding & 0x1000, Hasher.Preferences & 0x2000)."
     }
   ],
   "rowsets": [
     {
       "index": 0,
-      "ref": "StandardErrorResult",
-      "description": "Auth failure, or 1200 when the hasher has no row on the run."
-    },
-    {
-      "index": 0,
-      "name": "Success",
-      "description": "{ success, errorCode, errorType }",
+      "name": "Envelope",
+      "description": "Always first. {success, errorCode, errorType}: success 0 with errorCode/errorType on auth failure (ValidateAppAuth codes), 1200/12 when the hasher has no row on the run, 1900/19 from the CATCH; success 1 with NULLs on success.",
       "columns": [
-        {
-          "name": "success",
-          "type": "INT",
-          "nullable": false,
-          "description": "1"
-        },
-        {
-          "name": "errorCode",
-          "type": "INT",
-          "nullable": true,
-          "description": "NULL"
-        },
-        {
-          "name": "errorType",
-          "type": "INT",
-          "nullable": true,
-          "description": "NULL"
-        }
+        { "name": "success", "type": "INT", "nullable": false, "description": "1 ok, 0 failed." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "NULL on success." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "NULL on success." }
       ]
     },
     {
       "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "On failure only, after the envelope: auth failure (detail from ValidateAppAuth), 1200 'Not on this run' (errorType 12, logged with eventId), 1900 'Unexpected error' (errorType 19, CATCH, logged)."
+    },
+    {
+      "index": 1,
       "name": "adHocData",
-      "description": "adHocDataId = 1.",
+      "description": "On success: adHocDataId = 1.",
       "columns": [
-        {
-          "name": "adHocDataId",
-          "type": "INT",
-          "nullable": false,
-          "description": "1"
-        },
-        {
-          "name": "hasherEventMapId",
-          "type": "NVARCHAR(40)",
-          "nullable": false,
-          "description": "The row written, lowercased."
-        }
+        { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "1" },
+        { "name": "hasherEventMapId", "type": "NVARCHAR(40)", "nullable": false, "description": "The HasherEventMap row written, lowercased." }
       ]
     },
     {
       "index": 2,
       "name": "syncUserData",
-      "description": "Rowsets from hcapp_syncUserData (HEM only; the rest 'ignore')."
+      "description": "On success: the rowsets of HC6.hcapp_syncUserData (HEM watermark passed through; hashers, HKM and narrow events 'ignore'; @usePaging 0). See that contract."
     }
   ],
   "sideEffects": [
-    "UPDATE HC.HasherEventMap SET Notes, updatedAt — the trigger re-syncs the row to the owner's devices."
+    "UPDATE HC.HasherEventMap SET Notes, NotesVisibility (when 0/1), updatedAt = GETDATE() WHERE id = @hemId (lines 91-95, transacted) — the updatedAt move re-syncs the row to the owner's devices.",
+    "INSERT HC.ErrorLog (with eventId) on the no-row refusal (line 78) and in the CATCH (line 101).",
+    "EXEC HC6.hcapp_syncUserData after the commit (line 114), outside the TRY."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "Lines 2-6: @deviceId, @accessToken, @eventId, @notes and @hasherEventMapUpdatedAfter have no SQL default. A client that omits any of them (e.g. sends no @notes when clearing) gets 'expects parameter @x, which was not supplied' before the procedure runs — an empty 500 with no HC.ErrorLog row. Give each a default (= NULL) and keep the in-body checks."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",
     "Never change a parameter type"
   ]
-}\n
+}

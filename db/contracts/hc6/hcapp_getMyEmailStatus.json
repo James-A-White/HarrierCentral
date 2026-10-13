@@ -1,0 +1,51 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getMyEmailStatus",
+  "version": "1.0.0",
+  "description": "The signed-in hasher's OWN email delivery status (E19.F4), so the app can ask for a new address when the current one is bouncing. Deliberately not part of the hashers sync rowset — that would push everybody's status to every phone. Auth: HC6.ValidateAppAuth (spNumber 152, @param NULL); no permission gate, the caller reads only their own HC.Hasher row.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Registered device. Default NULL (auth failure)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret). Default NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "On auth failure only (ValidateAppAuth): the error detail alone, no envelope. Runtime errors are logged to HC.ErrorLog and re-thrown (THROW)."
+    },
+    {
+      "index": 0,
+      "name": "EmailStatus",
+      "description": "Exactly one row for the caller (zero only if the Hasher row has gone).",
+      "columns": [
+        { "name": "email", "type": "NVARCHAR(250)", "nullable": false, "description": "HC.Hasher.Email. May be a generated address (HC6.IsGeneratedEmail) — shown dark red and never sent to." },
+        { "name": "emailStatus", "type": "SMALLINT", "nullable": false, "description": "HC.Hasher.EmailStatus: 0 Unknown, 1 OK, 2 Suspect, 3 Bounced." },
+        { "name": "emailStatusChangedAt", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "HC.Hasher.EmailStatusChangedAt — when the status last changed; NULL if never." },
+        { "name": "emailBlocked", "type": "SMALLINT", "nullable": false, "description": "HC.Hasher.EmailBlocked: 1 when the hasher has blocked all email from Harrier Central." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.ErrorLog from the CATCH block (lines 44-45, after ROLLBACK)"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

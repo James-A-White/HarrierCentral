@@ -1,0 +1,64 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_setEmailBlocked",
+  "version": "1.0.0",
+  "description": "The member's 'no email from Harrier Central at all' switch (E19.F4). Set from the email-preferences page reached by the signed link in every list email; it is the member's unsubscribe and is honoured above every preference and every admin override (nonApi_runEmailContext reasonCode 7). Blocking (@blocked = 1) also switches every kennel email setting (HasherKennelMap.KennelEmailAlertPreference ⇒ 2) and every per-run 'on' override (HasherEventMap.EventEmailAlertPreference 1 ⇒ 2) off, so nothing is left that could re-enable them by accident; unblocking only clears the flag. HC.Hasher.updatedAt is not touched (the Hasher triggers ignore these columns) — but the HKM/HEM rows it flips ARE restamped by their triggers and re-sync, which is wanted: the app shows those settings. One LOG.GeneralLog row (LogSource 'EmailStatus') per call. Idempotent. Called by the EmailPreferences API endpoint after it has verified the signed token; no device auth. @hasherId is required (NULL ⇒ THROW ⇒ Success 0 envelope, logged).",
+  "parameters": [
+    {
+      "name": "hasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Hasher.id",
+      "description": "The member. Required (NULL ⇒ Success 0 'hasherId is required'). Default NULL."
+    },
+    {
+      "name": "blocked",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Hasher.EmailBlocked",
+      "description": "1 = block all email (default); anything else = lift the block."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Always exactly one row: the standard { Success, ErrorMessage } envelope, from the TRY on success or the CATCH on failure.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 when the CATCH block ran."
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success; ERROR_MESSAGE() from the CATCH block on failure."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Hasher SET EmailBlocked = 1/0, EmailBlockedAt = now/NULL WHERE id = @hasherId AND the flag actually changes. updatedAt untouched; no Hasher re-sync.",
+    "@blocked = 1: UPDATE HC.HasherKennelMap SET KennelEmailAlertPreference = 2 for the hasher's live rows not already 2 — trgUpdateModifiedOnDateForHasherKennelMap restamps updatedAt on those rows (they re-sync).",
+    "@blocked = 1: UPDATE HC.HasherEventMap SET EventEmailAlertPreference = 2 WHERE UserId = @hasherId AND EventEmailAlertPreference = 1 — trgUpdateModifiedOnDateForHasherEventMap restamps updatedAt on those rows (they re-sync).",
+    "Inserts one LOG.GeneralLog row (LogSource 'EmailStatus', 'All emails blocked by member' / 'Email block lifted'). All inside one transaction.",
+    "On any runtime error: rolls back, inserts one HC.ErrorLog row (HcVersion '<api>', userId = @hasherId), returns the envelope with Success 0."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Header says 'Never touches updatedAt' but the HKM/HEM writes do restamp it",
+      "detail": "Lines 34–37 update HC.HasherKennelMap and HC.HasherEventMap without setting updatedAt; both tables' triggers (IF NOT UPDATE(updatedAt) ⇒ stamp now) therefore restamp every row changed, and those rows re-sync. Only the HC.Hasher write (line 27) is silent. The re-sync is desirable (the app shows the preference), so this is a comment inaccuracy, not a bug."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

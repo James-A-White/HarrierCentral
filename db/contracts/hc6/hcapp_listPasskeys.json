@@ -1,0 +1,68 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_listPasskeys",
+  "version": "1.0.0",
+  "description": "Every passkey registered against the calling hasher (E9.F7.S18). A passkey is a credential on an HC.Device row, so this lists the user's live devices (removed = 0) that hold a PasskeyCredentialId. Read-only. Auth: HC6.ValidateAppAuth (spNumber 119, @param NULL); @userId comes from the token and the WHERE is scoped to it. The credential id and public key never leave the server. Kept deployed and unchanged for builds 1390/1391; new clients use hcapp_listDevices, of which this is a subset.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Registered device. Default NULL. Also used to flag IsThisDevice."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret). Default NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Auth failure (ValidateAppAuth) returns the error detail alone and the SP returns."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "On success: emitted before the query runs.",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "errorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Always NULL." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Passkeys",
+      "description": "One row per passkey-bearing live device, newest sign-in first. WHERE d.UserId = @userId AND d.removed = 0 AND d.PasskeyCredentialId IS NOT NULL.",
+      "columns": [
+        { "name": "DeviceId", "type": "NVARCHAR(40)", "nullable": false, "description": "Device.id as text." },
+        { "name": "Label", "type": "NVARCHAR", "nullable": false, "description": "'Safari on iPhone', 'Harrier Central on iPhone' — from Device.OperatingSystem / IsMobile and HC6.DevicePlatformName(DeviceData)." },
+        { "name": "Platform", "type": "NVARCHAR", "nullable": true, "description": "HC6.DevicePlatformName(Device.DeviceData)." },
+        { "name": "IsThisDevice", "type": "INT", "nullable": false, "description": "1 when the row is the calling @deviceId." },
+        { "name": "LastLogin", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "Device.LastLogin." },
+        { "name": "IsMobile", "type": "SMALLINT", "nullable": false, "description": "ISNULL(Device.IsMobile, 0)." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "None on success. INSERT HC.ErrorLog then THROW on an unhandled error."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Success envelope emitted before the query",
+      "detail": "Line 53 sends {success:1} before the SELECT at line 55; a query failure is logged and re-thrown after the envelope has gone out."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

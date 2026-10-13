@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_getCompletedDownDowns",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Returns the DownDown charges a member may see for a run, with each charge's list of named hashers: completed ones (IsDone=1, IsCancelled=0) while the run is upcoming or under way, and every non-cancelled charge — pending included, isDone says which — once the run started more than six hours ago (the app's own past-run rule). Visible to any kennel member (non-removed HasherKennelMap row). Returns two result rowsets on success. Intended for the run detail history view — non-admin users see only what was delivered. Read-only SP — no success envelope. New feature — no HC5 equivalent.",
   "parameters": [
     {
@@ -37,17 +37,32 @@
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Compact error envelope returned on auth, validation, or membership check failure: { success=0, errorCode, errorType }. Followed by StandardErrorResult at index 1. Mutually exclusive with CompletedDownDowns rowset.",
+      "description": "Compact error envelope on auth failure or missing kennelId/eventId (errorCode 1234, errorType 2, logged at line 84): { success=0, errorCode, errorType }, followed by StandardErrorResult at index 1. Non-membership is NOT an error — it yields empty rowsets. Mutually exclusive with CompletedDownDowns.",
       "columns": [
-        { "name": "success", "type": "SMALLINT", "nullable": false, "description": "Always 0 on error." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code." }
+        {
+          "name": "success",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Always 0 on error."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Numeric error code."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification code."
+        }
       ]
     },
     {
       "index": 0,
       "name": "CompletedDownDowns",
-      "description": "One row per completed DownDown (IsDone=1, IsCancelled=0) for the event, ordered by CreatedAt ASC. Empty result set when no completed charges exist. Mutually exclusive with ErrorEnvelope rowset.",
+      "description": "On success: one row per charge the caller may see, ordered by CreatedAt ASC — IsDone = 1 and IsCancelled = 0 while the run is upcoming or under way; every IsCancelled = 0 charge (pending included) once EventStartDateTimeGmt is more than six hours ago. Empty when the caller is not a member of @kennelId (HasherKennelMap row with removed = 0) or nothing qualifies. Mutually exclusive with ErrorEnvelope.",
       "columns": [
         {
           "name": "downDownId",
@@ -65,13 +80,13 @@
           "name": "isDone",
           "type": "BIT",
           "nullable": false,
-          "description": "HC.DownDowns.IsDone — BIT column; always 1/true in this result set (filter predicate enforces it). Serialised as JSON boolean by the .NET shim."
+          "description": "HC.DownDowns.IsDone — BIT column, serialised as a JSON boolean by the .NET shim. Always true while the run is upcoming/under way; on a past run false marks a charge nobody marked done."
         },
         {
           "name": "isCancelled",
           "type": "BIT",
           "nullable": false,
-          "description": "HC.DownDowns.IsCancelled — BIT column; always 0/false in this result set (filter predicate enforces it). Serialised as JSON boolean."
+          "description": "HC.DownDowns.IsCancelled — BIT column; always false in this result set (filter predicate enforces it). Serialised as JSON boolean."
         },
         {
           "name": "songChoice",
@@ -90,6 +105,12 @@
           "type": "NVARCHAR(MAX)",
           "nullable": true,
           "description": "HC.DownDowns.ChargePhotoUrl — blob URL of an attached charge photo, or NULL."
+        },
+        {
+          "name": "externalNames",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "HC.DownDowns.ExternalNames — JSON array of names of people charged who are not in the app (e.g. [\"Dizzy Lizzy\"]), or NULL. Added with hcapp_addDownDown @externalNames; line 128."
         },
         {
           "name": "createdByDisplayName",
@@ -114,7 +135,7 @@
     {
       "index": 1,
       "name": "CompletedDownDownHashers",
-      "description": "One row per charged hasher for the completed DownDowns returned in rowset 0. The client groups by downDownId to associate hashers with their charge. Empty when no completed DownDowns exist.",
+      "description": "On success: one row per charged registered hasher for the charges in rowset 0 (same predicates). The client groups by downDownId. People named only in externalNames have no row here. Empty when rowset 0 is empty.",
       "columns": [
         {
           "name": "downDownId",
@@ -139,13 +160,18 @@
     {
       "index": 1,
       "ref": "StandardErrorResult",
-      "description": "Returned at index 1 alongside the ErrorEnvelope (index 0) on auth, validation, or membership errors. Mutually exclusive with CompletedDownDownHashers rowset."
+      "description": "Returned at index 1 after the ErrorEnvelope on auth or validation failure. Mutually exclusive with CompletedDownDownHashers."
     }
   ],
   "sideEffects": [
-    "Writes to HC.ErrorLog on auth, validation, or membership errors."
+    "INSERT HC.ErrorLog on missing parameters (1234, line 84) and, with THROW, on an unhandled error (line 158). Nothing is written on success."
   ],
   "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken, @kennelId, @eventId (lines 3-6) have no SQL default. A client that omits one is refused by SQL before the procedure runs — no HC.ErrorLog row, an empty 500 in the app (CLAUDE.md 'SP parameter with NO default'). The graceful 1234 check at line 80 is unreachable for an omitted parameter."
+    },
     {
       "severity": "medium",
       "issue": "IsDone and IsCancelled columns are BIT, not SMALLINT",
@@ -154,12 +180,12 @@
     {
       "severity": "medium",
       "issue": "spNumber 58 is shared with hcapp_getCompletedDownDowns and hcapp_updateDownDown",
-      "detail": "Both hcapp_updateDownDown and hcapp_getCompletedDownDowns pass @spNumber = 58 to ValidateAppAuth. SP numbers should be unique identifiers within the auth system. If the auth system uses spNumber for anything other than logging, this collision could cause unexpected behaviour."
+      "detail": "hcapp_updateDownDown (line 72) and hcapp_getCompletedDownDowns (line 59) both pass @spNumber = 58 to ValidateAppAuth, so their auth-failure errorCodes collide (1158 / 1258 / 1358). spNumber feeds only the error code, so the effect is an ambiguous HC.ErrorLog code, not a security issue."
     },
     {
       "severity": "low",
       "issue": "Missing SET XACT_ABORT ON",
-      "detail": "The SP sets SET NOCOUNT ON but not SET XACT_ABORT ON. Since this is a read-only SP this is harmless, but it is inconsistent with the HC6 SP standard."
+      "detail": "Line 42 sets NOCOUNT only. Harmless for a read, inconsistent with the HC6 standard."
     }
   ],
   "breakingChanges": []

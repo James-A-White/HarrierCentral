@@ -1,0 +1,104 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_setChatPin",
+  "version": "1.0.0",
+  "description": "Pins or unpins ONE chat for the calling hasher (E9.F1.S8) — a run, a kennel, a global room or a direct message; one SP because the pin icon is one control. Exactly one of @eventId / @kennelId / @roomType / @threadId names the chat. Auth: HC6.ValidateAppAuth (spNumber 108, @param NULL). Permission gate: the hasher may only pin their OWN chats — @userId comes from the token, never a parameter. A room additionally passes HC6.UserMayEnterChatRoom (so a pin cannot probe which rooms exist); a DM requires the caller's own HasherFriendMap row for the thread (never created here). Run and kennel chats need no further gate: a pin is a private preference. Storage differs by kind, deliberately: run → HasherEventMap.Pinned 0/1; kennel → HasherKennelMap.Pinned 0/1 (NULL = default, home kennel); DM → HasherFriendMap.Pinned on the caller's row; room → a bit in HC.Hasher.UnpinnedMismanagementRooms / UnpinnedAppAccessRooms, where a SET bit means 'turned off' (the mirrors store deviations), so pinning CLEARS the catalog's GrantMask bit and unpinning SETS it. MISSING HasherEventMap / HasherKennelMap rows ARE CREATED (James, 2026-09-14) in the neutral shape — only the keys and Pinned supplied, AttendenceState 0 / RsvpState 0 / IsHare 0 — which history and run counts ignore (both filter AttendenceState >= 20). Write SP: returns the standard success envelope.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "Registered device UUID. Default NULL (ValidateAppAuth then fails gracefully)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret; @param NULL). Default NULL."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "HasherEventMap.EventId",
+      "description": "A run's chat. Exactly one of eventId/kennelId/roomType/threadId must be non-NULL."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.KennelId",
+      "description": "A kennel's chat."
+    },
+    {
+      "name": "roomType",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "A global room (HC6.ChatRoomCatalog().RoomType). Gated by HC6.UserMayEnterChatRoom. Mapped to a Hasher.Unpinned*Rooms bit via the catalog's GrantColumn ('mm' → UnpinnedMismanagementRooms; 'flags', 'platform', 'beta' → UnpinnedAppAccessRooms) and GrantMask."
+    },
+    {
+      "name": "threadId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "HasherFriendMap.ThreadId",
+      "description": "A direct-message thread (2026-10-01). The caller must already hold a HasherFriendMap row for it."
+    },
+    {
+      "name": "pinned",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "HasherEventMap.Pinned",
+      "description": "1 pin, 0 unpin. Required: NULL or any other value is refused. Also maps to HasherKennelMap.Pinned and HasherFriendMap.Pinned, and (inverted) to the Hasher.Unpinned*Rooms bit."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Auth failure only (ValidateAppAuth): the error detail is returned alone and the SP returns."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "Every other outcome. Success = 1 after the commit. Success = 0 with a user-facing ErrorMessage (and an HC.ErrorLog row) when: not exactly one target or @pinned not in (0,1) — 'That chat could not be pinned.'; a DM the caller has no row for — 'That conversation could not be found.'; a room the caller may not enter — 'That chat room is for the hashers who hold its role.'; or an unhandled error (CATCH, ERROR_MESSAGE()).",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "1 saved, 0 refused or failed." },
+        { "name": "ErrorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "NULL on success; a user-facing sentence, or ERROR_MESSAGE() from the CATCH, otherwise." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Run: UPDATE HasherEventMap.Pinned, or INSERT a neutral HasherEventMap row (UserId, EventId, KennelId from HC.Event, Pinned) when none exists. The HEM activity trigger fires but HC6.nonApi_refreshEventActivity guards its UPDATE, so nothing re-syncs. A row exists-check without (UPDLOCK, HOLDLOCK) — see code smells.",
+    "Kennel: UPDATE HasherKennelMap.Pinned (explicit 0/1, never cleared back to NULL), or INSERT a bare HasherKennelMap row (UserId, KennelId, Pinned) — Following takes the column default (1) here, unlike hcapp_sendKennelMessage which writes 0 explicitly.",
+    "DM: UPDATE HasherFriendMap.Pinned on the caller's own row for the thread only.",
+    "Room: UPDATE HC.Hasher.UnpinnedMismanagementRooms or UnpinnedAppAccessRooms — pin clears the GrantMask bit, unpin sets it. A GrantColumn outside ('mm','flags','platform','beta') writes nothing and still reports success.",
+    "INSERT HC.ErrorLog on every refused path and in the CATCH."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Kennel pin INSERT does not set Following = 0",
+      "detail": "Line 143 INSERTs HasherKennelMap (UserId, KennelId, Pinned) and lets Following take its column DEFAULT (1). Pinning the chat of a kennel the hasher has never touched therefore silently makes them a FOLLOWER of it (memory: 'Following = hasher's choice'). hcapp_sendKennelMessage (its line 147) writes Following 0 and MemberSince NULL explicitly for exactly this reason."
+    },
+    {
+      "severity": "medium",
+      "issue": "Unknown eventId pins nothing and reports success",
+      "detail": "Line 126–128 INSERT ... SELECT FROM HC.Event WHERE e.id = @eventId inserts zero rows for an unknown event and the SP still returns Success 1. Same at line 173: a room whose catalog GrantColumn is not one of the four handled names updates no bit and returns Success 1. Neither is reachable from the app with synced ids, but the envelope lies when it happens."
+    },
+    {
+      "severity": "low",
+      "issue": "Check-then-INSERT without UPDLOCK/HOLDLOCK",
+      "detail": "Lines 119–128 and 138–144 test EXISTS then INSERT. HasherKennelMap has a UNIQUE (KennelId, UserId) index, so two concurrent first pins from two devices of the same hasher can raise a duplicate-key error into the CATCH (logged, Success 0). CLAUDE.md asks for WITH (UPDLOCK, HOLDLOCK) on the existence check; hcapp_sendKennelMessage line 145 has it."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

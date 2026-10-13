@@ -1,0 +1,50 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_setRunsPageState",
+  "version": "1.0.0",
+  "description": "The runs-page importer's bookkeeping for one kennel (E3.F6.S3, 2026-10-04): stamps RunsPageCheckedAt = now on every call; stores the page fingerprint (@hash) when given (the API sends it only after a successful import, so a failed read is retried next time); stamps RunsPageChangedAt when @changed = 1; replaces RunsPageStatus (one line for the portal, cut to 500) when @status is given. NULL keeps a column as it is. These columns are treated as bookkeeping by trgUpdateModifiedOnDateForKennels: no updatedAt stamp, so no phone re-syncs the kennel four times a day. Called by the API only (RunsPageImport); no auth. An unknown or NULL @kennelId is a silent no-op. Returns nothing; a runtime error is logged to HC.ErrorLog and re-thrown.",
+  "parameters": [
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.id",
+      "description": "The kennel whose runs page was checked. NULL ⇒ no-op. Default NULL."
+    },
+    {
+      "name": "hash",
+      "type": "CHAR(64)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.RunsPageHash",
+      "description": "SHA-256 hex fingerprint of the page as imported; NULL = keep the stored one. Matches the column (CHAR(64)). Default NULL."
+    },
+    {
+      "name": "changed",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.RunsPageChangedAt",
+      "description": "1 = the page changed and was read by the model ⇒ RunsPageChangedAt = now. Default 0."
+    },
+    {
+      "name": "status",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.RunsPageStatus",
+      "description": "One line for the portal ('12 runs, 2 new'); cut to 500. NULL = keep. Default NULL.",
+      "typeMismatch": "Parameter NVARCHAR(MAX) vs column NVARCHAR(500) — trimmed with LEFT(…, 500)."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "UPDATE HC.Kennel SET RunsPageCheckedAt = SYSUTCDATETIME(), RunsPageHash, RunsPageChangedAt, RunsPageStatus WHERE id = @kennelId. updatedAt is NOT stamped (the Kennel trigger excludes these columns).",
+    "On any runtime error: rolls back if a transaction is open, inserts one HC.ErrorLog row (HcVersion '<api>'), then THROWs."
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_setKennelEmailOff",
+  "version": "1.0.0",
+  "description": "The unsubscribe link (E19.F3.S2). Sets the hasher's email-alert setting for the kennel to 2 (off) — the same value the app's dialog writes — and clears any per-run 'on' override (EventEmailAlertPreference 1 ⇒ 2) for that kennel's runs, so one tap really does stop the emails. Both writes are restamped by the HKM/HEM updatedAt triggers and re-sync, so the app shows the new setting. Called by the EmailUnsubscribe API endpoint after it has verified the signed token; no device auth. Idempotent. Both parameters are required (NULL ⇒ THROW ⇒ Success 0 envelope, logged). The success envelope is joined to HC.Kennel to return the kennel's name and slug for the confirmation page — see the code smell about an unknown kennel.",
+  "parameters": [
+    {
+      "name": "userId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.UserId",
+      "description": "The hasher unsubscribing. Required. Default NULL."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.KennelId",
+      "description": "The kennel whose emails to stop. Required. Default NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "One row { Success, ErrorMessage, kennelName, kennelSlug } on success or failure — EXCEPT that an unknown @kennelId returns ZERO rows after a successful no-op commit (the SELECT is FROM HC.Kennel WHERE id = @kennelId).",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 when the CATCH block ran."
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success; ERROR_MESSAGE() from the CATCH block on failure."
+        },
+        {
+          "name": "kennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "HC.Kennel.KennelName, for the confirmation page; NULL on failure."
+        },
+        {
+          "name": "kennelSlug",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "HC.Kennel.KennelUniqueShortName, for the link back; NULL on failure."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.HasherKennelMap SET KennelEmailAlertPreference = 2 WHERE UserId = @userId AND KennelId = @kennelId AND removed = 0 AND not already 2 — the HKM trigger restamps updatedAt (row re-syncs).",
+    "UPDATE HC.HasherEventMap SET EventEmailAlertPreference = 2 for the hasher's rows on that kennel's events where it is 1 — the HEM trigger restamps updatedAt (rows re-sync).",
+    "Both inside one transaction. On any runtime error: rolls back, inserts one HC.ErrorLog row (HcVersion '<api>', userId, kennelId), returns the envelope with Success 0."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Success envelope is a SELECT FROM HC.Kennel — an unknown kennelId returns no envelope at all",
+      "detail": "Lines 42–44: SELECT 1 AS Success, … FROM HC.Kennel k WHERE k.id = @kennelId. When no kennel has that id (a stale or tampered token), both UPDATEs touch nothing, the transaction commits, and rowset 0 is EMPTY — neither Success 1 nor Success 0. A caller that reads row [0] gets an index error, or treats 'no envelope' as failure for a call that did not fail. Select the envelope unconditionally and LEFT JOIN or sub-select the kennel columns."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

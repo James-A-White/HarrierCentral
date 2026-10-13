@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_getPhotoUploadToken",
-  "version": "1.0.0",
-  "description": "Validates auth, then returns the userId, kennelId, and kennelSlug so the calling Azure Function can construct a scoped SAS write token for the trail-photos blob container. Any authenticated HC user may call this — no kennel membership or following check is required. No side effects and no DB writes — pure auth check plus a single Kennel lookup.",
+  "version": "1.1.0",
+  "description": "Validates auth, then returns the userId, kennelId, and kennelSlug so the calling Azure Function can construct a scoped SAS write token for the trail-photos blob container. Any authenticated HC user may call this — no kennel membership or following check is required. No side effects and no DB writes — pure auth check plus a single Kennel lookup. Auth: HC6.ValidateAppAuth (spNumber 30, @param NULL). Parameter checks run before the TRY; the final SELECTs are wrapped, with runtime errors logged and re-thrown.",
   "parameters": [
     {
       "name": "deviceId",
@@ -39,9 +39,24 @@
       "name": "Envelope",
       "description": "On auth or validation failure: success=0, errorCode and errorType set. On success: success=1, errorCode=NULL, errorType=NULL. Always present.",
       "columns": [
-        { "name": "success", "type": "INT", "nullable": false, "description": "1 on success, 0 on auth or validation failure." },
-        { "name": "errorCode", "type": "INT", "nullable": true, "description": "Numeric error code. NULL on success." },
-        { "name": "errorType", "type": "INT", "nullable": true, "description": "Error classification code. NULL on success." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 on auth or validation failure."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "Numeric error code. NULL on success."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "Error classification code. NULL on success."
+        }
       ]
     },
     {
@@ -49,12 +64,42 @@
       "name": "ErrorDetail",
       "description": "Returned only on auth or validation failure. Follows the standard HC6 error detail shape. Not present on success.",
       "columns": [
-        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code." },
-        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short error title." },
-        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
-        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.ErrorLog GUID."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification code."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Numeric error code."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Short error title."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name via OBJECT_NAME(@@PROCID)."
+        }
       ]
     },
     {
@@ -62,16 +107,36 @@
       "name": "TokenData",
       "description": "On success: userId, kennelId, and kennelSlug needed by the Azure Function to scope the SAS token. If @kennelId does not match any Kennel row, this rowset will be empty (zero rows) with no error — callers should guard against an empty result. Mutually exclusive with ErrorDetail at index 1.",
       "columns": [
-        { "name": "userId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The authenticated user's HC.Hasher.id — resolved by ValidateAppAuth." },
-        { "name": "kennelId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Echoed back from @kennelId." },
-        { "name": "kennelSlug", "type": "NVARCHAR(50)", "nullable": false, "description": "Kennel.KennelUniqueShortName — used by the Azure Function to construct the blob container path." }
+        {
+          "name": "userId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The authenticated user's HC.Hasher.id — resolved by ValidateAppAuth."
+        },
+        {
+          "name": "kennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Echoed back from @kennelId."
+        },
+        {
+          "name": "kennelSlug",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "Kennel.KennelUniqueShortName — used by the Azure Function to construct the blob container path."
+        }
       ]
     }
   ],
   "sideEffects": [
-    "Writes to HC.ErrorLog on validation failures only. No other side effects."
+    "INSERT HC.ErrorLog on missing kennelId / photoGuid (lines 69-70, 83-84) and from the CATCH block (lines 105-107, after ROLLBACK)"
   ],
   "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "All four parameters (lines 3-6) have no SQL default. A client that omits @kennelId or @photoGuid gets 'expects parameter' — an unlogged empty 500 before the SP runs, so the graceful 1230 checks at lines 66 and 80 are unreachable for an omitted parameter."
+    },
     {
       "severity": "medium",
       "issue": "Missing Kennel existence check — empty TokenData rowset on unknown kennelId",
@@ -79,13 +144,8 @@
     },
     {
       "severity": "low",
-      "issue": "No TRY/CATCH",
-      "detail": "The SP has no TRY/CATCH block. An unexpected DB error will propagate as a raw SQL error rather than a structured error rowset."
-    },
-    {
-      "severity": "low",
-      "issue": "HcVersion hardcoded to '<unknown>' in all ErrorLog inserts",
-      "detail": "Consistent with other HC6 SPs but means the version is never captured in the error log."
+      "issue": "Missing SET XACT_ABORT ON",
+      "detail": "The SP sets SET NOCOUNT ON only. Harmless for a read with no transaction, but inconsistent with the HC6 SP standard, which requires both."
     }
   ],
   "breakingChanges": [

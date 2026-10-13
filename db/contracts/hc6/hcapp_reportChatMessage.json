@@ -1,154 +1,117 @@
 {
   "schema": "HC6",
   "name": "hcapp_reportChatMessage",
-  "version": "1.0.0",
-  "description": "Reports a chat message to the platform reviewers (platform admins + the shared mailbox), as a letterbox: LOG.GeneralLog line and an email sent by the API from rowsets 1–2, which the API strips before replying. Nothing is hidden or removed. Reporting the same message again succeeds and sends nothing. E9.F1.S17.",
+  "version": "1.1.0",
+  "description": "A hasher reports a chat message of any thread kind to the platform reviewers (E9.F1.S17, James 2026-09-29). Harrier Central is a letterbox, not a moderator: the report is written to LOG.GeneralLog and the API emails it, from rowsets 1–2 which it strips before replying, to the platform admins who may edit kennels plus the shared mailbox — the same list as kennel requests (publicWeb_confirmKennelRequest). Nothing is hidden or removed by this SP; Block (hcapp_setHasherBlock) is the hasher's own tool for that. Auth: HC6.ValidateAppAuth (spNumber 127, @param NULL — a standard token). Permission gate: none beyond auth — any hasher may report any message that is not their own. Reporting the same message twice (same reporter) is a success that writes and sends nothing new (AlreadyReported 1). Reason is optional and capped at 1,000 characters. Uses the two-rowset error shape: {success 0, errorCode, errorType} then the standard error detail.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
-      "mapsToColumn": null,
-      "description": "Registered device"
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "Registered device UUID. Default NULL (ValidateAppAuth then fails gracefully)."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Short-lived token (standard, device secret)"
+      "description": "Short-lived token (standard, device secret; @param NULL). Default NULL."
     },
     {
       "name": "messageId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "EventMessage.id",
-      "description": "The message"
+      "description": "The message reported. Required in effect: NULL or unknown → 1987 'That message is no longer in the chat.'; the caller's own → 1987 'That is your own message.'"
     },
     {
       "name": "reason",
       "type": "NVARCHAR(MAX)",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Optional, up to 1,000 characters"
+      "description": "Optional free text, up to 1,000 characters (LEN); longer → 1987. MAX on purpose so it is refused, never truncated. Stored inside LOG.GeneralLog.Data and emailed."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "ref": "StandardErrorResult",
-      "description": "Auth failure returns the detail alone."
+      "description": "Auth failure only (ValidateAppAuth): the error detail is returned ALONE at index 0 and the SP returns."
+    },
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Every other refusal: {success 0, errorCode, errorType} at index 0, then the StandardErrorResult detail at index 1. Codes: 1987 bad request — own message, message not found, or reason over 1,000 (errorType 2; errorUserMessage says which); 1988 unhandled error from the CATCH (5).",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "Always 0." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "1987 or 1988." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "2 validation, 5 unhandled." }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Follows the ErrorEnvelope on every non-auth refusal."
     },
     {
       "index": 0,
       "name": "Envelope",
+      "description": "On success: the standard success envelope. success is 1 whether the report was new or a repeat.",
       "columns": [
-        {
-          "name": "success",
-          "type": "INT",
-          "nullable": false,
-          "description": "1 reported (or already was)"
-        },
-        {
-          "name": "errorMessage",
-          "type": "NVARCHAR(MAX)",
-          "nullable": true,
-          "description": "NULL on success"
-        }
+        { "name": "success", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "errorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Always NULL." }
       ]
     },
     {
       "index": 1,
       "name": "Report",
-      "description": "API-only, stripped from the client reply. On failure this position holds the error detail: 1987 own message / not found / reason too long (errorType 2), 1988 unhandled (5).",
+      "description": "On success, API ONLY (stripped from the client reply): the report for the email. One row (reporter × sender).",
       "columns": [
-        {
-          "name": "MessageId",
-          "type": "NVARCHAR(36)",
-          "nullable": false,
-          "description": ""
-        },
-        {
-          "name": "ReporterName",
-          "type": "NVARCHAR(250)",
-          "nullable": false,
-          "description": ""
-        },
-        {
-          "name": "ReporterEmail",
-          "type": "NVARCHAR(250)",
-          "nullable": true,
-          "description": ""
-        },
-        {
-          "name": "SenderName",
-          "type": "NVARCHAR(250)",
-          "nullable": false,
-          "description": ""
-        },
-        {
-          "name": "SenderPublicHasherId",
-          "type": "NVARCHAR(36)",
-          "nullable": false,
-          "description": ""
-        },
-        {
-          "name": "ThreadLabel",
-          "type": "NVARCHAR(400)",
-          "nullable": true,
-          "description": "Kennel — run, kennel chat, or room name"
-        },
-        {
-          "name": "MessageKind",
-          "type": "SMALLINT",
-          "nullable": false,
-          "description": "0 text 1 photo 2 location"
-        },
-        {
-          "name": "MessageContent",
-          "type": "NVARCHAR(MAX)",
-          "nullable": false,
-          "description": "The text, or the photo/location URL"
-        },
-        {
-          "name": "MessageAt",
-          "type": "DATETIMEOFFSET",
-          "nullable": false,
-          "description": ""
-        },
-        {
-          "name": "Reason",
-          "type": "NVARCHAR(MAX)",
-          "nullable": true,
-          "description": ""
-        },
-        {
-          "name": "AlreadyReported",
-          "type": "SMALLINT",
-          "nullable": false,
-          "description": "1 when this reporter already reported this message; the API then sends no email"
-        }
+        { "name": "MessageId", "type": "NVARCHAR(40)", "nullable": false, "description": "UPPER(@messageId)." },
+        { "name": "ReporterName", "type": "NVARCHAR(250)", "nullable": false, "description": "The caller's Hasher.DisplayName." },
+        { "name": "ReporterEmail", "type": "NVARCHAR(250)", "nullable": false, "description": "The caller's Hasher.Email (NOT NULL in the table; may be a generated address — the API mailer refuses those, GeneratedEmail.Is)." },
+        { "name": "SenderName", "type": "NVARCHAR(250)", "nullable": false, "description": "The message author's Hasher.DisplayName." },
+        { "name": "SenderPublicHasherId", "type": "NVARCHAR(40)", "nullable": false, "description": "UPPER(author's Hasher.PublicHasherId)." },
+        { "name": "ThreadLabel", "type": "NVARCHAR(400)", "nullable": true, "description": "'<KennelShortName> — <EventName>' for a run, '<KennelShortName> kennel chat', 'DM: <sender> ↔ <other>' for a DM (from the SENDER's HasherFriendMap row), or the room's RoomName. NULL if the lookup finds nothing." },
+        { "name": "MessageKind", "type": "SMALLINT", "nullable": false, "description": "EventMessage.MessageKind: 0 text, 1 photo, 2 location." },
+        { "name": "MessageContent", "type": "NVARCHAR(4000)", "nullable": false, "description": "EventMessage.MessageContent — the text, or the photo/location URL (raw, not the preview)." },
+        { "name": "MessageAt", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "EventMessage.createdAt." },
+        { "name": "Reason", "type": "NVARCHAR(MAX)", "nullable": true, "description": "@reason as given." },
+        { "name": "AlreadyReported", "type": "SMALLINT", "nullable": false, "description": "1 when this reporter already reported this message (a LOG.GeneralLog row with LogSource 'HC6.hcapp_reportChatMessage' whose Data starts with 'message=<id> reporter=<id>'); the API then sends no email." }
       ]
     },
     {
       "index": 2,
       "name": "Reviewers",
-      "description": "API-only, stripped. Same rule as publicWeb_confirmKennelRequest.",
+      "description": "On success, API ONLY: who receives the email. HC.PlatformAdmin rows (removed 0, CanEditKennel 1) joined to a live Hasher with a non-empty Email, UNION the shared mailbox literal. Same rule as publicWeb_confirmKennelRequest.",
       "columns": [
-        {
-          "name": "reviewerEmail",
-          "type": "NVARCHAR(250)",
-          "nullable": false,
-          "description": ""
-        }
+        { "name": "reviewerEmail", "type": "NVARCHAR(250)", "nullable": false, "description": "Hasher.Email, or 'harriercentral@gmail.com'." }
       ]
     }
   ],
   "sideEffects": [
-    "LOG.GeneralLog line (first report per reporter+message)",
-    "API emails the reviewers"
+    "INSERT LOG.GeneralLog (LogSource 'HC6.hcapp_reportChatMessage', Message 'Chat message reported', StrParam1 = reporter id, Data = key + sender + thread label + reason + text, LEFT(…, 4000)) — first report per (message, reporter) only.",
+    "INSERT HC.ErrorLog on 1987 and in the CATCH (1988).",
+    "The API emails rowset 1 to every rowset-2 address unless AlreadyReported = 1; nothing is queued in the database."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Duplicate detection scans LOG.GeneralLog with a leading-wildcard-free LIKE on an un-indexed column",
+      "detail": "Lines 88–90 test EXISTS over LOG.GeneralLog WHERE LogSource = … AND Data LIKE @key + '%'. LOG.GeneralLog is indexed on (Timestamp, LogSource) only, so every report scans all of this source's rows and compares Data (NVARCHAR(4000)). Cheap today (few reports) but it grows with every report ever made, and the dedupe key is a string prefix inside a free-text log column rather than a keyed row."
+    },
+    {
+      "severity": "low",
+      "issue": "Hardcoded reviewer mailbox",
+      "detail": "Line 126 UNIONs the literal N'harriercentral@gmail.com'. The same literal lives in publicWeb_confirmKennelRequest; changing the mailbox means finding every copy."
+    },
+    {
+      "severity": "low",
+      "issue": "Report text truncated to the log column",
+      "detail": "Line 100 LEFT(…, 4000) fits the row into LOG.GeneralLog.Data (NVARCHAR(4000)); a 1,000-character reason plus a 4,000-character message cannot both fit, so the stored copy of a long report loses its tail. The email (rowset 1) carries the full reason and content, so only the audit copy is cut. Deliberate, but worth knowing when reading the log."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

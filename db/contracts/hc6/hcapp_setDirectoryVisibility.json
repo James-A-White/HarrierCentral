@@ -1,70 +1,58 @@
 {
   "schema": "HC6",
   "name": "hcapp_setDirectoryVisibility",
-  "version": "1.0.0",
-  "description": "Records who may find the caller in hasher search (E9.F1.S26). Writes HC.Hasher.DirectoryVisibility ALONE, never updatedAt (not synced).",
+  "version": "1.1.0",
+  "description": "Records who may find the caller in hasher search (E9.F1.S26) — the answer to the once-only question, or a change made in Settings. Writes HC.Hasher.DirectoryVisibility ALONE and never updatedAt: the column is not synced, so changing it must not make every phone re-download this hasher (James, 2026-10-02); no Hasher trigger stamps the row for this column. Auth: device-bound token via HC6.ValidateAppAuth (spNumber 142, @param NULL); the caller's own row only, no permission gate. Not transacted (a single UPDATE).",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Registered device"
+      "description": "Registered device. Default NULL (ValidateAppAuth then fails gracefully)."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Short-lived token (standard, device secret)"
+      "description": "Short-lived token (standard, device secret). Default NULL."
     },
     {
       "name": "visibility",
       "type": "SMALLINT",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Hasher.DirectoryVisibility",
-      "description": "NULL not asked; low bits 0 nobody, 1 people I have run with, 2 members of a kennel I belong to, 3 anyone; +16 also findable by real name; the real-name flag is dropped with 0"
+      "description": "Low two bits: 0 nobody, 1 people I have run with, 2 members of a kennel I belong to, 3 anyone; +16 also findable by real name. Default NULL, but NULL, a negative value or any bit outside 0x13 is refused with 14200. When the scope is 0 the real-name flag is dropped (stored as 0): nobody means nobody. The column itself is NULL until the question has been answered — this SP cannot set it back to NULL."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "ref": "StandardErrorResult",
-      "description": "Auth failure returns the detail alone; other refusals return {success:0, errorCode, errorType} then the detail: 14200 bad value (2), 14201 unhandled (5)"
+      "description": "Auth failure (ValidateAppAuth) returns the error detail ALONE at index 0 — no envelope. Other failures return {success:0, errorCode, errorType} at index 0 then this detail at index 1: 14200 'Bad setting' (errorType 2, logged), 14201 unhandled (errorType 5, CATCH, logged)."
     },
     {
       "index": 0,
       "name": "Envelope",
+      "description": "On success.",
       "columns": [
-        {
-          "name": "success",
-          "type": "INT",
-          "nullable": false,
-          "description": "1 ok"
-        },
-        {
-          "name": "errorMessage",
-          "type": "NVARCHAR(MAX)",
-          "nullable": true,
-          "description": "NULL on success"
-        }
+        { "name": "success", "type": "INT", "nullable": false, "description": "1" },
+        { "name": "errorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "NULL on success" }
       ]
     },
     {
       "index": 1,
       "name": "Visibility",
+      "description": "On success: the value now stored, re-read from the row.",
       "columns": [
-        {
-          "name": "DirectoryVisibility",
-          "type": "SMALLINT",
-          "nullable": false,
-          "description": "the value now stored"
-        }
+        { "name": "DirectoryVisibility", "type": "SMALLINT", "nullable": false, "description": "Hasher.DirectoryVisibility after the write (the real-name flag already dropped for scope 0)." }
       ]
     }
   ],
   "sideEffects": [
-    "UPDATE HC.Hasher.DirectoryVisibility (no updatedAt change)"
+    "UPDATE HC.Hasher SET DirectoryVisibility = @visibility WHERE id = @userId (line 60) — no updatedAt change, deliberately.",
+    "INSERT HC.ErrorLog on refusal (line 49) and in the CATCH (line 68)."
   ],
   "codeSmells": [],
   "breakingChangeRules": [

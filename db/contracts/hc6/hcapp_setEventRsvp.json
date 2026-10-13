@@ -1,262 +1,171 @@
 {
   "schema": "HC6",
   "name": "hcapp_setEventRsvp",
-  "version": "1.1.0",
-  "description": "Updates a hasher's RSVP state and/or hare designation for an event. Upserts a HasherEventMap row if none exists. Blocks RSVP state changes when the hasher is already checked in (AttendenceState >= 20), but still allows hare-flag-only changes post-attendance. Optionally auto-sets notification preferences when @autoSetNotifications=1. Updates Event.Hares aggregate string when hare state changes. Returns a success envelope (rowset 0), an adHoc result row (rowset 1), and delegates to HC6.hcapp_syncEventAdminData for subsequent sync rowsets.",
+  "version": "1.2.0",
+  "description": "Updates a hasher's RSVP (RsvpState 1 no, 2 maybe, 3 yes) and/or hare flag for an event, inserting the HasherEventMap row if there is none. A hasher already checked in (AttendenceState >= 20) keeps their RSVP — only a hare-flag change is applied, and the SP still answers success = 1 with an explanatory serverMessage. RSVP 1 (not coming) forces IsHare 0. With @autoSetNotifications = 1 the event's notification/email preferences are set at the same time: 2 (off) on a No, otherwise copied from the CALLER's HasherKennelMap row. HC.Event.Hares is kept in step when the hare flag changes (rebuilt only where the text is this SP's own; admin-typed text only ever gains a name). Run counts are recalculated for the hasher after every call, the final row state is returned as adHocData, and the SP delegates to HC6.hcapp_syncEventAdminData. Auth: device-bound token via HC6.ValidateAppAuth (spNumber 26, @param NULL). Permission gate: NONE — @hasherId defaults to the caller but may name any hasher (see code smells).",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": "Device.id",
-      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth."
+      "description": "Registered device UUID, passed to HC6.ValidateAppAuth. No SQL default."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Short-lived cryptographic token validated against the device secret."
+      "description": "Short-lived token validated against the device secret. No SQL default."
     },
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": "HasherEventMap.EventId",
-      "description": "Event to RSVP for. Must match the event resolved from @hemId when @hemId is provided."
+      "description": "The event (Event.id). Must equal the row's EventId when @hemId is given (1226/12). No SQL default."
     },
     {
       "name": "hasherId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": true,
+      "nullable": false,
       "mapsToColumn": "HasherEventMap.UserId",
-      "description": "Target hasher. Defaults to the authenticated caller when NULL. Overridden by the UserId resolved from @hemId when @hemId is provided."
+      "description": "Target hasher; NULL = the caller. Replaced by the row's UserId when @hemId is given. No SQL default — the client must send it (NULL is fine)."
     },
     {
       "name": "isHare",
       "type": "INT",
       "nullable": true,
       "mapsToColumn": "HasherEventMap.IsHare",
-      "description": "Sentinel: -1 normalised to NULL (keep existing). 1 = set hare, 0 = clear hare. When @rsvpState=1 (not coming), forced to 0 before sentinel normalisation. Table column is SMALLINT — wider INT parameter accepted but stored as SMALLINT.",
-      "typeMismatch": "Parameter INT; column HasherEventMap.IsHare is SMALLINT"
+      "description": "Default -1 = keep (normalised to NULL). 1 set, 0 clear; forced to 0 when @rsvpState = 1. On INSERT any value > 0 becomes 1.",
+      "typeMismatch": "Parameter INT; HasherEventMap.IsHare is SMALLINT."
     },
     {
       "name": "rsvpState",
       "type": "INT",
       "nullable": true,
       "mapsToColumn": "HasherEventMap.RsvpState",
-      "description": "Sentinel: -1 normalised to NULL (keep existing). Known domain values: 1=not coming, 2=maybe, 3=coming. Table column is SMALLINT — wider INT parameter accepted but stored as SMALLINT.",
-      "typeMismatch": "Parameter INT; column HasherEventMap.RsvpState is SMALLINT"
+      "description": "Default -1 = keep (normalised to NULL). 1 not coming, 2 maybe, 3 coming. Not range-checked; on INSERT a NULL is written straight to the NOT NULL column (see code smells).",
+      "typeMismatch": "Parameter INT; HasherEventMap.RsvpState is SMALLINT."
     },
     {
       "name": "hasherEventMapUpdatedAfter",
       "type": "NVARCHAR(50)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Sync watermark forwarded to HC6.hcapp_syncEventAdminData. Defaults to 'ignore' when NULL."
+      "description": "Sync watermark passed to hcapp_syncEventAdminData; NULL is coerced to 'ignore'. No SQL default — omitting it is an unlogged 500."
     },
     {
       "name": "hasherKennelMapUpdatedAfter",
       "type": "NVARCHAR(50)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Sync watermark forwarded to HC6.hcapp_syncEventAdminData. Defaults to 'ignore' when NULL."
+      "description": "Sync watermark passed to hcapp_syncEventAdminData; NULL is coerced to 'ignore'. No SQL default — omitting it is an unlogged 500."
     },
     {
       "name": "hemId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "HasherEventMap.id",
-      "description": "Optional direct HEM lookup. When provided, @hasherId is overridden with the UserId from the HEM row. A mismatch between the HEM's EventId and @eventId returns errorCode=1226, errorType=12."
+      "description": "Default NULL. When given, the row is addressed directly (visitor/virgin rows) and @hasherId is taken from it; its EventId must equal @eventId (1226/12). An id with no row is not detected — the mismatch test is UNKNOWN and the SP carries on."
     },
     {
       "name": "autoSetNotifications",
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Default 1. When 1: if @rsvpState=1 (not coming), sets EventNotificationPreference and EventEmailAlertPreference to 2; otherwise reads defaults from HasherKennelMap for the resolved kennel."
+      "description": "Default 1: a No sets EventNotificationPreference and EventEmailAlertPreference to 2; any other RSVP copies the caller's HasherKennelMap.Kennel*Preference for the kennel (the UPDATE writes both, the INSERT only the notification preference). 0 leaves the preferences alone."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "SuccessEnvelope",
-      "description": "Write SP success envelope. Always returned as the first rowset. On any error path (auth, validation, unhandled) success=0 and errorCode/errorType are populated; on success success=1 and errorCode/errorType are NULL.",
+      "description": "Always the first rowset, on every path including auth failure.",
       "columns": [
-        {
-          "name": "success",
-          "type": "BIT",
-          "nullable": false,
-          "description": "1 on success, 0 on any error."
-        },
-        {
-          "name": "errorCode",
-          "type": "INT",
-          "nullable": true,
-          "description": "Numeric error code. NULL on success. 1226=mismatched hemId/eventId (errorType 12); 1926=unhandled DB error (errorType 19)."
-        },
-        {
-          "name": "errorType",
-          "type": "INT",
-          "nullable": true,
-          "description": "Error classification. NULL on success. 11=auth failure (from ValidateAppAuth); 12=validation/mismatch; 19=unhandled CATCH."
-        }
+        { "name": "success", "type": "INT", "nullable": false, "description": "1 on success (including the 'already checked in' and 'nothing changed' outcomes), 0 on any error." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "NULL on success. ValidateAppAuth code; 1226 hemId/eventId mismatch; 1926 unhandled." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "NULL on success. 1 bad token / 3 device not found / 7 signed out (ValidateAppAuth); 12 validation; 19 unhandled (CATCH)." }
       ]
     },
     {
       "index": 1,
       "name": "ErrorDetail",
-      "description": "Returned as rowset 1 on any error path (auth failure, hemId/eventId mismatch, unhandled CATCH). Not returned on success.",
+      "description": "Rowset 1 on failure only. Every path writes HC.ErrorLog.",
       "columns": [
-        {
-          "name": "errorId",
-          "type": "UNIQUEIDENTIFIER",
-          "nullable": false,
-          "description": "Unique ID of the HC.ErrorLog entry."
-        },
-        {
-          "name": "errorType",
-          "type": "INT",
-          "nullable": false,
-          "description": "Error classification code."
-        },
-        {
-          "name": "errorCode",
-          "type": "INT",
-          "nullable": false,
-          "description": "Numeric error code."
-        },
-        {
-          "name": "errorTitle",
-          "type": "NVARCHAR(500)",
-          "nullable": false,
-          "description": "Short error title for display."
-        },
-        {
-          "name": "errorUserMessage",
-          "type": "NVARCHAR(MAX)",
-          "nullable": false,
-          "description": "User-facing error message."
-        },
-        {
-          "name": "errorProc",
-          "type": "NVARCHAR(128)",
-          "nullable": false,
-          "description": "SP name from OBJECT_NAME(@@PROCID)."
-        }
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog id." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "As the envelope." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "As the envelope." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing message." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "OBJECT_NAME(@@PROCID)." }
       ]
     },
     {
       "index": 1,
       "name": "AdHocRsvpResult",
-      "description": "Single row returned on all success paths, including no-change paths. When RSVP could not be changed (user checked in, state unchanged), success=1 but serverMessage contains a human-readable reason. Values are re-read from DB after the write.",
+      "description": "Rowset 1 on success (lines 325-334), including the two no-change outcomes. Row values are re-read by EventId + UserId after the write.",
       "columns": [
-        {
-          "name": "adHocDataId",
-          "type": "INT",
-          "nullable": false,
-          "description": "Always 1. Identifies the adHoc data type to the caller."
-        },
-        {
-          "name": "serverMessage",
-          "type": "NVARCHAR(500)",
-          "nullable": false,
-          "description": "Empty string on a clean write. Populated with a displayable reason when RSVP could not be changed (already checked in) or state was already identical. Uses '~~' as a sentence separator."
-        },
-        {
-          "name": "hasherEventMapId",
-          "type": "UNIQUEIDENTIFIER",
-          "nullable": false,
-          "description": "The HEM record ID (newly generated on INSERT, existing ID on UPDATE)."
-        },
-        {
-          "name": "hasherId",
-          "type": "UNIQUEIDENTIFIER",
-          "nullable": false,
-          "description": "The target hasher's ID."
-        },
-        {
-          "name": "rsvpState",
-          "type": "SMALLINT",
-          "nullable": true,
-          "description": "Current RsvpState after the write, re-read from HC.HasherEventMap."
-        },
-        {
-          "name": "willHareState",
-          "type": "SMALLINT",
-          "nullable": true,
-          "description": "Current IsHare after the write, re-read from HC.HasherEventMap."
-        },
-        {
-          "name": "hares",
-          "type": "NVARCHAR(2500)",
-          "nullable": true,
-          "description": "Updated Event.Hares aggregate string (STRING_AGG of hare display names). NULL when @isHare did not change."
-        },
-        {
-          "name": "eventNotificationPreference",
-          "type": "SMALLINT",
-          "nullable": true,
-          "description": "Current EventNotificationPreference after the write, re-read from HC.HasherEventMap."
-        },
-        {
-          "name": "emailAlertPreference",
-          "type": "SMALLINT",
-          "nullable": true,
-          "description": "Current EventEmailAlertPreference after the write, re-read from HC.HasherEventMap."
-        }
+        { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "serverMessage", "type": "NVARCHAR(500)", "nullable": false, "description": "'' on a write. '<name> is already checked in at the Hash. The RSVP can no longer be changed.~~To change the RSVP, you must first mark <name> as being not at the Hash.' when attended and the RSVP differs; 'The RSVP status has not changed for <name>' when nothing changed. '~~' separates sentences." },
+        { "name": "hasherEventMapId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HasherEventMap.id (new or existing). Not lowercased — the app's lowerGuidsInPlace handles it." },
+        { "name": "hasherId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The target hasher." },
+        { "name": "rsvpState", "type": "SMALLINT", "nullable": true, "description": "HEM.RsvpState after the write." },
+        { "name": "willHareState", "type": "SMALLINT", "nullable": true, "description": "HEM.IsHare after the write." },
+        { "name": "hares", "type": "NVARCHAR(2500)", "nullable": true, "description": "The rebuilt Event.Hares text — only when the hare flag changed AND the text was this SP's own to rebuild. NULL when the flag did not change and NULL when a name was appended to admin-typed text (the client must not treat NULL as 'no hares')." },
+        { "name": "eventNotificationPreference", "type": "SMALLINT", "nullable": true, "description": "HEM.EventNotificationPreference after the write." },
+        { "name": "emailAlertPreference", "type": "SMALLINT", "nullable": true, "description": "HEM.EventEmailAlertPreference after the write." }
       ]
     },
     {
       "index": 2,
       "name": "SyncEventAdminData",
-      "description": "Rowset(s) 2 and beyond are produced by the delegated call to HC6.hcapp_syncEventAdminData. Refer to that SP's contract for the full rowset definitions. hashersUpdatedAfter, narrowEventsUpdatedAfter, paymentsUpdatedAfter, kennelCreditsUpdatedAfter, and receiptsUpdatedAfter are all passed as 'ignore'."
+      "description": "Rowsets 2+ on success: HC6.hcapp_syncEventAdminData for @eventId with the HEM/HKM watermarks passed through and hashers, narrow events, payments, kennel credits and receipts 'ignore'. See that contract."
     }
   ],
   "sideEffects": [
-    "UPDATE HC.HasherEventMap SET RsvpState, IsHare, EventNotificationPreference, EventEmailAlertPreference — when conditions met and HEM row exists",
-    "INSERT HC.HasherEventMap — when no HEM row exists for the eventId/hasherId pair",
-    "UPDATE HC.Event SET Hares — when IsHare state changed (STRING_AGG of hare display names where RsvpState=3)",
-    "INSERT HC.ErrorLog — on hemId/eventId mismatch and on unhandled CATCH",
-    "EXEC HC.nonApi_updateRunCountsByUser — called after transaction commit with @hasherId and event date",
-    "EXEC HC6.hcapp_syncEventAdminData — delegated call outside transaction",
-    "HC.Event.Hares is rebuilt from flagged hares (IsHare=1 AND RsvpState=3) ONLY when the current text is empty or equals that aggregate as it stood before the change; admin-typed text is never replaced, and a newly flagged hare's DisplayName is appended to it if absent (1.1.0, 2026-09-28 — before, a flagged hare RSVPing No replaced typed co-hares wholesale)."
+    "UPDATE HC.HasherEventMap SET RsvpState, IsHare, EventNotificationPreference, EventEmailAlertPreference (each COALESCEd), updatedAt WHERE id = @hemId — when the RSVP or hare flag changes before attendance, or only the hare flag changes after it (lines 207-231).",
+    "INSERT HC.HasherEventMap (RsvpState = @rsvpState, IsHare, VirginVisitorType 0, EventNotificationPreference, KennelId from HC.Event) when the hasher has no row on the event (lines 232-247).",
+    "UPDATE HC.Event SET Hares, updatedAt when the hare flag changed (lines 265-291): rebuilt from flagged hares (IsHare = 1 AND RsvpState = 3) only when the current text is empty or equals that aggregate as it stood before the change; admin-typed text is never replaced and gains a newly flagged hare's DisplayName if absent (1.1.0, 2026-09-28 — before, a flagged hare RSVPing No replaced typed co-hares wholesale).",
+    "EXEC HC6.nonApi_updateRunCountsByUser @userId = @hasherId after COMMIT, outside the TRY, on every successful call (line 311).",
+    "INSERT HC.ErrorLog on the hemId/eventId mismatch (line 102) and in the CATCH (line 300); HcVersion from HC6.DeviceHcVersion(@deviceId).",
+    "EXEC HC6.hcapp_syncEventAdminData after the adHocData rowset (line 342)."
   ],
   "codeSmells": [
     {
-      "severity": "medium",
-      "issue": "Parameter type wider than column: @isHare INT vs SMALLINT",
-      "detail": "@isHare is declared INT but HasherEventMap.IsHare is SMALLINT. SQL Server will accept and silently narrow the value on write. No overflow risk in practice given domain values (0/1/-1), but the mismatch is misleading and could mask future misuse."
+      "severity": "high",
+      "issue": "No authorisation check on @hasherId",
+      "detail": "Line 117 defaults @hasherId to the caller but any hasher UUID (or any @hemId) is accepted and nothing compares it with @userId or calls HC6.CheckKennelPermission. Any authenticated device can RSVP, un-RSVP or flag as hare any hasher on any run. Its sibling hcapp_setEventAttendence gates the same action with 'manageAttendance' (its lines 225-250)."
     },
     {
       "severity": "medium",
-      "issue": "Parameter type wider than column: @rsvpState INT vs SMALLINT",
-      "detail": "@rsvpState is declared INT but HasherEventMap.RsvpState is SMALLINT. Same silent narrowing as @isHare."
+      "issue": "Parameter without a default",
+      "detail": "Lines 3-6, 9-10: @deviceId, @accessToken, @eventId, @hasherId and both sync watermarks have no SQL default. @hasherId is documented as 'defaults to caller if NULL' yet a client that leaves it out gets 'expects parameter @hasherId, which was not supplied' before the procedure runs — an empty 500 with no HC.ErrorLog row."
     },
     {
       "severity": "medium",
-      "issue": "Hares aggregate re-read uses UserId, not hemId",
-      "detail": "After the write, @newHareState is fetched by EventId+UserId (line 251-252), which is correct for the INSERT path where @hemId is just assigned. However, for the UPDATE path entered via @hemId where @hasherId was populated from the HEM row, this is consistent. Low actual risk but the lookup bypasses the hemId fast-path used elsewhere."
+      "issue": "Auto-set preferences come from the caller, not the target",
+      "detail": "Lines 179-183 read HasherKennelMap for @userId (the caller). When an admin RSVPs on behalf of another hasher, that hasher's event preferences are set from the ADMIN's kennel preferences; when the admin has no row at the kennel they are set to NULL."
+    },
+    {
+      "severity": "medium",
+      "issue": "INSERT with no RSVP writes NULL into a NOT NULL column",
+      "detail": "Line 242: a first call for a hasher with @rsvpState -1/NULL (e.g. flag as hare only) inserts RsvpState = NULL. HasherEventMap.RsvpState is NOT NULL, so the insert fails and is reported as 1926/19 'Unexpected error' rather than a validation error. @rsvpState is otherwise unchecked (any INT is accepted, narrowed to SMALLINT)."
+    },
+    {
+      "severity": "medium",
+      "issue": "Re-reads by EventId + UserId are ambiguous for visitor rows",
+      "detail": "Lines 262-263 and 316-321 look the row up by EventId + UserId although the write was by @hemId. Visitor/virgin rows share the KennelId as UserId, so with several such rows on one event the hare-change test and the values echoed in rowset 1 may come from a different row than the one written."
     },
     {
       "severity": "low",
-      "issue": "nonApi_updateRunCountsByUser called outside transaction",
-      "detail": "EXEC HC.nonApi_updateRunCountsByUser runs after COMMIT at line 283. If it fails, the HEM write is already committed but run counts are stale. This is inherited from HC5 and accepted as a known tradeoff, but it means run counts can diverge from attendance data."
+      "issue": "Run counts recalculated on every call, outside the transaction",
+      "detail": "Line 311 runs nonApi_updateRunCountsByUser unconditionally after COMMIT, even when nothing changed. A failure there surfaces as a raw error after the commit, with the envelope not yet sent."
     },
     {
       "severity": "low",
-      "issue": "autoSetNotifications check against @rsvpState after sentinel normalisation",
-      "detail": "At line 172, @autoSetNotifications logic checks IF (@rsvpState = 1). By this point the sentinel -1 has NOT yet been normalised (normalisation happens at lines 122-123, after the notification block). The ordering is correct — sentinel normalisation comes after the notification block — but this is fragile. If the order of these blocks were swapped in a future edit, the condition would break silently."
-    },
-    {
-      "severity": "low",
-      "issue": "HcVersion hardcoded as '<unknown>' in ErrorLog inserts",
-      "detail": "Both INSERT HC.ErrorLog statements (lines 103 and 273) use the literal string '<unknown>' for HcVersion. Other HC6 SPs use a configured version string or constant. Low impact but inconsistent."
-    },
-    {
-      "severity": "low",
-      "issue": "serverMessage uses '~~' as sentence separator",
-      "detail": "The serverMessage string at line 241 uses '~~' to separate two sentences. This is a display protocol the client must parse. It is undocumented here and could be mishandled by clients that do not implement the split. Not a data integrity issue but a coupling smell."
+      "issue": "serverMessage uses '~~' as a sentence separator",
+      "detail": "Lines 250-253: a display protocol the client must know to split on. Undocumented in the SP."
     }
   ],
   "breakingChanges": [

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_authorizeDevice",
-  "version": "1.1.0",
-  "description": "First-time device registration. Resolves a user by invite code (@scanText URC: prefix) or directly by @userId, writes a Device record with a cryptographic secret, logs the login, and returns the hasher profile plus the device credentials needed for all subsequent token generation. Uses the write SP envelope pattern: rowset 0 is always the success/error status envelope; rowset 1 carries either the HasherProfile on success or an error detail row on failure.",
+  "version": "1.2.0",
+  "description": "First-time device registration (sign-in with an invite code, or by @userId from a flow that already knows the hasher). Pre-auth endpoint: the token is validated with HC.CHECK_ACCESS_TOKEN_V2 against the null user UUID and a fixed 30 s window (1102 / errorType 11). Resolves the hasher by @userId, else by @scanText = Hasher.ResetCode ('URC:…') → 1302 not found (13); a removed hasher → 1402 (14). Generates a 75-character uppercase base64 DeviceSecret (CRYPT_GEN_RANDOM) and a TimeWindow of 30-44 s, then in one transaction: Hasher.LastLoginDateTime/HcVersion/updatedAt; a LaunchAndLogin row carrying DeviceId and the five device fields (from the optional parameters, else from @deviceData JSON, 2026-10-12); DELETE + INSERT of the HC.Device row (idempotent re-registration) with IsMobile, Version, BuildNumber and Locale. Returns the hasher profile joined to the new device row, including deviceSecret and timeWindow — the credentials every later token is generated from. The whole body, including the auth check, is inside TRY/CATCH (1902 / 19). @isMobile = 0 marks a browser (E9.F7): no push tokens, not counted as a phone.",
   "parameters": [
     {
       "name": "deviceId",
@@ -358,17 +358,17 @@
   ],
   "sideEffects": [
     "UPDATE HC.Hasher SET LastLoginDateTime = GETDATE(), HcVersion = @hcVersion, updatedAt = GETDATE() WHERE id = @userId",
-    "INSERT HC.LaunchAndLogin (HcVersion, UserId, UserName)",
+    "INSERT HC.LaunchAndLogin (HcVersion = 'HC Ver: x, Bld: n' when @buildNumber is sent else @hcVersion, UserId, UserName = '~name~', DeviceId, DeviceType, DeviceName, SystemName, SystemVersion, Manufacturer — the five from the parameters, else JSON_VALUE of @deviceData with iOS/Android key fallbacks)",
     "DELETE FROM HC.Device WHERE id = @deviceId — idempotent prior-record cleanup, correct for all platforms including Android",
-    "INSERT INTO HC.Device (id, DeviceSecret, TimeWindow, DeviceData, UserId, ApnsToken, FcmToken)",
+    "INSERT INTO HC.Device (id, DeviceSecret, TimeWindow, DeviceData, UserId, ApnsToken, FcmToken, IsMobile, Version = LEFT(@hcVersion, 25) when @buildNumber is sent else '<unknown>', BuildNumber = COALESCE(@buildNumber, '<unknown>'), Locale = COALESCE(@locale, ''))",
     "INSERT HC.ErrorLog on auth failure, not-found, removed-user, and DB error paths",
     "All writes (Hasher UPDATE, LaunchAndLogin INSERT, Device DELETE+INSERT) are wrapped in a single transaction and rolled back on error"
   ],
   "codeSmells": [
     {
-      "severity": "low",
-      "issue": "Device.BuildNumber and Device.Version not populated",
-      "detail": "HC.Device has BuildNumber NVARCHAR(25) and Version NVARCHAR(25) columns, both defaulting to '<unknown>'. This SP does not explicitly populate them — version data is encoded in the @deviceData JSON blob instead, which populates the OperatingSystem computed column. Intentional but undocumented. If callers need BuildNumber/Version as first-class queryable columns these parameters should be added."
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken, @hcVersion, @deviceData (lines 3, 4, 5 and 8) have no SQL default. A client that omits any of them is refused by SQL BEFORE the procedure runs: no HC.ErrorLog row, an empty 500 in the app, and the SP's own graceful checks are unreachable (CLAUDE.md, Rack of Lamb 2026-09-29). Note @deviceData sits AFTER two defaulted parameters, so a positional caller cannot skip @scanText/@userId."
     },
     {
       "severity": "low",
@@ -379,6 +379,11 @@
       "severity": "low",
       "issue": "timeWindow upper bound is 44, not 45 as documented",
       "detail": "CAST((RAND() * 15) + 30 AS INT) produces values from 30 to 44 inclusive (RAND() returns [0,1), so the maximum before truncation is 44.999...). The SP header comment says '30-45' — the upper bound is off by one. Not a correctness issue in practice but worth noting for any client-side validation."
+    },
+    {
+      "severity": "low",
+      "issue": "Device.Version stays '<unknown>' when an older app omits @buildNumber even though @hcVersion is known",
+      "detail": "Line 238 writes LEFT(@hcVersion, 25) only when @buildNumber IS NOT NULL; an app that sends @hcVersion but not @buildNumber still gets Version '<unknown>' until its next hcapp_approveLogin."
     }
   ],
   "breakingChanges": [

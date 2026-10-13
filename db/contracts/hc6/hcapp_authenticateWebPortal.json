@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_authenticateWebPortal",
-  "version": "1.0.0",
-  "description": "Records a device-authenticated QR code scan for web portal login. The access token is validated against DeviceSecret concatenated with the scan data, binding the token to the specific scan event (single-use per scanData value). On success, inserts a row into HC.WebPortalAuthenticationRequests (idempotent — only inserts if that scanData is not already recorded).",
+  "version": "1.1.0",
+  "description": "Records a device-authenticated QR scan for web portal login (the phone scans the portal's QR, the portal polls HC.WebPortalAuthenticationRequests). Does NOT use HC6.ValidateAppAuth: it resolves HC.Device itself (1304 / errorType 3 when the device or user is missing) and calls HC.CHECK_ACCESS_TOKEN_V2 with the compound context DeviceSecret + @scanData, binding the token to this one scan (1104 / errorType 1 on failure; a signed-out device fails here too, since its secret was rotated). On success inserts (hasherId, scanData) into HC.WebPortalAuthenticationRequests unless that scanData is already present (idempotent, inside a transaction) and returns { result = 'Success' }. No permission gate.",
   "parameters": [
     {
       "name": "deviceId",
@@ -16,7 +16,7 @@
       "type": "NVARCHAR(1000)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Short-lived auth token validated against DeviceSecret + scanData concatenation — binds the token to the specific scan event. COALESCE fallback in SP body suggests nullability in practice despite the non-nullable declaration."
+      "description": "Short-lived token generated over DeviceSecret + @scanData (compound), so it is valid for this scan only. COALESCE(@accessToken, 'error') at line 73 turns an explicit NULL into a token-mismatch (1104) rather than a NULL-comparison. No SQL default."
     },
     {
       "name": "scanData",
@@ -116,14 +116,14 @@
   ],
   "codeSmells": [
     {
-      "severity": "high",
-      "issue": "scanData parameter width mismatch vs column",
-      "detail": "@scanData is declared NVARCHAR(1000) but WebPortalAuthenticationRequests.scanData is NVARCHAR(100). Any scanData value longer than 100 characters will be silently truncated on insert. Should be widened to NVARCHAR(1000) in the table, or narrowed to NVARCHAR(100) in the parameter."
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken, @scanData (lines 3-5) have no SQL default. A client that omits any of them is refused by SQL BEFORE the procedure runs: no HC.ErrorLog row, an empty 500 in the app, and the SP's own graceful checks are unreachable (CLAUDE.md, Rack of Lamb 2026-09-29). The COALESCE at line 73 guards a NULL value, not an omitted parameter."
     },
     {
       "severity": "high",
-      "issue": "Auth errors emitted outside TRY/CATCH",
-      "detail": "The device lookup and token validation blocks (lines 56-85) emit error rowsets and RETURN before entering the TRY/CATCH. These paths do not log errors in a protected context, and any failure in the ErrorLog INSERT itself (e.g. constraint violation) would propagate as an unhandled exception with no envelope rowset, leaving the caller without a parseable response."
+      "issue": "scanData parameter width mismatch vs column",
+      "detail": "Line 5 declares @scanData NVARCHAR(1000) but WebPortalAuthenticationRequests.scanData is NVARCHAR(100); the INSERT at line 97 silently truncates anything longer (or raises a string-truncation error depending on ANSI_WARNINGS), and the NOT EXISTS check at line 94 compares the untruncated value, so a long scanData would never be found and would be re-inserted on every call. Harmless as long as the portal's QR payload stays under 100 characters."
     },
     {
       "severity": "medium",
@@ -142,8 +142,8 @@
     },
     {
       "severity": "low",
-      "issue": "HcVersion hardcoded as '<unknown>'",
-      "detail": "All HC.ErrorLog inserts use HcVersion = '<unknown>' rather than a real version string. This is consistent with other HC6 SPs but worth noting as a known gap."
+      "issue": "Auth paths run outside TRY/CATCH",
+      "detail": "Lines 53-85 precede BEGIN TRY (the sanctioned placement), so a failure of the HC.ErrorLog INSERT there is a raw 500 with no envelope."
     }
   ],
   "breakingChanges": [

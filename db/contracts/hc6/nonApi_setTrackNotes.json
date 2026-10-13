@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "nonApi_setTrackNotes",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Fills a hasher's notes on a run from an imported file's title, description, private note and stats line: when the notes are blank, or when the existing notes are exactly the start of the new text (an earlier import's fill, extended by a re-import — 1.1.0, 2026-09-12). Text the hasher wrote or edited is never touched. Called by the track-import processor for every activity that matched a run.",
   "parameters": [
     {
@@ -9,28 +9,35 @@
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": "HasherEventMap.EventId",
-      "description": ""
+      "description": "The run the activity matched."
     },
     {
       "name": "userId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": "HasherEventMap.UserId",
-      "description": ""
+      "description": "The hasher who imported the file."
     },
     {
       "name": "notes",
       "type": "NVARCHAR(4000)",
-      "nullable": true,
+      "nullable": false,
       "mapsToColumn": "HasherEventMap.Notes",
-      "description": "Title, blank line, description; trimmed; blank ⇒ no-op."
+      "description": "Title, blank line, description, private note and stats line; trimmed. NULL or blank (LEN 0 — emoji-safe) ⇒ no-op, but the parameter has no default so it must still be passed."
     }
   ],
   "rowsets": [],
   "sideEffects": [
-    "UPDATE HC.HasherEventMap SET Notes WHERE Notes IS NULL or blank — fires the updatedAt trigger."
+    "UPDATE HC.HasherEventMap SET Notes WHERE EventId/UserId match, removed = 0, and Notes is NULL / blank / a case-sensitive prefix of the new text — the HEM trigger restamps updatedAt (the row re-syncs).",
+    "On any runtime error: rolls back if a transaction is open, inserts one HC.ErrorLog row (HcVersion '<unknown>', userId, eventId), then THROWs."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@eventId, @userId, @notes have no SQL default. Called only by the API's track-import processor (ProcessTrackImport), which always passes all three. A call that omits one fails before the body runs — no HC.ErrorLog row, no graceful check (CLAUDE.md 'SP parameter with NO default')."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

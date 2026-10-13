@@ -1,63 +1,72 @@
 {
   "schema": "HC6",
   "name": "hcapp_getBlockedHashers",
-  "version": "1.0.0",
-  "description": "The caller's blocked hashers for the Blocked hashers settings screen. E9.F1.S16.",
+  "version": "1.1.0",
+  "description": "The caller's blocked hashers (E9.F1.S16), for the Blocked hashers settings screen where a block is undone. Read-only. Auth: HC6.ValidateAppAuth (spNumber 126, @param NULL); @userId comes from the token and the WHERE is scoped to it, so a hasher only ever sees their own blocks. A block is an HC.HasherFriendMap row with Ignore = 1; newest first.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Registered device"
+      "description": "Registered device. Default NULL (a NULL is refused by ValidateAppAuth as 'Device not registered')."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Short-lived token (standard, device secret)"
+      "description": "Short-lived token (standard, device secret). Default NULL."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "ref": "StandardErrorResult",
-      "description": "On auth failure"
+      "description": "Auth failure (ValidateAppAuth) returns the error detail alone and the SP returns. No compact envelope."
     },
     {
       "index": 0,
       "name": "BlockedHashers",
+      "description": "On success: one row per blocked hasher, ORDER BY HasherFriendMap.updatedAt DESC. Empty when the caller has blocked nobody. WHERE f.UserId = @userId AND f.Ignore = 1 (no filter on f.Removed or h.Removed: a GDPR-deleted hasher still appears as 'Deleted User').",
       "columns": [
         {
           "name": "PublicHasherId",
-          "type": "NVARCHAR(36)",
+          "type": "NVARCHAR(40)",
           "nullable": false,
-          "description": "Blocked hasher's public id, UPPER"
+          "description": "UPPER(CAST(Hasher.PublicHasherId AS NVARCHAR(40))) — the blocked hasher's public id in upper case; the app lowercases it on arrival (lowerGuidsInPlace)."
         },
         {
           "name": "DisplayName",
-          "type": "NVARCHAR(250)",
+          "type": "NVARCHAR(501)",
           "nullable": false,
-          "description": "Blocked hasher's display name"
+          "description": "Hasher.DisplayName — persisted computed column honouring NameDisplayPreference."
         },
         {
           "name": "Photo",
-          "type": "NVARCHAR(500)",
+          "type": "NVARCHAR(1000)",
           "nullable": true,
-          "description": "Profile photo URL"
+          "description": "Hasher.Photo — profile photo URL."
         },
         {
           "name": "BlockedAt",
-          "type": "DATETIMEOFFSET",
+          "type": "DATETIMEOFFSET(7)",
           "nullable": false,
-          "description": "When the block was last set"
+          "description": "HasherFriendMap.updatedAt — when the block was last set (column added by db/hc6/app/archive/2026-09-29_hasher_block.sql)."
         }
       ]
     }
   ],
-  "sideEffects": [],
-  "codeSmells": [],
+  "sideEffects": [
+    "None on success. INSERT HC.ErrorLog then THROW on an unhandled error (CATCH, line 48)."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Id emitted upper-case",
+      "detail": "Line 39 returns PublicHasherId as UPPER(...). Ids are lowercase everywhere in the app (CLAUDE.md 'Ids are lowercase, everywhere'); this relies on the adHoc reply door lowercasing it. Harmless today, but a reader that compares before that door runs would match nothing."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

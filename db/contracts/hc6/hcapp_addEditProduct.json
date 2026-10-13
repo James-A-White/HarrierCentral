@@ -1,0 +1,155 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_addEditProduct",
+  "version": "1.0.0",
+  "description": "Creates or edits one entry in a kennel's catalogue (3.1 payments): a run package, a membership, a piece of haberdashery — what the hasher pays (PricingJson), the per-type rules (ProductDetailsJson) and the supplier detail (SourceJson, admin-only, never syncs). @productId NULL creates; otherwise edits that product, which must belong to @kennelId (1343) so one kennel cannot edit another's. A product is NEVER deleted here: taking it off sale is @isActive = 0, which keeps the row syncing so a payment made against it last year still resolves (James, 2026-09-13). Auth: HC6.ValidateAppAuth (spNumber 103, standard token). Gate: HC6.CheckKennelPermission 'manageProducts' (GM, VGM, Hash Cash, Haberdasher or the ManageHashCash flag) → 1341. Pre-flight before any transaction: name required (1342), all three JSON fields must pass ISJSON (1345). Blank test is LEN()-based so an emoji-only name survives the collation. HC.Product is defined by db/hc6/app/archive/2026-09-13_create_Product.sql and 2026-09-13_product_json_rework.sql (PricingJson), not in db/schema/tables.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device. No default."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret). No default."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Product.KennelId",
+      "description": "The kennel whose catalogue this is; the permission scope and the ownership check on edit. No default — omitting it is refused by SQL before the procedure runs."
+    },
+    {
+      "name": "productId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Product.id",
+      "description": "NULL (default) = create with a server NEWID(); otherwise the product to edit, which must exist for @kennelId with Removed = 0 → else 1343."
+    },
+    {
+      "name": "productType",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Product.ProductType",
+      "description": "Catalogue entry kind (run package / membership / haberdashery …). Default 0."
+    },
+    {
+      "name": "name",
+      "type": "NVARCHAR(200)",
+      "nullable": true,
+      "mapsToColumn": "Product.Name",
+      "description": "Required in effect: LEN(COALESCE(@name, '')) = 0 → 1342. Trimmed on write. Default NULL."
+    },
+    {
+      "name": "description",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Product.Description",
+      "description": "Optional description. Default NULL. On edit NULL overwrites (not COALESCE-kept)."
+    },
+    {
+      "name": "pricingJson",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Product.PricingJson",
+      "description": "How the product is priced, one JSON document so a product can express the model it actually has. Must pass ISJSON when not NULL → else 1345. Syncs. Default NULL."
+    },
+    {
+      "name": "productDetailsJson",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Product.ProductDetailsJson",
+      "description": "Per-type rules, e.g. {\"photos\":[…],\"sizes\":[\"S\",\"M\"]}. Must pass ISJSON when not NULL → else 1345. Syncs. Default NULL."
+    },
+    {
+      "name": "sourceJson",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Product.SourceJson",
+      "description": "Supplier detail (cost to the kennel). Does NOT sync — kennel admin data only. Must pass ISJSON when not NULL → else 1345. Default NULL."
+    },
+    {
+      "name": "isActive",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Product.IsActive",
+      "description": "1 (default) on sale; 0 off sale (the only way to retire a product — never Removed)."
+    },
+    {
+      "name": "sortOrder",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Product.SortOrder",
+      "description": "Display order within the catalogue. Default 0."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "On any failure: { success = 0, errorCode, errorType } then the detail at index 1. ValidateAppAuth 1203/1303 (invalid token 1, device 3, signed out 7); 1341 not authorised (errorType 13); 1342 name required (2); 1345 malformed JSON (2); 1343 product not this kennel's (3); 1344 unhandled (5).",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "Always 0." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "See description." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "1 / 3 / 7 auth; 13 not authorised; 2 validation; 3 not found; 5 unhandled." }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Error detail on every failure path (errorId, errorType, errorCode, errorTitle, errorUserMessage, errorProc)."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "On success: a one-column envelope — no errorCode / errorType columns, unlike the failure envelope.",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "Always 1." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Product",
+      "description": "On success: the product written.",
+      "columns": [
+        { "name": "productId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The created (NEWID()) or edited HC.Product.id." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.Product (create) with createdAt = updatedAt = SYSDATETIMEOFFSET(), updatedAtBias 0, Removed 0, CreatedByUserId = caller; or UPDATE HC.Product (edit) of all nine writable columns WHERE id = @productId AND KennelId = @kennelId — inside a transaction.",
+    "HC.trgUpdateModifiedOnDateForProduct stamps updatedAt (+ updatedAtBias) on the UPDATE, so the row re-syncs to every phone of the kennel.",
+    "INSERT HC.ErrorLog on 1341, 1342, 1345, 1343 (all pre-flight, outside the transaction) and in the CATCH (after ROLLBACK).",
+    "EXEC HC6.CheckKennelPermission 'manageProducts'."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken and @kennelId (lines 2-4) have no SQL default. A client that omits @kennelId gets 'expects parameter @kennelId' BEFORE the procedure runs: no HC.ErrorLog row, an empty 500 in the app, and the graceful checks below never fire (CLAUDE.md, Rack of Lamb 2026-09-29)."
+    },
+    {
+      "severity": "low",
+      "issue": "Success envelope lacks the errorCode / errorType columns the failure envelope carries",
+      "detail": "Line 193 emits SELECT 1 AS success; the failure paths emit { success, errorCode, errorType }. Rowset 0's shape depends on the outcome, so a client reading errorCode must tolerate the column being absent."
+    },
+    {
+      "severity": "low",
+      "issue": "Error log text names two of the three JSON fields",
+      "detail": "Line 130 logs 'productDetailsJson or sourceJson is not valid JSON' while the test at lines 123-125 also covers @pricingJson; a bad PricingJson is logged under the wrong field name."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

@@ -320,7 +320,7 @@ SELECT
     -- Rooms default to pinned; the mirrors store the deviations.
     CASE WHEN (c.GrantColumn = 'mm'
                AND (ISNULL(hs.UnpinnedMismanagementRooms, 0) & c.GrantMask) <> 0)
-           OR (c.GrantColumn IN ('flags', 'platform')
+           OR (c.GrantColumn IN ('flags', 'platform', 'beta')
                AND (ISNULL(hs.UnpinnedAppAccessRooms, 0) & c.GrantMask) <> 0)
          THEN 0 ELSE 1 END                         AS Pinned,
     c.RoomType                                     AS RoomType,

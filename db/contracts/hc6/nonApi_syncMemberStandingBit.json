@@ -1,0 +1,51 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_syncMemberStandingBit",
+  "version": "1.0.0",
+  "description": "Single maintenance point for the AUTOMATED MEMBER bit (0x0001) of one HC.HasherKennelMap row's KennelStanding: sets the bit when the user's membership is current (MembershipExpirationDate >= now), clears it when lapsed or absent. Never touches the manual bits (ALUMNI 0x0002, TRUSTED 0x0004, ADMIN 0x0100). Called (EXEC) by every SP that writes MembershipExpirationDate; the row-wise equivalent of nonApi_sweepMemberStanding. No-op when the bit is already right, which avoids a pointless updatedAt restamp; when it does write, the HKM trigger restamps updatedAt and the row re-syncs. Internal; no auth. Returns nothing; a runtime error is logged to HC.ErrorLog and re-thrown into the caller.",
+  "parameters": [
+    {
+      "name": "userId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "HasherKennelMap.UserId",
+      "description": "The hasher of the HKM row to sync."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "HasherKennelMap.KennelId",
+      "description": "The kennel of the HKM row to sync."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "UPDATE HC.HasherKennelMap SET KennelStanding (bit 0x0001 only) WHERE UserId = @userId AND KennelId = @kennelId AND the result differs — the HKM trigger restamps updatedAt when it writes.",
+    "On any runtime error: rolls back if a transaction is open (it usually runs inside the caller's), inserts one HC.ErrorLog row (HcVersion '<unknown>'), then THROWs."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@userId, @kennelId have no SQL default. Called only by EXEC from the membership-writing SPs, which pass both. A call that omits one fails before the body runs — no HC.ErrorLog row, no graceful check (CLAUDE.md 'SP parameter with NO default')."
+    },
+    {
+      "severity": "low",
+      "issue": "GETDATE() (server local DATETIME) compared with a DATETIMEOFFSET(7) column",
+      "detail": "Lines 26 and 34 compare MembershipExpirationDate (an instant) with GETDATE(), which is implicitly converted with the server offset. Right on Azure SQL (UTC clock) but SYSDATETIMEOFFSET() says what is meant; kept identical to nonApi_sweepMemberStanding so the two agree."
+    },
+    {
+      "severity": "low",
+      "issue": "CATCH rolls back the CALLER's transaction before logging",
+      "detail": "Line 40: IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION. This SP opens no transaction of its own, so when it is EXECed inside a caller's transaction (its normal use) an error here rolls back the caller's whole unit of work and leaves @@TRANCOUNT = 0 — the caller's own COMMIT/ROLLBACK then raises 'no corresponding BEGIN TRANSACTION'. The THROW reaches the caller's CATCH either way, so nothing is lost, but the rollback belongs to the caller."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

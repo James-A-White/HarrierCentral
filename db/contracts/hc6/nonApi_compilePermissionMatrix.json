@@ -1,0 +1,36 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_compilePermissionMatrix",
+  "version": "1.0.0",
+  "description": "Internal (no auth). Compiles the permission source tables (HC.PermissionFunction / HC.PermissionRole / HC.RolePermission) into the JSON projections the clients read — the ONLY writer of those projections (the compile-on-save invariant, Permissions V2). Global matrix -> HC.ServerStatus.PermissionMatrixJson ({schemaVersion:1, version:<ISO now>, functions:[{key, areaKey, surfaces, mmMask, flagMask, hareScoped}]}) and bumps ServerStatus.PermissionMatrixUpdatedAt. Per-kennel override -> HC.Kennel.PermissionOverrideJson ({schemaVersion:1, functions:[{key, mmMask, flagMask, hareScoped}]}) for every kennel that has HC.RolePermission rows, resolving the tri-state server-side (kennel Allowed 1 = grant, -1 = revoke, 0 / no row = inherit global); cleared to NULL for kennels whose override rows are all gone. Called by HC6.hcportal_savePermissionMatrix after every save and by the archived permission migrations.",
+  "parameters": [
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.id",
+      "description": "NULL (default) = recompile the global matrix AND every kennel with override rows; a value = the global matrix AND just that kennel's override."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "UPDATE HC.ServerStatus SET PermissionMatrixJson, PermissionMatrixUpdatedAt (no WHERE — the table holds one row).",
+    "UPDATE HC.Kennel SET PermissionOverrideJson for kennels with HC.RolePermission rows (fires the Kennel updatedAt trigger, so those kennels re-sync to every phone — the user sync's Kennels rowset carries permissionOverrideJson).",
+    "UPDATE HC.Kennel SET PermissionOverrideJson = NULL where it is set but no override rows remain.",
+    "All in one transaction; the CATCH rolls back, INSERTs HC.ErrorLog ('<unknown>') and THROWs."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "UPDATE HC.ServerStatus without a WHERE",
+      "detail": "Line 58 updates every row of HC.ServerStatus. The table is single-row by convention, so this is fine today, but a second row would receive the matrix too."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

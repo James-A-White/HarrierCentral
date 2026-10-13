@@ -1,0 +1,72 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_markKennelChatRead",
+  "version": "1.0.0",
+  "description": "Marks a KENNEL-level chat thread as read for the calling user: upserts the (UserId, KennelId) row in HC.EventMessageBadgeCounts with the thread's current MAX(MessageSequenceCount) (0 when the thread is empty), LastReadAt and LastReadMessageId. Mirrors hcapp_markEventChatRead, but returns a bare {success} and no FCM fan-out rowset — other devices learn of the read on their next badge poll, not by silent push. Auth: HC6.ValidateAppAuth (spNumber 66, @param NULL); no permission gate — any authenticated user may mark any kennel thread read for themselves.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Registered device. Default NULL."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret). Default NULL."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "EventMessageBadgeCounts.KennelId",
+      "description": "Kennel whose thread (EventMessage rows with KennelId set and EventId NULL) was read. NULL: errorCode 1901, errorType 2."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "On auth failure (ValidateAppAuth) or NULL kennelId (1901/2): the error detail alone, no envelope."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "After the TRY block: success=1 when the MERGE committed; success=0 from the CATCH block (logged to HC.ErrorLog, but no errorId or detail is returned).",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "1 written, 0 unhandled error." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "MERGE HC.EventMessageBadgeCounts on (KennelId, UserId, Removed = 0): UPDATE LastSequenceCount = COALESCE(MAX(MessageSequenceCount), 0), LastReadAt = GETUTCDATE(), LastReadMessageId; or INSERT (UserId, KennelId, LastSequenceCount, LastReadAt, LastReadMessageId) with id/createdAt/updatedAt from defaults (lines 66-81)",
+    "INSERT HC.ErrorLog on NULL kennelId and on the CATCH path (after ROLLBACK)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH returns {success:0} with no error detail",
+      "detail": "Lines 84-90 log the failure to HC.ErrorLog but return only success=0 — no errorId, errorCode or errorType — so the app cannot show or correlate the error. hcapp_markEventChatRead returns the full detail row on the same path."
+    },
+    {
+      "severity": "low",
+      "issue": "UPDATE branch does not stamp updatedAt",
+      "detail": "The MATCHED branch (lines 73-76) sets LastSequenceCount, LastReadAt and LastReadMessageId but not updatedAt, unlike hcapp_markEventChatRead (which sets updatedAt = SYSUTCDATETIME()). A re-read leaves updatedAt at the row's creation time."
+    },
+    {
+      "severity": "low",
+      "issue": "Sequence snapshot and MERGE are not atomic",
+      "detail": "MAX(MessageSequenceCount) and the last message id (lines 57-64) are read before BEGIN TRANSACTION (line 66); a message posted in between is counted as read. Harmless in practice — the next read catches up."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "nonApi_rptKennelRunStats",
-  "version": "1.0.0",
-  "description": "Generates a pivoted run-stats report for a kennel. Each hasher becomes a column; each run becomes a row. The 'paid' value encodes payment amount and type into a single integer so a single pivot covers both. Also inserts summary rows for total run counts and hare counts. The pivot column list is built dynamically from display names — dynamic SQL is required because the column count (one per hasher) is not known at compile time. Called by the portal or internal tools for reporting; not called by the API directly. Wrapped in TRY/CATCH on 2026-09-23: a runtime error is logged to HC.ErrorLog and re-raised, so a nightly failure is diagnosable rather than only a Logic App / Function \"Failed\".",
+  "version": "1.1.0",
+  "description": "Generates a pivoted run-stats report for a kennel. Each hasher becomes a column; each run becomes a row. The 'paid' value encodes payment amount and type into a single integer so a single pivot covers both. Also inserts summary rows for total run counts and hare counts. The pivot column list is built dynamically from display names — dynamic SQL is required because the column count (one per hasher) is not known at compile time. Called by the portal or internal tools for reporting; not called by the API directly. Called (EXEC) by HC6.hcportal_rptKennelRunStats and by operators; not reachable by name through the shim. Wrapped in TRY/CATCH on 2026-09-23: a runtime error is logged to HC.ErrorLog and re-raised, so a nightly failure is diagnosable rather than only a Logic App / Function \"Failed\".",
   "parameters": [
     {
       "name": "kennelId",
@@ -54,14 +54,24 @@
   "sideEffects": [],
   "codeSmells": [
     {
+      "severity": "medium",
+      "issue": "Dynamic SQL — the one exception to 'No dynamic SQL. Ever.'",
+      "detail": "Lines 122–130 build the PIVOT statement as a string and run it with sp_executesql. T-SQL PIVOT needs its column list at compile time, so a per-hasher column cannot be done any other way; the identifiers are bracket-quoted with ']' doubled (line 116), so a display name cannot inject. Recorded as a smell because CLAUDE.md forbids dynamic SQL outright; this is the documented exception, not a licence."
+    },
+    {
+      "severity": "medium",
+      "issue": "Raw HC.Event.EventStartDatetime used for Event_date, ordering and the running counts",
+      "detail": "Lines 33, 39, 41, 70, 79, 90 use EventStartDatetime, the column with a spurious +00:00 on ~67% of rows (CLAUDE.md 'hc-event-datetimes': local clock ⇒ EventStartLocal; instant ⇒ EventStartDateTimeGmt). CONVERT(datetime2, …) strips the offset, so the report shows the stored wall clock, which is what a run-stats sheet wants — but the window ORDER BY mixes rows whose offset is real with rows whose offset is fake, so two runs on the same day can sort differently from the app's history, and the Visitors & Virgins join at line 79 matches on that converted value. Use EventStartLocal, which nonApi_updateRunCountsByUser already orders by, so the report's runcount agrees with the app's."
+    },
+    {
       "severity": "low",
       "issue": "Dynamic SQL column list escapes ']' via REPLACE — display names with ']' are safe",
       "detail": "The PIVOT column list wraps DisplayName in brackets using REPLACE(TRIM(@dname), ']', ']]') to escape any ']' characters before bracket-quoting. This follows the SQL Server convention for escaping bracket-delimited identifiers. Names containing ']' will appear with ']]' in the column header but the dynamic SQL will execute correctly."
     },
     {
-      "severity": "high",
+      "severity": "low",
       "issue": "CURSOR used to build dynamic column list — O(N) cursor for N hashers",
-      "detail": "The column list is assembled by iterating a CURSOR over all distinct hasher display names. This is the standard approach for dynamic PIVOT in SQL Server but is inherently serial. For kennels with many hashers, this adds latency proportional to hasher count."
+      "detail": "The column list is assembled by iterating a CURSOR over all distinct hasher display names. This is the standard approach for dynamic PIVOT in SQL Server but is inherently serial. For kennels with many hashers, this adds latency proportional to hasher count. Downgraded to low (2026-10-13): a kennel has at most a few hundred distinct display names, so the cursor costs milliseconds; it does not bite in production."
     },
     {
       "severity": "medium",
@@ -77,6 +87,11 @@
       "severity": "low",
       "issue": "Sentinel dates for summary rows ('1/1/2200', '1/1/2100') are implicit sort trick",
       "detail": "Summary rows are sorted to the bottom of the DESC-ordered result by using far-future dates. This is a clever trick but brittle — any caller that sorts or filters by Event_date must understand these sentinels represent non-event rows."
+    },
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@kennelId has no SQL default. Run by operators / internal reporting, never through the shim. A call that omits one fails before the body runs — no HC.ErrorLog row, no graceful check (CLAUDE.md 'SP parameter with NO default')."
     }
   ],
   "breakingChanges": [

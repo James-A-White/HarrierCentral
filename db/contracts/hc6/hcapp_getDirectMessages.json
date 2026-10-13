@@ -1,29 +1,29 @@
 {
   "schema": "HC6",
   "name": "hcapp_getDirectMessages",
-  "version": "1.0.0",
-  "description": "Reads a DM thread in hcapp_getRoomMessages' shape; the caller must hold a row for it (ended still reads). Marks read when @markRead=1. E9.F1.S7. 2026-09-30: every message row also carries replyToMessageId, replyToText (NULL when deleted), replyToKind, replyToAuthor, replyToRemoved and reactions (E9.F1.S21/S22). 2026-10-01 (E9.F1.S24): the status row carries otherReadSequenceCount; a read that reaches the other hasher's messages ends with an API-only { ReadReceiptThreadId, UserId, FcmToken } rowset.",
+  "version": "1.1.0",
+  "description": "Reads a direct-message thread (E9.F1.S7) in hcapp_getRoomMessages' shape, newest first, and marks it read when @markRead = 1. The caller must hold a HC.HasherFriendMap row for @threadId — an ended (Removed) friendship still reads; a blocked hasher's messages are hidden like every reader (E9.F1.S16). Every message row carries replyToMessageId, replyToText (NULL when deleted), replyToKind, replyToAuthor, replyToRemoved and reactions (E9.F1.S21/S22, 2026-09-30). The Thread row carries pinned and otherReadSequenceCount (E9.F1.S24 read receipts, 2026-10-01); a read that reaches the other hasher's messages ends with an API-only { ReadReceiptThreadId, UserId, FcmToken } rowset that the shim strips and turns into a silent push. Auth: HC6.ValidateAppAuth (spNumber 135, @param NULL). Also called by publicWeb_getChatMessages with @apiOnlyRowsets = 0.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Registered device"
+      "description": "Registered device. Default NULL (auth failure)."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Short-lived token (standard, device secret)"
+      "description": "Short-lived token (standard, device secret). Default NULL."
     },
     {
       "name": "threadId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "EventMessage.ThreadId",
-      "description": ""
+      "description": "HC.HasherFriendMap.ThreadId of the conversation. NULL, or a thread the caller holds no row for: errorCode 2015, errorType 3 (logged)."
     },
     {
       "name": "sinceSequenceCount",
@@ -33,18 +33,18 @@
       "description": "delta; NULL = full"
     },
     {
-      "name": "markRead",
-      "type": "SMALLINT",
-      "nullable": true,
-      "mapsToColumn": null,
-      "description": "1 marks the newest as read"
-    },
-    {
       "name": "reactionsSince",
       "type": "DATETIMEOFFSET(7)",
       "nullable": true,
       "mapsToColumn": null,
       "description": "The last reactionsAsOf this client saw (E9.F1.S22). With it, the reader returns reactions changed since then on messages at or below sinceSequenceCount."
+    },
+    {
+      "name": "markRead",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "1 advances the caller's badge row for the thread to the newest live message (and may trigger the read-receipt rowset). Default 0."
     },
     {
       "name": "apiOnlyRowsets",
@@ -58,7 +58,7 @@
     {
       "index": 0,
       "ref": "StandardErrorResult",
-      "description": "2015 not found / not yours (3)"
+      "description": "On auth failure (ValidateAppAuth) or NULL / not-yours @threadId (2015/3): the error detail alone, no envelope. Runtime errors are logged to HC.ErrorLog and re-thrown (THROW)."
     },
     {
       "index": 0,
@@ -78,9 +78,9 @@
         },
         {
           "name": "text",
-          "type": "NVARCHAR(MAX)",
+          "type": "NVARCHAR(500)",
           "nullable": false,
-          "description": ""
+          "description": "EventMessage.MessageContent."
         },
         {
           "name": "roomId",
@@ -102,13 +102,13 @@
         },
         {
           "name": "authorFirstName",
-          "type": "NVARCHAR(250)",
+          "type": "NVARCHAR",
           "nullable": false,
-          "description": ""
+          "description": "Hasher.DisplayName (persisted computed column)."
         },
         {
           "name": "authorImageUrl",
-          "type": "NVARCHAR(500)",
+          "type": "NVARCHAR(1000)",
           "nullable": true,
           "description": ""
         },
@@ -129,8 +129,45 @@
           "type": "SMALLINT",
           "nullable": false,
           "description": "own or SuperAdmin"
+        },
+        {
+          "name": "replyToMessageId",
+          "type": "NVARCHAR(36)",
+          "nullable": true,
+          "description": "EventMessage.ReplyToMessageId, UPPER-cased; NULL when not a reply (E9.F1.S21)."
+        },
+        {
+          "name": "replyToText",
+          "type": "NVARCHAR(200)",
+          "nullable": true,
+          "description": "First 200 characters of the quoted message; NULL when not a reply or the original was removed."
+        },
+        {
+          "name": "replyToKind",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "The quoted message's MessageKind."
+        },
+        {
+          "name": "replyToAuthor",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "The quoted message's author DisplayName."
+        },
+        {
+          "name": "replyToRemoved",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 when the quoted message exists but was removed."
+        },
+        {
+          "name": "reactions",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "EventMessage.ReactionsJson (E9.F1.S22)."
         }
-      ]
+      ],
+      "description": "Live messages of the thread the reader may see, ORDER BY createdAt DESC. Empty when nothing is newer than @sinceSequenceCount."
     },
     {
       "index": 1,
@@ -140,7 +177,7 @@
           "name": "unreadCount",
           "type": "INT",
           "nullable": false,
-          "description": "before the mark"
+          "description": "Live messages by the other hasher above the caller's LastSequenceCount, 0 when blocked."
         },
         {
           "name": "newestSequenceCount",
@@ -162,13 +199,13 @@
         },
         {
           "name": "otherDisplayName",
-          "type": "NVARCHAR(250)",
+          "type": "NVARCHAR",
           "nullable": false,
           "description": ""
         },
         {
           "name": "otherPhoto",
-          "type": "NVARCHAR(500)",
+          "type": "NVARCHAR(1000)",
           "nullable": true,
           "description": ""
         },
@@ -176,9 +213,22 @@
           "name": "muted",
           "type": "SMALLINT",
           "nullable": false,
-          "description": ""
+          "description": "1 when the caller's FriendNotificationPreference is 3 (silver bell)."
+        },
+        {
+          "name": "pinned",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "The caller's HasherFriendMap.Pinned for this thread (E9.F1.S25)."
+        },
+        {
+          "name": "otherReadSequenceCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "How far the OTHER hasher has read (their badge row's LastSequenceCount, 0 when none): the caller's messages at or below it show as read (E9.F1.S24)."
         }
-      ]
+      ],
+      "description": "One row (the other hasher), computed BEFORE the mark."
     },
     {
       "index": 2,
@@ -193,9 +243,9 @@
       ]
     },
     {
-      "index": "last-1",
+      "index": 3,
       "name": "ReactionUpdates",
-      "description": "Added 2026-09-30 (E9.F1.S22), ALWAYS present, after every older rowset: { id, reactions } for messages the client already holds whose reactions changed after @reactionsSince. Find by column.",
+      "description": "ALWAYS present (empty when @reactionsSince is NULL or nothing changed): { id, reactions } for live messages at or below @sinceSequenceCount whose ReactionsUpdatedAt is after @reactionsSince (E9.F1.S22).",
       "columns": [
         {
           "name": "id",
@@ -212,7 +262,7 @@
       ]
     },
     {
-      "index": "last",
+      "index": 4,
       "name": "ReactionsAsOf",
       "description": "One row { reactionsAsOf } — server time; pass back as @reactionsSince.",
       "columns": [
@@ -223,12 +273,50 @@
           "description": "SYSDATETIMEOFFSET()"
         }
       ]
+    },
+    {
+      "index": 5,
+      "name": "ReadReceiptDevices",
+      "description": "API ONLY, conditional: present only when @markRead = 1, @apiOnlyRowsets = 1, the caller has not blocked the other hasher, and the read reached at least one of the other hasher's live messages above the caller's previous LastSequenceCount. One row per phone of the OTHER hasher (FcmToken set, not removed, IsMobile = 1, BuildNumber >= HC6.MinBuildForChatPush(), and they have not blocked the caller). AppApiHC6 strips it and sends the silent read-receipt nudge; it never reaches a client.",
+      "columns": [
+        {
+          "name": "ReadReceiptThreadId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "@threadId, UPPER-cased text."
+        },
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.Device.UserId — the other hasher."
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "HC.Device.FcmToken."
+        }
+      ]
     }
   ],
   "sideEffects": [
-    "badge MERGE when markRead"
+    "MERGE HC.EventMessageBadgeCounts keyed (UserId, EventId NULL, KennelId NULL, ThreadId = @threadId, MessageType 0): UPDATE LastSequenceCount / LastReadAt or INSERT — only when @markRead = 1 and the thread has a live message (lines 141-151, outside any transaction)",
+    "EXEC HC6.nonApi_mayModerateChat (no scope: SuperAdmin only) to decide canDelete, line 67",
+    "INSERT HC.ErrorLog on not found (lines 56-58) and from the CATCH block (lines 183-184, after ROLLBACK)"
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "MERGE without HOLDLOCK on a non-unique key",
+      "detail": "Lines 143-150 match the badge row on (UserId, NULLs, ThreadId, MessageType) with no UPDLOCK/HOLDLOCK hint; two phones of the same hasher opening the thread at once can both INSERT, and the reads at lines 70-71 and 126-128 then pick one row arbitrarily."
+    },
+    {
+      "severity": "low",
+      "issue": "Ids returned as UPPER-cased text",
+      "detail": "UPPER(msg.id), UPPER(h.PublicHasherId), UPPER(msg.ThreadId) and UPPER(msg.ReplyToMessageId) return NVARCHAR in upper case; the app relies on lowerGuidsInPlace at the door (CLAUDE.md 'Ids are lowercase, everywhere')."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

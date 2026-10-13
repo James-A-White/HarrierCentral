@@ -1,14 +1,14 @@
 {
   "schema": "HC6",
   "name": "util_fixAllRunNumbers",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "MAINTENANCE SP — run manually by the developer only, never called by the API or any automated process. Recalculates HC.Event.EventNumber for every qualifying event across all kennels in a single pass using the same island-group window function logic as nonApi_updateRunNumbers, but partitioned by KennelId so each kennel's numbering sequence is independent. Intended as a sweep to fix EventNumber = 0 or stale-number inconsistencies left by trigger timing gaps or bulk data operations. Returns two rowsets reporting what was changed.",
   "parameters": [],
   "rowsets": [
     {
       "index": 0,
       "name": "PerKennelSummary",
-      "description": "One row per kennel where at least one EventNumber was corrected, ordered by KennelName. Empty when no corrections were needed. On CATCH block error: returns { Success = 0, ErrorMessage } instead.",
+      "description": "On success: one row per kennel where at least one EventNumber was corrected, ordered by KennelName; empty when no corrections were needed. On failure the CATCH returns the ErrorEnvelope rowset at index 0 instead (see rowset 'ErrorEnvelope').",
       "columns": [
         {
           "name": "KennelName",
@@ -51,7 +51,7 @@
     {
       "index": 1,
       "name": "TotalSummary",
-      "description": "Always exactly 1 row — the total count of events corrected across all kennels. Present only on success (no CATCH block).",
+      "description": "Always exactly 1 row on success — the total count of events corrected across all kennels. Absent on failure.",
       "columns": [
         {
           "name": "TotalEventsFixed",
@@ -60,14 +60,39 @@
           "description": "Total COUNT(*) of events whose EventNumber was changed across all kennels."
         }
       ]
+    },
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Only when the CATCH runs, and then the only rowset: { Success 0, ErrorMessage }. Not the StandardErrorResult shape, and NOT logged to HC.ErrorLog.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 here."
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "ERROR_MESSAGE() from the CATCH block."
+        }
+      ]
     }
   ],
   "sideEffects": [
-    "UPDATEs HC.Event.EventNumber and HC.Event.updatedAt (SYSDATETIMEOFFSET()) for all qualifying events across all kennels where NewEventNumber != current EventNumber.",
+    "UPDATEs HC.Event.EventNumber and HC.Event.updatedAt (CONVERT(datetimeoffset(7), SYSDATETIMEOFFSET(), 0)) for every qualifying event (counted, visible, not removed, not deleted, EventStartLocal not NULL) across all kennels whose computed number differs; the Event updatedAt trigger fires and those runs re-sync.",
     "All updates are wrapped in a single transaction — either all kennels are updated or none (on error, transaction is rolled back).",
-    "On CATCH: transaction is rolled back; returns { Success = 0, ErrorMessage } instead of the normal rowsets."
+    "On CATCH: transaction is rolled back; returns { Success = 0, ErrorMessage } instead of the normal rowsets.",
+    "Creates and drops #Updated (OUTPUT clause captures old and new numbers for the report)."
   ],
   "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 115–118 roll back and SELECT { 0, ERROR_MESSAGE() } without an INSERT HC.ErrorLog. For a hand-run sweep the operator sees the message in SSMS, so nothing is lost today, but CLAUDE.md requires every CATCH to log; if this proc is ever scheduled, a failure would leave no server-side record."
+    },
     {
       "severity": "medium",
       "issue": "Updating updatedAt on all affected Event rows triggers trgRecalculateRunCounts for each row",

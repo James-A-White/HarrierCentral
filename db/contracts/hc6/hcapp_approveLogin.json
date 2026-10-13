@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_approveLogin",
-  "version": "1.0.0",
-  "description": "Main app launch / login SP called on every app startup after initial device authorisation. Validates the device token via HC.CHECK_ACCESS_TOKEN_V2, records the login event in HC.LaunchAndLogin (including failed attempts), updates device metadata, marks any viewed splash sequence as seen, and returns session configuration from HC.ServerStatus plus the next pending splash sequence for the user.",
+  "version": "1.1.0",
+  "description": "App launch / login SP called on every start after device authorisation. Does NOT use HC6.ValidateAppAuth: it resolves HC.Device itself and calls HC.CHECK_ACCESS_TOKEN_V2 directly (standard token, device secret), so the only auth failure is 1103 / errorType 11; a deliberately signed-out device (Device.SignedOutAt) fails here as a rotated secret, not as errorType 7. Order: auth check (1103) BEFORE the removed-user check (1403, errorType 14) to avoid disclosing removal to an unauthenticated caller; a failed attempt is still recorded in HC.LaunchAndLogin with errorInfo = 'Invalid Access Token'. On success, in one transaction: LaunchAndLogin row, Hasher.LastLoginDateTime/HcVersion, a SplashSequenceViews row when @splashSequenceViewed is given, and Device.LastLogin/Latitude/Longitude/BuildNumber/Version/Locale. Then reads the active HC.LoginNotifications message, the next unseen HC.SplashSequence, any song selected in the last 5 minutes for a run whose start is within ~500 m of the device (HC.SongSession, bounding box), and HC.ServerStatus, and returns one LoginResult row. The permission matrix (ServerStatus.PermissionMatrixJson) is returned only when @clientPermissionsWatermark is NULL or older than ServerStatus.PermissionMatrixUpdatedAt; otherwise those two columns are NULL (Permissions V2 projection).",
   "parameters": [
     {
       "name": "deviceId",
@@ -72,7 +72,8 @@
       "type": "NVARCHAR(50)",
       "nullable": true,
       "mapsToColumn": "Hasher.HcVersion",
-      "description": "App version string (e.g. '3.0.0'). Default 'pre 3.0'. Stored on Hasher.HcVersion (NVARCHAR(50) — exact match). Also written to Device.Version which is NVARCHAR(25) — silent truncation possible for long version strings."
+      "description": "App version string, e.g. '3.1.6'. Default 'pre 3.0'. Written to Hasher.HcVersion (NVARCHAR(50)), to Device.Version (NVARCHAR(25) — see typeMismatch) and into the LaunchAndLogin.HcVersion text. Also the HcVersion stamped on this SP's own HC.ErrorLog rows.",
+      "typeMismatch": "NVARCHAR(50) parameter; also written to Device.Version NVARCHAR(25) — silent truncation of a version string over 25 characters."
     },
     {
       "name": "buildNumber",
@@ -93,7 +94,8 @@
       "type": "NVARCHAR(4000)",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "IP address / geolocation string. Stored in HC.LaunchAndLogin.IpInfo which is NVARCHAR(2000) — silent truncation possible for long values. Default NULL."
+      "description": "IP address / geolocation string. Stored in HC.LaunchAndLogin.IpInfo which is NVARCHAR(2000) — silent truncation possible for long values. Default NULL.",
+      "typeMismatch": "NVARCHAR(4000) parameter; LaunchAndLogin.ipInfo is NVARCHAR(2000) — silent truncation over 2000 characters."
     },
     {
       "name": "splashSequenceViewed",
@@ -115,6 +117,13 @@
       "nullable": true,
       "mapsToColumn": "Device.Locale",
       "description": "Device locale string (e.g. 'en-AU'). Default ''. Stored on Device.Locale NVARCHAR(50) — exact match."
+    },
+    {
+      "name": "clientPermissionsWatermark",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "The PermissionMatrixUpdatedAt the client already holds. Default NULL. When NULL, or older than ServerStatus.PermissionMatrixUpdatedAt, the LoginResult carries permissionMatrixJson and permissionMatrixUpdatedAt; otherwise both are NULL and the client keeps its cached matrix."
     }
   ],
   "rowsets": [
@@ -123,9 +132,24 @@
       "name": "Envelope",
       "description": "Write SP success envelope. Always returned as rowset 0 on every code path.",
       "columns": [
-        { "name": "success", "type": "BIT", "nullable": false, "description": "1 on success, 0 on any error path." },
-        { "name": "errorCode", "type": "INT", "nullable": true, "description": "NULL on success. Error code on failure: 1103=auth failure, 1403=removed user, 1903=unhandled db error." },
-        { "name": "errorType", "type": "INT", "nullable": true, "description": "NULL on success. 11=auth failure, 14=removed user, 19=unhandled db error." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 on any error path."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success. 1103 auth failure; 1403 removed user; 1903 unhandled DB error."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success. 11 auth failure; 14 removed user; 19 unhandled DB error."
+        }
       ]
     },
     {
@@ -133,37 +157,187 @@
       "name": "ErrorDetail",
       "description": "Returned as rowset 1 on auth failure (errorType=11) or removed-user check (errorType=14) or unhandled CATCH error (errorType=19). Near-standard error format — missing debugMessage column vs full StandardErrorResult.",
       "columns": [
-        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog entry GUID." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Mirrors envelope errorType: 11=auth, 14=removed user, 19=db error." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Mirrors envelope errorCode." },
-        { "name": "errorTitle", "type": "NVARCHAR", "nullable": false, "description": "Short error title. 'Invalid access token', 'Account removed', or 'Unexpected error' depending on path." },
-        { "name": "errorUserMessage", "type": "NVARCHAR", "nullable": false, "description": "User-facing error message appropriate to the failure type." },
-        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.ErrorLog entry GUID."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Mirrors envelope errorType: 11=auth, 14=removed user, 19=db error."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Mirrors envelope errorCode."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Short error title. 'Invalid access token', 'Account removed', or 'Unexpected error' depending on path."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "User-facing error message appropriate to the failure type."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name via OBJECT_NAME(@@PROCID)."
+        }
       ]
     },
     {
       "index": 1,
       "name": "LoginResult",
-      "description": "Returned as rowset 1 on successful authentication. Pulled from HC.ServerStatus (TOP 1 by CreatedDate DESC) combined with HC.LoginNotifications (most recent active notification if any) and user/device data. Dead integration columns (integrationCount, lastIntegrationExecuted, integrationStopped) removed vs HC5.",
+      "description": "Rowset 1 on success. TOP 1 of HC.ServerStatus by CreatedDate DESC, combined with the active HC.LoginNotifications row (if any), user and device data, the next unseen splash sequence, a nearby active song, and the permission matrix when the client's watermark is stale.",
       "columns": [
-        { "name": "apiVersion", "type": "NVARCHAR(25)", "nullable": false, "description": "ServerStatus.ApiVersion." },
-        { "name": "approvalCode", "type": "INT", "nullable": false, "description": "1 if serverStatusCode = 1 (server up), 0 otherwise (server down/maintenance)." },
-        { "name": "loginMessageTitle", "type": "NVARCHAR(120)", "nullable": false, "description": "LoginNotifications.LoginMessageTitle or 'Harrier Central' if no active notification." },
-        { "name": "loginMessage", "type": "NVARCHAR(500)", "nullable": false, "description": "LoginNotifications.LoginMessage or 'Server running' if no active notification." },
-        { "name": "serverStatusCode", "type": "SMALLINT", "nullable": false, "description": "LoginNotifications.ServerStatusCode or 1 (up) if no active notification." },
-        { "name": "messageEndDate", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "LoginNotifications.MessageWindowCloses or '2100-01-01' if no active notification." },
-        { "name": "messageDisplayType", "type": "SMALLINT", "nullable": false, "description": "LoginNotifications.MessageDisplayType or 0 (none) if no active notification." },
-        { "name": "messageImageUrl", "type": "NVARCHAR(500)", "nullable": false, "description": "LoginNotifications.MessageImageUrl or '' if no active notification." },
-        { "name": "iosDownloadLink", "type": "NVARCHAR(250)", "nullable": false, "description": "ServerStatus.IosDownloadLink." },
-        { "name": "androidDownloadLink", "type": "NVARCHAR(250)", "nullable": false, "description": "ServerStatus.AndroidDownloadLink." },
-        { "name": "imageRootUrl", "type": "NVARCHAR(250)", "nullable": false, "description": "ServerStatus.ImageRootUrl — base URL for user-uploaded images." },
-        { "name": "isBetaTester", "type": "SMALLINT", "nullable": true, "description": "Hasher.IsBetaTester." },
-        { "name": "email", "type": "NVARCHAR(250)", "nullable": true, "description": "Hasher.Email." },
-        { "name": "homeKennelId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "Hasher.HomeKennelId. Fixed from HC5: local variable is now UNIQUEIDENTIFIER so SQL Server returns it as a proper UUID, not a NVARCHAR string." },
-        { "name": "thirdPartyForceTokenRefresh", "type": "DATETIMEOFFSET(7)", "nullable": true, "description": "Hasher.ThirdPartyForceTokenRefresh — signals app to refresh its OAuth token." },
-        { "name": "splashSequenceRootName", "type": "NVARCHAR(100)", "nullable": true, "description": "SplashSequence.SplashSequenceRootName of the next unseen splash for this user, or NULL if none pending." },
-        { "name": "splashSequenceType", "type": "INT", "nullable": true, "description": "SplashSequence.SequenceType of the pending splash, or NULL. Table column is INT (was SMALLINT in HC5 contract — corrected to match table definition)." },
-        { "name": "betaFeaturesEnabled", "type": "NVARCHAR(1000)", "nullable": false, "description": "Hasher.BetaFeaturesEnabled — re-read after the transaction commit to pick up any trigger side effects." }
+        {
+          "name": "apiVersion",
+          "type": "NVARCHAR(25)",
+          "nullable": false,
+          "description": "ServerStatus.ApiVersion."
+        },
+        {
+          "name": "approvalCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 if serverStatusCode = 1 (server up), 0 otherwise (server down/maintenance)."
+        },
+        {
+          "name": "loginMessageTitle",
+          "type": "NVARCHAR(120)",
+          "nullable": false,
+          "description": "LoginNotifications.LoginMessageTitle or 'Harrier Central' if no active notification."
+        },
+        {
+          "name": "loginMessage",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "LoginNotifications.LoginMessage or 'Server running' if no active notification."
+        },
+        {
+          "name": "serverStatusCode",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "LoginNotifications.ServerStatusCode or 1 (up) if no active notification."
+        },
+        {
+          "name": "messageEndDate",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "LoginNotifications.MessageWindowCloses or '2100-01-01' if no active notification."
+        },
+        {
+          "name": "messageDisplayType",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "LoginNotifications.MessageDisplayType or 0 (none) if no active notification."
+        },
+        {
+          "name": "messageImageUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "LoginNotifications.MessageImageUrl or '' if no active notification."
+        },
+        {
+          "name": "iosDownloadLink",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "ServerStatus.IosDownloadLink."
+        },
+        {
+          "name": "androidDownloadLink",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "ServerStatus.AndroidDownloadLink."
+        },
+        {
+          "name": "imageRootUrl",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "ServerStatus.ImageRootUrl — base URL for user-uploaded images."
+        },
+        {
+          "name": "isBetaTester",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Hasher.IsBetaTester."
+        },
+        {
+          "name": "email",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Hasher.Email."
+        },
+        {
+          "name": "homeKennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "Hasher.HomeKennelId. Fixed from HC5: local variable is now UNIQUEIDENTIFIER so SQL Server returns it as a proper UUID, not a NVARCHAR string."
+        },
+        {
+          "name": "thirdPartyForceTokenRefresh",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Hasher.ThirdPartyForceTokenRefresh — signals app to refresh its OAuth token."
+        },
+        {
+          "name": "splashSequenceRootName",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "SplashSequence.SplashSequenceRootName of the next unseen splash for this user, or NULL if none pending."
+        },
+        {
+          "name": "splashSequenceType",
+          "type": "INT",
+          "nullable": true,
+          "description": "SplashSequence.SequenceType of the pending splash (100 Urgent Announcement, 200 Kennel Promo, 300 Training), or NULL."
+        },
+        {
+          "name": "betaFeaturesEnabled",
+          "type": "NVARCHAR(1000)",
+          "nullable": false,
+          "description": "Hasher.BetaFeaturesEnabled — re-read after the transaction commit to pick up any trigger side effects."
+        },
+        {
+          "name": "hasherPreferences",
+          "type": "INT",
+          "nullable": true,
+          "description": "Hasher.Preferences bitfield as read BEFORE the transaction (same value the app syncs; the writer must read-modify-write its own bits)."
+        },
+        {
+          "name": "activeSongId",
+          "type": "NVARCHAR(40)",
+          "nullable": true,
+          "description": "LOWER(CAST(SongSession.SongId)) of a song selected in the last 5 minutes for a run whose start is within ~0.0045° (~500 m) of @latitude/@longitude; NULL when none or when the device sent no location. HC.SongSession is defined by db/hc6/app/archive/HC6.SongSession.migration.sql."
+        },
+        {
+          "name": "activeSongEventId",
+          "type": "NVARCHAR(40)",
+          "nullable": true,
+          "description": "The run that song belongs to, lowercase; NULL as above."
+        },
+        {
+          "name": "permissionMatrixJson",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "ServerStatus.PermissionMatrixJson (Permissions V2 projection) when @clientPermissionsWatermark is NULL or older than ServerStatus.PermissionMatrixUpdatedAt; otherwise NULL. Column added by migration_permissions_v2_03_projection_columns.sql (not in the schema snapshot)."
+        },
+        {
+          "name": "permissionMatrixUpdatedAt",
+          "type": "NVARCHAR(40)",
+          "nullable": true,
+          "description": "CONVERT(NVARCHAR(40), ServerStatus.PermissionMatrixUpdatedAt, 127) — ISO 8601 text — under the same condition; otherwise NULL. The client stores it and sends it back as @clientPermissionsWatermark."
+        }
       ]
     }
   ],
@@ -172,9 +346,19 @@
     "INSERT HC.ErrorLog — on auth failure and removed-user paths (and CATCH block)",
     "INSERT HC.SplashSequenceViews — if @splashSequenceViewed IS NOT NULL and a matching SplashSequence row exists",
     "UPDATE HC.Hasher SET LastLoginDateTime=GETDATE(), HcVersion=@hcVersion WHERE id=@userId — on success path only (inside transaction)",
-    "UPDATE HC.Device SET LastLogin, Latitude, Longitude, updatedAt, BuildNumber, Version, Locale WHERE id=@deviceId — on success path only (inside transaction)"
+    "UPDATE HC.Device SET LastLogin, Latitude, Longitude, updatedAt, BuildNumber = @buildNumber, Version = @hcVersion, Locale = @locale WHERE id = @deviceId — on success path only (inside transaction)"
   ],
   "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken, @deviceType, @deviceName, @systemName, @systemVersion, @manufacturer, @latitude, @longitude (lines 3-11) have no SQL default. A client that omits any of them is refused by SQL BEFORE the procedure runs: no HC.ErrorLog row, an empty 500 in the app, and the SP's own graceful checks are unreachable (CLAUDE.md, Rack of Lamb 2026-09-29)."
+    },
+    {
+      "severity": "medium",
+      "issue": "Does not use HC6.ValidateAppAuth — the signed-out device check is bypassed",
+      "detail": "Lines 85-146 resolve the device and call HC.CHECK_ACCESS_TOKEN_V2 directly. ValidateAppAuth's SignedOutAt test (E9.F7.S19, errorType 7, on which the app wipes the install) therefore never runs on the launch call; a signed-out device fails with 1103 / errorType 11 ('restart the app') because hcapp_signOutDevice rotated the secret. Deliberate or not, this is the one call every launch makes and it answers differently from every other SP."
+    },
     {
       "severity": "medium",
       "issue": "@hcVersion written to Device.Version — type width mismatch",
@@ -184,11 +368,6 @@
       "severity": "medium",
       "issue": "@ipInfo parameter wider than LaunchAndLogin.IpInfo column",
       "detail": "@ipInfo is NVARCHAR(4000) but HC.LaunchAndLogin.IpInfo is NVARCHAR(2000). Any IP/geo string over 2000 chars will be silently truncated on INSERT. Should be narrowed to NVARCHAR(2000) to match the table."
-    },
-    {
-      "severity": "medium",
-      "issue": "Auth check and removed-user check execute outside the TRY/CATCH transaction",
-      "detail": "The token validation and removed-user check, including their ErrorLog inserts and the LaunchAndLogin INSERT on the auth-failure path, all run before BEGIN TRY. If the server crashes after the ErrorLog insert but before the RETURN, there is no rollback. This is intentional design (audit-trail preservation) but should be noted."
     },
     {
       "severity": "medium",
@@ -204,6 +383,16 @@
       "severity": "low",
       "issue": "ErrorDetail rowset is missing debugMessage column vs StandardErrorResult",
       "detail": "The error rowset on both the auth-failure and removed-user paths omits the debugMessage column that appears in the HC6 portal StandardErrorResult. The CATCH path also omits it. This is a consistent internal format but deviates from the standard error envelope used in portal SPs."
+    },
+    {
+      "severity": "low",
+      "issue": "NULL @hcVersion or @buildNumber nulls the LaunchAndLogin.HcVersion text",
+      "detail": "Lines 135 and 181: 'HC Ver: ' + @hcVersion + ', Bld: ' + @buildNumber is NULL if either is NULL, and LaunchAndLogin.HcVersion is NOT NULL. The defaults ('pre 3.0', '?') protect omission, but an explicit NULL from a client fails the INSERT — on the auth-failure path (line 132) that is outside TRY/CATCH and unlogged."
+    },
+    {
+      "severity": "low",
+      "issue": "Auth-failure and removed-user paths run outside TRY/CATCH",
+      "detail": "Lines 124-167 precede BEGIN TRY (the sanctioned placement for the auth block), so a failure of the ErrorLog or LaunchAndLogin INSERT there is a raw 500 with no envelope."
     }
   ],
   "breakingChanges": [
@@ -216,7 +405,8 @@
     "homeKennelId in LoginResult is now UNIQUEIDENTIFIER (proper UUID) instead of NVARCHAR(100) — callers reading it as a string will still work but the serialised format may differ (SQL Server returns UNIQUEIDENTIFIER in uppercase; caller normalisation required).",
     "splashSequenceType in LoginResult is now INT (table-correct) instead of SMALLINT — callers may need to update deserialisers.",
     "integrationCount, lastIntegrationExecuted, integrationStopped columns removed from LoginResult — callers reading these columns will receive a missing-column error.",
-    "errorType for removed-user changed from 5 to 4 — callers must update their error handling logic.",
-    "Auth check now runs BEFORE removed-user check — a removed user with an invalid token now gets an auth error (errorType=1) rather than a removed-user error (errorType=4). Callers should not depend on removed-user detection without valid auth."
+    "errorType for removed-user is 14 in HC6 (HC5 used 5; the SP header's '4' is a typo for the HC6 family code 14) — callers that switch on errorType must be updated.",
+    "Auth check now runs BEFORE removed-user check — a removed user with an invalid token now gets an auth error (errorType 11) rather than a removed-user error (errorType 14).",
+    "@clientPermissionsWatermark DATETIMEOFFSET(7) = NULL and LoginResult columns hasherPreferences, activeSongId, activeSongEventId, permissionMatrixJson, permissionMatrixUpdatedAt added — additive."
   ]
 }

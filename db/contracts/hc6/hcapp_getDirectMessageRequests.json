@@ -1,63 +1,72 @@
 {
   "schema": "HC6",
   "name": "hcapp_getDirectMessageRequests",
-  "version": "1.0.0",
-  "description": "Pending requests to message the caller. E9.F1.S19.",
+  "version": "1.1.0",
+  "description": "Requests to message the caller that are still pending (E9.F1.S19): the other hasher's HC.HasherFriendMap row towards the caller exists with FriendSince NULL, Removed 0 and Ignore 0, the requester is not removed, and the caller has no live row back (none with Removed = 0) and has not blocked them (none with Ignore = 1). Shown at the top of the chat list with Accept / Decline. Read-only. Auth: HC6.ValidateAppAuth (spNumber 130, @param NULL); scoped to the token's user.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Registered device"
+      "description": "Registered device. Default NULL (a NULL is refused by ValidateAppAuth as 'Device not registered')."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Short-lived token (standard, device secret)"
+      "description": "Short-lived token (standard, device secret). Default NULL."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "ref": "StandardErrorResult",
-      "description": "On auth failure"
+      "description": "Auth failure (ValidateAppAuth) returns the error detail alone and the SP returns. No compact envelope."
     },
     {
       "index": 0,
       "name": "Requests",
+      "description": "On success: one row per pending request, newest first (ORDER BY HasherFriendMap.createdAt DESC). Empty when nothing is pending.",
       "columns": [
         {
           "name": "FromPublicHasherId",
-          "type": "NVARCHAR(36)",
+          "type": "NVARCHAR(40)",
           "nullable": false,
-          "description": "UPPER"
+          "description": "UPPER(CAST(Hasher.PublicHasherId AS NVARCHAR(40))) of the requester; the app lowercases it on arrival."
         },
         {
           "name": "DisplayName",
-          "type": "NVARCHAR(250)",
+          "type": "NVARCHAR(501)",
           "nullable": false,
-          "description": ""
+          "description": "Requester's Hasher.DisplayName (persisted computed column)."
         },
         {
           "name": "Photo",
-          "type": "NVARCHAR(500)",
+          "type": "NVARCHAR(1000)",
           "nullable": true,
-          "description": ""
+          "description": "Requester's Hasher.Photo — profile photo URL."
         },
         {
           "name": "RequestedAt",
-          "type": "DATETIMEOFFSET",
+          "type": "DATETIMEOFFSET(7)",
           "nullable": false,
-          "description": ""
+          "description": "HasherFriendMap.createdAt of the requester's row — when they asked (column added by db/hc6/app/archive/2026-09-29_hasher_block.sql)."
         }
       ]
     }
   ],
-  "sideEffects": [],
-  "codeSmells": [],
+  "sideEffects": [
+    "None on success. INSERT HC.ErrorLog then THROW on an unhandled error (CATCH, line 50)."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Id emitted upper-case",
+      "detail": "Line 39 returns FromPublicHasherId as UPPER(...). Ids are lowercase everywhere in the app; this relies on the adHoc reply door lowercasing it."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

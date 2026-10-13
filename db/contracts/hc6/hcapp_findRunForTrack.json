@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_findRunForTrack",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Which run does an imported GPX file belong to (E5.F5.S6)? Given a track's first and last point times (UTC) and its first point's position, returns the runs that started between three hours before the first point and the last point, nearest start first, with the distance from each run's recorded start to that first point, whether the caller already has a PackTrack trail on it, and their attendance state. The app applies the rule: a run with a recorded location must be within a mile; one with no location is accepted on time alone after the user confirms. Server-side because the phone only holds runs for followed kennels and the last ten days. 1.0.1: delegates to nonApi_findRunForTrack so the server-side import processor matches identically.",
   "parameters": [
     {
@@ -50,13 +50,38 @@
   "rowsets": [
     {
       "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "On auth failure (ValidateAppAuth, spNumber 95) or an invalid span/position (errorCode 1295, errorType 12, logged at line 72): { success = 0, errorCode, errorType }, followed by the error detail at index 1. Mutually exclusive with CandidateRuns.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on this path."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "1295 = firstPointUtc/lastPointUtc/latitude/longitude missing or out of range (lastPointUtc before firstPointUtc, |lat| > 90, |lon| > 180); 1195 / 1295 / 1395 from ValidateAppAuth."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "12 = validation; 1 / 7 / 3 from ValidateAppAuth."
+        }
+      ]
+    },
+    {
+      "index": 1,
       "ref": "StandardErrorResult",
-      "description": "Auth failure or invalid span/position (errorCode 1295)."
+      "description": "After the ErrorEnvelope on any failure."
     },
     {
       "index": 0,
       "name": "CandidateRuns",
-      "description": "Up to 10 runs whose EventStartDateTimeGmt lies in [firstPointUtc - 3h, lastPointUtc], nearest start to the first point first. Empty when nothing started in the window.",
+      "description": "On success, rowset 0 and the only rowset (no success envelope — the client tells the two shapes apart by column name). Produced by HC6.nonApi_findRunForTrack: up to 10 live, visible runs (deleted = 0, removed = 0, IsVisible = 1) whose EventStartDateTimeGmt lies in [firstPointUtc - 3h, lastPointUtc], nearest start to the first point first. Empty when nothing started in the window.",
       "columns": [
         {
           "name": "eventId",
@@ -84,7 +109,7 @@
         },
         {
           "name": "eventStartGmt",
-          "type": "DATETIMEOFFSET",
+          "type": "DATETIMEOFFSET(7)",
           "nullable": false,
           "description": "True UTC start instant."
         },
@@ -121,8 +146,27 @@
       ]
     }
   ],
-  "sideEffects": [],
-  "codeSmells": [],
+  "sideEffects": [
+    "EXEC HC6.nonApi_findRunForTrack — the matching rule shared with the server-side import processor (ProcessTrackImport); its own CATCH logs and re-throws.",
+    "INSERT HC.ErrorLog on an invalid span/position (1295, line 72) and, with THROW, on an unhandled error (line 92)."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken, @firstPointUtc, @lastPointUtc, @latitude, @longitude (lines 2-7) have no SQL default. A client that omits one is refused by SQL before the procedure runs — no HC.ErrorLog row, an empty 500 in the app (CLAUDE.md 'SP parameter with NO default'). The graceful 1295 check at line 67 is unreachable for an omitted parameter."
+    },
+    {
+      "severity": "low",
+      "issue": "Success and error replies have different shapes",
+      "detail": "Success returns CandidateRuns alone at index 0 (no envelope); failure returns { success = 0, ... } then the error detail. The app must sniff the first column to know which it got."
+    },
+    {
+      "severity": "low",
+      "issue": "Missing SET XACT_ABORT ON",
+      "detail": "Line 32 sets NOCOUNT only. Harmless for a read, inconsistent with the HC6 standard."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

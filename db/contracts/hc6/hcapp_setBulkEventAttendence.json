@@ -1,124 +1,130 @@
 {
   "schema": "HC6",
   "name": "hcapp_setBulkEventAttendence",
-  "version": "1.0.0",
-  "description": "Sets attendance state for multiple hashers at a single event. Accepts a comma-separated list of hasher UUIDs, parses via STRING_SPLIT+TRY_CAST, updates existing HasherEventMap rows (AttendenceState + RsvpState=3) and inserts new rows for hashers not yet at the event. Only attendance states 20–40 (on trail or on inn) are accepted — bulk un-attend is not supported. After the write, recalculates run counts for all affected users via HC.nonApi_updateRunCountsForAllUsers, returns a summary rowset, then delegates to HC6.hcapp_syncEventAdminData to return current event admin sync data.",
+  "version": "1.1.0",
+  "description": "Sets attendance for many hashers at one event in a single call. @hasherIds is a comma-separated list of hasher UUIDs, parsed with STRING_SPLIT + TRY_CAST (tokens that are not UUIDs are dropped silently). Existing HasherEventMap rows for the event are updated (AttendenceState, RsvpState = 3); hashers with no row get one inserted (IsHare 0, VirginVisitorType 0, RsvpState 3). Only states 20-40 (on trail or On Inn) are accepted — bulk un-attend is not supported. After the commit, run counts are recalculated for every user whose HEM row changed (HC6.nonApi_updateRunCountsForAllUsers), then the SP delegates to HC6.hcapp_syncEventAdminData and streams its rowsets. Auth: device-bound token via HC6.ValidateAppAuth (spNumber 25, @param NULL). Permission gate: HC6.CheckKennelPermission 'manageAttendance' in the event's kennel, satisfied also by being a hare of this event (IsHare = 1 on the caller's own HEM row); refused with 1325/13.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": "Device.id",
-      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth."
+      "description": "Registered device UUID, passed to HC6.ValidateAppAuth. No SQL default."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Short-lived cryptographic token validated against the device secret."
+      "description": "Short-lived token validated against the device secret. No SQL default."
     },
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": "HasherEventMap.EventId",
-      "description": "Event to update attendance for. Validated as non-null and non-zero."
+      "description": "Event to update. NULL or the zero UUID is refused with 1225/12. No SQL default."
     },
     {
       "name": "hasherIds",
       "type": "NVARCHAR(MAX)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Comma-separated list of hasher UUID strings. Parsed via STRING_SPLIT+TRY_CAST; invalid UUIDs are silently skipped. Validated as non-null."
+      "description": "Comma-separated hasher UUIDs (HasherEventMap.UserId values). NULL is refused with 1225/12; an empty string or a list of unparseable tokens succeeds with '0 records updated, 0 records inserted'. No SQL default."
     },
     {
       "name": "attendenceState",
       "type": "SMALLINT",
       "nullable": false,
       "mapsToColumn": "HasherEventMap.AttendenceState",
-      "description": "Attendance state to apply to all listed hashers. Must be in range 20–40 inclusive. Values below 20 (un-attend) are rejected."
+      "description": "State applied to every listed hasher. Must be 20-40 inclusive; NULL or out of range is refused with 1225/12. No SQL default."
     },
     {
       "name": "hasherEventMapUpdatedAfter",
       "type": "NVARCHAR(50)",
-      "nullable": true,
+      "nullable": false,
       "mapsToColumn": null,
-      "description": "Sync watermark passed to hcapp_syncEventAdminData. NULLs are coerced to 'ignore' before delegation."
+      "description": "Sync watermark passed to hcapp_syncEventAdminData; NULL is coerced to 'ignore' before delegation. No SQL default — omitting it is an unlogged 500."
     },
     {
       "name": "hasherKennelMapUpdatedAfter",
       "type": "NVARCHAR(50)",
-      "nullable": true,
+      "nullable": false,
       "mapsToColumn": null,
-      "description": "Sync watermark passed to hcapp_syncEventAdminData. NULLs are coerced to 'ignore' before delegation."
+      "description": "Sync watermark passed to hcapp_syncEventAdminData; NULL is coerced to 'ignore' before delegation. No SQL default — omitting it is an unlogged 500."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "WriteEnvelope",
-      "description": "Standard HC6 write envelope. Always returned as the first rowset. success=0 on any auth or validation failure; success=1 on commit. errorCode and errorType are NULL on success.",
+      "description": "Always the first rowset. success = 0 on auth, validation, permission or CATCH failure with errorCode/errorType set; success = 1 after the commit with both NULL.",
       "columns": [
-        { "name": "success", "type": "BIT", "nullable": false, "description": "1 on success, 0 on failure." },
-        { "name": "errorCode", "type": "INT", "nullable": true, "description": "Application error code, or NULL on success." },
-        { "name": "errorType", "type": "INT", "nullable": true, "description": "Error classification code, or NULL on success." }
+        { "name": "success", "type": "INT", "nullable": false, "description": "1 on success, 0 on failure." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "ValidateAppAuth code; 1225 validation (eventId, attendenceState, hasherIds); 1325 not authorised; 1925 unhandled. NULL on success." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "1/3/7 from ValidateAppAuth; 12 validation; 13 not authorised; 19 unhandled (CATCH). NULL on success." }
       ]
     },
     {
       "index": 1,
       "name": "ErrorDetail",
-      "description": "Returned as rowset 1 only on failure (auth or validation). Contains one row with structured error detail for the caller.",
+      "description": "Rowset 1 on failure only. The HC6 app error detail; every failure path writes HC.ErrorLog (the permission refusal rolls back FIRST, then logs, so the row survives).",
       "columns": [
         { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "ID of the HC.ErrorLog entry." },
         { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code." },
         { "name": "errorCode", "type": "INT", "nullable": false, "description": "Application error code." },
         { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short human-readable error title." },
         { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
-        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "Name of the SP that produced the error." }
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "OBJECT_NAME(@@PROCID)." }
       ]
     },
     {
       "index": 1,
       "name": "BulkAttendanceResult",
-      "description": "Returned as rowset 1 only on success. Single row summarising how many HEM rows were updated vs inserted.",
+      "description": "Rowset 1 on success. One row summarising how many HEM rows were updated and inserted.",
       "columns": [
         { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "Always 1." },
-        { "name": "serverMessage", "type": "NVARCHAR", "nullable": false, "description": "Human-readable summary: 'N records updated, M records inserted'." }
+        { "name": "serverMessage", "type": "NVARCHAR", "nullable": false, "description": "'N records updated, M records inserted'." }
       ]
     },
     {
       "index": 2,
       "name": "SyncEventAdminData (delegated)",
-      "description": "Rowsets 2+ are the full response from HC6.hcapp_syncEventAdminData — event details, hasher list, HasherEventMap rows, HasherKennelMap rows, payments, kennel credits, receipts. See that SP's contract for column definitions. Only present on success."
+      "description": "Rowsets 2+ on success: the full response of HC6.hcapp_syncEventAdminData for @eventId with the two HEM/HKM watermarks passed through and hashers, narrow events, payments, kennel credits and receipts 'ignore'. See that SP's contract."
     }
   ],
   "sideEffects": [
-    "UPDATE HC.HasherEventMap SET AttendenceState=@attendenceState, RsvpState=3, updatedAt=GETDATE() — for each parsed hasher UUID that already has a HEM row for the event",
-    "INSERT HC.HasherEventMap — for each parsed hasher UUID not yet in the event (IsHare=0, VirginVisitorType=0, RsvpState=3)",
-    "EXEC HC.nonApi_updateRunCountsForAllUsers @updatedSince — called outside the transaction, after commit",
-    "EXEC HC6.hcapp_syncEventAdminData — delegates sync data retrieval; runs outside the transaction after run counts are updated"
+    "UPDATE HC.HasherEventMap SET AttendenceState = @attendenceState, RsvpState = 3, updatedAt = GETDATE() for each parsed UUID that already has a row on the event (lines 153-164).",
+    "INSERT HC.HasherEventMap (IsHare 0, VirginVisitorType 0, RsvpState 3, KennelId from HC.Event) for each parsed UUID without a row (lines 169-182).",
+    "EXEC HC6.nonApi_updateRunCountsForAllUsers @updatedSince = one second before the write — after COMMIT, outside the transaction (line 189).",
+    "EXEC HC6.hcapp_syncEventAdminData after the TRY (line 219).",
+    "INSERT HC.ErrorLog on every refusal and in the CATCH (HcVersion from HC6.DeviceHcVersion(@deviceId))."
   ],
   "codeSmells": [
     {
       "severity": "medium",
-      "issue": "nonApi_updateRunCountsForAllUsers called outside transaction",
-      "detail": "Run count recalculation is deliberately called after COMMIT (line 167). This avoids a long-running operation inside the transaction, but means run counts could be stale if the EXEC fails. Acceptable as a best-effort post-commit side effect, but should be noted."
+      "issue": "Parameter without a default",
+      "detail": "Lines 3-9: none of the seven parameters has a SQL default. A client that omits one — the two sync watermarks are the likely ones — gets 'expects parameter @x, which was not supplied' before the procedure runs: an empty 500 with no HC.ErrorLog row, and the body's own NULL checks never run. Give each a default (= NULL) and keep the checks."
     },
     {
       "severity": "medium",
       "issue": "Invalid UUIDs in @hasherIds are silently skipped",
-      "detail": "STRING_SPLIT+TRY_CAST discards any token that cannot be cast to UNIQUEIDENTIFIER without warning the caller. A malformed hasher list would partially succeed with no indication of which UUIDs were dropped."
+      "detail": "Lines 153-157 and 169-173: STRING_SPLIT + TRY_CAST drops any token that is not a UUID without telling the caller. A malformed list partially succeeds; the only clue is the counts in serverMessage."
     },
     {
       "severity": "low",
-      "issue": "ParsedGuids CTE declared twice",
-      "detail": "The ParsedGuids CTE is re-declared identically for the UPDATE (line 131) and the INSERT (line 147). SQL Server does not allow sharing a CTE across statements, so this is unavoidable, but it adds noise and creates a maintenance surface — the two declarations must be kept in sync."
+      "issue": "Comma delimiter on a list parameter",
+      "detail": "Line 155/171: the list is split on ','. The house rule is '|' for delimited parameters. Harmless here because a UUID cannot contain a comma, but the SP cannot be switched without changing the app at the same time."
     },
     {
       "severity": "low",
-      "issue": "HcVersion hardcoded as '<unknown>'",
-      "detail": "ErrorLog inserts use HcVersion='<unknown>' (lines 87, 99, 113, 182). Should be replaced with an actual version constant or left as NULL — '<unknown>' is a sentinel string with no diagnostic value."
+      "issue": "Run-count recalculation runs after the commit",
+      "detail": "Line 189: nonApi_updateRunCountsForAllUsers is deliberately outside the transaction. If it fails, the attendance is committed but the counts are stale until the next recalculation — and the failure surfaces as a raw error after the envelope has NOT yet been sent (the SELECTs at 191-196 follow it inside the TRY, so the CATCH does report it as 1925)."
+    },
+    {
+      "severity": "low",
+      "issue": "Unknown event is reported as an unhandled error",
+      "detail": "Line 128: an @eventId with no HC.Event row leaves @kennelId NULL; CheckKennelPermission then denies (1325) or, for a hare, the INSERT at 174 fails on KennelId NOT NULL and is reported as 1925/19 rather than a 'no such event' validation error."
     }
   ],
   "breakingChanges": [
@@ -126,6 +132,7 @@
     "TRY/CATCH and BEGIN TRANSACTION added — the entire UPDATE+INSERT is now atomic; HC5 had no transaction so partial writes were possible",
     "Success envelope (rowset 0: success, errorCode, errorType) added as the new first rowset — HC5 had no envelope; all HC5 rowset indices shift up by one",
     "Delegation target updated from HC5.hcapp_syncEventAdminData to HC6.hcapp_syncEventAdminData — sync rowset columns may differ",
-    "serverMessage trailing comma removed — HC5 produced 'N records updated, M records inserted, ' (trailing comma); HC6 produces 'N records updated, M records inserted'"
+    "serverMessage trailing comma removed — HC5 produced 'N records updated, M records inserted, ' (trailing comma); HC6 produces 'N records updated, M records inserted'",
+    "Permission gate moved to HC6.CheckKennelPermission 'manageAttendance' (hare of the event also allowed) — refused with 1325/13"
   ]
 }

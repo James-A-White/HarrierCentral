@@ -170,7 +170,7 @@ BEGIN TRY
                         THEN UnpinnedMismanagementRooms & ~@grantMask
                         ELSE UnpinnedMismanagementRooms | @grantMask END
              WHERE id = @userId;
-        ELSE IF (@grantColumn IN ('flags', 'platform'))  -- a platform room mirrors here too
+        ELSE IF (@grantColumn IN ('flags', 'platform', 'beta'))  -- platform and beta rooms mirror here too
             UPDATE HC.Hasher
                SET UnpinnedAppAccessRooms = CASE WHEN @pinned = 1
                         THEN UnpinnedAppAccessRooms & ~@grantMask

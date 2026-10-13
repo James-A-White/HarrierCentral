@@ -1,0 +1,158 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_setOfficialTrail",
+  "version": "1.0.0",
+  "description": "Sets or removes ONE trail-type lane of a run's official trail (E5.F6.S6): a scout's pre-run, a runner's track promoted from the PackTrack map, or an uploaded GPX/TCX/FIT file. Other lanes are kept. Auth: device-bound token via HC6.ValidateAppAuth (spNumber 148, @param NULL). Permission: HC6.CheckKennelPermission 'createEditRuns' on the run's kennel, hare-scoped (a hare of this run — HasherEventMap.IsHare — passes as the run editor does). Points are [lat, lon] or [lat, lon, t] with t = ms after the lane's first point. The lanes are stored COMPRESSed in HC.Event.OfficialTrailGzip ({\"lanes\":[{\"type\",\"points\"}]}) and summarised in HC.Event.OfficialTrailInfo ({\"lanes\":[{type, distanceM, points, source, sourceRef, setBy, setAt}]}). A trail-only UPDATE: HC.trgUpdateModifiedOnDateForEvent does not stamp updatedAt, so no phone re-downloads the run. Callers: the app (official_trail_service.dart, run_tabs.dart), the API's TrackImportFunctions, hcapp_authorizeTrackFile and tools/promote_best_tracks.py.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Registered device. Default NULL (ValidateAppAuth then fails gracefully)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret)."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.id",
+      "description": "The run. Must exist with deleted = 0, or the caller is refused as 'Not allowed' (14700)."
+    },
+    {
+      "name": "trailType",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Lane: 1 Walkers, 2 Short, 3 Normal, 4 Long, 5 Ballbreaker, >= 100 the kennel's own types. NULL or < 1 returns 14701."
+    },
+    {
+      "name": "points",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "Event.OfficialTrailGzip",
+      "description": "JSON array [[lat,lon,t?],...]. NULL or '' REMOVES this lane. Otherwise must be a JSON array of at least two points and at most 4,000,000 characters (14701)."
+    },
+    {
+      "name": "distanceM",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Event.OfficialTrailInfo",
+      "description": "Trail length in metres, recorded in the lane's info (not validated)."
+    },
+    {
+      "name": "source",
+      "type": "NVARCHAR(20)",
+      "nullable": true,
+      "mapsToColumn": "Event.OfficialTrailInfo",
+      "description": "'scout' | 'promote' | 'file' — recorded in the lane's info (not validated)."
+    },
+    {
+      "name": "sourceRef",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Event.OfficialTrailInfo",
+      "description": "The promoted runner's public id, or the uploaded file name — recorded in the lane's info."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Auth failure (ValidateAppAuth: 1348 device not registered / type 3, 1148 bad token / type 1, signed-out device / type 7) returns this detail rowset ALONE. The SP's own refusals return {success:0, errorCode, errorType} at index 0 and this detail at index 1: 14700 not allowed (errorType 13), 14701 bad trail (2), 14702 unhandled (5). No debugMessage column."
+    },
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Index 0 on 14700 / 14701 / 14702, followed by the detail at index 1.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "The SP's error code."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "The SP's error type."
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "On success.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Always NULL."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "OfficialTrailInfo",
+      "description": "On success: the run's lane summary after the change, so the screen repaints.",
+      "columns": [
+        {
+          "name": "OfficialTrailInfo",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "HC.Event.OfficialTrailInfo JSON {\"lanes\":[...]}; NULL when the last lane was removed."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Event SET OfficialTrailGzip, OfficialTrailInfo (read under UPDLOCK, HOLDLOCK) — trail columns only; the Event updatedAt trigger leaves updatedAt alone, so nothing re-syncs.",
+    "INSERT LOG.GeneralLog (LogSource 'officialTrail', 'lane set' | 'lane removed') for every change.",
+    "INSERT HC.ErrorLog on 14700 / 14701 and in the CATCH (after ROLLBACK).",
+    "EXEC HC6.CheckKennelPermission ('createEditRuns', @isHareOfEvent)."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "BIT local variable",
+      "detail": "Line 73 declares @remove BIT. The project bans BIT (SMALLINT everywhere); harmless here but it is the pattern that gets copied."
+    },
+    {
+      "severity": "low",
+      "issue": "A missing run reads as 'Not allowed'",
+      "detail": "Line 50 resolves the kennel with deleted = 0; a deleted or unknown @eventId leaves @kennelId NULL, @allowed stays 0 and the caller gets 14700 'Only this run's hares and kennel admins…' rather than a not-found error."
+    },
+    {
+      "severity": "low",
+      "issue": "@sourceRef NVARCHAR(500) and @source NVARCHAR(20) truncate silently",
+      "detail": "Lines 8-9. A file name longer than 500 characters is cut without error. It only lands in the OfficialTrailInfo JSON, so nothing breaks, but the stored reference is not what the client sent."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

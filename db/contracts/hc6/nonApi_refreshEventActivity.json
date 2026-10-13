@@ -1,0 +1,35 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_refreshEventActivity",
+  "version": "1.0.0",
+  "description": "Recomputes the four activity counts kept on HC.Event for the run cards — TrackRunnerCount (HasherEventMap rows, removed = 0, with TrackPointCount > 0), PhotoCount (HC.KennelPhotos with DeletedAt NULL and Status >= 2, i.e. approved), MessageCount (HC.EventMessage with Removed = 0), DownDownCount (HC.DownDowns with IsCancelled = 0) — and writes them ONLY when one differs. The write stamps updatedAt through the Event trigger, so the row syncs to every follower's phone; the guard keeps a live run (a PackTrack batch a minute per runner) from re-syncing the row for nothing. Called by the triggers on HC.HasherEventMap, HC.KennelPhotos, HC.EventMessage and HC.DownDowns, so every writer — SP or API — keeps the counts right without knowing about them (CLAUDE.md 'Run-card data is synced, never fetched while scrolling'; E5.F7.S1). The definitions match hcapp_getRunActivity 1.1.0 except photos: the card's count is the approved photos everyone may see, not the viewer's own pending ones. Internal; no auth. Returns nothing; a runtime error is logged to HC.ErrorLog (eventId recorded) and re-thrown — into the calling trigger, which then fails the triggering write.",
+  "parameters": [
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Event.id",
+      "description": "The run to recount. NULL or unknown ⇒ no rows match ⇒ no-op."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "UPDATE HC.Event SET TrackRunnerCount, PhotoCount, MessageCount, DownDownCount WHERE id = @eventId AND at least one differs — fires the Event updatedAt trigger, so the run re-syncs.",
+    "Reads HC.HasherEventMap, HC.KennelPhotos, HC.EventMessage, HC.DownDowns (four correlated COUNTs).",
+    "On any runtime error: rolls back if a transaction is open, inserts one HC.ErrorLog row (HcVersion '<unknown>', eventId = @eventId), then THROWs."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@eventId has no SQL default. Called only from the four table triggers, which always pass it. A call that omits one fails before the body runs — no HC.ErrorLog row, no graceful check (CLAUDE.md 'SP parameter with NO default')."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

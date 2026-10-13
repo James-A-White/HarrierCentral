@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_checkConnection",
-  "version": "1.0.0",
-  "description": "Unauthenticated end-to-end connectivity ping. Returns a single hardcoded row to confirm the app can reach the database via the API shim. No parameters, no auth, no side effects.",
+  "version": "1.1.0",
+  "description": "Unauthenticated end-to-end connectivity ping: returns one hardcoded row { result = 'Connected' } to confirm the app can reach the database through the API shim. No parameters, no auth, no side effects on success. The body is wrapped in TRY/CATCH (2026-07-19 audit): an unhandled error is written to HC.ErrorLog (HcVersion '<no device>', userId NULL) and re-raised with THROW. Note the API short-circuits this call with {\"connected\":true} without reaching SQL (see reference_checkconnection_contract).",
   "parameters": [],
   "rowsets": [
     {
@@ -19,14 +19,10 @@
       ]
     }
   ],
-  "sideEffects": [],
-  "codeSmells": [
-    {
-      "severity": "low",
-      "issue": "No TRY/CATCH or XACT_ABORT",
-      "detail": "Acceptable for a trivial read-only SP that cannot fail, but inconsistent with HC6 standards. Low risk given the SP can never error."
-    }
+  "sideEffects": [
+    "None on success. INSERT HC.ErrorLog then THROW on an unhandled error."
   ],
+  "codeSmells": [],
   "breakingChanges": [
     "@deviceId (UNIQUEIDENTIFIER) parameter removed — was a dead input in HC5, never read or used.",
     "@accessToken (NVARCHAR(1000)) parameter removed — was a dead input in HC5, never validated or used."

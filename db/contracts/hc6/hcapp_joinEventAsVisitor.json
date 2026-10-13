@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_joinEventAsVisitor",
-  "version": "1.0.0",
-  "description": "Records a non-member attendee (virgin = 1, visitor = 2) against an event. Uses a per-kennel placeholder Hasher whose id equals the KennelId; this row is created on demand if it does not already exist. The HasherEventMap row is idempotent by DisplayName: if a row already exists for that display name and event it is reused and the caller receives the existing hasherEventMapId without updating any fields. On success delegates to HC6.hcapp_syncEventAdminData to return fresh event admin sync data.",
+  "version": "1.1.0",
+  "description": "Records a non-member attendee (virgin = 1, visitor = 2) against an event. Uses a per-kennel placeholder Hasher whose id equals the KennelId; this row is created on demand if it does not already exist. The HasherEventMap row is idempotent by DisplayName: if a row already exists for that display name and event it is reused and the caller receives the existing hasherEventMapId without updating any fields. On success delegates to HC6.hcapp_syncEventAdminData to return fresh event admin sync data. Auth: HC6.ValidateAppAuth (spNumber 23, @param NULL). No permission gate of its own: any authenticated user may add a visitor to any visible event (the delegated sync re-validates auth for its own rowsets).",
   "parameters": [
     {
       "name": "deviceId",
@@ -50,43 +50,43 @@
     {
       "name": "email",
       "type": "NVARCHAR(250)",
-      "nullable": true,
+      "nullable": false,
       "mapsToColumn": "HasherEventMap.Email",
-      "description": "Visitor's email address. Optional. Not applied when the idempotent path reuses an existing row.",
+      "description": "Visitor's email address; NULL allowed by the body but the parameter has NO SQL default, so it must be passed. Not applied when the idempotent path reuses an existing row.",
       "typeMismatch": "Parameter is NVARCHAR(250); HasherEventMap.Email is NVARCHAR(120). Values longer than 120 characters will cause a string truncation error at insert time."
     },
     {
       "name": "phoneNumber",
       "type": "NVARCHAR(250)",
-      "nullable": true,
+      "nullable": false,
       "mapsToColumn": "HasherEventMap.PhoneNumber",
-      "description": "Visitor's phone number. Optional. Not applied when the idempotent path reuses an existing row.",
+      "description": "Visitor's phone number; NULL allowed by the body but the parameter has NO SQL default, so it must be passed. Not applied when the idempotent path reuses an existing row.",
       "typeMismatch": "Parameter is NVARCHAR(250); HasherEventMap.PhoneNumber is NVARCHAR(120). Values longer than 120 characters will cause a string truncation error at insert time."
     },
     {
       "name": "hasherEventMapUpdatedAfter",
       "type": "NVARCHAR(50)",
-      "nullable": true,
+      "nullable": false,
       "mapsToColumn": null,
-      "description": "Sync watermark forwarded to HC6.hcapp_syncEventAdminData. NULLed values are coerced to 'ignore' before the call."
+      "description": "Sync watermark forwarded to HC6.hcapp_syncEventAdminData; NULL is coerced to 'ignore' (line 213) — but the parameter has NO SQL default, so it must be passed."
     },
     {
       "name": "paymentsUpdatedAfter",
       "type": "NVARCHAR(50)",
-      "nullable": true,
+      "nullable": false,
       "mapsToColumn": null,
-      "description": "Sync watermark forwarded to HC6.hcapp_syncEventAdminData. NULLed values are coerced to 'ignore' before the call."
+      "description": "Sync watermark forwarded to HC6.hcapp_syncEventAdminData; NULL is coerced to 'ignore' (line 214) — but the parameter has NO SQL default, so it must be passed."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "Envelope",
-      "description": "Write SP success envelope. Always present as the first rowset.",
+      "description": "Write SP success envelope. Always the first rowset: { 0, errorCode, errorType } on auth failure (ValidateAppAuth), missing eventId (1223/12), bad virginVisitorType (1223/12) or the CATCH block (1923/19); { 1, NULL, NULL } on success.",
       "columns": [
         {
           "name": "success",
-          "type": "BIT",
+          "type": "INT",
           "nullable": false,
           "description": "1 on success, 0 on any error."
         },
@@ -173,16 +173,31 @@
     }
   ],
   "sideEffects": [
-    "EXEC HC6.ValidateAppAuth — validates device/token, resolves @userId",
     "INSERT HC.Hasher — placeholder Hasher row (id = KennelId) created on demand if none exists for the event's kennel; triggers on HC.Hasher (QR code generation, geolocation, etc.) will fire",
     "INSERT HC.HasherEventMap — new visitor row created if no existing row with the same DisplayName for this event; skipped on the idempotent path",
-    "EXEC HC6.hcapp_syncEventAdminData — called after the transaction commits to return fresh sync data; auth is re-validated inside the delegated SP"
+    "EXEC HC6.hcapp_syncEventAdminData — called after the transaction commits to return fresh sync data; auth is re-validated inside the delegated SP",
+    "INSERT HC.ErrorLog on 1223 (lines 92-94, 105-107, before the transaction) and from the CATCH block (lines 200-201, after ROLLBACK)"
   ],
   "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "All ten parameters (lines 3-12) have no SQL default. A client that omits any of them — including the optional @email / @phoneNumber and the two watermarks the body COALESCEs to 'ignore' at lines 213-214 — gets 'expects parameter': an unlogged empty 500 before the SP runs, so the graceful 1223 checks at lines 89 and 102 are unreachable for an omitted parameter. The four that tolerate NULL should default to it."
+    },
     {
       "severity": "high",
       "issue": "Parameter type wider than column for DisplayName, Email, PhoneNumber",
       "detail": "@displayName, @email, and @phoneNumber are all declared NVARCHAR(250), but the corresponding columns HasherEventMap.DisplayName, Email, and PhoneNumber are each NVARCHAR(120). Any value longer than 120 characters will silently truncate or raise an error at INSERT time depending on ANSI_WARNINGS settings. Should be narrowed to NVARCHAR(120) to match the table."
+    },
+    {
+      "severity": "low",
+      "issue": "Dead variable @kennelId",
+      "detail": "Lines 119-123 declare and populate @kennelId from the event, but nothing reads it — the two INSERTs re-derive e.KennelId themselves. Dead code."
+    },
+    {
+      "severity": "low",
+      "issue": "DisplayName de-duplication ignores removed rows and the visitor type",
+      "detail": "Lines 153-157 reuse ANY HasherEventMap row of the event with the same DisplayName — including a removed one, or a registered hasher's row whose DisplayName happens to match — so a visitor can be silently attached to the wrong row. VirginVisitorType and removed are not in the predicate."
     },
     {
       "severity": "medium",
@@ -190,14 +205,9 @@
       "detail": "When a HasherEventMap row already exists for the given DisplayName and EventId, the SP returns the existing hasherEventMapId without applying @attendenceState, @email, or @phoneNumber. If the caller is correcting a previously recorded state (e.g. changing attendance state from RSVP to on-trail), the update is silently dropped. This is a data staleness risk — callers have no way to know whether the returned row reflects current or prior values."
     },
     {
-      "severity": "medium",
+      "severity": "low",
       "issue": "Placeholder Hasher INSERT may fail due to missing required columns",
-      "detail": "The INSERT into HC.Hasher only specifies id, FirstName, LastName, HashName, NameDisplayPreference, Description, HomeLatitude, HomeLongitude, and Email. Several NOT NULL columns (PublicHasherId, SupportCode, ResetCode, QR_code, QR_secret_code, Preferences, IncludeInGlobalHashDirectory, IsBetaTester, isAnonymous, BetaFeaturesEnabled, createdAt, updatedAt, updatedAtBias) rely on table DEFAULT constraints to be populated. If any constraint is missing or the table definition changes, the INSERT will fail. Additionally, the QR code generation trigger (trgGenerateQrCode) will fire and attempt to update the placeholder row, which may raise unexpected side effects."
-    },
-    {
-      "severity": "medium",
-      "issue": "Validation errors logged to HC.ErrorLog before transaction",
-      "detail": "The null eventId and invalid virginVisitorType checks run before the BEGIN TRANSACTION (lines 89-114). The INSERT into HC.ErrorLog for these validation cases is not wrapped in any transaction, meaning the error log entry is written and committed immediately even if the SP returns early. This is a minor atomicity inconsistency but is acceptable for error logging."
+      "detail": "The INSERT at lines 132-147 names only nine columns and relies on table DEFAULT constraints for every other NOT NULL column of HC.Hasher (PublicHasherId, SupportCode, ResetCode, QR codes, Preferences, flags, timestamps). It works today; a new NOT NULL column without a default would break visitor sign-up for any kennel that has not yet got its placeholder."
     },
     {
       "severity": "low",
@@ -208,11 +218,6 @@
       "severity": "low",
       "issue": "Duplicate errorCode 1223 used for two distinct param errors",
       "detail": "errorCode 1223 is used for both the null/zero @eventId check (line 91) and the invalid @virginVisitorType check (line 104). Callers cannot distinguish these two failure modes by errorCode alone — they must inspect errorTitle or errorUserMessage."
-    },
-    {
-      "severity": "low",
-      "issue": "HcVersion hardcoded to '<unknown>'",
-      "detail": "All HC.ErrorLog inserts in this SP use HcVersion = '<unknown>'. A proper HC6 version string should be passed or a system variable used."
     }
   ],
   "breakingChanges": [

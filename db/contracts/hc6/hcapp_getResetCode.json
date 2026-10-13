@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_getResetCode",
-  "version": "1.0.0",
-  "description": "Returns the ResetCode (URC:-prefixed invite/QR code) for the Hasher identified by the given SupportCode. The SupportCode is a short USC:-prefixed code visible on the user's profile, used for admin-assisted device re-authorisation. Any authenticated user may call this endpoint. Removed users are excluded. Returns a standard HC6 error rowset if not found or auth fails.",
+  "version": "1.1.0",
+  "description": "Returns the ResetCode (URC:-prefixed invite/QR code) for the Hasher identified by the given SupportCode. The SupportCode is a short USC:-prefixed code visible on the user's profile, used for admin-assisted device re-authorisation. Any authenticated user may call this endpoint. Removed users are excluded. Returns a standard HC6 error rowset if not found or auth fails. Auth: HC6.ValidateAppAuth (spNumber 13, @param NULL). Runtime errors are logged to HC.ErrorLog and re-thrown.",
   "parameters": [
     {
       "name": "deviceId",
@@ -33,12 +33,42 @@
       "name": "AuthError",
       "description": "Returned when HC6.ValidateAppAuth fails (auth, device not found, or token expired). Uses camelCase column names matching the HC6 standard app error format.",
       "columns": [
-        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Unique ID of the HC.ErrorLog entry recorded by ValidateAppAuth." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code. 11=auth failure." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Specific error code set by ValidateAppAuth." },
-        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short error title for display." },
-        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
-        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name from OBJECT_NAME(@@PROCID)." }
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Unique ID of the HC.ErrorLog entry recorded by ValidateAppAuth."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification code. 11=auth failure."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Specific error code set by ValidateAppAuth."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Short error title for display."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name from OBJECT_NAME(@@PROCID)."
+        }
       ]
     },
     {
@@ -46,12 +76,42 @@
       "name": "NotFoundError",
       "description": "Returned when no active Hasher matches the supplied supportCode (errorCode=1313, errorType=13). Uses the same camelCase structure as AuthError.",
       "columns": [
-        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Unique ID of the HC.ErrorLog entry recorded for this not-found event." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 13 (not found)." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Always 1313." },
-        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Always 'Support code not found'." },
-        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Always 'No active account was found for that support code.'." },
-        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name from OBJECT_NAME(@@PROCID)." }
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Unique ID of the HC.ErrorLog entry recorded for this not-found event."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 13 (not found)."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1313."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Always 'Support code not found'."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Always 'No active account was found for that support code.'."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name from OBJECT_NAME(@@PROCID)."
+        }
       ]
     },
     {
@@ -59,14 +119,29 @@
       "name": "ResetCodeResult",
       "description": "Returned on success. Single row containing the URC:-prefixed reset code for the matched user.",
       "columns": [
-        { "name": "resetCode", "type": "NVARCHAR(250)", "nullable": false, "description": "The URC:-prefixed invite/reset code from HC.Hasher.ResetCode. Column declared NVARCHAR(250) in SP but column is NVARCHAR(50) in table." }
+        {
+          "name": "resetCode",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "The URC:-prefixed invite/reset code from HC.Hasher.ResetCode. Column declared NVARCHAR(250) in SP but column is NVARCHAR(50) in table."
+        }
       ]
     }
   ],
   "sideEffects": [
-    "Writes a row to HC.ErrorLog when no active Hasher is found for the given supportCode."
+    "INSERT HC.ErrorLog (with string_1 = @supportCode) when no active Hasher matches (lines 82-85), and from the CATCH block (lines 98-100, after ROLLBACK)"
   ],
   "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "All three parameters (lines 3-5) have no SQL default. A client that omits @supportCode gets 'expects parameter' — an unlogged empty 500 before the SP runs — rather than the logged 1313 'not found'."
+    },
+    {
+      "severity": "high",
+      "issue": "Any authenticated user can obtain any active account's ResetCode",
+      "detail": "Lines 74-77 return HC.Hasher.ResetCode for whichever active hasher holds @supportCode, with no relationship, kennel-admin or 'has not signed in' check. The ResetCode is the invite/QR code that lets a device authorise as that account — hcapp_getInviteCode refuses to show the very same value for an account that has ever signed in because 'an invite code for a signed-in account is a takeover' (2026-09-23). Here the only secret is the support code shown on the user's own profile; a guessed or screenshotted support code yields the account."
+    },
     {
       "severity": "medium",
       "issue": "@supportCode NVARCHAR(250) vs Hasher.SupportCode NVARCHAR(50)",
@@ -76,12 +151,7 @@
       "severity": "low",
       "issue": "@resetCode NVARCHAR(250) vs Hasher.ResetCode NVARCHAR(50)",
       "detail": "Local variable @resetCode is declared NVARCHAR(250) but HC.Hasher.ResetCode is NVARCHAR(50). Functionally harmless but inconsistent — should match the column type."
-    },
-    {
-      "severity": "low",
-      "issue": "HcVersion hardcoded as '<unknown>' in ErrorLog INSERT",
-      "detail": "The ErrorLog INSERT at line 80 passes '<unknown>' as HcVersion. HC6 SPs should pass a meaningful version identifier or a shared constant."
-    },
+    }
   ],
   "breakingChanges": [
     "@supportCode narrowed from NVARCHAR(1000) (HC5) to NVARCHAR(250) (HC6). Any caller passing a string longer than 250 characters will receive a truncation error.",

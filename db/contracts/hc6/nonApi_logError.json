@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "nonApi_logError",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Inserts an error entry into HC.ErrorLog. Called directly by name from the EmailInviteCode Azure Function when an invite-code lookup fails. Fire-and-forget helper — returns no rowsets. All parameters default to '<unknown>' so partial calls are safe.",
   "parameters": [
     {
@@ -48,6 +48,11 @@
       "severity": "low",
       "issue": "@inputText is narrower than the target column",
       "detail": "@inputText is NVARCHAR(1000) but HC.ErrorLog.string_1 is NVARCHAR(4000). Values longer than 1000 characters will be silently truncated at the parameter boundary. Acceptable for email addresses and hasher IDs (the documented use cases), but could be widened for safety."
+    },
+    {
+      "severity": "low",
+      "issue": "SP body not wrapped in TRY/CATCH",
+      "detail": "No TRY/CATCH (lines 28–33). It is the error logger itself: a failure here (ErrorLog unavailable) has nowhere else to go, and the caller already swallows it. A CATCH could only swallow. CLAUDE.md asks for the wrapper on every SP, so it is flagged; the severity is low because of the note."
     }
   ],
   "breakingChanges": [

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_getRunAllPhotos",
-  "version": "1.1.0",
-  "description": "Returns every photo for a specific event regardless of status \u2014 pending, approved at any level, private, and soft-deleted. Used to power the photo review screen (both Pending and Reviewed tabs) and the persistent status-count header. Caller must hold Hash Flash (0x20), GM (0x02), VGM (0x04), RA (0x08), or WebMeister (0x1000) for the kennel. Unlike hcapp_getKennelPendingPhotos, this SP shows all statuses for a single event rather than only pending across all events.",
+  "version": "1.2.0",
+  "description": "Returns every photo for a specific event regardless of status — pending, approved at any level, private, and soft-deleted (DeletedAt set) — newest first, to power the photo review screen (Pending and Reviewed tabs) and its status-count header. Gate: HC6.CheckKennelPermission 'batchPhotos' on @kennelId (feature 'Batch / view all photos'; SuperAdmin always) — errorCode 1334, errorType 13 otherwise. Unlike hcapp_getKennelPendingPhotos (one status, every event) this shows every status for one event. Auth: HC6.ValidateAppAuth (spNumber 36, @param NULL). Parameter and permission checks run before the TRY; the SELECT is wrapped, with runtime errors logged and re-thrown.",
   "parameters": [
     {
       "name": "deviceId",
@@ -37,7 +37,7 @@
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned only on auth, validation, or role check failure. Contains {success, errorCode, errorType}. Mutually exclusive with AllPhotos rowset.",
+      "description": "On auth failure (ValidateAppAuth), missing ids (1234/12) or no permission (1334/13): { success=0, errorCode, errorType }, paired with StandardErrorResult at index 1. Mutually exclusive with AllPhotos.",
       "columns": [
         {
           "name": "success",
@@ -73,104 +73,111 @@
           "name": "photoId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": "KennelPhotos.id \u2014 primary key of the photo."
+          "description": "KennelPhotos.id — primary key of the photo."
         },
         {
           "name": "EventId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": "KennelPhotos.EventId \u2014 always equal to @eventId."
+          "description": "KennelPhotos.EventId — always equal to @eventId."
         },
         {
           "name": "Status",
           "type": "TINYINT",
           "nullable": false,
-          "description": "KennelPhotos.Status \u2014 0=private, 1=pending_review, 2=public, 3=run_gallery, 4=home_gallery, 5=event_cover."
+          "description": "KennelPhotos.Status — 0=private, 1=pending_review, 2=public, 3=run_gallery, 4=home_gallery, 5=event_cover."
+        },
+        {
+          "name": "Featured",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "KennelPhotos.Featured — 1 when a reviewer starred the photo."
         },
         {
           "name": "DeletedAt",
           "type": "DATETIME2",
           "nullable": true,
-          "description": "KennelPhotos.DeletedAt \u2014 NULL if not soft-deleted; non-NULL timestamp if soft-deleted."
+          "description": "KennelPhotos.DeletedAt — NULL if not soft-deleted; non-NULL timestamp if soft-deleted."
         },
         {
           "name": "BlobUrl",
           "type": "NVARCHAR(500)",
           "nullable": false,
-          "description": "KennelPhotos.BlobUrl \u2014 CDN URL of the original uploaded image."
+          "description": "KennelPhotos.BlobUrl — CDN URL of the original uploaded image."
         },
         {
           "name": "EditedBlobUrl",
           "type": "NVARCHAR(500)",
           "nullable": true,
-          "description": "KennelPhotos.EditedBlobUrl \u2014 CDN URL of the Hash Flash-edited version, if any."
+          "description": "KennelPhotos.EditedBlobUrl — CDN URL of the Hash Flash-edited version, if any."
         },
         {
           "name": "Title",
           "type": "NVARCHAR(250)",
           "nullable": true,
-          "description": "KennelPhotos.Title \u2014 optional short title."
+          "description": "KennelPhotos.Title — optional short title."
         },
         {
           "name": "Description",
           "type": "NVARCHAR(MAX)",
           "nullable": true,
-          "description": "KennelPhotos.Description \u2014 optional caption."
+          "description": "KennelPhotos.Description — optional caption."
         },
         {
           "name": "CreatedAt",
           "type": "DATETIME2",
           "nullable": false,
-          "description": "KennelPhotos.CreatedAt \u2014 UTC timestamp when the photo was recorded."
+          "description": "KennelPhotos.CreatedAt — UTC timestamp when the photo was recorded."
         },
         {
           "name": "TakenAtUtc",
           "type": "DATETIME2",
           "nullable": true,
-          "description": "When the photo was taken (UTC). NULL for rows written before capture time was recorded \u2014 callers fall back to the PHO:: track point."
+          "description": "When the photo was taken (UTC). NULL for rows written before capture time was recorded — callers fall back to the PHO:: track point."
         },
         {
           "name": "uploaderDisplayName",
           "type": "NVARCHAR(MAX)",
           "nullable": false,
-          "description": "Hasher.DisplayName (persisted computed column) \u2014 the display name of the uploader."
+          "description": "Hasher.DisplayName (persisted computed column) — the display name of the uploader."
         },
         {
           "name": "eventName",
           "type": "NVARCHAR(250)",
           "nullable": false,
-          "description": "Event.EventName \u2014 name of the event."
+          "description": "Event.EventName — name of the event."
         },
         {
           "name": "eventNumber",
           "type": "SMALLINT",
           "nullable": true,
-          "description": "Event.AbsoluteEventNumber \u2014 cross-kennel run number. Nullable in the base table."
+          "description": "Event.AbsoluteEventNumber — cross-kennel run number. Nullable in the base table."
         }
       ]
     }
   ],
   "sideEffects": [
-    "Writes to HC.ErrorLog on validation or role check failure."
+    "EXEC HC6.CheckKennelPermission ('batchPhotos'), line 84",
+    "INSERT HC.ErrorLog on missing ids (line 69), no permission (line 89) and from the CATCH block (lines 127-129, after ROLLBACK)"
   ],
   "codeSmells": [
     {
       "severity": "medium",
-      "issue": "Role mask inconsistency: getKennelPendingPhotos uses 0x002E, getRunAllPhotos uses 0x102E",
-      "detail": "hcapp_getKennelPendingPhotos allows roles 0x002E. This SP and hcapp_batchUpdatePhotoStatus use 0x102E (adds WebMeister 0x1000). A WebMeister can see all-photo status and batch-action photos but cannot view the cross-event pending list."
+      "issue": "Parameter without a default",
+      "detail": "All four parameters (lines 3-6) have no SQL default. A client that omits @kennelId or @eventId gets 'expects parameter' — an unlogged empty 500 before the SP runs, so the graceful 1234 check at line 65 is unreachable for an omitted parameter."
     },
     {
       "severity": "low",
-      "issue": "No TRY/CATCH around the main SELECT",
-      "detail": "The SP has no TRY/CATCH block. An unexpected DB error will propagate as a raw SQL error rather than a structured error rowset. HC6 SPs should wrap the main query in TRY/CATCH."
+      "issue": "Missing SET XACT_ABORT ON",
+      "detail": "The SP sets SET NOCOUNT ON only. Harmless for a read with no transaction, but inconsistent with the HC6 SP standard, which requires both."
     },
     {
       "severity": "low",
-      "issue": "HcVersion hardcoded to '<unknown>' in all ErrorLog inserts",
-      "detail": "Consistent with other HC6 SPs but means the version is never captured in the error log."
+      "issue": "Different permission key from hcapp_getKennelPendingPhotos",
+      "detail": "This SP gates on 'batchPhotos' (line 84); the kennel-wide pending list gates on 'reviewPhotos'. Both are rows of HC.PermissionFunction, so whether the same roles hold both is data, not code."
     }
   ],
   "breakingChanges": [
-    "New SP \u2014 no HC5 predecessor. No breaking changes from migration."
+    "New SP — no HC5 predecessor. No breaking changes from migration."
   ]
 }

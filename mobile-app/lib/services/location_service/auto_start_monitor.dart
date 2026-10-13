@@ -246,6 +246,19 @@ class AutoStartMonitor {
       userId: currentUserId,
       backfill: backfill,
     );
+    // The wrist hears of a session from the Live Run controller, which is
+    // page-scoped: with Live Run closed nobody told it, and the watch sat on
+    // its idle screen for the whole run (2026-10-13). Announce from here; a
+    // controller that was open and already announced is left alone.
+    if (Get.isRegistered<WatchBridgeService>()) {
+      unawaited(
+        WatchBridgeService.to.startSessionForEvent(
+          eventId: HcId(eventId),
+          eventName: name,
+          startedAt: DateTime.fromMillisecondsSinceEpoch(startTsMs),
+        ),
+      );
+    }
     // Tracking this run is attending it, exactly as a manual start does.
     if (currentUserId.isNotEmpty) {
       unawaited(

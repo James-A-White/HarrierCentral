@@ -1,0 +1,70 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_setChatRoomParticipation",
+  "version": "1.0.0",
+  "description": "Sets how the calling hasher participates in ONE global chat room, from their settings console (James, 2026-09-14): 0 participate with push notifications (the default — no row means 0), 1 participate with badges only (silent push), 2 do not participate (the room is not listed and nothing is pushed). Stored on HC.EventMessageBadgeCounts.ParticipationState, the existing per-hasher per-room row, keyed (UserId, EventId NULL, KennelId NULL, ThreadId NULL, MessageType = @roomType); MERGE so a room never opened can still be configured, with LastSequenceCount 0 so the unread count stays honest. Auth: HC6.ValidateAppAuth (spNumber 107, @param NULL). Permission gate: HC6.UserMayEnterChatRoom — the same gate as reading and sending, so this cannot be used to probe which rooms exist. hcapp_sendRoomMessage reads the state for its push audience (0 → visible, 1 → silent, 2 → none). Write SP: standard success envelope.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "Registered device UUID. Default NULL (ValidateAppAuth then fails gracefully)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret; @param NULL). Default NULL."
+    },
+    {
+      "name": "roomType",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "EventMessageBadgeCounts.MessageType",
+      "description": "The room (HC6.ChatRoomCatalog().RoomType). Required; NULL is refused. Must be a room the caller may enter."
+    },
+    {
+      "name": "participationState",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "EventMessageBadgeCounts.ParticipationState",
+      "description": "0 participate with push · 1 participate, badges only · 2 opt out. Required; NULL or any other value is refused."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Auth failure only (ValidateAppAuth): the error detail is returned alone and the SP returns."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "Every other outcome. Success = 1 after the commit. Success = 0 with ErrorMessage (and an HC.ErrorLog row) when @roomType is NULL or @participationState not in (0,1,2) — 'That setting could not be saved.'; when the caller may not enter the room — 'That chat room is for the hashers who hold its role.'; or from the CATCH (ERROR_MESSAGE()).",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "1 saved, 0 refused or failed." },
+        { "name": "ErrorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "NULL on success; a user-facing sentence, or ERROR_MESSAGE() from the CATCH, otherwise." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "MERGE HC.EventMessageBadgeCounts on (UserId, EventId IS NULL, KennelId IS NULL, ThreadId IS NULL, MessageType = @roomType): UPDATE ParticipationState, or INSERT (UserId, EventId NULL, KennelId NULL, MessageType, LastSequenceCount 0, ParticipationState).",
+    "INSERT HC.ErrorLog on every refused path and in the CATCH."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Header comment is stale",
+      "detail": "Lines 22–23 say 'Nothing pushes for a room yet, so 0 and 1 behave identically today'. Room push shipped 2026-09-18 (hcapp_sendRoomMessage rowsets 2–3 split on exactly this value), so the two states now differ as designed. Documentation only — the code is right."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

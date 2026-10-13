@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "nonApi_logPortalRequest",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Inserts a portal request audit entry into LOG.GeneralLog. Called by PortalApiHC6 after every successful HC6 portal SP dispatch. Fire-and-forget — errors are swallowed by the caller.",
   "parameters": [
     {
@@ -24,7 +24,18 @@
     "Inserts 1 row into LOG.GeneralLog with LogSource, Message, and Timestamp = SYSUTCDATETIME().",
     "LOG.GeneralLog.Timestamp has a DEFAULT of GETDATE() but the SP passes SYSUTCDATETIME() explicitly — ensures UTC timestamp regardless of server local time setting."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@logSource, @message have no SQL default. Called only by PortalApiHC6.LogRequestAsync, which always passes both. A call that omits one fails before the body runs — no HC.ErrorLog row, no graceful check (CLAUDE.md 'SP parameter with NO default')."
+    },
+    {
+      "severity": "low",
+      "issue": "SP body not wrapped in TRY/CATCH",
+      "detail": "No TRY/CATCH (lines 19–22). A single INSERT whose failure the caller swallows; a CATCH could only swallow or log to HC.ErrorLog. CLAUDE.md asks for the wrapper on every SP, so it is flagged; the severity is low because of the note."
+    }
+  ],
   "breakingChanges": [
     "HC5 used inline SQL in PortalApiHC6.LogRequestAsync. HC6 extracts this into a named SP."
   ]

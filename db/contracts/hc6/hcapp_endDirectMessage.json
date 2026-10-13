@@ -1,61 +1,74 @@
 {
   "schema": "HC6",
   "name": "hcapp_endDirectMessage",
-  "version": "1.0.0",
-  "description": "Unfriend: the caller's row Removed; the thread stays readable, sending refused for both; the other party not told. E9.F1.S7.",
+  "version": "1.1.0",
+  "description": "Unfriend (E9.F1.S7): marks the CALLER's HC.HasherFriendMap row for the thread Removed = 1. The thread stays readable to both parties; hcapp_sendDirectMessage refuses while either side's row is removed. The other party is not told and only learns when they try to write. Auth: HC6.ValidateAppAuth (spNumber 132, standard token). Authorization: the caller must have a HasherFriendMap row for @threadId → else 2006 'No such conversation' (errorType 2). Not idempotent in reporting: a row already Removed still exists, so a second call succeeds again (the UPDATE just re-stamps it).",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Registered device"
+      "description": "Registered device. Default NULL."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Short-lived token (standard, device secret)"
+      "description": "Short-lived token (standard, device secret). Default NULL."
     },
     {
       "name": "threadId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "HasherFriendMap.ThreadId",
-      "description": ""
+      "description": "The direct-message thread (HC.HasherFriendMap.ThreadId) the caller is leaving. Default NULL → 2006."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "ref": "StandardErrorResult",
-      "description": "Auth failure returns the detail alone; other refusals return {success:0, errorCode, errorType} then the detail: 2006 not found (2), 2007 unhandled (5)"
+      "description": "Auth failure (ValidateAppAuth 1232 / 1332 / 1232 signed out) returns the error detail ALONE."
     },
     {
       "index": 0,
       "name": "Envelope",
+      "description": "On success { success = 1, errorMessage = NULL }; on a refusal after auth { success = 0, errorCode, errorType } then the detail at index 1.",
       "columns": [
         {
           "name": "success",
           "type": "INT",
           "nullable": false,
-          "description": "1 ok"
+          "description": "1 ok; 0 refused."
         },
         {
           "name": "errorMessage",
           "type": "NVARCHAR(MAX)",
           "nullable": true,
-          "description": "NULL on success"
+          "description": "NULL on success; absent on failure, where the row carries errorCode / errorType instead: 2006 no such conversation (2), 2007 unhandled (5)."
         }
       ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "After a { success = 0 } envelope: 2006 or 2007."
     }
   ],
   "sideEffects": [
-    "HasherFriendMap.Removed",
-    "LOG.GeneralLog"
+    "UPDATE HC.HasherFriendMap SET Removed = 1, updatedAt = SYSDATETIMEOFFSET() WHERE UserId = @userId AND ThreadId = @threadId (autocommit — no explicit transaction).",
+    "INSERT LOG.GeneralLog ('HC6.hcapp_endDirectMessage', 'Direct message ended', userId, thread) — a separate autocommit statement.",
+    "INSERT HC.ErrorLog on 2006 and in the CATCH (2007)."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Two writes with no transaction",
+      "detail": "Lines 52-55: the HasherFriendMap UPDATE and the LOG.GeneralLog INSERT are separate autocommit statements. If the log INSERT fails the unfriend has already persisted while the client receives 2007 'could not be saved'. Harmless in effect (the UPDATE is idempotent) but the reply is wrong."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

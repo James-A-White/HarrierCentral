@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_getKennelPendingPhotos",
-  "version": "1.0.0",
-  "description": "Returns all photos with Status=1 (pending_review) for a kennel, ordered newest-first. Used to power the photo review screen. Caller must hold Hash Flash (0x20), GM (0x02), VGM (0x04), or RA (0x08) for the kennel. Optionally restrict to a single event via @eventId.",
+  "version": "1.1.0",
+  "description": "Returns all photos with Status = 1 (pending review) for a kennel, newest first, for the photo review screen; optionally restricted to one event. Gate: HC6.CheckKennelPermission 'reviewPhotos' on @kennelId (feature 'Review / approve photos'; SuperAdmin always) — errorCode 1334, errorType 13 otherwise. Status and Featured are returned (always 1 / as stored) so these rows map onto the same model as hcapp_getRunAllPhotos (2026-09-13). Auth: HC6.ValidateAppAuth (spNumber 34, @param NULL). Parameter and permission checks run before the TRY; the SELECT is wrapped, with runtime errors logged and re-thrown.",
   "parameters": [
     {
       "name": "deviceId",
@@ -37,11 +37,26 @@
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned only on auth failure or validation/role error. Contains {success, errorCode, errorType}. Mutually exclusive with PendingPhotos rowset.",
+      "description": "On auth failure (ValidateAppAuth), missing kennelId (1234/12) or no permission (1334/13): { success=0, errorCode, errorType }, paired with StandardErrorResult at index 1. Mutually exclusive with PendingPhotos.",
       "columns": [
-        { "name": "success", "type": "INT", "nullable": false, "description": "Always 0 on this error path." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on this error path."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Numeric error code."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification code."
+        }
       ]
     },
     {
@@ -54,36 +69,114 @@
       "name": "PendingPhotos",
       "description": "On success: all Status=1 photos for the kennel, joined to Hasher and Event for display context, ordered by CreatedAt DESC. Returns zero rows if no pending photos exist. Mutually exclusive with ErrorEnvelope.",
       "columns": [
-        { "name": "photoId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.id — primary key of the photo." },
-        { "name": "EventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.EventId — the event the photo belongs to." },
-        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "KennelPhotos.UserId — the user who uploaded the photo." },
-        { "name": "BlobUrl", "type": "NVARCHAR(500)", "nullable": false, "description": "KennelPhotos.BlobUrl — CDN URL of the original uploaded image." },
-        { "name": "EditedBlobUrl", "type": "NVARCHAR(500)", "nullable": true, "description": "KennelPhotos.EditedBlobUrl — CDN URL of the Hash Flash-edited (cropped) version, if any." },
-        { "name": "Latitude", "type": "DECIMAL(9,6)", "nullable": false, "description": "KennelPhotos.Latitude — GPS latitude where the photo was taken." },
-        { "name": "Longitude", "type": "DECIMAL(9,6)", "nullable": false, "description": "KennelPhotos.Longitude — GPS longitude where the photo was taken." },
-        { "name": "Title", "type": "NVARCHAR(250)", "nullable": true, "description": "KennelPhotos.Title — optional short title." },
-        { "name": "Description", "type": "NVARCHAR(MAX)", "nullable": true, "description": "KennelPhotos.Description — optional caption." },
-        { "name": "CreatedAt", "type": "DATETIME2", "nullable": false, "description": "KennelPhotos.CreatedAt — UTC timestamp when the photo was recorded." },
-        { "name": "UpdatedAt", "type": "DATETIME2", "nullable": false, "description": "KennelPhotos.UpdatedAt — UTC timestamp of the last status change." },
-        { "name": "uploaderDisplayName", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Hasher.DisplayName (persisted computed column) — the display name of the user who uploaded the photo." },
-        { "name": "eventName", "type": "NVARCHAR(250)", "nullable": false, "description": "Event.EventName — name of the event the photo belongs to." },
-        { "name": "eventNumber", "type": "SMALLINT", "nullable": true, "description": "Event.AbsoluteEventNumber — cross-kennel run number for the event. Nullable in the base table." }
+        {
+          "name": "photoId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "KennelPhotos.id — primary key of the photo."
+        },
+        {
+          "name": "EventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "KennelPhotos.EventId — the event the photo belongs to."
+        },
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "KennelPhotos.UserId — the user who uploaded the photo."
+        },
+        {
+          "name": "BlobUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "KennelPhotos.BlobUrl — CDN URL of the original uploaded image."
+        },
+        {
+          "name": "EditedBlobUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "KennelPhotos.EditedBlobUrl — CDN URL of the Hash Flash-edited (cropped) version, if any."
+        },
+        {
+          "name": "Status",
+          "type": "TINYINT",
+          "nullable": false,
+          "description": "KennelPhotos.Status — always 1 here (the WHERE says so); returned for model parity with hcapp_getRunAllPhotos."
+        },
+        {
+          "name": "Featured",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "KennelPhotos.Featured — 1 when a reviewer starred the photo."
+        },
+        {
+          "name": "Latitude",
+          "type": "DECIMAL(9,6)",
+          "nullable": false,
+          "description": "KennelPhotos.Latitude — GPS latitude where the photo was taken."
+        },
+        {
+          "name": "Longitude",
+          "type": "DECIMAL(9,6)",
+          "nullable": false,
+          "description": "KennelPhotos.Longitude — GPS longitude where the photo was taken."
+        },
+        {
+          "name": "Title",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "KennelPhotos.Title — optional short title."
+        },
+        {
+          "name": "Description",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "KennelPhotos.Description — optional caption."
+        },
+        {
+          "name": "CreatedAt",
+          "type": "DATETIME2",
+          "nullable": false,
+          "description": "KennelPhotos.CreatedAt — UTC timestamp when the photo was recorded."
+        },
+        {
+          "name": "UpdatedAt",
+          "type": "DATETIME2",
+          "nullable": false,
+          "description": "KennelPhotos.UpdatedAt — UTC timestamp of the last status change."
+        },
+        {
+          "name": "uploaderDisplayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Hasher.DisplayName (persisted computed column) — the display name of the user who uploaded the photo."
+        },
+        {
+          "name": "eventName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Event.EventName — name of the event the photo belongs to."
+        },
+        {
+          "name": "eventNumber",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.AbsoluteEventNumber — cross-kennel run number for the event. Nullable in the base table."
+        }
       ]
     }
   ],
   "sideEffects": [
-    "Writes to HC.ErrorLog on kennelId validation failure or role check failure."
+    "EXEC HC6.CheckKennelPermission ('reviewPhotos'), line 80",
+    "INSERT HC.ErrorLog on missing kennelId (line 66), no permission (line 85) and from the CATCH block (lines 129-131, after ROLLBACK)"
   ],
   "codeSmells": [
     {
       "severity": "medium",
-      "issue": "Role mask inconsistency with hcapp_batchUpdatePhotoStatus and hcapp_getRunAllPhotos",
-      "detail": "This SP uses role mask 0x002E (Hash Flash 0x20 | GM 0x02 | VGM 0x04 | RA 0x08). hcapp_batchUpdatePhotoStatus and hcapp_getRunAllPhotos use 0x102E which also includes WebMeister (0x1000). A WebMeister can batch-action photos but cannot see the pending list to identify which photos need actioning."
-    },
-    {
-      "severity": "low",
-      "issue": "No TRY/CATCH around the main SELECT",
-      "detail": "The SP uses SET NOCOUNT ON but has no TRY/CATCH. An unexpected DB error (deadlock, timeout) will propagate as a raw SQL error rather than a structured error rowset. HC6 SPs should wrap the main query in TRY/CATCH."
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken and @kennelId (lines 3-5) have no SQL default. A client that omits @kennelId gets 'expects parameter' — an unlogged empty 500 before the SP runs, so the graceful 1234 check at line 63 is unreachable for an omitted parameter."
     },
     {
       "severity": "low",
@@ -92,8 +185,8 @@
     },
     {
       "severity": "low",
-      "issue": "HcVersion hardcoded to '<unknown>' in all ErrorLog inserts",
-      "detail": "Consistent with other HC6 SPs but means the version is never captured in the error log."
+      "issue": "Different permission key from hcapp_getRunAllPhotos",
+      "detail": "This SP gates on 'reviewPhotos' (line 80); hcapp_getRunAllPhotos and the batch actions gate on 'batchPhotos'. Both are rows of HC.PermissionFunction, so whether the same roles hold both is data, not code — a reviewer who can action a run's photos but not see the kennel-wide pending list (or the reverse) is a configuration gap to check there."
     }
   ],
   "breakingChanges": [
