@@ -177,7 +177,13 @@
     "  The API shim sends a silent FCM data push (Type=reaction) to the author's phones from rowset 2; nothing is queued in the database.",
     "On an error that escapes the inner SP (or the EXEC itself) the CATCH rolls back, logs 'Unhandled error in publicWeb_reactToChatMessage' to HC.ErrorLog (HcVersion '<web>', deviceId) and re-THROWs, so the API returns 500."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken (line 18-19) have no SQL default. A caller that omits one fails with 'expects parameter' before the SP runs: PublicWebAdminApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

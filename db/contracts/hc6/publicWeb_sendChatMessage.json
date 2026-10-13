@@ -856,6 +856,11 @@
   ],
   "codeSmells": [
     {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken, @kind, @messageId, @messageContent (line 13-15, 21, 24) have no SQL default. A caller that omits one fails with 'expects parameter' before the SP runs: PublicWebAdminApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
+    },
+    {
       "severity": "low",
       "issue": "Refusal log omits the thread id",
       "detail": "The 1230 ErrorLog description (lines 45-46) records kind, event, kennel and room but not @threadId, so a refused DM post cannot be traced to its thread."
