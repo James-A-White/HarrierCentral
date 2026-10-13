@@ -1,15 +1,15 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getEventRunners",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Resolves PackTrack runner ids (HC.Hasher.id) to public display names and profile photos for the public-website run map. Unauthenticated (anonymous PublicWebApi GET). The ids are already exposed by the public GetPositions endpoint; this only maps them to DisplayName and Photo — no email or other PII. Photo exposure was explicitly approved by James (2026-07-10); IncludeInGlobalHashDirectory must NOT be used to gate it (unimplemented feature, not a consent flag).",
   "parameters": [
     {
       "name": "publicEventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Event.PublicEventId",
-      "description": "The run's public-facing UUID; used as an existence guard so an empty name list is not treated as a 404."
+      "description": "The run's public-facing UUID; used as an existence guard so an empty name list is not treated as a 404. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "userIds",
@@ -85,7 +85,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "@publicEventId and @userIds have no SQL default (lines 3 and 6). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @userIds. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "low",

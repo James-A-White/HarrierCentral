@@ -1,13 +1,13 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getStats",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Returns run statistics for a kennel's public stats page. All hashers with a non-removed relationship to the kennel (removed = 0) are included regardless of IsMember flag — both registered members and followers/visitors appear. Display name uses the kennel-specific hash name when set, falling back to the hasher's global hash name, then the computed DisplayName. Returns two rowsets: Rowset 0 is a HasherCount sentinel that prevents a false 404 when the kennel exists but has no hashers yet; Rowset 1 contains the hasher stat rows. No authentication required.",
   "parameters": [
     {
       "name": "PublicKennelId",
       "type": "NVARCHAR(50)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Kennel.PublicKennelId",
       "description": "The kennel's public UUID as a string, CONVERTed to UNIQUEIDENTIFIER. Blank/NULL returns 'PublicKennelId is required.'. No SQL default.",
       "typeMismatch": "Kennel.PublicKennelId is UNIQUEIDENTIFIER; the SP takes NVARCHAR(50) and CONVERTs it (line 55). A non-GUID string raises a conversion error, caught and returned as { Success = 0, ErrorMessage }."
@@ -117,11 +117,6 @@
   ],
   "sideEffects": [],
   "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "Parameter without a default",
-      "detail": "@PublicKennelId (line 2) has no SQL default. A caller that omits it fails with 'expects parameter' before the SP runs: PublicWebApi's catch logs only a generic exception row and returns 500, and the SP's own 'PublicKennelId is required.' check (lines 43-47) never runs."
-    },
     {
       "severity": "low",
       "issue": "CATCH block does not log to HC.ErrorLog",

@@ -1,15 +1,15 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getRunPhotoPins",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Where and when each Hash-Flash-approved PUBLIC photo of a run was taken, for the public PackTrack map and Trail TV pins. Unauthenticated (no device or token). Photos are no longer written into GPS tracks, so maps read pins from HC.KennelPhotos rows. Exposure is the audience model's Public (3) and Cover (5) photos only — the same coordinates the track payload used to carry as PHO:: marks; the gallery endpoint (publicWeb_getRunPhotos) still returns no coordinates.",
   "parameters": [
     {
       "name": "publicEventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Event.PublicEventId",
-      "description": "The run's public id. NULL returns EventFound = 0 and no second rowset."
+      "description": "The run's public id. NULL returns EventFound = 0 and no second rowset. Defaults to NULL when omitted (2026-10-13)."
     }
   ],
   "rowsets": [

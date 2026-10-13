@@ -1,13 +1,13 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getMultiKennelRuns",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Returns upcoming or past runs for a comma-separated list of kennel slugs (KennelUniqueShortName). Each row carries the kennel's name, logo, colours and IANA timezone so mixed-kennel lists render kennel badges without a second call. Unknown, deleted or removed slugs are silently ignored. Upcoming = EventStartDatetimeGmt within the last 8 hours or later, ascending; past = before now, descending; optional @MaxEvents cap and @DaysOffset boundary. Description, URL and what3words are always NULL (list use only). Rowset 0 is a count sentinel so an empty list is not read as a 404. No authentication. Read-only.",
   "parameters": [
     {
       "name": "SlugList",
       "type": "NVARCHAR(MAX)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Kennel.KennelUniqueShortName",
       "description": "Comma-separated KennelUniqueShortName values (STRING_SPLIT on ',', each trimmed). Required — blank → ValidationError. No SQL default."
     },
@@ -327,7 +327,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "@SlugList and @IsFuture have no SQL default (lines 2-3). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @IsFuture. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "low",

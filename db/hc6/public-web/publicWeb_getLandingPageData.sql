@@ -1,5 +1,5 @@
 CREATE OR ALTER PROCEDURE [HC6].[publicWeb_getLandingPageData]
-    @kennelUniqueShortName NVARCHAR(50)
+    @kennelUniqueShortName NVARCHAR(50) = NULL
 AS
 -- =====================================================================
 -- Procedure:   HC6.publicWeb_getLandingPageData

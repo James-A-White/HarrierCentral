@@ -1,15 +1,15 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getLandingPageData",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Returns kennel identity and website configuration needed to render a public-web landing page, looked up by URL slug (KennelUniqueShortName), for a live kennel (deleted = 0, removed = 0). Theming comes from HC.KennelWebsite where configured: ThemeMode, ScrollBlur, WebsiteTitleText, Tagline and WelcomeText fall back to hardcoded platform defaults; every other style column is NULL without a KennelWebsite row and the frontend applies its own default. KennelStatus lets hashruns.org show the logo-only holding page for Defunct (3) and Inactive - Hidden (4) kennels; DistancePreference (2026-09-27) picks m/km or yd/mi on PackTrack pages. No authentication. Read-only.",
   "parameters": [
     {
       "name": "kennelUniqueShortName",
       "type": "NVARCHAR(50)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Kennel.KennelUniqueShortName",
-      "description": "The kennel's URL slug — must match exactly (case-insensitive collation applies at DB level)"
+      "description": "The kennel's URL slug — must match exactly (case-insensitive collation applies at DB level) Defaults to NULL when omitted (2026-10-13)."
     }
   ],
   "rowsets": [
@@ -281,11 +281,6 @@
       "severity": "medium",
       "issue": "CATCH does not log to HC.ErrorLog",
       "detail": "The CATCH (lines 133-135) returns { Success = 0, ErrorMessage } without writing HC.ErrorLog and without THROW, so a timeout or bad input surfaces to the shim as a data rowset and leaves no server-side record (CLAUDE.md 'Every CATCH must log')."
-    },
-    {
-      "severity": "medium",
-      "issue": "Parameter without a default",
-      "detail": "@kennelUniqueShortName have no SQL default (line 2). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
     },
     {
       "severity": "low",

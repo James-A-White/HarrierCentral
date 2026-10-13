@@ -1,6 +1,6 @@
 CREATE OR ALTER PROCEDURE [HC6].[publicWeb_getRunPhotos]
 
-    @publicEventId UNIQUEIDENTIFIER
+    @publicEventId UNIQUEIDENTIFIER = NULL
     -- The run's public-facing UUID (HC.Event.PublicEventId), not the internal id.
 
 AS

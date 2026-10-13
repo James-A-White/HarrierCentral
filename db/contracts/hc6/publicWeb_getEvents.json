@@ -1,13 +1,13 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getEvents",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Returns upcoming or past runs for one kennel (by PublicKennelId), limited by count, an absolute date cutoff or a relative number of days. Upcoming = EventStartDatetimeGmt within the last 8 hours or later (a morning run stays visible that evening), ascending; past = EventStartDatetimeGmt before now, descending — so a run can be in both lists for up to 8 hours. Only visible, live runs (IsVisible = 1, deleted = 0, removed = 0) of a live kennel. Fee columns resolve the event-level override against the kennel's default fee. @SummaryOnly = 1 nulls the heavy text fields for list views. Two rowsets so an empty event list is not read as a 404. No authentication (anonymous PublicWebApi GET). Read-only.",
   "parameters": [
     {
       "name": "PublicKennelId",
       "type": "NVARCHAR(50)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Kennel.PublicKennelId",
       "description": "Public kennel GUID as text; CONVERTed to UNIQUEIDENTIFIER (a malformed value raises a conversion error → CatchEnvelope). Unknown or inactive kennel → empty rowset 0 → shim 404. No SQL default."
     },
@@ -303,7 +303,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "@PublicKennelId and @IsFuture have no SQL default (lines 2-3). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @IsFuture. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "low",

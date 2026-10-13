@@ -1,20 +1,20 @@
 {
   "schema": "HC6",
   "name": "publicWeb_createMember",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Web self-signup (E9.F7.S3): a hasher whose email the kennel never recorded becomes a member by answering the run notice. Validates the request, refuses an address that already has a live account (10005, the app signup's contractual duplicate code), resolves @kennelSlug to a kennel, then EXECs HC6.hcapp_addEditUser in new-user mode (@deviceId NULL — creation only, no token) with @followKennelOnAddNewUser = 1 so the new hasher follows that kennel; hcapp_addEditUser's rowsets are returned as they come. The email is NOT proven here: the web next sends the invite code and the browser becomes a device only when the code comes back (hcapp_authorizeDevice), exactly as the app's flow. No SP-level auth: reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET.",
   "parameters": [
     {
       "name": "email",
       "type": "NVARCHAR(250)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Hasher.Email",
       "description": "Required (LEN >= 5). No SQL default."
     },
     {
       "name": "hashName",
       "type": "NVARCHAR(250)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Hasher.HashName",
       "description": "Required (non-empty). No SQL default."
     },
@@ -162,11 +162,6 @@
     "INSERT HC.ErrorLog in this SP's CATCH (no re-throw; returns the 1500 envelope)."
   ],
   "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "Parameter without a default",
-      "detail": "@email and @hashName have no SQL default (lines 2-3). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
-    },
     {
       "severity": "low",
       "issue": "Unknown kennel slug signs up silently without a kennel",

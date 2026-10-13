@@ -1,15 +1,15 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getEventTrailTypes",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Returns the owning kennel's PackTrack trail-type config JSON (HC.Kennel.TrailTypesConfigJson) for a run, by the run's INTERNAL id. Called server-side by the GetPositions function, which bundles it into the position payload on the full fetch only, so trail-type labels resolve on app and web even when the viewer does not follow the kennel. Unauthenticated read; no PII (labels / emoji a kennel chose).",
   "parameters": [
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Event.id",
-      "description": "Internal HC.Event.id (the id PackTrack keys positions by), not PublicEventId."
+      "description": "Internal HC.Event.id (the id PackTrack keys positions by), not PublicEventId. Defaults to NULL when omitted (2026-10-13)."
     }
   ],
   "rowsets": [
@@ -50,11 +50,6 @@
     "INSERT HC.ErrorLog then THROW in the CATCH."
   ],
   "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "Parameter without a default",
-      "detail": "@eventId have no SQL default (line 3). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
-    },
     {
       "severity": "low",
       "issue": "Wrong SP name in log",

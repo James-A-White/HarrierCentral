@@ -1,15 +1,15 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getRunPhotos",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Returns the publicly visible photos of a run (audience model Status >= 3: Public 3 and Cover 5), identified by its public event UUID. Used by the mobile guest gallery and the public website. Unauthenticated — no auth parameters, no permission gate. GPS coordinates are deliberately not returned (M15 privacy fix; pins come from publicWeb_getRunPhotoPins). The display URL is the Hash Flash edit when one exists, else the original. Rowset 0 is an event-existence sentinel (0 rows = event not found, the shim returns 404); rowset 1 is the photos, oldest first. A NULL or all-zero id short-circuits with { Success = 0, ErrorMessage } before the TRY block.",
   "parameters": [
     {
       "name": "publicEventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Event.PublicEventId",
-      "description": "The run's public-facing UUID (HC.Event.PublicEventId), not the internal Event.id. NULL or the zero UUID returns { Success = 0, ErrorMessage = '@publicEventId is required' }."
+      "description": "The run's public-facing UUID (HC.Event.PublicEventId), not the internal Event.id. NULL or the zero UUID returns { Success = 0, ErrorMessage = '@publicEventId is required' }. Defaults to NULL when omitted (2026-10-13)."
     }
   ],
   "rowsets": [

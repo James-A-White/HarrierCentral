@@ -1,5 +1,5 @@
 CREATE OR ALTER PROCEDURE [HC6].[publicWeb_getStats]
-    @PublicKennelId NVARCHAR(50)
+    @PublicKennelId NVARCHAR(50) = NULL
 AS
 -- =====================================================================
 -- Procedure:   HC6.publicWeb_getStats

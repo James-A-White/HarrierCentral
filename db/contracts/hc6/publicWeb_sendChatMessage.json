@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "publicWeb_sendChatMessage",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A web member posts one chat message (E9.F7.S15) through the app's own send SPs, chosen by @kind: 'run' → hcapp_sendEventMessage, 'kennel' → hcapp_sendKennelMessage, 'room' → hcapp_sendRoomMessage, 'dm' → hcapp_sendDirectMessage (E9.F1.S7). The wrapper only resolves public ids (run/kennel must be live) and checks the request is well formed; auth, membership/room/thread gates, content length (4,000) and message kind are the inner SP's. The token must be signed for the inner SP the kind selects. @messageId is the client's id, so a retried post cannot double up. Because the inner SPs answer with the message and push audiences rather than an envelope, the wrapper appends { success 1 } when the message row exists. Reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET; the API sends no push for a web post. Since 2026-10-13 the public-web API drops every FcmToken column before replying, so the push-recipient rowsets reach the web server without device tokens (positions and row counts unchanged).",
   "parameters": [
     {
@@ -21,7 +21,7 @@
     {
       "name": "kind",
       "type": "NVARCHAR(10)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
       "description": "'run' | 'kennel' | 'room' | 'dm'. No SQL default."
     },
@@ -56,14 +56,14 @@
     {
       "name": "messageId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "EventMessage.id",
       "description": "Client-generated id (idempotency key). Required; no SQL default."
     },
     {
       "name": "messageContent",
       "type": "NVARCHAR(MAX)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "EventMessage.MessageContent",
       "description": "The text, or the photo URL / location for kinds 1 / 2. MAX so nothing is cut silently; the inner SP refuses over 4,000. Blank → 1230. No SQL default."
     },
@@ -858,7 +858,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "@deviceId, @accessToken, @kind, @messageId, @messageContent (line 13-15, 21, 24) have no SQL default. A caller that omits one fails with 'expects parameter' before the SP runs: PublicWebAdminApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "low",

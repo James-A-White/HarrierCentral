@@ -1,5 +1,5 @@
 CREATE OR ALTER PROCEDURE [HC6].[publicWeb_getRunPhotoPins]
-    @publicEventId UNIQUEIDENTIFIER
+    @publicEventId UNIQUEIDENTIFIER = NULL
 AS
 -- =====================================================================
 -- Procedure: HC6.publicWeb_getRunPhotoPins

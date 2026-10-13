@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "publicWeb_savePasskey",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Binds a WebAuthn credential to the calling browser's own HC.Device row (E9.F7.S6). The registration ceremony is verified by the Next.js route (@simplewebauthn/server) — SQL cannot check an attestation — so this SP proves the caller is a signed-in device (HC6.ValidateAppAuth, spNumber 110, token signed for 'publicWeb_savePasskey') and stores the key against THAT device (id = @deviceId AND UserId = caller) and no other. Reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET.",
   "parameters": [
     {
@@ -21,14 +21,14 @@
     {
       "name": "credentialId",
       "type": "NVARCHAR(500)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Device.PasskeyCredentialId",
       "description": "base64url No SQL default."
     },
     {
       "name": "publicKey",
       "type": "NVARCHAR(2000)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Device.PasskeyPublicKey",
       "description": "base64url COSE key No SQL default."
     },
@@ -87,7 +87,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "@deviceId, @accessToken, @credentialId, @publicKey, @counter (line 2-6) have no SQL default. A caller that omits one fails with 'expects parameter' before the SP runs: PublicWebAdminApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken, @counter. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     }
   ],
   "breakingChangeRules": [

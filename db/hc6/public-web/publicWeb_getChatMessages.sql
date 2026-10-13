@@ -15,7 +15,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[publicWeb_getChatMessages]
     @deviceId           UNIQUEIDENTIFIER,
     @accessToken        NVARCHAR(1000),
-    @kind               NVARCHAR(10),
+    @kind               NVARCHAR(10) = NULL,
     @publicEventId      UNIQUEIDENTIFIER = NULL,
     @publicKennelId     UNIQUEIDENTIFIER = NULL,
     @roomType           INT              = NULL,

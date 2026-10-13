@@ -1,6 +1,6 @@
 CREATE OR ALTER PROCEDURE [HC6].[publicWeb_getEventTrailTypes]
 
-    @eventId UNIQUEIDENTIFIER
+    @eventId UNIQUEIDENTIFIER = NULL
     -- The run's INTERNAL id (HC.Event.id) — the same id PackTrack uses to key
     -- positions in Table Storage. NOT PublicEventId. The GetPositions function
     -- already holds the internal id, so it passes that through.
