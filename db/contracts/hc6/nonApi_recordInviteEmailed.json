@@ -1,0 +1,69 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_recordInviteEmailed",
+  "version": "1.0.0",
+  "description": "Stamps HC.Hasher.InviteEmailedAt = now for the hashers an 'Email invite codes' send reached (E2.F2.S6), so the next send skips anyone invited in the last 7 days. Called by the InviteEmails API endpoint after the emails are handed to ACS — internal, no device auth. Never touches updatedAt (the Hasher triggers fire only on updatedAt / name / photo / removed), so nothing re-syncs. One LOG.GeneralLog row per send (LogSource 'InviteEmail', StrParam1 = kennel id, Data = {admin, sent}). An empty or NULL list is a successful no-op with stamped = 0. Ids that do not parse as GUIDs are dropped silently by TRY_CAST.",
+  "parameters": [
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "The kennel the invites were for; logged only (LOG.GeneralLog.StrParam1, HC.ErrorLog.kennelId). Default NULL."
+    },
+    {
+      "name": "adminId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "The admin who sent them; logged only. Default NULL."
+    },
+    {
+      "name": "hasherIds",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.id",
+      "description": "'|'-separated HC.Hasher ids that were sent to. NULL or '' ⇒ no-op. Default NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Always exactly one row: { Success, ErrorMessage, stamped }, from the TRY (Success 1) or the CATCH (Success 0, stamped 0).",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 when the CATCH block ran."
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success; ERROR_MESSAGE() from the CATCH block on failure."
+        },
+        {
+          "name": "stamped",
+          "type": "INT",
+          "nullable": false,
+          "description": "Rows of HC.Hasher whose InviteEmailedAt was set (0 on a no-op or on failure)."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Hasher SET InviteEmailedAt = SYSDATETIMEOFFSET() for every id in the list, inside a transaction with the log insert. updatedAt is not stamped; trgUpdateModifiedOnDateForHasher does not fire for this column.",
+    "Inserts one LOG.GeneralLog row (LogSource 'InviteEmail').",
+    "On any runtime error: rolls back, inserts one HC.ErrorLog row (HcVersion '<api>', userId = @adminId, kennelId = @kennelId), returns the envelope with Success 0."
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

@@ -1,15 +1,15 @@
 {
   "schema": "HC6",
   "name": "ValidateAppAuth",
-  "version": "1.0.0",
-  "description": "Internal authentication helper SP used by all HC6 app SPs. Resolves device credentials from HC.Device using @deviceId, then validates the access token via HC.CHECK_ACCESS_TOKEN_V2. On success, returns @userId (HC.Hasher.id), @deviceSecret (HC.Device.DeviceSecret), and @timeWindow (HC.Device.TimeWindow) to the caller via OUTPUT parameters. On failure, populates error OUTPUT parameters (@errorCode, @errorType, @errorId, @errorTitle, @errorMsg) for the calling SP to emit a standard app error rowset. NOT exposed as an API endpoint — called only by other HC6 app SPs.",
+  "version": "1.1.0",
+  "description": "Internal authentication helper called by every HC6 app SP (and by the publicWeb_ wrappers, since a browser is a device). Resolves the calling device's credentials from HC.Device by @deviceId, then applies three checks in order, each its own errorType so the client can act differently: (1) device or user not found → errorCode 1300 + @spNumber, errorType 3; (2) the device was deliberately signed out (HC.Device.SignedOutAt IS NOT NULL, written only by hcapp_signOutDevice — E9.F7.S19) → 1200 + @spNumber, errorType 7, on which the client wipes the install; tested BEFORE the token so a rotated secret is not mistaken for a drifting clock; (3) HC.CHECK_ACCESS_TOKEN_V2(@userId, @procName, @accessToken, COALESCE(@param, @deviceSecret), @timeWindow) = 0 → 1100 + @spNumber, errorType 1, on which the client must NOT wipe. On success returns @userId (HC.Hasher.id), @deviceSecret and @timeWindow via OUTPUT parameters with @errorCode NULL; on failure populates the error OUTPUTs for the calling SP to emit its error rowset(s). NOT exposed as an API endpoint. Does not read Device.removed (300 devices carry removed = 1 and are in active use).",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": "Device.id",
-      "description": "Calling device UUID. Looked up in HC.Device to retrieve UserId, DeviceSecret, and TimeWindow. Required."
+      "description": "Calling device UUID (HC.Device.id). Looked up to retrieve UserId, DeviceSecret, TimeWindow and SignedOutAt. No default: callers always pass it."
     },
     {
       "name": "accessToken",
@@ -37,7 +37,7 @@
       "type": "NVARCHAR(500)",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Optional compound param string (e.g. deviceSecret + targetUserId). When provided, replaces @deviceSecret as the token validation context string. Pass NULL for standard device-secret-only auth."
+      "description": "Optional compound context (e.g. deviceSecret + targetUserId / + scanData). When provided it REPLACES @deviceSecret as the token validation context string, binding the token to a target. Default NULL = standard device-secret-only auth."
     },
     {
       "name": "userId",
@@ -65,14 +65,14 @@
       "type": "INT",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "OUTPUT: NULL on success. 1300 + @spNumber when device not found. 1100 + @spNumber when token invalid."
+      "description": "OUTPUT: NULL on success. 1300 + @spNumber device/user not found; 1200 + @spNumber device signed out; 1100 + @spNumber token invalid."
     },
     {
       "name": "errorType",
       "type": "INT",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "OUTPUT: NULL on success. 3 when device not found. 1 when token invalid."
+      "description": "OUTPUT: NULL on success. 3 device not found; 7 signed out (client wipes the install); 1 token invalid (client must not wipe)."
     },
     {
       "name": "errorId",
@@ -86,7 +86,7 @@
       "type": "NVARCHAR(500)",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "OUTPUT: NULL on success. Short error title on failure: 'Device not registered' or 'Invalid access token'."
+      "description": "OUTPUT: NULL on success. 'Device not registered', 'Signed out' or 'Invalid access token'."
     },
     {
       "name": "errorMsg",
@@ -98,18 +98,31 @@
   ],
   "rowsets": [],
   "sideEffects": [
-    "Writes to HC.ErrorLog on device-not-found failure.",
-    "Writes to HC.ErrorLog on token validation failure."
+    "INSERT HC.ErrorLog on device-not-found (userId NULL), signed-out and token-invalid failures, HcVersion from HC6.DeviceHcVersion(@deviceId).",
+    "No writes on success."
   ],
   "prerequisites": [
     "HC.CHECK_ACCESS_TOKEN_V2 scalar function must exist.",
-    "HC.Device row must exist for @deviceId with a non-null, non-zero UserId for auth to pass."
+    "HC.Device row must exist for @deviceId with a non-null, non-zero UserId and SignedOutAt NULL for auth to pass.",
+    "HC.Device.SignedOutAt (added by db/hc6/app/archive/2026-09-20_device_signed_out.sql) is not in db/schema/tables/HC.Device.Table.sql — the schema snapshot is stale."
   ],
   "breakingChangeRules": [
     "Never change the OUTPUT parameter semantics — all callers read them by position after EXEC.",
-    "Never change the errorType integer codes (1 = auth, 3 = not found) without updating all callers.",
-    "Never change the errorCode formula (1100+N / 1300+N) without updating all callers and the Flutter error handler.",
+    "Never change the errorType integer codes (1 = auth, 3 = not found, 7 = signed out) without updating all callers — the app wipes the install on 7 and must never wipe on 1.",
+    "Never change the errorCode formula (1100+N / 1200+N / 1300+N) without updating all callers and the Flutter error handler.",
     "Never change the token context string logic (COALESCE(@param, @deviceSecret)) without coordinating with Flutter.",
     "Never add a new OUTPUT parameter without updating all callers — SQL EXEC with named params is safe but callers must add the new OUTPUT binding."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "SP body not wrapped in TRY/CATCH",
+      "detail": "Lines 47-122 have no TRY/CATCH. Every caller invokes this BEFORE its own BEGIN TRY (that is the sanctioned placement), so a runtime error inside it — e.g. the HC.ErrorLog INSERT failing — is a raw, unlogged 500 for the whole call. Low likelihood, but it sits under every authenticated call in the product."
+    },
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken, @procName and @spNumber (lines 2-5) have no SQL default. Only HC6 SPs call it with named parameters, so an omission is a developer error caught on first run rather than a client-facing unlogged 500."
+    }
   ]
 }

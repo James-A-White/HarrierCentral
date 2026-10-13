@@ -1,0 +1,56 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_resetEmailStatus",
+  "version": "1.0.0",
+  "description": "Puts a hasher's email delivery status back to Unknown (EmailStatus 0) with a zero soft-bounce count and stamps EmailStatusChangedAt (E19.F4). Called when a hasher's email ADDRESS changes (the status described the old one) and when an admin clears a bounce after asking for a new address. Never touches updatedAt (the Hasher triggers do not fire for these columns), so nothing re-syncs. No-op when already Unknown with count 0. When a row changed and @reason is given, one LOG.GeneralLog row (LogSource 'EmailStatus', StrParam1 = hasher id, Data = @reason) is written. Internal (EXEC from SPs / the API); no auth. @hasherId is required: NULL ⇒ THROW ⇒ caught ⇒ Success 0 envelope, logged.",
+  "parameters": [
+    {
+      "name": "hasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Hasher.id",
+      "description": "The hasher. Required (NULL ⇒ Success 0 'hasherId is required'). Default NULL."
+    },
+    {
+      "name": "reason",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Why — written to LOG.GeneralLog.Data when something changed. NULL ⇒ no log row. Default NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Always exactly one row: the standard { Success, ErrorMessage } envelope, from the TRY on success or the CATCH on failure.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 when the CATCH block ran."
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success; ERROR_MESSAGE() from the CATCH block on failure."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Hasher SET EmailStatus = 0, EmailSoftBounceCount = 0, EmailStatusChangedAt = SYSDATETIMEOFFSET() WHERE id = @hasherId AND (EmailStatus <> 0 OR EmailSoftBounceCount <> 0). updatedAt untouched; no re-sync.",
+    "Inserts one LOG.GeneralLog row (LogSource 'EmailStatus') when a row changed and @reason IS NOT NULL.",
+    "On any runtime error (including the THROW for a NULL id): rolls back if a transaction is open, inserts one HC.ErrorLog row (HcVersion '<unknown>', userId = @hasherId), returns the envelope with Success 0."
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

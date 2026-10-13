@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_getTrackImportUploadToken",
-  "version": "1.0.0",
-  "description": "Authenticates the device for GetTrackImportUploadToken and returns the hasher id that names the blob folder (E5.F5.S7). Same shape as hcapp_getProfilePhotoUploadToken.",
+  "version": "1.1.0",
+  "description": "Authenticates the device for GetTrackImportUploadToken and returns the hasher id that names the blob folder (E5.F5.S7). Same shape as hcapp_getProfilePhotoUploadToken. Auth: HC6.ValidateAppAuth (spNumber 99, @param NULL). Runtime errors are logged to HC.ErrorLog and re-thrown.",
   "parameters": [
     {
       "name": "deviceId",
@@ -22,8 +22,33 @@
   "rowsets": [
     {
       "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "On auth failure only (ValidateAppAuth): { success=0, errorCode, errorType }, paired with StandardErrorResult at index 1. Mutually exclusive with User.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on this path."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Numeric error code."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification code."
+        }
+      ]
+    },
+    {
+      "index": 1,
       "ref": "StandardErrorResult",
-      "description": "Auth failure or validation error."
+      "description": "Paired with ErrorEnvelope on auth failure. Not present on success."
     },
     {
       "index": 0,
@@ -45,11 +70,26 @@
       ]
     }
   ],
-  "sideEffects": [],
-  "codeSmells": [],
+  "sideEffects": [
+    "INSERT HC.ErrorLog from the CATCH block (lines 56-58, after ROLLBACK)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId and @accessToken (lines 2-3) have no SQL default. A client that omits either gets 'expects parameter' — an unlogged empty 500 before the SP runs — instead of ValidateAppAuth's logged auth error."
+    },
+    {
+      "severity": "low",
+      "issue": "Missing SET XACT_ABORT ON",
+      "detail": "The SP sets SET NOCOUNT ON only. Harmless for a read with no transaction, but inconsistent with the HC6 SP standard, which requires both."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",
-    "Never change a parameter type"
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
   ]
 }

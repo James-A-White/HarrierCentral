@@ -1,0 +1,55 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_canTestRunsPage",
+  "version": "1.0.0",
+  "description": "Internal (no auth of its own). May this portal user test / import a kennel's runs page (the kennel editor's Test button)? Called by the API's RunsPageTest (api/Endpoints/RunsPageImport.cs) AFTER it has validated the portal token with HC6.ValidatePortalAuth bound to the kennel; this SP is only the permission: HC6.CheckKennelPermission 'createEditRuns' on that kennel (a runs page writes runs), hare scope 0. Resolves the kennel from its PUBLIC id (deleted = 0).",
+  "parameters": [
+    {
+      "name": "hasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Hasher.id",
+      "description": "The portal user. NULL -> Allowed 0."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "The kennel, by public id. Unknown or deleted -> KennelId NULL, Allowed 0."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Permission",
+      "description": "Always one row.",
+      "columns": [
+        {
+          "name": "KennelId",
+          "type": "NVARCHAR(40)",
+          "nullable": true,
+          "description": "The kennel's INTERNAL id, lowercase text; NULL when the public id resolved nothing."
+        },
+        {
+          "name": "Allowed",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 when the user holds createEditRuns on the kennel, else 0."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "EXEC HC6.CheckKennelPermission.",
+    "INSERT HC.ErrorLog (HcVersion '<api>') then THROW on any runtime error."
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

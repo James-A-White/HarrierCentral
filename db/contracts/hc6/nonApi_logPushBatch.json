@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "nonApi_logPushBatch",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Inserts a single FCM push audit entry into HC.PushLog. AppApiHC6.LogPushBatchAsync calls this once per recipient per push batch. Non-fatal — callers swallow errors from this SP. HC.PushLog.IsVisible is BIT; @isVisible is SMALLINT per the no-BIT-parameters rule; SQL Server converts implicitly.",
   "parameters": [
     {
@@ -84,6 +84,16 @@
       "severity": "low",
       "issue": "HC.PushLog schema not in /db/schema/tables/ snapshot",
       "detail": "HC.PushLog is referenced by this SP but its CREATE TABLE definition does not appear in the extracted table schema files. The table exists in production (the SP was deployed and runs successfully) but was added after the schema snapshot was taken. Column types above are inferred from SP parameter types and SP comments."
+    },
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@batchId, @sentAt, @queryType, @fcmToken, @isVisible have no SQL default. Called only by AppApiHC6.LogPushBatchAsync, which always passes them. A call that omits one fails before the body runs — no HC.ErrorLog row, no graceful check (CLAUDE.md 'SP parameter with NO default')."
+    },
+    {
+      "severity": "low",
+      "issue": "SP body not wrapped in TRY/CATCH",
+      "detail": "No TRY/CATCH (lines 36–43). A single audit INSERT whose failure the caller swallows (non-fatal by design); a CATCH could only swallow or log to HC.ErrorLog. CLAUDE.md asks for the wrapper on every SP, so it is flagged; the severity is low because of the note."
     }
   ],
   "breakingChanges": [

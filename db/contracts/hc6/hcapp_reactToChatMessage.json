@@ -1,89 +1,117 @@
 {
   "schema": "HC6",
   "name": "hcapp_reactToChatMessage",
-  "version": "1.0.0",
-  "description": "Adds or removes the caller's emoji reaction on a chat message of any thread kind (E9.F1.S22). Rule and write in HC6.nonApi_reactToChatMessage: same visibility as the readers, blocked authors refused, deleted messages refused. ReactionsJson is keyed by catalog code (an emoji equals '' in this collation).",
+  "version": "1.1.0",
+  "description": "Adds or removes the caller's emoji reaction on a chat message of any thread kind — run, kennel, room or DM (E9.F1.S22, 2026-09-30). The rule and the write live in HC6.nonApi_reactToChatMessage (same visibility as the thread's readers; a blocked author, a removed message or an unknown reaction code is refused); this SP authenticates, maps the outcome to an envelope, and hands the API what it needs to nudge the message's author. Auth: HC6.ValidateAppAuth (spNumber 140, @param NULL — a standard token). Permission gate: inside nonApi_reactToChatMessage, from the token's user. ReactionsJson is keyed by catalog code (HC6.ChatReactionCatalog: thumbs, heart, laugh, beer, run, fire), not by emoji, because an emoji equals '' in this collation. Uses the two-rowset error shape: {success 0, errorCode, errorType} then the standard error detail.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": null,
-      "description": "Device auth."
+      "mapsToColumn": "Device.id",
+      "description": "Registered device UUID. Default NULL (ValidateAppAuth then fails gracefully)."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Standard token (no param string)."
+      "description": "Short-lived token (standard, device secret; @param NULL). Default NULL."
     },
     {
       "name": "messageId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "EventMessage.id",
-      "description": "The message reacted to."
+      "description": "The message reacted to. Required; NULL → 1990. Unknown or removed → 1991."
     },
     {
       "name": "reaction",
       "type": "NVARCHAR(20)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "A code from HC6.ChatReactionCatalog(): thumbs, heart, laugh, beer, run, fire."
+      "description": "A code from HC6.ChatReactionCatalog(): thumbs, heart, laugh, beer, run, fire. Required; NULL → 1990. Not in the catalog → 1993. Stored as a key in EventMessage.ReactionsJson."
     },
     {
       "name": "on",
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "1 add (default) / 0 remove."
+      "description": "1 add (default) / 0 remove. Not validated: any value other than 1 (including NULL) removes."
     }
   ],
   "rowsets": [
     {
       "index": 0,
-      "name": "Result",
-      "description": "{ success = 1, messageId, reactions (JSON after the change, NULL when none) } — or { success = 0, errorCode, errorType } followed by the StandardErrorResult row (1990 missing fields, 1991 not found, 1992 not allowed, 1993 unknown reaction, 1994 unhandled).",
+      "ref": "StandardErrorResult",
+      "description": "Auth failure only (ValidateAppAuth): the error detail is returned ALONE at index 0 and the SP returns — no envelope precedes it."
+    },
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Every other refusal: {success 0, errorCode, errorType} at index 0, followed by the StandardErrorResult detail at index 1. Codes: 1990 missing messageId/reaction (errorType 2); 1991 message not found or removed (3); 1992 not allowed — the caller cannot see the thread or the author has blocked them (3); 1993 unknown reaction code (3); 1994 unhandled error from the CATCH (5).",
       "columns": [
-        {
-          "name": "success",
-          "type": "INT",
-          "nullable": false,
-          "description": "1 / 0"
-        },
-        {
-          "name": "messageId",
-          "type": "NVARCHAR(36)",
-          "nullable": true,
-          "description": "UPPER"
-        },
-        {
-          "name": "reactions",
-          "type": "NVARCHAR(MAX)",
-          "nullable": true,
-          "description": "{\"beer\":[\"<PublicHasherId>\"],...}"
-        }
+        { "name": "success", "type": "INT", "nullable": false, "description": "Always 0." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "1990–1994." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "2 validation, 3 not found / not allowed, 5 unhandled." }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Follows the ErrorEnvelope on every non-auth refusal."
+    },
+    {
+      "index": 0,
+      "name": "Result",
+      "description": "On success (nonApi outcome 1): one row.",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "messageId", "type": "NVARCHAR(36)", "nullable": false, "description": "UPPER(@messageId)." },
+        { "name": "reactions", "type": "NVARCHAR(MAX)", "nullable": true, "description": "EventMessage.ReactionsJson after the change, e.g. {\"beer\":[\"<PublicHasherId>\",...]}; NULL when no reactions remain." }
       ]
     },
     {
       "index": 1,
       "name": "PushDetail",
-      "description": "API ONLY, stripped: { MessageId, ThreadKind, EventId, PublicEventId, KennelId, RoomType, ThreadId }.",
-      "columns": []
+      "description": "On success, API ONLY (stripped before the reply): where the message lives, in the keys the app's open chat page matches a push on. One row.",
+      "columns": [
+        { "name": "MessageId", "type": "NVARCHAR(36)", "nullable": false, "description": "UPPER(@messageId)." },
+        { "name": "ThreadKind", "type": "VARCHAR(6)", "nullable": false, "description": "'dm' (ThreadId set), 'run' (EventId set), 'kennel' (KennelId set), else 'room'." },
+        { "name": "EventId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "EventMessage.EventId for a run thread." },
+        { "name": "PublicEventId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "Event.PublicEventId for a run thread." },
+        { "name": "KennelId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "EventMessage.KennelId for a kennel thread." },
+        { "name": "RoomType", "type": "INT", "nullable": true, "description": "EventMessage.MessageType, only when EventId, KennelId and ThreadId are all NULL (a global room)." },
+        { "name": "ThreadId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "EventMessage.ThreadId for a DM." }
+      ]
     },
     {
       "index": 2,
       "name": "SilentRecipients",
-      "description": "API ONLY, stripped: the message author's mobile devices { UserId, FcmToken } (never the reactor's own).",
-      "columns": []
+      "description": "On success, API ONLY: the message AUTHOR's mobile devices (IsMobile 1, removed 0, FcmToken present, build >= HC6.MinBuildForChatPush()) — never the reactor's own (empty when the reactor is the author). A data-only push so an open thread refreshes; nobody is buzzed for a beer. No 180-day idle cut-off here, unlike the message sends.",
+      "columns": [
+        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Device.UserId — the author's internal Hasher.id." },
+        { "name": "FcmToken", "type": "NVARCHAR(500)", "nullable": false, "description": "Device.FcmToken." }
+      ]
     }
   ],
   "sideEffects": [
-    "UPDATE HC.EventMessage.ReactionsJson / ReactionsUpdatedAt",
-    "Silent FCM data push (Type=reaction) to the author's phones via AppApiHC6"
+    "EXEC HC6.nonApi_reactToChatMessage — UPDATE HC.EventMessage.ReactionsJson and ReactionsUpdatedAt (outcome 1); nothing written for outcomes 2–4.",
+    "INSERT HC.ErrorLog on 1990 and on every nonApi refusal (1991–1993), and in the CATCH (1994).",
+    "The API shim sends a silent FCM data push (Type=reaction) to the author's phones from rowset 2; nothing is queued in the database."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "@on is not validated",
+      "detail": "Line 6 defaults @on to 1 and nothing checks it is 0 or 1; HC6.nonApi_reactToChatMessage (its line 101) treats anything but 1 as a remove. A client sending NULL or 2 silently removes a reaction instead of being refused."
+    },
+    {
+      "severity": "low",
+      "issue": "Success RETURN inside the TRY after three rowsets",
+      "detail": "Line 108 RETURNs from inside BEGIN TRY after rowsets 0–2 have been sent. A failure in the push-detail or recipients SELECTs (lines 88–107) lands in the CATCH, which then appends {success 0, 1994} AFTER a {success 1} rowset the client has already received — contradictory rowsets for a reaction that was saved. The sends (hcapp_sendRoomMessage) isolate push plumbing in its own swallow TRY."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

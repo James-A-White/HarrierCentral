@@ -1,0 +1,119 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_importRunsPageRuns",
+  "version": "1.0.0",
+  "description": "Internal (no auth). Writes the runs the API's RunsPageImport read off a kennel's runs page (E3.F6.S3) into HC.Event the way every inbound integration does: the source's values go into the Fb* mirror columns with the UseFb* flags on (RunDetails, Location, LatLon = 1; Image = 0), InboundIntegrationId = 6 and EventFacebookId = 'runspage:<run number>'. Rules: a run number new to the kennel becomes a run (AbsoluteEventNumber anchors the numbering; HC6.nonApi_updateRunNumbers is run for each); a number the kennel already has from any other source is LEFT ALONE ('already in Harrier Central'); a run this page brought in that was adopted (InboundIntegrationId 0) and then deleted stays deleted; an imported run (still on integration 6) gets its mirror refreshed — its start time only while it still equals the last import, its hares only while UseFbRunDetails = 1 — and counts 'update' only when something changed; a NEW run with no start, description, title or map link is skipped until the page fills it in; nothing is ever deleted. Rejected ('unreadable'): no number, number <= 0, no parseable date, or a date more than a year past / two years ahead. Placeholder hares (TBA/TBC/TBD, 'hare needed', 'volunteer'...) become no hares; a missing title becomes 'Run <n>'. EventStartDatetime is local wall-clock with +00:00 (house convention); HC.trgUpdateModifiedOnDateForEvent derives the GMT instant. @dryRun = 1 (the portal's Test) does everything inside a savepoint, reports, and rolls it back.",
+  "parameters": [
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.KennelId",
+      "description": "The kennel. NULL returns zero counts and no outcomes (not an error)."
+    },
+    {
+      "name": "runsJson",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "{\"runs\":[{\"number\",\"date\" yyyy-MM-dd,\"time\" HH:mm,\"title\",\"hares\",\"start\",\"lat\",\"lon\",\"mapUrl\",\"description\",\"special\"}]}. Not valid JSON returns zero counts and no outcomes."
+    },
+    {
+      "name": "dryRun",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "1 = compute and report, write nothing (rolled back to the savepoint; nothing logged). Default 0."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Counts",
+      "description": "Always one row (all zeros when @kennelId is NULL or @runsJson is not JSON).",
+      "columns": [
+        {
+          "name": "inserted",
+          "type": "INT",
+          "nullable": false,
+          "description": "New runs created."
+        },
+        {
+          "name": "updated",
+          "type": "INT",
+          "nullable": false,
+          "description": "Imported runs whose mirror changed."
+        },
+        {
+          "name": "unchanged",
+          "type": "INT",
+          "nullable": false,
+          "description": "Imported runs read again with nothing new (matched minus updated)."
+        },
+        {
+          "name": "alreadyInHc",
+          "type": "INT",
+          "nullable": false,
+          "description": "Numbers the kennel already holds from another source, plus adopted-then-deleted runs."
+        },
+        {
+          "name": "rejected",
+          "type": "INT",
+          "nullable": false,
+          "description": "Entries with no usable number or date."
+        },
+        {
+          "name": "skipped",
+          "type": "INT",
+          "nullable": false,
+          "description": "New runs with no start, description, title or map link yet."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Outcomes",
+      "description": "One row per entry on the page, by run number.",
+      "columns": [
+        {
+          "name": "EventNumber",
+          "type": "INT",
+          "nullable": true,
+          "description": "The page's run number (NULL when it was missing)."
+        },
+        {
+          "name": "Outcome",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "'new' | 'update' | 'unchanged' | 'already in Harrier Central' | 'deleted in Harrier Central' | 'skipped - no location or description yet' | 'unreadable'."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.Event for new runs (InboundIntegrationId 6, EventFacebookId 'runspage:<n>', EventSource 'Runs page', IsCountedRun 1, IsVisible 1, EventGeographicScope 2 when special else 1, kennel default prices and currency, AbsoluteEventNumber = page number, UseFb* 1/1/1/0).",
+    "UPDATE HC.Event mirror columns (FbEventStartDatetime, FbEventName, FbEventDescription, FbLocationOneLineDesc, FbLatitude/FbLongitude, FbEventMapUrl; EventStartDatetime when it still equals the old mirror; Hares when UseFbRunDetails = 1; EventGeolocation when UseFbLatLon = 1) for integration-6 runs that changed — each fires the Event updatedAt trigger and re-syncs.",
+    "EXEC HC6.nonApi_updateRunNumbers once per new run (cursor), inside the transaction.",
+    "INSERT LOG.GeneralLog ('runsPageImport') when not a dry run and something was inserted or updated.",
+    "Transaction with SAVE TRANSACTION runsPageImport: @dryRun = 1 rolls back to the savepoint then commits; the CATCH rolls back, INSERTs HC.ErrorLog ('<api>') and THROWs."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Run numbers are INT in the staging table but SMALLINT on HC.Event",
+      "detail": "#runs.EventNumber is INT (line 69) and is written to AbsoluteEventNumber SMALLINT (lines 217, 226). A page run number above 32767 fails the INSERT with an arithmetic overflow, which the CATCH logs and re-throws as an unhandled error instead of reporting the entry 'unreadable'."
+    },
+    {
+      "severity": "low",
+      "issue": "Bad input is reported as an empty page",
+      "detail": "Lines 52-57: a NULL @kennelId or non-JSON @runsJson returns zero counts and no outcomes rather than an error, so a reader bug looks like a page with nothing on it. Nothing is logged."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getChatRooms",
+  "version": "1.0.0",
+  "description": "The global chat rooms THIS hasher may enter, each with its unread count, participation state and pin state — one call, whatever the rooms happen to be. The phone asks the server which rooms it has rather than holding a hard-coded list, so appending a row to HC6.ChatRoomCatalog() reaches every installed app with no release (James, 2026-09-14). Zero rows is the normal answer for a hasher who holds none of the roles. Auth: HC6.ValidateAppAuth (spNumber 106, standard token). Authorization: per room, HC6.UserMayEnterChatRoom(@userId, RoomType) = 1 — the same gate the room message SPs use, so a listed room can never then be refused. participationState per room (HC.EventMessageBadgeCounts.ParticipationState, James 2026-09-14): 0 participate with push, 1 participate badges only, 2 opted out; opted-out rooms are omitted unless @includeOptedOut = 1 (the settings console passes 1 so opting out is not a one-way door). Rooms default to PINNED; a set bit in HC.Hasher.UnpinnedMismanagementRooms ('mm' rooms) or UnpinnedAppAccessRooms ('flags' / 'platform' / 'beta' rooms) means the hasher unpinned it (E9.F1.S8). Read-only.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Registered device. Default NULL."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret). Default NULL."
+    },
+    {
+      "name": "includeOptedOut",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "1 also returns rooms the hasher has opted OUT of (ParticipationState 2) — the settings console; 0 (default) omits them — the chat list."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Auth failure (ValidateAppAuth: 1206 invalid token / errorType 1, 1306 device not registered / 3, 1206 signed out / 7) returns the error detail ALONE. An unhandled error is logged to HC.ErrorLog and re-raised with THROW (no envelope)."
+    },
+    {
+      "index": 0,
+      "name": "Rooms",
+      "description": "On success: one row per room the hasher may enter, ORDER BY sortOrder. Zero rows is normal.",
+      "columns": [
+        { "name": "roomType", "type": "INT", "nullable": false, "description": "ChatRoomCatalog.RoomType — the value stored in HC.EventMessage.MessageType for the room's messages (1 Kennel Admins, 2 Grand Masters, 3 Hash Cash, 4 Religious Advisors, 5 Hare Raisers, 6 Web & Social Media, 7 Platform Admins, 8 Beta Testers as of 2026-10-13)." },
+        { "name": "roomName", "type": "NVARCHAR", "nullable": false, "description": "ChatRoomCatalog.RoomName." },
+        { "name": "roomIcon", "type": "NVARCHAR", "nullable": true, "description": "ChatRoomCatalog.IconUrl — the room's coin as a full blob URL. NULL = no art yet; the client draws its own glyph." },
+        { "name": "sortOrder", "type": "INT", "nullable": false, "description": "ChatRoomCatalog.SortOrder; the rowset is already in this order." },
+        { "name": "unreadCount", "type": "INT", "nullable": false, "description": "Count of live (Removed = 0) room messages by OTHER people with MessageSequenceCount above the hasher's badge row LastSequenceCount (0 if no badge row)." },
+        { "name": "newestSequenceCount", "type": "INT", "nullable": false, "description": "MAX(MessageSequenceCount) of the room's live messages, 0 if none." },
+        { "name": "participationState", "type": "SMALLINT", "nullable": false, "description": "ISNULL(badge.ParticipationState, 0): 0 participate with push, 1 badges only, 2 opted out (only when @includeOptedOut = 1)." },
+        { "name": "pinned", "type": "INT", "nullable": false, "description": "1 pinned (default), 0 when the hasher's unpin mirror bit for the room is set (Hasher.UnpinnedMismanagementRooms & GrantMask for 'mm' rooms; Hasher.UnpinnedAppAccessRooms & GrantMask for 'flags' / 'platform' / 'beta' rooms)." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "None on success. INSERT HC.ErrorLog then THROW on an unhandled error."
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

@@ -1,15 +1,15 @@
 {
   "schema": "HC6",
   "name": "hcapp_addEditUser",
-  "version": "1.0.0",
-  "description": "Creates or updates a Hasher record. Dual-mode: when @deviceId is NULL it operates as a new-user creation flow (first app launch, no device record exists yet) — no token validation is performed. When @deviceId is provided it validates the access token (bound to DeviceSecret + UPPER(@targetUserId)) and performs an edit against an existing user. On success, delegates to hcapp_syncEventAdminData, hcapp_syncKennelAdminData, or hcapp_syncUserData depending on context, or returns the new HasherProfile directly in new-user mode. 2026-09-23: editing SOMEONE ELSE (@targetUserId <> caller) now requires manageMembers on the kennel the edit is for (@kennelId, else the run's kennel, else the target's home kennel) — errorCode 1340; and name/hash name/email are refused once the target has signed in anywhere (LastLoginDateTime set or any HC.Device row) unless the caller is SuperAdmin — 1341; or when a never-signed-in target's home kennel is another kennel — 1342. A new user's HomeKennelId is now the run's kennel when only @eventId is given.",
+  "version": "1.1.0",
+  "description": "Creates or updates a Hasher record. Dual-mode: when @deviceId is NULL it operates as a new-user creation flow (first app launch, no device record exists yet) — no token validation is performed. When @deviceId is provided it validates the access token (bound to DeviceSecret + UPPER(@targetUserId)) and performs an edit against an existing user. On success, delegates to hcapp_syncEventAdminData, hcapp_syncKennelAdminData, or hcapp_syncUserData depending on context, or returns the new HasherProfile directly in new-user mode. 2026-09-23: editing SOMEONE ELSE (@targetUserId <> caller) now requires manageMembers on the kennel the edit is for (@kennelId, else the run's kennel, else the target's home kennel) — errorCode 1340; and name/hash name/email are refused once the target has signed in anywhere (LastLoginDateTime set or any HC.Device row) unless the caller is SuperAdmin — 1341; or when a never-signed-in target's home kennel is another kennel — 1342. A new user's HomeKennelId is now the run's kennel when only @eventId is given. 1.1.0: when an edit changes the address, HC6.nonApi_resetEmailStatus puts the new address back to Unknown (line 403). Note new-user mode (@deviceId NULL) is unauthenticated by construction — there is no device secret to validate — so it is creation only: a @targetUserId with no device is refused (1311).",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "Device.id",
-      "description": "Device UUID. NULL triggers new-user creation mode — no token validation. When provided, resolves the caller's userId and DeviceSecret from HC.Device."
+      "description": "Device UUID. Default NULL = new-user creation mode (first app launch, no device yet) — no token validation, creation only. When provided, resolves the caller's userId and DeviceSecret from HC.Device directly (this SP does not call HC6.ValidateAppAuth, so a signed-out device is NOT refused with errorType 7 here)."
     },
     {
       "name": "accessToken",
@@ -51,14 +51,14 @@
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "Hasher.id",
-      "description": "User to create or edit. Default null-UUID ('00000000-...') triggers insert mode — a new UUID is generated internally. On edit, must be an existing Hasher.id."
+      "description": "User to create or edit. Default null-UUID ('00000000-...') is normalised to NULL = insert mode (a new UUID is generated). On edit, must be an existing Hasher.id (else 1310). The token is bound to DeviceSecret + UPPER(targetUserId). A non-null value with @deviceId NULL is refused (1311)."
     },
     {
       "name": "email",
       "type": "NVARCHAR(250)",
       "nullable": true,
       "mapsToColumn": "Hasher.Email",
-      "description": "Email address. Empty string normalised to NULL. Duplicate email check performed across all other Hasher records."
+      "description": "Email address. Empty string normalised to NULL (keep). Duplicate check against every non-removed Hasher other than the target (1510 / errorType 10005). A changed address on edit has its EmailStatus reset to Unknown via HC6.nonApi_resetEmailStatus."
     },
     {
       "name": "firstName",
@@ -150,7 +150,7 @@
       "type": "DECIMAL(18,15)",
       "nullable": true,
       "mapsToColumn": "Hasher.HomeLatitude",
-      "description": "Used to detect if user is in the US for miles/km preference default on new user insert. Also stored as Hasher.HomeLatitude.",
+      "description": "Default 0. Used to detect a US location for the miles/km preference default on new-user insert, and stored as Hasher.HomeLatitude on insert only (never updated on edit).",
       "typeMismatch": "DECIMAL(18,15) vs Hasher.HomeLatitude DECIMAL(12,9) — parameter is wider in both precision and scale. No overflow risk for valid lat/lng values, but types are mismatched."
     },
     {
@@ -158,7 +158,7 @@
       "type": "DECIMAL(19,15)",
       "nullable": true,
       "mapsToColumn": "Hasher.HomeLongitude",
-      "description": "Used to detect if user is in the US for miles/km preference default on new user insert. Also stored as Hasher.HomeLongitude.",
+      "description": "Default 0. Used to detect a US location for the miles/km preference default on new-user insert, and stored as Hasher.HomeLongitude on insert only (never updated on edit).",
       "typeMismatch": "DECIMAL(19,15) vs Hasher.HomeLongitude DECIMAL(13,9) — parameter is wider in both precision and scale. No overflow risk for valid lat/lng values, but types are mismatched."
     },
     {
@@ -178,21 +178,21 @@
       "columns": [
         {
           "name": "success",
-          "type": "BIT",
+          "type": "INT",
           "nullable": false,
-          "description": "1 on success, 0 on error."
+          "description": "1 on success, 0 on error (SELECT 1/0 literal, INT)."
         },
         {
           "name": "errorCode",
           "type": "INT",
           "nullable": true,
-          "description": "NULL on success. Error code on failure: 1110=invalid token, 1310=device/user not found, 1510=duplicate email, 1910=unhandled DB error."
+          "description": "NULL on success. 1110 = invalid token; 1310 = device not registered or target user not found; 1311 = targetUserId supplied with no device (unauthenticated edit attempt); 1340 = caller may not manage members of the kennel the edit is for; 1341 = target has signed in, only they may change name/hash name/email; 1342 = never-signed-in target belongs to another home kennel; 1510 = duplicate email; 1910 = unhandled DB error."
         },
         {
           "name": "errorType",
           "type": "INT",
           "nullable": true,
-          "description": "NULL on success. 11=auth failure (token invalid), 13=device or target user not found, 15=business rule violation (duplicate email), 19=unhandled CATCH error."
+          "description": "NULL on success. 11 = auth failure (token invalid); 13 = not found / not authorised (1310, 1311, 1340, 1341, 1342); 10005 = duplicate email (PRESERVED from HC5 — the app's DB_ERROR_EMAIL_ALREADY_EXISTS constant); 19 = unhandled CATCH error."
         }
       ]
     },
@@ -338,6 +338,8 @@
     "INSERT HC.HasherKennelMap — if @kennelId provided, new user, and @followKennelOnAddNewUser != 0",
     "UPDATE HC.Hasher — on edit",
     "UPDATE HC.HasherKennelMap — if @kennelId provided and historical counts specified on edit",
+    "EXEC HC6.CheckKennelPermission 'manageMembers' — on edit of someone else, against @kennelId, else the run's kennel, else the target's home kennel (line 321)",
+    "EXEC HC6.nonApi_resetEmailStatus — on edit when @email differs from the stored address (line 403)",
     "INSERT HC.ErrorLog — on any error path",
     "EXEC HC6.hcapp_syncEventAdminData — if @eventId provided and edit mode",
     "EXEC HC6.hcapp_syncKennelAdminData — if @kennelId provided (and no @eventId) and edit mode",
@@ -345,39 +347,39 @@
   ],
   "codeSmells": [
     {
-      "severity": "high",
-      "issue": "Auth checks and device lookup occur outside TRY/CATCH",
-      "detail": "The device lookup, null-userId guard, and token validation (lines 116–154) execute before BEGIN TRY. Any unexpected error in HC.CHECK_ACCESS_TOKEN_V2 or the Device SELECT would be uncaught and surface as a raw SQL error rather than the standard HC6 error envelope. The pattern is intentional (early-exit before the transaction) but violates the standard error contract."
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@accessToken, @hcVersion, @hashersUpdatedAfter, @hasherEventMapUpdatedAfter, @hasherKennelMapUpdatedAfter (lines 4-8) have no SQL default. A client that omits one is refused by SQL before the procedure runs — no HC.ErrorLog row, an empty 500 in the app (CLAUDE.md 'SP parameter with NO default'). The new-user path (the only app call allowed before a device exists) must still send all five."
+    },
+    {
+      "severity": "medium",
+      "issue": "Check-then-INSERT on the unique email without UPDLOCK/HOLDLOCK",
+      "detail": "Lines 212-217 test for a duplicate email with a plain EXISTS, then INSERT/UPDATE. Two concurrent sign-ups with the same address can both pass the check and the second hits the unique email index as an unhandled 1910 instead of the 1510 / 10005 the app recovers from. Add WITH (UPDLOCK, HOLDLOCK) to the existence check (CLAUDE.md code smells)."
     },
     {
       "severity": "medium",
       "issue": "Parameter type mismatch — @latitude / @longitude wider than table columns",
-      "detail": "@latitude DECIMAL(18,15) vs Hasher.HomeLatitude DECIMAL(12,9). @longitude DECIMAL(19,15) vs Hasher.HomeLongitude DECIMAL(13,9). Parameters accept higher precision than the table can store. Values will be silently rounded on INSERT. No data loss for normal lat/lng values but the mismatch is a documentation gap."
+      "detail": "@latitude DECIMAL(18,15) vs Hasher.HomeLatitude DECIMAL(12,9); @longitude DECIMAL(19,15) vs Hasher.HomeLongitude DECIMAL(13,9). Values are silently rounded on INSERT (line 258). No data loss for real coordinates."
     },
     {
       "severity": "medium",
-      "issue": "Parameter type mismatch — @nameDisplayPreference INT vs Hasher.NameDisplayPreference SMALLINT",
-      "detail": "INT parameter vs SMALLINT column. Safe for the valid values 1 and 2, but the parameter could accept values outside the SMALLINT range without error at the SP boundary."
-    },
-    {
-      "severity": "medium",
-      "issue": "Parameter type mismatch — @includeInGlobalHashDirectory INT vs Hasher.IncludeInGlobalHashDirectory SMALLINT",
-      "detail": "Same issue as @nameDisplayPreference — INT accepted, SMALLINT stored. Safe for values 0/1 but types don't align."
-    },
-    {
-      "severity": "medium",
-      "issue": "No authorization check when editing another user's record",
-      "detail": "When @targetUserId differs from the caller's @userId (admin editing another user), no check is made whether the caller has mismanagement or admin rights for that user's kennel. Any authenticated device can edit any other user's profile by providing a valid token bound to the target UUID."
-    },
-    {
-      "severity": "medium",
-      "issue": "Redundant @procName10 local variable",
-      "detail": "Line 316 declares '@procName10 NVARCHAR(128) = @procName' solely to pass to hcapp_syncEventAdminData because @procName is already used as the outer variable. @procName could be passed directly — the intermediate alias adds confusion without purpose."
+      "issue": "Parameter type mismatch — INT parameters for SMALLINT columns",
+      "detail": "@nameDisplayPreference and @includeInGlobalHashDirectory are INT; Hasher.NameDisplayPreference and Hasher.IncludeInGlobalHashDirectory are SMALLINT. Safe for the valid values, but an out-of-range value fails as an unhandled 1910 rather than a validation error."
     },
     {
       "severity": "low",
-      "issue": "New user profile rowset condition uses @userId sentinel comparison",
-      "detail": "Line 295: 'IF (@isNewUserMode = 1 OR @userId = ''00000000-...'')'. The OR branch is redundant — @userId is only ever '00000000-...' when @isNewUserMode = 1. The second condition is dead code."
+      "issue": "Sentinel magic values",
+      "detail": "Lines 95-109: the null UUID (targetUserId, eventId, kennelId), -1 (includeInGlobalHashDirectory, preferences, historical counts) and <= 0 (nameDisplayPreference) all mean 'not supplied'. The parameters already default to NULL, so the sentinels duplicate that; carried from HC5 for the installed base."
+    },
+    {
+      "severity": "low",
+      "issue": "Redundant @procName10 local variable",
+      "detail": "Line 446 declares @procName10 = @procName solely to pass to hcapp_syncEventAdminData. @procName could be passed directly."
+    },
+    {
+      "severity": "low",
+      "issue": "Dead OR in the new-user profile condition",
+      "detail": "Line 425: IF (@isNewUserMode = 1 OR @userId = '00000000-...'). @userId is only ever the null UUID when @isNewUserMode = 1 (the device branch refuses it at line 125), so the second test is dead code."
     }
   ],
   "breakingChanges": [
@@ -385,9 +387,10 @@
     "@firstName, @lastName, @hashName widened from NVARCHAR(100) to NVARCHAR(250) — no breaking change for callers; wider is backwards compatible.",
     "@photo widened from NVARCHAR(500) to NVARCHAR(1000) — no breaking change for callers; wider is backwards compatible.",
     "@historicalPackRunCount removed entirely — callers that pass this parameter must stop doing so (extra parameter will cause an error).",
-    "errorType for duplicate email changed from 10005 to 5, errorCode changed to 1510 — callers checking for errorType=10005 will not detect the duplicate email condition.",
+    "errorType for duplicate email is PRESERVED at 10005 (the app's DB_ERROR_EMAIL_ALREADY_EXISTS constant tests for it to trigger the 'we have emailed you an invite code' flow); errorCode 1510 is added alongside it. The check now ignores removed accounts, so a deleted account's address can be registered again.",
     "New success envelope rowset added as rowset 0 — callers expecting the first rowset to be the profile or sync data must shift their rowset index expectations by 1.",
     "NewUserProfile rowset no longer includes facebookId or qrSecretCode columns — callers reading those fields from the new-user response will receive null or missing data.",
-    "TRY/CATCH added — unhandled DB errors now return errorType=19/errorCode=1910 instead of surfacing as raw SQL errors."
+    "TRY/CATCH added — unhandled DB errors now return errorType=19/errorCode=1910 instead of surfacing as raw SQL errors.",
+    "1.1.0 (2026-09-23): editing someone else requires manageMembers on the kennel the edit is for (1340); name/hash name/email of a hasher who has signed in anywhere are theirs alone unless the caller is SuperAdmin (1341); a never-signed-in hasher of another home kennel is refused (1342). A targetUserId with no device is refused (1311). A changed email has its EmailStatus reset to Unknown."
   ]
 }

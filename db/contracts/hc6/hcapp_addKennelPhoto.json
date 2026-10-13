@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_addKennelPhoto",
-  "version": "1.2.0",
-  "description": "Records a kennel photo after the app has uploaded the image blob directly to Azure Storage. Resolves the effective sharing preference (per-run override \u2192 per-kennel HasherKennelMap.PhotoSharingPreference \u2192 global Hasher.Preferences bit 0x40) and sets the initial status accordingly: 0=private or 1=pending_review. No sync delegation \u2014 photos are fetched on-demand via hcapp_getRunPhotos.",
+  "version": "1.3.0",
+  "description": "Records a kennel photo after the app has uploaded the image blob to Azure Storage. Auth: HC6.ValidateAppAuth (spNumber 31, standard token); no permission gate to ADD (any hasher may photograph a run), but the resolved status depends on roles. Validation: @photoId, @eventId, @kennelId and @blobUrl required (1231, errorType 12); the event must belong to @kennelId (1331, 13). Effective sharing preference, most specific first: @perRunSharingOverride → HasherKennelMap.PhotoSharingPreference (> 0) → Hasher.Preferences bit 0x40. Status written: 0 private when not shared; when shared, 3 public if the caller holds the 'editPhoto' capability (HC6.CheckKennelPermission — Hash Flash / GM / VGM / RA, who could approve it anyway, 2026-08-25) else 1 pending review. The INSERT is idempotent on the client-generated @photoId (INSERT … WHERE NOT EXISTS with UPDLOCK, HOLDLOCK, 2026-07-11): a retry of the same photo returns success with the same id and the newly computed status, inserting nothing. No sync delegation — photos are fetched on demand by hcapp_getRunPhotos. A quota stub (@maxPhotosPerUserPerRun) is present but NULL.",
   "parameters": [
     {
       "name": "deviceId",
@@ -79,21 +79,21 @@
       "type": "NVARCHAR(500)",
       "nullable": true,
       "mapsToColumn": "KennelPhotos.AssetId",
-      "description": "Device-library identifier (iOS PHAsset.localIdentifier / Android MediaStore URI). NULL when the user had 'save to camera roll' disabled or permission denied. Device-specific \u2014 only valid on the device that uploaded the photo. Defaults to NULL."
+      "description": "Device-library identifier (iOS PHAsset.localIdentifier / Android MediaStore URI). NULL when the user had 'save to camera roll' disabled or permission denied. Device-specific — only valid on the device that uploaded the photo. Defaults to NULL."
     },
     {
       "name": "takenAtUtc",
       "type": "DATETIME2",
       "nullable": true,
       "mapsToColumn": "KennelPhotos.TakenAtUtc",
-      "description": "When the photo was taken (UTC), as distinct from CreatedAt which is when it was uploaded. NULL when the client cannot tell \u2014 never inferred from the upload time."
+      "description": "When the photo was taken (UTC), as distinct from CreatedAt which is when it was uploaded. NULL when the client cannot tell — never inferred from the upload time."
     },
     {
       "name": "perRunSharingOverride",
       "type": "INT",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Per-run sharing preference override. NULL = resolve from saved preferences. 0 = keep private. 1 = share with Hash Flash (status=pending_review). Overrides HasherKennelMap.PhotoSharingPreference and Hasher.Preferences bit 0x40. Defaults to NULL."
+      "description": "Per-run sharing override. NULL (default) = resolve from saved preferences; 0 = keep private; 1 = share (status 1 pending review, or 3 public for 'editPhoto' holders). CAST to TINYINT, so a value outside 0-255 is an arithmetic overflow caught by the CATCH."
     }
   ],
   "rowsets": [
@@ -137,17 +137,23 @@
           "name": "status",
           "type": "TINYINT",
           "nullable": false,
-          "description": "Resolved initial status. 0=private, 1=pending_review, 3=public. Derived from effective sharing preference; shared photos from holders of the 'editPhoto' kennel permission (Hash Flash/GM/VGM/RA) are auto-approved straight to 3."
+          "description": "Resolved initial status: 0 private, 1 pending review, 3 public (shared photo from an 'editPhoto' holder). On an idempotent re-submit this is the freshly computed value, which may differ from what the existing row holds."
         }
       ]
     }
   ],
   "sideEffects": [
-    "Inserts one row into HC.KennelPhotos with the resolved status.",
-    "Writes to HC.ErrorLog on validation, auth, event/kennel mismatch, or unhandled errors.",
-    "Reads Hasher.Preferences (bit 0x40) and HasherKennelMap.PhotoSharingPreference to resolve sharing preference when @perRunSharingOverride is NULL."
+    "INSERT HC.KennelPhotos (id, EventId, KennelId, UserId, BlobUrl, AssetId, Latitude, Longitude, Status, Title, Description, TakenAtUtc) WHERE NOT EXISTS (same id, UPDLOCK/HOLDLOCK) — inside a transaction; a duplicate inserts nothing and still succeeds.",
+    "EXEC HC6.CheckKennelPermission 'editPhoto' when the photo is shared, to decide auto-approval.",
+    "Reads Hasher.Preferences (bit 0x40) and HasherKennelMap.PhotoSharingPreference to resolve the sharing preference when @perRunSharingOverride is NULL.",
+    "INSERT HC.ErrorLog on 1231, 1331 (pre-flight) and in the CATCH (1931)."
   ],
   "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken, @photoId, @eventId, @kennelId, @blobUrl, @latitude, @longitude (lines 3-10) have no SQL default. A client that omits any of them is refused by SQL BEFORE the procedure runs: no HC.ErrorLog row, an empty 500 in the app, and the SP's own graceful checks are unreachable (CLAUDE.md, Rack of Lamb 2026-09-29). The graceful 1231 checks at lines 101-129 cover NULL values only, not omission."
+    },
     {
       "severity": "low",
       "issue": "Quota enforcement stub always inactive",
@@ -155,16 +161,21 @@
     },
     {
       "severity": "low",
-      "issue": "HcVersion hardcoded to '<unknown>' in all ErrorLog inserts",
-      "detail": "All HC.ErrorLog inserts throughout this SP pass '<unknown>' for HcVersion. This is consistent with other HC6 SPs but means the version is never captured."
+      "issue": "Validation for eventId/kennelId/blobUrl combined in one block",
+      "detail": "Lines 115-129: one error block (1231) covers eventId, kennelId and blobUrl, and line 101 uses the same 1231 for photoId. The caller cannot tell which parameter was missing from the code; only ErrorLog.ErrorName differs."
     },
     {
       "severity": "low",
-      "issue": "Validation for eventId/kennelId/blobUrl combined in one block",
-      "detail": "A single error block covers three distinct missing-parameter cases (eventId, kennelId, blobUrl). If multiple parameters are missing, only one error is reported and the caller cannot distinguish which parameter caused the failure."
+      "issue": "Idempotent re-submit returns a status that may not match the stored row",
+      "detail": "Lines 226-236: when the row already exists nothing is written, but the reply echoes the status computed on THIS call. If the sharing preference or the caller's roles changed between the two submits the client is told a status the server does not hold."
+    },
+    {
+      "severity": "low",
+      "issue": "HC.KennelPhotos.TakenAtUtc is not in db/schema/tables/HC.KennelPhotos.Table.sql",
+      "detail": "The column written at line 227 was added by a later archive script; the schema snapshot is stale."
     }
   ],
   "breakingChanges": [
-    "New SP \u2014 no HC5 predecessor. No breaking changes from migration."
+    "New SP — no HC5 predecessor. No breaking changes from migration."
   ]
 }

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_getInviteCode",
-  "version": "1.0.0",
-  "description": "Returns the invite code (ResetCode) for a target user. The caller must be authenticated, the target user must not have logged in yet, must not be removed, and the calling user must hold manage-members permission (AppAccessFlags & 0x40000010) on the target's home kennel. This is a read SP — no success envelope is returned; errors use the HC6 standard error rowset and success returns a single inviteCode column. 2026-09-23: an HC.Device row (web/portal sign-in) also counts as 'has signed in' — no invite code is returned for such an account.",
+  "version": "1.1.0",
+  "description": "Returns the invite code (HC.Hasher.ResetCode) for a target user so a kennel admin can share it with a member who has not yet set up the app. All of: the target has never signed in (LastLoginDateTime IS NULL and no HC.Device row — a web/portal sign-in creates one without the stamp, 2026-09-23; an invite code for a signed-in account is a takeover), the target is not removed, and the caller holds AppAccessFlags & 0x40000010 (manage members) on a kennel that is the target's HOME kennel. Otherwise errorCode 1312, errorType 13, with the reason ('not found', 'already signed in', 'not your home kennel') in the log and the user message (2026-10-04). Auth: HC6.ValidateAppAuth (spNumber 12, @param NULL). Read SP — no success envelope.",
   "parameters": [
     {
       "name": "deviceId",
@@ -73,7 +73,7 @@
     {
       "index": 0,
       "name": "PermissionError",
-      "description": "Returned when the invite code cannot be retrieved — target not found, already logged in, already removed, or caller lacks manage-members permission. errorCode=1312, errorType=13. Mutually exclusive with AuthError and InviteCodeResult.",
+      "description": "Returned when the code cannot be given — target not found or removed, already signed in (LastLoginDateTime set or an HC.Device row exists), or the caller lacks manage-members on the target's home kennel. errorCode 1312, errorType 13 in every case; the reason is in errorUserMessage and in the HC.ErrorLog row. Mutually exclusive with AuthError and InviteCodeResult.",
       "columns": [
         {
           "name": "errorId",
@@ -103,7 +103,7 @@
           "name": "errorUserMessage",
           "type": "NVARCHAR(MAX)",
           "nullable": false,
-          "description": "User-facing message explaining the member may have already logged in or caller lacks permission."
+          "description": "One of three texts by reason: already signed in ('...can no longer be shown. They can sign in again with \"Email me a new invite code\".'), 'That member could not be found.', or 'Only an admin of this member's home kennel can see their invite code.'"
         },
         {
           "name": "errorProc",
@@ -128,9 +128,14 @@
     }
   ],
   "sideEffects": [
-    "Inserts a row into HC.ErrorLog when the invite code cannot be retrieved (permission/not-found failure path)."
+    "INSERT HC.ErrorLog on the 1312 path (lines 108-112, naming the target, the reason and their home kennel) and from the CATCH block (lines 133-135, after ROLLBACK)"
   ],
   "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "All three parameters (lines 3-5) have no SQL default. A client that omits @targetUserId gets 'expects parameter' — an unlogged empty 500 before the SP runs — rather than the logged 1312 'not found'."
+    },
     {
       "severity": "medium",
       "issue": "inviteCode variable wider than table column",
@@ -143,13 +148,8 @@
     },
     {
       "severity": "low",
-      "issue": "HC.Hasher.Removed is SMALLINT, not BIT",
-      "detail": "The SP filters h.Removed = 0 and the comparison works, but the table declares Removed as SMALLINT NULL. This is a pre-existing table type that deviates from the HC6 standard of using BIT for boolean columns. Not a bug, but worth noting for future table normalisation."
-    },
-    {
-      "severity": "low",
-      "issue": "Permission failure conflates three distinct conditions into one error",
-      "detail": "The SP returns a single 'Invite code not available' error whether the target user was not found, has already logged in, or the caller lacks permission. Callers cannot distinguish these cases without re-querying. Separate error codes (e.g. 13=not found, 11=auth) would allow better UX."
+      "issue": "One errorCode for three reasons",
+      "detail": "Lines 99-106 work out which condition failed but all three return errorCode 1312 / errorType 13 (line 107); only errorUserMessage differs. A client that wants to branch (e.g. offer 'email a new code' only for the signed-in case) must match the text."
     }
   ],
   "breakingChanges": [

@@ -1,0 +1,73 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_setEmailDeliveryStatus",
+  "version": "1.0.0",
+  "description": "Applies one Azure Communication Services delivery report to the hasher with that address (E19.F4). The status describes the ADDRESS, so the row is found by HC.Hasher.Email (live, non-deleted; newest updatedAt first). 'Delivered' ⇒ EmailStatus 1 (OK), soft-bounce count 0. 'Bounced' / 'Suppressed' ⇒ 3 (Bounced, hard). 'Failed' / 'Quarantined' / 'FilteredSpam' ⇒ soft bounce: EmailSoftBounceCount + 1 (capped at 32000), and three or more ⇒ EmailStatus 2 (Suspect) unless already 3. Any other status is ignored. Writes ONLY when something changes, stamps EmailStatusChangedAt only when the status itself changes, and never touches updatedAt (the Hasher triggers ignore these columns), so a large send does not re-sync anybody. An unknown address is a successful no-op with NULL hasherId. There is no spam-complaint event from ACS; 'blocked' is the member's own act (nonApi_setEmailBlocked). Called by the ACS delivery-report webhook in the API; no device auth. Both parameters are required (NULL ⇒ THROW ⇒ Success 0 envelope, logged).",
+  "parameters": [
+    {
+      "name": "email",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.Email",
+      "description": "The address the report is about. Required. Matches the column (NVARCHAR(250)). Default NULL."
+    },
+    {
+      "name": "acsStatus",
+      "type": "NVARCHAR(40)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "The ACS DeliveryStatus string: Delivered, Bounced, Suppressed, Failed, Quarantined, FilteredSpam (others ignored). Required. Default NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Always exactly one row: { Success, ErrorMessage, hasherId, oldStatus, newStatus }, with the three extras NULL when unmatched or on failure.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 when the CATCH block ran."
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success; ERROR_MESSAGE() from the CATCH block on failure."
+        },
+        {
+          "name": "hasherId",
+          "type": "NVARCHAR(40)",
+          "nullable": true,
+          "description": "The matched HC.Hasher.id, lowercase; NULL when no live hasher has that address, or on failure."
+        },
+        {
+          "name": "oldStatus",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "EmailStatus before (0 Unknown, 1 OK, 2 Suspect, 3 Bounced); NULL when unmatched or on failure."
+        },
+        {
+          "name": "newStatus",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "EmailStatus after; equals oldStatus when the report changed nothing."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Hasher SET EmailStatus, EmailSoftBounceCount, EmailStatusChangedAt (only when the status changed) WHERE id = @hasherId — only when the status or the count differs. updatedAt untouched; no re-sync.",
+    "On any runtime error (including the THROW for missing inputs): rolls back if a transaction is open, inserts one HC.ErrorLog row (HcVersion '<api>'), returns the envelope with Success 0."
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

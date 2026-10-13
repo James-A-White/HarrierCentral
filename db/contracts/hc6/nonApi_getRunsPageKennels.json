@@ -1,0 +1,119 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_getRunsPageKennels",
+  "version": "1.0.0",
+  "description": "Internal (no auth). The worklist for the API's RunsPageImport (api/Endpoints/RunsPageImport.cs; E3.F6.S3): the kennels whose runs page the AI reader should fetch now, with what the reader needs — the last page fingerprint (RunsPageHash, so the model runs only when the text changed), the kennel's local 'today' (a page that leaves the year off is read against it), its latest run number and date, default start time (hh:mm only — DefaultRunStartTime smuggles a day-of-week in its fractional seconds), time zone, city and country names (the AI writes a full search address when the page leaves them out) and the anchor point a geocoded start must be near (the kennel's own point, else its city's). With @kennelId: that one live kennel whether or not it has a runs page or is due (the portal's Test / 'import now'). Without: every live kennel on Inbound Integration 6 with a RunsPageUrl longer than 10 characters that is DUE — never checked, checked more than 350 minutes ago, or checked more than 13 minutes ago on a day with a run (EventStartLocalDate = the kennel's local today). HC.Integration 6's Enabled flag is NOT consulted; the kennel's drop-down is the switch.",
+  "parameters": [
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.id",
+      "description": "One kennel (ignores the due / integration / URL filters), or NULL (default) for the timer's full due list."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "RunsPageKennels",
+      "description": "One row per kennel to read; empty when nothing is due.",
+      "columns": [
+        {
+          "name": "KennelId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "HC.Kennel.id as lowercase text."
+        },
+        {
+          "name": "KennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "KennelShortName",
+          "type": "NVARCHAR(25)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "RunsPageUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "The page to fetch; may be NULL for the single-kennel call."
+        },
+        {
+          "name": "RunsPageHash",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "Fingerprint of the page text at the last read; the reader skips the model when it matches."
+        },
+        {
+          "name": "LocalToday",
+          "type": "NVARCHAR(10)",
+          "nullable": false,
+          "description": "yyyy-MM-dd in the kennel's city time zone (UTC when the city has none)."
+        },
+        {
+          "name": "TimeZoneName",
+          "type": "NVARCHAR(300)",
+          "nullable": true,
+          "description": "DomainValues.Timezone.Timezone (Windows name) of the kennel's city."
+        },
+        {
+          "name": "LatestRunNumber",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "EventNumber of the kennel's most recent run that has started."
+        },
+        {
+          "name": "LatestRunDate",
+          "type": "NVARCHAR(10)",
+          "nullable": true,
+          "description": "yyyy-MM-dd local date of that run."
+        },
+        {
+          "name": "DefaultStartTime",
+          "type": "NVARCHAR(5)",
+          "nullable": false,
+          "description": "hh:mm from Kennel.DefaultRunStartTime."
+        },
+        {
+          "name": "CityName",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "CountryName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "AnchorLat",
+          "type": "FLOAT",
+          "nullable": true,
+          "description": "COALESCE(Kennel.Latitude, City.Latitude)."
+        },
+        {
+          "name": "AnchorLon",
+          "type": "FLOAT",
+          "nullable": true,
+          "description": "COALESCE(Kennel.Longitude, City.Longitude)."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "None (read only). CATCH: INSERT HC.ErrorLog (HcVersion '<api>') then THROW."
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

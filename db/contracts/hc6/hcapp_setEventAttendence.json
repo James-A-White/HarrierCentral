@@ -1,381 +1,210 @@
 {
   "schema": "HC6",
   "name": "hcapp_setEventAttendence",
-  "version": "1.1.0",
-  "description": "Records or updates a hasher's attendance at an event. Supports two hasher-resolution modes: direct by @hasherId, or QR code scan via @qrScanText (resolved from HC.Hasher.QR_code). If @hemId is supplied the hasher is resolved from the HEM row, supporting visitor/virgin rows that share the KennelId as UserId. Guards against removing attendance when a non-cancelled payment exists. Updates Event.Hares string aggregate when @isHare changes. Returns a richer ad-hoc rowset in scan mode (payment and member status). Delegates to hcapp_syncEventAdminData or hcapp_syncUserData based on @returnUserRecords.",
+  "version": "1.2.0",
+  "description": "Records or updates one hasher's attendance at an event (AttendenceState 0-40: <20 not at the run, 20-29 on trail, 30+ On Inn). The hasher is resolved three ways: @hasherId (NULL = the caller), a QR scan (@qrScanText → HC.Hasher.QR_code, in which case @eventId may be the PublicEventId and is resolved to Event.id), or @hemId (the row itself, for visitor/virgin rows whose UserId is the KennelId; its EventId must match @eventId — 1224/12). A hasher marked attended (>= 20) cannot be set back below 20 while a non-cancelled HC.Payment exists on the row (1524/5). Writes the HasherEventMap row (update, or insert with RsvpState 3), keeps HC.Event.Hares in step when @isHare is given (rebuilt only where the text is this SP's own; admin-typed text only ever gains a name), recalculates the hasher's run counts when attendance crosses 20, returns adHocData in one of two shapes (manual vs scan) and delegates to hcapp_syncEventAdminData (@returnUserRecords 0) or hcapp_syncUserData (1). Auth: device-bound token via HC6.ValidateAppAuth (spNumber 24, @param NULL). Permission gate: self-attendance needs nothing; attendance for another hasher needs HC6.CheckKennelPermission 'manageAttendance' in the event's kennel, satisfied also by being a hare of this event (1324/13 otherwise).",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": "Device.id",
-      "description": "Registered device UUID. Used by ValidateAppAuth to resolve the calling user."
+      "description": "Registered device UUID, passed to HC6.ValidateAppAuth. No SQL default."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Short-lived cryptographic token validated by ValidateAppAuth against the device secret."
+      "description": "Short-lived token validated against the device secret. No SQL default."
     },
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": "HasherEventMap.EventId",
-      "description": "Event to update. In QR scan mode, may be a PublicEventId — resolved to the internal Event.id via HC.Event.PublicEventId lookup before use."
+      "description": "The event. In scan mode (@qrScanText given) it may be the Event.PublicEventId and is resolved to Event.id (line 142); in manual mode it must be Event.id. No SQL default."
     },
     {
       "name": "hasherId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": true,
+      "nullable": false,
       "mapsToColumn": "HasherEventMap.UserId",
-      "description": "Target hasher. NULL and no @qrScanText = defaults to calling user. NULL with @qrScanText = resolved from QR code. Overwritten from @hemId row if @hemId is provided."
+      "description": "Target hasher. NULL without @qrScanText = the caller; ignored and replaced by the QR lookup when @qrScanText is given; replaced by the row's UserId when @hemId is given. No SQL default — the client must send it (NULL is fine)."
     },
     {
       "name": "attendenceState",
       "type": "SMALLINT",
       "nullable": false,
       "mapsToColumn": "HasherEventMap.AttendenceState",
-      "description": "New attendance state. Must be 0–40. 0–19=not at run, 20–29=on trail, 30+=On Inn. Validated server-side; NULL or out-of-range returns error."
+      "description": "New state, 0-40; NULL or out of range is refused with 1224/12. No SQL default."
     },
     {
       "name": "isHare",
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": "HasherEventMap.IsHare",
-      "description": "Hare flag. Sentinel value -1 is normalised to NULL at the start of the SP (means: keep existing value). NULL = do not update IsHare. 1 = mark as hare."
+      "description": "Default NULL = leave IsHare alone; -1 is normalised to NULL. 1 marks the hare, 0 clears. Only written on the >= 20 update path (line 297); a NEW row is always inserted with IsHare 0 (line 312). Any non-NULL value triggers the Event.Hares maintenance."
     },
     {
       "name": "hasherEventMapUpdatedAfter",
       "type": "NVARCHAR(50)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Sync watermark cursor passed through to the delegated sync SP. NULL is coalesced to 'ignore' before delegation."
+      "description": "Sync watermark passed to the delegated sync SP; NULL is coerced to 'ignore'. No SQL default — omitting it is an unlogged 500."
     },
     {
       "name": "hasherKennelMapUpdatedAfter",
       "type": "NVARCHAR(50)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Sync watermark cursor passed through to the delegated sync SP. NULL is coalesced to 'ignore' before delegation."
+      "description": "Sync watermark passed to the delegated sync SP; NULL is coerced to 'ignore'. No SQL default — omitting it is an unlogged 500."
     },
     {
       "name": "returnUserRecords",
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Delegation selector. Default 0 = delegate to hcapp_syncEventAdminData. 1 = delegate to hcapp_syncUserData."
+      "description": "Default 0 = delegate to hcapp_syncEventAdminData; anything else = hcapp_syncUserData (NULL also takes the user-data path, because NULL = 0 is not true)."
     },
     {
       "name": "qrScanText",
       "type": "NVARCHAR(250)",
-      "nullable": true,
-      "mapsToColumn": null,
-      "description": "QR code text from the hasher's app (e.g. 'UQR:...'). When provided, resolves @hasherId via HC.Hasher.QR_code and triggers the extended scan ad-hoc rowset. Mutually exclusive with a non-null @hasherId.",
-      "typeMismatch": "Widened from NVARCHAR(50) in HC5 to NVARCHAR(250) in HC6, matching HC.Hasher.QR_code column length."
+      "nullable": false,
+      "mapsToColumn": "Hasher.QR_code",
+      "description": "QR code text from the scanned hasher's app. When not NULL the SP is in scan mode: @hasherId comes from HC.Hasher.QR_code (1324/13 'Unknown user' if no match), @eventId may be a PublicEventId, and rowset 1 takes the richer scan shape. No SQL default — the client must send it (NULL for manual mode).",
+      "typeMismatch": "Parameter NVARCHAR(250) is wider than Hasher.QR_code NVARCHAR(50); harmless for a lookup (a longer value simply matches nothing). The HC5 parameter was NVARCHAR(50)."
     },
     {
       "name": "hemId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "HasherEventMap.id",
-      "description": "Direct HEM lookup by id, used for visitor/virgin rows. When provided, @hasherId is resolved from the HEM row. @hemId.EventId must match @eventId — mismatch returns an error (errorCode 1224, errorType 12)."
+      "description": "Default NULL. When given, the row is addressed directly (visitor/virgin rows) and @hasherId is taken from it; the row's EventId must equal @eventId (1224/12). An id with no row is not detected — the mismatch test is UNKNOWN and the SP carries on using the passed @hasherId."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "Envelope",
-      "description": "Write SP success/failure envelope. Always present as the first rowset. success=1 means the write succeeded; success=0 means it failed (see rowset 1 for error detail). errorCode and errorType are NULL on success.",
+      "description": "Always the first rowset, on every path including auth failure. success = 1 with NULL codes on success.",
       "columns": [
-        {
-          "name": "success",
-          "type": "BIT",
-          "nullable": false,
-          "description": "1 = operation succeeded, 0 = operation failed."
-        },
-        {
-          "name": "errorCode",
-          "type": "INT",
-          "nullable": true,
-          "description": "Specific numeric error code. NULL on success. Auth failures from ValidateAppAuth do not emit the envelope; they emit error detail directly."
-        },
-        {
-          "name": "errorType",
-          "type": "INT",
-          "nullable": true,
-          "description": "Error category code. NULL on success. Codes used: 12=validation (attendenceState out of range, mismatched hemId/eventId), 13=not found (QR code unrecognised), 5=business rule (payment blocks removal), 19=unhandled database error."
-        }
+        { "name": "success", "type": "INT", "nullable": false, "description": "1 succeeded, 0 failed." },
+        { "name": "errorCode", "type": "INT", "nullable": true, "description": "NULL on success. ValidateAppAuth code; 1224 validation; 1324 unknown user / not authorised; 1524 payment registered; 1924 unhandled." },
+        { "name": "errorType", "type": "INT", "nullable": true, "description": "NULL on success. 1/3/7 from ValidateAppAuth; 12 validation (state out of range, hemId/eventId mismatch); 13 QR not recognised or not authorised; 5 payment blocks un-attend; 19 unhandled (CATCH)." }
       ]
     },
     {
       "index": 1,
       "name": "ErrorDetail",
-      "description": "Present only when success=0. Carries the structured error detail. One of three cases: auth failure from ValidateAppAuth (emitted WITHOUT the preceding Envelope row); validation/business error (emitted AFTER the Envelope row with success=0); or unhandled CATCH error (also AFTER the Envelope row with success=0). Note: auth failure from ValidateAppAuth skips the envelope entirely and emits this as rowset 0.",
+      "description": "Rowset 1 when success = 0. All paths log to HC.ErrorLog except the payment guard (1524), whose errorId is a fresh NEWID() that exists nowhere.",
       "columns": [
-        {
-          "name": "errorId",
-          "type": "UNIQUEIDENTIFIER",
-          "nullable": false,
-          "description": "Unique ID of the HC.ErrorLog entry, or a NEWID() generated inline for business-rule errors (payment guard)."
-        },
-        {
-          "name": "errorType",
-          "type": "INT",
-          "nullable": false,
-          "description": "Error category code (matches errorType in the Envelope)."
-        },
-        {
-          "name": "errorCode",
-          "type": "INT",
-          "nullable": false,
-          "description": "Specific error code (matches errorCode in the Envelope)."
-        },
-        {
-          "name": "errorTitle",
-          "type": "NVARCHAR(500)",
-          "nullable": false,
-          "description": "Short human-readable error title."
-        },
-        {
-          "name": "errorUserMessage",
-          "type": "NVARCHAR(MAX)",
-          "nullable": false,
-          "description": "User-facing error message. Payment-guard message includes the hasher's display name."
-        },
-        {
-          "name": "errorProc",
-          "type": "NVARCHAR(128)",
-          "nullable": false,
-          "description": "SP name from OBJECT_NAME(@@PROCID)."
-        }
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog id, or an unlogged NEWID() for 1524." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "As the envelope." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "As the envelope." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing message; the payment-guard message names the hasher." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "OBJECT_NAME(@@PROCID)." }
       ]
     },
     {
       "index": 1,
       "name": "AdHocNonScanResult",
-      "description": "Returned as rowset 1 on success when @qrScanText IS NULL. Contains the updated attendance state and HEM id.",
+      "description": "Rowset 1 on success when @qrScanText IS NULL (lines 422-429).",
       "columns": [
-        {
-          "name": "adHocDataId",
-          "type": "INT",
-          "nullable": false,
-          "description": "Always 1. Identifies this as an ad-hoc data rowset."
-        },
-        {
-          "name": "serverMessage",
-          "type": "NVARCHAR(500)",
-          "nullable": false,
-          "description": "Human-readable attendance confirmation. Varies by attendenceState (on trail, On Inn, not at run) and whether the hasher is the caller."
-        },
-        {
-          "name": "hasherEventMapId",
-          "type": "UNIQUEIDENTIFIER",
-          "nullable": false,
-          "description": "The HEM record id (HC.HasherEventMap.id) after the write."
-        },
-        {
-          "name": "hasherId",
-          "type": "UNIQUEIDENTIFIER",
-          "nullable": false,
-          "description": "The resolved hasher's id (HC.Hasher.id)."
-        },
-        {
-          "name": "attendenceState",
-          "type": "SMALLINT",
-          "nullable": true,
-          "description": "Re-read attendance state after the update (HC.HasherEventMap.AttendenceState)."
-        },
-        {
-          "name": "totalRunsThisKennel",
-          "type": "INT",
-          "nullable": true,
-          "description": "The hasher's per-event run count for this kennel INCLUDING this run once the recompute has counted it (runs starting within 6h count in real time). NULL until then, or when not a counted attendance."
-        },
-        {
-          "name": "totalHaringThisKennel",
-          "type": "INT",
-          "nullable": true,
-          "description": "The hasher's per-event haring count for this kennel including this run when they hared it. Same real-time (6h window) mechanism as totalRunsThisKennel."
-        }
+        { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "serverMessage", "type": "NVARCHAR(500)", "nullable": false, "description": "'You are' / '<name> is' [already] 'recorded as on the Hash trail at \"<event>\"' | 'On Inn' | 'not at the run', plus a pay reminder or 'and paid' when the run has a price." },
+        { "name": "hasherEventMapId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HasherEventMap.id written (new or existing). Not lowercased — the app's lowerGuidsInPlace handles it." },
+        { "name": "hasherId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The resolved hasher." },
+        { "name": "attendenceState", "type": "SMALLINT", "nullable": true, "description": "Re-read from the row by EventId + UserId after the write." },
+        { "name": "totalRunsThisKennel", "type": "INT", "nullable": true, "description": "HasherEventMap.TotalRunsThisKennel after the recompute — includes this run once it starts within 6 hours (or has started). NULL until counted." },
+        { "name": "totalHaringThisKennel", "type": "INT", "nullable": true, "description": "HasherEventMap.TotalHaringThisKennel after the recompute, same mechanism." }
       ]
     },
     {
       "index": 1,
       "name": "AdHocScanResult",
-      "description": "Returned as rowset 1 on success when @qrScanText IS NOT NULL. Richer than the non-scan shape — includes payment status, membership, notification prefs, and discount info. Note: column name for the message is 'userMessage' here, not 'serverMessage' (see code smells).",
+      "description": "Rowset 1 on success when @qrScanText IS NOT NULL (lines 433-455): the richer shape the check-in scanner shows. The message column is 'userMessage' here, not 'serverMessage'.",
       "columns": [
-        {
-          "name": "adHocDataId",
-          "type": "INT",
-          "nullable": false,
-          "description": "Always 1."
-        },
-        {
-          "name": "userMessage",
-          "type": "NVARCHAR(500)",
-          "nullable": false,
-          "description": "Human-readable attendance confirmation. Same logic as serverMessage in the non-scan rowset."
-        },
-        {
-          "name": "isPaid",
-          "type": "INT",
-          "nullable": false,
-          "description": "Count of non-cancelled Payment rows for this HEM (HC.Payment where CancelledBy_UserId IS NULL). 0 = not paid, >0 = paid."
-        },
-        {
-          "name": "isMember",
-          "type": "SMALLINT",
-          "nullable": true,
-          "description": "1 if HasherKennelMap.MembershipExpirationDate > GETDATE(), else 0. NULL if no HasherKennelMap row."
-        },
-        {
-          "name": "hasherEventMapId",
-          "type": "UNIQUEIDENTIFIER",
-          "nullable": false,
-          "description": "The HEM record id (HC.HasherEventMap.id)."
-        },
-        {
-          "name": "hasherId",
-          "type": "UNIQUEIDENTIFIER",
-          "nullable": false,
-          "description": "The resolved hasher's id (HC.Hasher.id)."
-        },
-        {
-          "name": "notificationPreference",
-          "type": "SMALLINT",
-          "nullable": true,
-          "description": "COALESCE(HasherEventMap.EventNotificationPreference, HasherKennelMap.KennelNotificationPreference). NULL if both are NULL."
-        },
-        {
-          "name": "emailAlertPreference",
-          "type": "SMALLINT",
-          "nullable": true,
-          "description": "COALESCE(HasherEventMap.EventEmailAlertPreference, HasherKennelMap.KennelEmailAlertPreference). NULL if both are NULL."
-        },
-        {
-          "name": "currentHaringCount",
-          "type": "INT",
-          "nullable": false,
-          "description": "HasherKennelMap.CurrentHaringCount. COALESCE to -1 if no HasherKennelMap row."
-        },
-        {
-          "name": "currentPackRunCount",
-          "type": "INT",
-          "nullable": false,
-          "description": "HasherKennelMap.CurrentPackRunCount. COALESCE to -1 if no HasherKennelMap row. NOTE: always zeroed by the recompute — not the display total; use totalRunsThisKennel instead."
-        },
-        {
-          "name": "totalRunsThisKennel",
-          "type": "INT",
-          "nullable": true,
-          "description": "The scanned hasher's per-event run count for this kennel INCLUDING this run once counted (runs starting within 6h count in real time). Use this to show 'run #N' on scan."
-        },
-        {
-          "name": "totalHaringThisKennel",
-          "type": "INT",
-          "nullable": true,
-          "description": "The scanned hasher's per-event haring count for this kennel including this run when they hared it."
-        },
-        {
-          "name": "rsvpState",
-          "type": "SMALLINT",
-          "nullable": false,
-          "description": "HasherEventMap.RsvpState. COALESCE to -1 if no HEM row exists for the hasher at this event."
-        },
-        {
-          "name": "willHareState",
-          "type": "SMALLINT",
-          "nullable": false,
-          "description": "HasherEventMap.IsHare. COALESCE to 0 if no HEM row."
-        },
-        {
-          "name": "hares",
-          "type": "NVARCHAR(2500)",
-          "nullable": false,
-          "description": "HC.Event.Hares — comma-separated string of hare display names as of the current write. COALESCE to '' if NULL."
-        },
-        {
-          "name": "discountAmount",
-          "type": "SMALLMONEY",
-          "nullable": false,
-          "description": "HasherKennelMap.DiscountAmount. COALESCE to 0 if no HasherKennelMap row."
-        },
-        {
-          "name": "discountPercent",
-          "type": "SMALLINT",
-          "nullable": false,
-          "description": "HasherKennelMap.DiscountPercent. COALESCE to 0 if no HasherKennelMap row."
-        },
-        {
-          "name": "discountDescription",
-          "type": "NVARCHAR(50)",
-          "nullable": false,
-          "description": "HasherKennelMap.DiscountDescription. COALESCE to '' if no HasherKennelMap row."
-        }
+        { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "userMessage", "type": "NVARCHAR(500)", "nullable": false, "description": "Same text as serverMessage in the manual shape." },
+        { "name": "isPaid", "type": "INT", "nullable": false, "description": "COUNT of non-cancelled HC.Payment rows on the HEM row (taken BEFORE the write); 0 = unpaid." },
+        { "name": "isMember", "type": "SMALLINT", "nullable": false, "description": "1 when HasherKennelMap.MembershipExpirationDate > now, else 0 (also 0 with no HKM row)." },
+        { "name": "hasherEventMapId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HasherEventMap.id." },
+        { "name": "hasherId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The resolved hasher." },
+        { "name": "notificationPreference", "type": "SMALLINT", "nullable": true, "description": "COALESCE(HEM.EventNotificationPreference, HKM.KennelNotificationPreference)." },
+        { "name": "emailAlertPreference", "type": "SMALLINT", "nullable": true, "description": "COALESCE(HEM.EventEmailAlertPreference, HKM.KennelEmailAlertPreference)." },
+        { "name": "currentHaringCount", "type": "INT", "nullable": false, "description": "HasherKennelMap.CurrentHaringCount, -1 with no HKM row." },
+        { "name": "currentPackRunCount", "type": "INT", "nullable": false, "description": "HasherKennelMap.CurrentPackRunCount, -1 with no HKM row. Zeroed by the recompute — use totalRunsThisKennel for display." },
+        { "name": "totalRunsThisKennel", "type": "INT", "nullable": true, "description": "As the manual shape." },
+        { "name": "totalHaringThisKennel", "type": "INT", "nullable": true, "description": "As the manual shape." },
+        { "name": "rsvpState", "type": "SMALLINT", "nullable": false, "description": "HEM.RsvpState (always present on this path; -1 fallback is unreachable)." },
+        { "name": "willHareState", "type": "SMALLINT", "nullable": false, "description": "HEM.IsHare." },
+        { "name": "hares", "type": "NVARCHAR(2500)", "nullable": false, "description": "HC.Event.Hares after any rebuild, '' when NULL." },
+        { "name": "discountAmount", "type": "SMALLMONEY", "nullable": false, "description": "HasherKennelMap.DiscountAmount, 0 with no HKM row." },
+        { "name": "discountPercent", "type": "SMALLINT", "nullable": false, "description": "HasherKennelMap.DiscountPercent, 0 with no HKM row." },
+        { "name": "discountDescription", "type": "NVARCHAR(50)", "nullable": false, "description": "HasherKennelMap.DiscountDescription, '' with no HKM row." }
       ]
     },
     {
       "index": 2,
       "name": "SyncRowsets",
-      "description": "Rowsets 2+ are the full output of the delegated sync SP (hcapp_syncEventAdminData or hcapp_syncUserData). The caller receives all rowsets from the sync call appended after the ad-hoc rowset. Structure varies by which sync SP is called."
+      "description": "Rowsets 2+ on success: hcapp_syncEventAdminData (@returnUserRecords = 0; HEM/HKM watermarks passed through, everything else 'ignore') or hcapp_syncUserData (otherwise; @usePaging 0). See those contracts."
     }
   ],
   "sideEffects": [
-    "UPDATE HC.HasherEventMap SET AttendenceState (and optionally RsvpState=3, IsHare) WHERE id=@hemId — when @hemId is not null",
-    "INSERT HC.HasherEventMap — when no existing HEM row is found for the hasher+event combination",
-    "UPDATE HC.Event SET Hares, updatedAt — when @isHare IS NOT NULL, recomputes STRING_AGG of hare display names",
-    "EXEC HC.nonApi_updateRunCountsByUser @userId=@hasherId — when attendance crosses the 20 threshold (added or removed from run). The recompute now counts a run once it starts within 6 hours (or has started), so a pre-start check-in updates the run/haring counts in real time instead of waiting for the overnight batch. Runs AFTER the transaction commit.",
-    "INSERT HC.ErrorLog — on validation error, auth error, or unhandled exception",
-    "EXEC HC6.hcapp_syncEventAdminData — when @returnUserRecords=0 (default)",
-    "EXEC HC6.hcapp_syncUserData — when @returnUserRecords=1",
-    "HC.Event.Hares is rebuilt from flagged hares (IsHare=1 AND RsvpState=3) ONLY when the current text is empty or equals that aggregate as it stood before the change; admin-typed text is never replaced, and a newly flagged hare's DisplayName is appended to it if absent (1.1.0, 2026-09-28 — before, check-in with a hare value replaced typed co-hares wholesale)."
+    "UPDATE HC.HasherEventMap SET AttendenceState, updatedAt (state < 20, lines 285-288) or AttendenceState, RsvpState = 3, IsHare = COALESCE(@isHare, IsHare), updatedAt (state >= 20, lines 294-299) WHERE id = @hemId.",
+    "INSERT HC.HasherEventMap (RsvpState 3, IsHare 0, VirginVisitorType 0, KennelId from HC.Event) when the hasher has no row on the event (lines 307-312).",
+    "UPDATE HC.Event SET Hares, updatedAt when @isHare IS NOT NULL (lines 322-343): rebuilt from flagged hares (IsHare = 1 AND RsvpState = 3) only when the current text is empty or equals that aggregate as it stood before the change; admin-typed text is never replaced and gains a newly flagged hare's DisplayName if absent (1.1.0, 2026-09-28).",
+    "EXEC HC6.nonApi_updateRunCountsByUser @userId = @hasherId after COMMIT, outside the TRY (line 366), when attendance crossed 20 in either direction or a row was inserted. The recompute counts a run once it starts within 6 hours, so a check-in updates run/haring counts in real time.",
+    "INSERT HC.ErrorLog on validation, unknown-user, not-authorised and CATCH paths (HcVersion from HC6.DeviceHcVersion(@deviceId)). NOT on the payment guard.",
+    "EXEC HC6.hcapp_syncEventAdminData or HC6.hcapp_syncUserData after the adHocData rowset (lines 464-492)."
   ],
   "codeSmells": [
     {
       "severity": "high",
-      "issue": "Two incompatible ad-hoc rowset column names for the message field",
-      "detail": "Non-scan path (rowset 1): message column is 'serverMessage'. QR-scan path (rowset 1): message column is 'userMessage'. Callers must branch on whether @qrScanText was set to know which column name to read. An inconsistency carried forward from HC5 — should be unified to a single name in a future revision."
-    },
-    {
-      "severity": "high",
-      "issue": "Auth failure bypasses the write SP envelope",
-      "detail": "When ValidateAppAuth rejects the request (lines 82–88), the SP emits TWO rowsets with success=0 and errorDetail as separate rowsets — without the standard write-SP envelope at rowset 0. Callers checking 'rowset 0 = envelope, rowset 1 = detail' will misparse auth failures. Other errors (validation, business, CATCH) correctly emit the envelope at rowset 0 then detail at rowset 1."
+      "issue": "Two incompatible adHocData shapes for the same result",
+      "detail": "Lines 422-429 name the message column serverMessage; lines 433-455 name it userMessage and add eleven columns. The client has to know which mode it called in to read rowset 1. Carried forward from HC5; unify the name at least."
     },
     {
       "severity": "medium",
-      "issue": "PublicEventId resolution only attempted in scan mode",
-      "detail": "The COALESCE lookup on HC.Event.PublicEventId (lines 141–143) is inside an IF (@qrScanText IS NOT NULL) block. Non-scan callers who pass a PublicEventId as @eventId will not have it resolved and will receive a silent no-op or wrong-event write. This should apply unconditionally."
+      "issue": "Parameter without a default",
+      "detail": "Lines 3-7, 9-10, 12: @deviceId, @accessToken, @eventId, @hasherId, @attendenceState, both sync watermarks and @qrScanText have no SQL default. @hasherId and @qrScanText are documented as optional ('NULL = caller', 'NULL = manual mode') but a client that leaves either out gets 'expects parameter @x, which was not supplied' before the procedure runs — an empty 500 with no HC.ErrorLog row."
     },
     {
       "severity": "medium",
-      "issue": "Hares aggregate computed from post-write DB state but @isHare sentinel check is incomplete",
-      "detail": "The Hares STRING_AGG (lines 276–283) fires when @isHare IS NOT NULL after sentinel normalisation. But the new HEM INSERT (lines 262–270) always sets IsHare=0 regardless of @isHare. If a new HEM is inserted with @isHare=1, the Hares recompute will include the new row's IsHare=0 value, not the intended 1, because the INSERT happens before the Hares update and the UPDATE path is taken only for existing HEM rows."
+      "issue": "@isHare = 1 is lost on a new row, yet the name may still be appended to Hares",
+      "detail": "Line 312 inserts every new row with IsHare 0 regardless of @isHare. Lines 322-343 then run because @isHare IS NOT NULL: on SP-owned text the rebuild omits the new hasher (flag is 0); on admin-typed text line 336-342 appends their DisplayName. Result: a first check-in as hare either drops the hare flag silently or lists a hare whose row is not flagged."
+    },
+    {
+      "severity": "medium",
+      "issue": "PublicEventId resolution only in scan mode",
+      "detail": "Lines 140-144 translate a PublicEventId to Event.id only when @qrScanText is given. A manual call with a PublicEventId finds no HEM row and inserts a row against an id that is not an Event.id (the FK then fails → 1924), or, with @hemId, fails the mismatch test."
+    },
+    {
+      "severity": "medium",
+      "issue": "Re-reads by EventId + UserId are ambiguous for visitor rows",
+      "detail": "Lines 368-369 re-read AttendenceState by EventId + UserId although the write at 283-315 was by @hemId. Visitor/virgin rows share the KennelId as UserId, so on an event with several such rows the value echoed in rowset 1 may come from a different row than the one written."
     },
     {
       "severity": "low",
       "issue": "Payment guard does not log to HC.ErrorLog",
-      "detail": "The payment-block error path (lines 210–218) constructs a NEWID() errorId inline but does not INSERT into HC.ErrorLog. All other error paths in this SP (validation, auth, CATCH) log to HC.ErrorLog. The payment guard is inconsistent — the errorId returned to the caller is not persisted."
+      "detail": "Lines 209-218 return errorCode 1524 with a NEWID() errorId that is never inserted into HC.ErrorLog; every other refusal in the SP logs. An errorId that resolves to nothing misleads a log review."
     },
     {
       "severity": "low",
-      "issue": "isMember computed as SMALLINT but returned as a derived CASE expression",
-      "detail": "The @isMember variable is declared SMALLINT (line 313) and set via a CASE expression. The value is always 0 or 1, matching the pattern, but callers should be aware the column is SMALLINT not BIT."
-    },
-    {
-      "severity": "low",
-      "issue": "HcVersion hard-coded to '<unknown>' in all ErrorLog inserts",
-      "detail": "HC.ErrorLog.HcVersion is set to the literal '<unknown>' string rather than a real version identifier. This was acceptable as a placeholder but should be replaced with the deployed version string once a versioning mechanism is in place."
+      "issue": "SMALLMONEY for an event price",
+      "detail": "Line 381 declares @eventPrice SMALLMONEY while Event.EventPriceForMembers / Kennel.DefaultEventPriceForMembers are DECIMAL(10,4). Only used for a != 0 test, so no loss today; the house type is DECIMAL(10,4)."
     }
   ],
   "breakingChanges": [
-    "@qrScanText widened from NVARCHAR(50) to NVARCHAR(250) to match the HC.Hasher.QR_code column width. Existing callers passing strings <= 50 chars are unaffected.",
+    "@qrScanText widened from NVARCHAR(50) to NVARCHAR(250). Existing callers passing strings <= 50 chars are unaffected (Hasher.QR_code itself is still NVARCHAR(50)).",
     "TRY/CATCH transaction added — HC5 had no error handling or transaction boundary. The write is now atomic; partial updates on SQL error no longer occur.",
-    "Success envelope rowset added as rowset 0 (success BIT, errorCode INT, errorType INT). HC5 callers reading rowset 0 as the ad-hoc result will now read the envelope instead.",
+    "Success envelope rowset added as rowset 0 (success INT, errorCode INT, errorType INT). HC5 callers reading rowset 0 as the ad-hoc result will now read the envelope instead.",
     "Ad-hoc result is now rowset 1 (not rowset 0). Callers must advance one rowset to read the ad-hoc data.",
-    "HC.nonApi_updateRunCountsByUser is now called after the transaction commit (outside TRY/CATCH). In HC5 it was called without a transaction at all.",
+    "HC6.nonApi_updateRunCountsByUser is now called after the transaction commit (outside TRY/CATCH). In HC5 it was called without a transaction at all.",
     "Delegation targets updated to HC6 SPs (HC6.hcapp_syncEventAdminData, HC6.hcapp_syncUserData) — HC5 called the HC5 equivalents.",
-    "Auth model changed from HC5 shared-secret pattern to HC6 ValidateAppAuth helper SP."
+    "Auth model changed from HC5 shared-secret pattern to HC6 ValidateAppAuth helper SP.",
+    "Permission gate for setting another hasher's attendance moved to HC6.CheckKennelPermission 'manageAttendance' (hare of the event also allowed) — refused with 1324/13."
   ]
 }

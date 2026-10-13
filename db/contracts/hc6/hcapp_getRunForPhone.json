@@ -1,0 +1,395 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getRunForPhone",
+  "version": "1.0.0",
+  "description": "ONE run in the phone's events-table shape (HC6.EventsForPhone — the same columns as the user sync's events rowset), so the app can store and open a run that is not on the phone without following its kennel (James, 2026-10-04: 'is there a way to load just that one run?'). The user sync carries only ten days of the runs of kennels a hasher does not follow; the kennel trail map shows them all. Only visible, non-deleted runs — the same runs the public web shows. The first column is eventId, which the app's sync writer recognises. Auth: HC6.ValidateAppAuth (spNumber 150, @param NULL); no permission gate.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Registered device. Default NULL (auth failure)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret). Default NULL."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.id",
+      "description": "The run. NULL, unknown, deleted or not visible is not an error: the rowset is empty."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "On auth failure only (ValidateAppAuth): the error detail alone, no envelope. Runtime errors are logged to HC.ErrorLog and re-thrown (THROW)."
+    },
+    {
+      "index": 0,
+      "name": "Event",
+      "description": "Zero or one row: HC6.EventsForPhone() for @eventId where deleted = 0 and IsVisible = 1. Column list and types are those of hcapp_syncUserData's NarrowEvents rowset plus eventCoverPhotoUrl; the 'removed' column is returned as-is (a removed run still comes back).",
+      "columns": [
+        {
+          "name": "eventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Event.id."
+        },
+        {
+          "name": "publicEventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Event.PublicEventId."
+        },
+        {
+          "name": "kennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Event.KennelId."
+        },
+        {
+          "name": "isVisible",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.IsVisible."
+        },
+        {
+          "name": "isCountedRun",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.IsCountedRun."
+        },
+        {
+          "name": "eventGeographicScope",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.EventGeographicScope."
+        },
+        {
+          "name": "eventInboundIntegrationId",
+          "type": "INT",
+          "nullable": true,
+          "description": "Event.InboundIntegrationId."
+        },
+        {
+          "name": "isPromotedEvent",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.IsPromotedEvent."
+        },
+        {
+          "name": "eventNumber",
+          "type": "INT",
+          "nullable": true,
+          "description": "Event.EventNumber."
+        },
+        {
+          "name": "eventPriceForMembers",
+          "type": "SMALLMONEY",
+          "nullable": true,
+          "description": "Event.EventPriceForMembers."
+        },
+        {
+          "name": "eventPriceForNonMembers",
+          "type": "SMALLMONEY",
+          "nullable": true,
+          "description": "Event.EventPriceForNonMembers."
+        },
+        {
+          "name": "eventPriceForExtras",
+          "type": "SMALLMONEY",
+          "nullable": true,
+          "description": "Event.EventPriceForExtras."
+        },
+        {
+          "name": "extrasDescription",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Event.ExtrasDescription."
+        },
+        {
+          "name": "doTrackHashCash",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.DoTrackHashCash."
+        },
+        {
+          "name": "eventFacebookId",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Event.EventFacebookId."
+        },
+        {
+          "name": "absoluteEventNumber",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.AbsoluteEventNumber."
+        },
+        {
+          "name": "canEditRunAttendence",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.CanEditRunAttendence."
+        },
+        {
+          "name": "trackRunnerCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Attendance rows on this run with a PackTrack track. Kept by HC.trgHasherEventMapActivityCount via HC6.nonApi_refreshEventActivity; synced so the run card never asks the server (E5.F7.S1, 2026-09-12)."
+        },
+        {
+          "name": "photoCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Approved, undeleted run photos (Status >= 2). Kept by HC.trgKennelPhotosActivityCount."
+        },
+        {
+          "name": "messageCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Trail-chat messages not removed. Kept by HC.trgEventMessageActivityCount."
+        },
+        {
+          "name": "downDownCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Down-down charges not cancelled. Kept by HC.trgDownDownsActivityCount."
+        },
+        {
+          "name": "hares",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Event.Hares."
+        },
+        {
+          "name": "eventPaymentScheme",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Event.EventPaymentScheme."
+        },
+        {
+          "name": "eventPaymentUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Event.EventPaymentUrl."
+        },
+        {
+          "name": "eventPaymentUrlExpires",
+          "type": "DATETIMEOFFSET",
+          "nullable": true,
+          "description": "Event.EventPaymentUrlExpires."
+        },
+        {
+          "name": "unconfirmedBankXferCount",
+          "type": "INT",
+          "nullable": true,
+          "description": "Event.UnconfirmedBankXferCount."
+        },
+        {
+          "name": "evtDisseminateAllowWebLinks",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.EvtDisseminateAllowWebLinks."
+        },
+        {
+          "name": "tags1",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Event.Tags1."
+        },
+        {
+          "name": "tags2",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Event.Tags2."
+        },
+        {
+          "name": "tags3",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Event.Tags3."
+        },
+        {
+          "name": "eventImage",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "FB/non-FB image URL based on UseFbImage flag."
+        },
+        {
+          "name": "eventCoverPhotoUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "HC.Event.EventCoverPhotoUrl — the run's cover photo (E6.F2), between eventImage and eventName in HC6.EventsForPhone."
+        },
+        {
+          "name": "eventName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "FB/non-FB event name based on UseFbRunDetails flag."
+        },
+        {
+          "name": "eventStartDatetime",
+          "type": "DATETIME2",
+          "nullable": true,
+          "description": "FB/non-FB local start datetime (DATETIME2, timezone stripped)."
+        },
+        {
+          "name": "eventStartDatetimeGmt",
+          "type": "DATETIMEOFFSET",
+          "nullable": true,
+          "description": "COALESCE(Event.EventStartDatetimeGmt, Event.EventStartDatetime). Uses stored GMT column, not FB datetime."
+        },
+        {
+          "name": "eventDescription",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Event.SyncDescription (NOT Event.EventDescription — this differs from the force-replicate path which uses FB/non-FB EventDescription)."
+        },
+        {
+          "name": "locationOneLineDesc",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "FB/non-FB location one-line description."
+        },
+        {
+          "name": "eventUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Event.EventUrl."
+        },
+        {
+          "name": "locationPostCode",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "FB/non-FB post code."
+        },
+        {
+          "name": "locationCity",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "FB/non-FB city."
+        },
+        {
+          "name": "locationStreet",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "FB/non-FB street."
+        },
+        {
+          "name": "locationCountry",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "FB/non-FB country."
+        },
+        {
+          "name": "locationRegion",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "FB/non-FB region."
+        },
+        {
+          "name": "locationSubRegion",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "FB/non-FB sub-region."
+        },
+        {
+          "name": "removed",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Event.removed."
+        },
+        {
+          "name": "updatedAt",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "Event.updatedAt serialised as local DATETIME2 string (timezone stripped)."
+        },
+        {
+          "name": "useFbLocation",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.UseFbLocation."
+        },
+        {
+          "name": "useFbLatLon",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.UseFbLatLon."
+        },
+        {
+          "name": "useFbRunDetails",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.UseFbRunDetails."
+        },
+        {
+          "name": "useFbImage",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.UseFbImage."
+        },
+        {
+          "name": "hcLatitude",
+          "type": "DECIMAL",
+          "nullable": true,
+          "description": "Event.Latitude (HC-entered)."
+        },
+        {
+          "name": "hcLongitude",
+          "type": "DECIMAL",
+          "nullable": true,
+          "description": "Event.Longitude (HC-entered)."
+        },
+        {
+          "name": "countryId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "Event.CountryId."
+        },
+        {
+          "name": "fbLatitude",
+          "type": "DECIMAL",
+          "nullable": true,
+          "description": "COALESCE(Event.w3wLatitude, Event.FbLatitude)."
+        },
+        {
+          "name": "fbLongitude",
+          "type": "DECIMAL",
+          "nullable": true,
+          "description": "COALESCE(Event.w3wLongitude, Event.FbLongitude)."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.ErrorLog from the CATCH block (lines 52-54, after ROLLBACK)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Unknown run is silent",
+      "detail": "Lines 43-48 return no row for a NULL or unknown @eventId and log nothing, so the app cannot tell 'no such run' from 'not visible'."
+    },
+    {
+      "severity": "low",
+      "issue": "SELECT f.* couples the rowset to the function",
+      "detail": "Line 43 returns every column of HC6.EventsForPhone(), so a column added to the function for the sync appears here too; that is the intent (one shape), but a column reordered there reorders this rowset, and the only ordering the app relies on is eventId first."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

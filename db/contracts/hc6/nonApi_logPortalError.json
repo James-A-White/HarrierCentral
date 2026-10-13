@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "nonApi_logPortalError",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Inserts an HC6 portal error entry into HC.ErrorLog. Called by PortalApiHC6.LogErrorAsync when an HC6 portal SP returns Success = 0 in its error envelope. Fire-and-forget — errors from this SP are swallowed by the caller.",
   "parameters": [
     {
@@ -47,6 +47,16 @@
       "severity": "low",
       "issue": "Parameter name does not match its content",
       "detail": "@userId carries a device id from PortalApiHC6.LogErrorAsync. Resolved inside the SP since 1.1.0 rather than renamed, because renaming breaks the shim's by-name binding."
+    },
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@errorName, @procName have no SQL default. Called only by PortalApiHC6.LogErrorAsync and the public-web shims, which bind all four by name. A call that omits one fails before the body runs — no HC.ErrorLog row, no graceful check (CLAUDE.md 'SP parameter with NO default')."
+    },
+    {
+      "severity": "low",
+      "issue": "SP body not wrapped in TRY/CATCH",
+      "detail": "No TRY/CATCH (lines 31–45). It is the error logger itself and the caller swallows its failures; a CATCH could only swallow. CLAUDE.md asks for the wrapper on every SP, so it is flagged; the severity is low because of the note."
     }
   ],
   "breakingChanges": [

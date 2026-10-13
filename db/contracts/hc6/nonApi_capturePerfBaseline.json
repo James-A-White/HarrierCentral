@@ -1,0 +1,129 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_capturePerfBaseline",
+  "version": "1.0.0",
+  "description": "Diagnostic, run by hand (no callers in the repo; no auth). Snapshots per-procedure Query Store aggregates for a time window into HC.PerfBaseline under a label, so a performance comparison survives Query Store's retention, and stamps each snapshot with the DTU tier that was ACTUALLY in effect during the window. The tier comes from HC.TierLog, which this SP maintains from the observed sys.dm_db_resource_stats.dtu_limit (a new range is opened whenever the limit changes). TierChangedDuringWindow = 1 means the window spans a scale operation and the numbers are not comparable; a severity-10 RAISERROR says so. Query Store counts STATEMENT executions, so AvgStatementMs is a mean statement duration, not a procedure duration — compare AvgLogicalReads first. Re-running with the same label replaces that label's rows.",
+  "parameters": [
+    {
+      "name": "label",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "mapsToColumn": "PerfBaseline.Label",
+      "description": "Names the snapshot, e.g. 'S0-run1'. Existing rows with this label are deleted first."
+    },
+    {
+      "name": "windowStart",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": false,
+      "mapsToColumn": "PerfBaseline.WindowStart",
+      "description": "Only Query Store intervals that START at or after this are aggregated."
+    },
+    {
+      "name": "windowEnd",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": false,
+      "mapsToColumn": "PerfBaseline.WindowEnd",
+      "description": "Only intervals that END at or before this are aggregated."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Snapshot",
+      "description": "The rows just captured for @label, highest TotalMs first. A severity-10 informational message precedes it when the window spans a tier change.",
+      "columns": [
+        {
+          "name": "Label",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "@label."
+        },
+        {
+          "name": "TierDuringWindow",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Service objective in effect at the start of the window (HC.TierLog)."
+        },
+        {
+          "name": "DtuLimitDuringWindow",
+          "type": "INT",
+          "nullable": true,
+          "description": "dtu_limit in effect at the start of the window."
+        },
+        {
+          "name": "TierChangedDuringWindow",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 when more than one tier overlapped the window — the numbers are meaningless."
+        },
+        {
+          "name": "ProcName",
+          "type": "NVARCHAR(300)",
+          "nullable": true,
+          "description": "OBJECT_NAME of the procedure the statements belong to."
+        },
+        {
+          "name": "StatementExecs",
+          "type": "BIGINT",
+          "nullable": true,
+          "description": "SUM(count_executions) — statement executions, not calls."
+        },
+        {
+          "name": "AvgStatementMs",
+          "type": "DECIMAL(18,2)",
+          "nullable": true,
+          "description": "Execution-weighted mean statement duration, ms."
+        },
+        {
+          "name": "TotalMs",
+          "type": "DECIMAL(18,2)",
+          "nullable": true,
+          "description": "Total statement duration in the window, ms."
+        },
+        {
+          "name": "AvgLogicalReads",
+          "type": "BIGINT",
+          "nullable": true,
+          "description": "Execution-weighted mean logical reads."
+        },
+        {
+          "name": "AvgPhysicalReads",
+          "type": "BIGINT",
+          "nullable": true,
+          "description": "Execution-weighted mean physical reads — the leading indicator of a tier being too small."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "CREATE TABLE HC.TierLog and HC.PerfBaseline when they do not exist (lines 54-80).",
+    "UPDATE HC.TierLog (closes the open range) and INSERT HC.TierLog when the live dtu_limit differs from the open range.",
+    "DELETE FROM HC.PerfBaseline WHERE Label = @label, then INSERT one row per procedure from sys.query_store_runtime_stats / _plan / _query / _interval.",
+    "RAISERROR severity 10 (informational, not an error) when @distinctTiers > 1.",
+    "INSERT HC.ErrorLog ('<unknown>') then THROW on any runtime error."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Creates tables from inside a procedure",
+      "detail": "Lines 54-80 CREATE TABLE HC.TierLog and HC.PerfBaseline if missing. Neither is in db/schema/tables, and a table is a product decision James makes (CLAUDE.md 'Never create a new database table without asking James first'); a deploy of this SP to any database quietly adds schema. The definitions belong in db/schema/tables with a run-once create script."
+    },
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@label, @windowStart and @windowEnd (lines 2-4) have no SQL default; omitting one is an 'expects parameter' error before the SP runs. Hand-run only today, so no client is affected."
+    },
+    {
+      "severity": "low",
+      "issue": "DELETE then INSERT without a transaction",
+      "detail": "Lines 113-139: the label's old rows are deleted and the new ones inserted in autocommit. A failure in the INSERT (Query Store unavailable) leaves the label empty and the previous snapshot gone."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "schema": "HC6",
+  "name": "util_rewriteZeroCashRunPaymentsAsFree",
+  "version": "1.0.0",
+  "description": "One-time data correction, run BY HAND by the developer — never called by the API or any client. Historic run payments recorded as cash / bank transfer / hash credit (PaymentType 3, 4, 6) with ZERO money moved (CreditAmount = 0 AND DebitAmount = 0: price was zero and no extras) are fictions created by the treasurer's tap on a free-for-members run. Rewrites them to PaymentType 2 (Free) with the 'member' provenance tag in Notes (only when Notes is NULL), matching what hcapp_processPayment 1.4.0 records going forward, so payment reports read consistently across old and new runs. Scope: ProductType 1 only; PaymentType 3/4/6 only (5/7/8 carry deliberate amounts); live rows only (CancelledDate IS NULL). updatedAt is stamped so the rewritten rows flow to clients through the normal payment delta sync. @dryRun = 1 (default) reports what WOULD change and writes nothing. Returns a per-kennel preview, a totals row and the success envelope; on error, only the envelope. Still deployed with every release because it is a CREATE OR ALTER PROCEDURE; it is idempotent (a second real run finds nothing).",
+  "parameters": [
+    {
+      "name": "dryRun",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "1 (default) = report only; 0 = perform the rewrite."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "PerKennelPreview",
+      "description": "One row per kennel with at least one matching payment, most affected first. Returned on both dry and real runs, BEFORE the rewrite (so on a real run it shows what was about to change). Empty when nothing matches. Not returned when the CATCH runs.",
+      "columns": [
+        {
+          "name": "KennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "HC.Kennel.KennelName."
+        },
+        {
+          "name": "rowsAffected",
+          "type": "INT",
+          "nullable": false,
+          "description": "Matching HC.Payment rows in that kennel."
+        },
+        {
+          "name": "earliest",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "MIN(PaidDate) of the matching rows."
+        },
+        {
+          "name": "latest",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "MAX(PaidDate) of the matching rows."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "RewriteTotals",
+      "description": "Always exactly one row on success.",
+      "columns": [
+        {
+          "name": "totalRewritten",
+          "type": "INT",
+          "nullable": false,
+          "description": "Rows updated (0 on a dry run)."
+        },
+        {
+          "name": "wasDryRun",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when nothing was written, 0 when the rewrite ran."
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "SuccessEnvelope",
+      "description": "One row { Success 1, NULL } after the COMMIT. When the CATCH runs it is the ONLY rowset, at index 0: { Success 0, ErrorMessage }.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 when the CATCH block ran."
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success; ERROR_MESSAGE() from the CATCH block on failure."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "@dryRun = 0: UPDATE HC.Payment SET PaymentType = 2, Notes = COALESCE(Notes, 'member'), updatedAt = GETDATE() for every matching row, inside a transaction.",
+    "On any runtime error: rolls back, inserts one HC.ErrorLog row (HcVersion '<unknown>'), returns { Success 0, ErrorMessage } as the only rowset."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "updatedAt set with GETDATE() into a DATETIMEOFFSET(7) column",
+      "detail": "Line 58: updatedAt = GETDATE() (server-local DATETIME, implicitly converted). HC.Payment.updatedAt is DATETIMEOFFSET(7) and the sync watermarks compare instants; SYSDATETIMEOFFSET() is what the rest of HC6 writes. Right on Azure SQL (UTC) but worth fixing if the proc is ever re-run."
+    },
+    {
+      "severity": "low",
+      "issue": "Rowset shape differs between success and failure",
+      "detail": "Success returns three rowsets with the envelope LAST (index 2); failure returns the envelope alone at index 0. Fine for a hand-run script read in SSMS, but it is not the 'rowset 0 = envelope' convention, so do not wire it to a client as-is."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "nonApi_updateRunCountsForAllUsers",
-  "version": "1.0.0",
-  "description": "Bulk version of nonApi_updateRunCountsByUser. Recalculates run-count statistics for all hashers whose HasherEventMap records have been modified since @updatedSince. A 1-minute lookback is automatically applied to guard against sub-second race conditions. NULL @updatedSince triggers a full recalculation for all users. Exits immediately if no affected users are found. Writes a summary entry to LOG.GeneralLog on completion. Executes the same 5-stage pipeline as the single-user variant but scoped to a #affected temp table of user IDs, eliminating 3 repeated HEM scans and the O(N²) correlated EXISTS in the HKM summary step from HC5. Wrapped in TRY/CATCH on 2026-09-23: a runtime error is logged to HC.ErrorLog and re-raised, so a nightly failure is diagnosable rather than only a Logic App / Function \"Failed\".",
+  "version": "1.1.0",
+  "description": "Bulk version of nonApi_updateRunCountsByUser. Recalculates run-count statistics for all hashers whose HasherEventMap records have been modified since @updatedSince. A 1-minute lookback is automatically applied to guard against sub-second race conditions. NULL @updatedSince triggers a full recalculation for all users. Exits immediately if no affected users are found. Qualifying runs are attended (AttendenceState >= 20), not virgin/visitor, counted, visible, not removed and starting earlier than 6 h from now; Stage 3 clears counts on rows that no longer qualify by any of those tests, and Stage 5's rolling-year figure is the runs in the LAST 365 DAYS counted back from today (since 2026-09), driven from HKM with a LEFT JOIN so it can be cleared. Writes a summary entry to LOG.GeneralLog on completion. Executes the same 5-stage pipeline as the single-user variant but scoped to a #affected temp table of user IDs, eliminating 3 repeated HEM scans and the O(N²) correlated EXISTS in the HKM summary step from HC5. Wrapped in TRY/CATCH on 2026-09-23: a runtime error is logged to HC.ErrorLog and re-raised, so a nightly failure is diagnosable rather than only a Logic App / Function \"Failed\".",
   "parameters": [
     {
       "name": "updatedSince",
@@ -14,12 +14,13 @@
   ],
   "rowsets": [],
   "sideEffects": [
-    "Stage 1: May INSERT rows into HC.HasherKennelMap for affected users who have attended a kennel without an existing HKM row.",
-    "Stage 2: UPDATEs HC.HasherEventMap count columns (TotalRuns, TotalHaring, TotalRunsThisKennel, TotalHaringThisKennel, YtdTotalRunsThisKennel, YtdHaringThisKennel, updatedAt) for affected users' attended events where counts have changed.",
-    "Stage 3: NULLs out the same six HEM count columns for non-attending (AttendenceState < 20) HEM rows scoped to affected users only via JOIN to #affected.",
-    "Stage 4: UPDATEs HC.HasherKennelMap summary counters (HcTotalRunCount, HcHaringCount, YtdTotalRunCount, YtdHaringCount, DateOfLastRun, and zeros CurrentHaringCount/CurrentPackRunCount/HistoricalPackRunCount, updatedAt) for affected users' kennel memberships.",
-    "Stage 5: UPDATEs HC.HasherKennelMap.RollingYearTotalRunCount, RollingYearHaringCount, updatedAt for affected users.",
-    "Inserts 1 row into LOG.GeneralLog (LogSource='RUN COUNTS', Message='Updated all user run counts') after completion."
+    "Stage 1: May INSERT HC.HasherKennelMap rows (all counters 0) for affected users who attended a kennel without an HKM row.",
+    "Stage 2: UPDATEs HC.HasherEventMap TotalRuns, TotalHaring, TotalRunsThisKennel, TotalHaringThisKennel, YtdTotalRunsThisKennel, YtdHaringThisKennel, updatedAt for affected users' qualifying rows whose values changed.",
+    "Stage 3: NULLs the same six columns (and stamps updatedAt) on affected users' rows that no longer qualify (AttendenceState < 20, virgin/visitor, missing/uncounted/hidden/removed event, or start more than 6 h in the future) and still hold a value.",
+    "Stage 4: UPDATEs HC.HasherKennelMap HcTotalRunCount, HcHaringCount, YtdTotalRunCount, YtdHaringCount, DateOfLastRun, zeroes CurrentHaringCount / CurrentPackRunCount / HistoricalPackRunCount, stamps updatedAt — for affected users where any value changed.",
+    "Stage 5: UPDATEs HC.HasherKennelMap RollingYearTotalRunCount, RollingYearHaringCount, updatedAt where changed — every HKM row of each affected user, so a count with no qualifying runs left goes to 0.",
+    "Inserts one LOG.GeneralLog row (LogSource 'RUN COUNTS', Message 'Updated all user run counts') after completion. Creates and drops #affected.",
+    "On any runtime error: rolls back if a transaction is open, inserts one HC.ErrorLog row (HcVersion '<unknown>'), then THROWs."
   ],
   "codeSmells": [
     {
@@ -34,13 +35,19 @@
     },
     {
       "severity": "low",
-      "issue": "Rolling-year window is ~182 days (6 months), not 365 days",
-      "detail": "Bucket calculation uses 182-day windows despite the 'rolling year' naming. Consistent with HC5 but misleading in the SP name and comments."
+      "issue": "Unused INNER JOINs to HC.Kennel, HC.City and DomainValues.Timezone act as a filter",
+      "detail": "Stages 2 and 5 (lines 136–138, 290–292) join Kennel → City → Timezone but never read tz. The joins only drop runs of a kennel whose city has no timezone row. Same shape in the two sibling SPs; change all three together if it is ever removed."
+    },
+    {
+      "severity": "low",
+      "issue": "GETDATE() (server local) decides 'this year' and the 365-day bucket",
+      "detail": "Lines 208 and 276–285 use GETDATE() where the stages' time gate uses SYSUTCDATETIME(); it is the server's zone (UTC on Azure SQL), not the kennel's. Same in both siblings."
     }
   ],
   "breakingChanges": [
     "HC5.fn_GetRunCounts and HC5.fn_GetRunCountsRolling are inlined directly — those legacy scalar functions can now be retired.",
     "Affected users are materialised into a single #affected temp table and JOINed in all stages, eliminating the O(N²) correlated EXISTS anti-pattern from HC5's HKM summary step.",
-    "Asymmetric COALESCE sentinels (-999/999) replaced with ISNULL(x, -1) pattern in all change-detection comparisons."
+    "Asymmetric COALESCE sentinels (-999/999) replaced with ISNULL(x, -1) pattern in all change-detection comparisons.",
+    "2026-09: Stage 5 bucket changed from the 182-day window anchored six months in the past to the last 365 days counted back from today, and the UPDATE now drives from HKM with a LEFT JOIN so a rolling count can be cleared (42 stale rows found). RollingYear* now means the last 365 days."
   ]
 }

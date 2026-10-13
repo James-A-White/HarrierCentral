@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_gdprDelete",
-  "version": "1.1.0",
-  "description": "Irreversibly anonymises the calling user's HC.Hasher record in response to a GDPR deletion request. Overwrites all PII fields with anonymous placeholders, obfuscates SupportCode/ResetCode/QR_code by prepending '*', sets Removed=1. Does not delete the row — referential integrity in HC.HasherEventMap and HC.Payment is preserved. Returns an error if the user is already removed.",
+  "version": "1.2.0",
+  "description": "Irreversibly anonymises the calling user's HC.Hasher record in response to a GDPR deletion request. Overwrites all PII fields with anonymous placeholders, obfuscates SupportCode/ResetCode/QR_code by prepending '*', sets Removed=1. Does not delete the row — referential integrity in HC.HasherEventMap and HC.Payment is preserved. Returns an error if the user is already removed. 1.1.0 (2026-09-25) also signs out every one of the user's devices and switches every kennel's notifications off in the same transaction. Auth: HC6.ValidateAppAuth (spNumber 11, @param NULL) — the token's user is the one deleted; there is no target parameter.",
   "parameters": [
     {
       "name": "deviceId",
@@ -27,9 +27,9 @@
       "columns": [
         {
           "name": "success",
-          "type": "BIT",
+          "type": "INT",
           "nullable": false,
-          "description": "1 on successful deletion; 0 on any error."
+          "description": "1 on successful deletion; 0 on any error (SELECT 1/0 literal, INT)."
         },
         {
           "name": "errorCode",
@@ -99,6 +99,11 @@
   "codeSmells": [
     {
       "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken (lines 3-4) have no SQL default. A client that omits one is refused by SQL before the procedure runs — no HC.ErrorLog row, an empty 500 in the app (CLAUDE.md 'SP parameter with NO default')."
+    },
+    {
+      "severity": "medium",
       "issue": "updatedAt set with GETDATE() instead of SYSDATETIMEOFFSET()",
       "detail": "HC.Hasher.updatedAt is DATETIMEOFFSET(7) NOT NULL. GETDATE() returns DATETIME (no timezone offset). SQL Server will implicitly cast but this loses timezone information and is inconsistent with other HC6 SPs that use SYSDATETIMEOFFSET() or CONVERT(DATETIMEOFFSET(7), SYSDATETIMEUTC(), 0)."
     },
@@ -106,6 +111,11 @@
       "severity": "low",
       "issue": "Email uniqueness risk on re-deletion attempt",
       "detail": "Email is set to <originalResetCode>+'@harriercentral.com'. ResetCode is immediately prefixed with '*' in the same UPDATE statement, but the Email assignment reads the pre-update ResetCode value — so Email will be e.g. 'URC:XXXXX@harriercentral.com'. If somehow called twice (race condition before Removed=1 is committed), the unique index IX_HasherUniqueEmail could collide. The WHERE Removed=0 guard makes this very unlikely but not impossible under concurrent load."
+    },
+    {
+      "severity": "low",
+      "issue": "Row-by-row cursor to rotate device secrets",
+      "detail": "Lines 146-169 open a cursor over HC.Device to give each row its own CRYPT_GEN_RANDOM secret. Correct (each device needs a distinct secret) and the row counts are tiny, but it is the only cursor in the app SP family."
     }
   ],
   "breakingChanges": [

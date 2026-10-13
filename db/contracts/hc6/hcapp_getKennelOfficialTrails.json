@@ -1,0 +1,85 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getKennelOfficialTrails",
+  "version": "1.0.0",
+  "description": "The kennel page's full-screen trail map (E5.F6.S6). Rowset 0: every official (hare's) trail of the kennel's runs that have ENDED — start + 4 hours, via HC6.KennelOfficialTrails — newest first, the lanes JSON decompressed inline. Rowset 1 (since 2026-10-03): the START POINT of every visible, non-deleted run of the kennel, past and future, from the trail-independent Sync* latitude/longitude the app shows as the run's location; runs with no usable position (NULL, 0/0, outside range, or the app's -2/-2 'cleared' sentinel) are left out. Fetched when the map opens, never synced; apps before build 1442 read rowset 0 only. Auth: HC6.ValidateAppAuth (spNumber 146, @param NULL). No permission gate — any authenticated user may read any kennel's trails.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Registered device. Default NULL (auth failure)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret). Default NULL."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.KennelId",
+      "description": "The kennel. NULL is not rejected: both rowsets come back empty."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "On auth failure only (ValidateAppAuth): the error detail alone, no envelope. Runtime errors are logged to HC.ErrorLog and re-thrown (THROW)."
+    },
+    {
+      "index": 0,
+      "name": "OfficialTrails",
+      "description": "One row per ended run that holds an official trail (HC6.KennelOfficialTrails: OfficialTrailGzip not NULL, deleted = 0, removed = 0, IsVisible = 1, start + 4h <= now), ORDER BY EventStartDatetimeGmt DESC.",
+      "columns": [
+        { "name": "EventId", "type": "NVARCHAR(40)", "nullable": false, "description": "HC.Event.id, lower-cased text." },
+        { "name": "PublicEventId", "type": "NVARCHAR(40)", "nullable": false, "description": "HC.Event.PublicEventId, lower-cased text." },
+        { "name": "EventNumber", "type": "SMALLINT", "nullable": false, "description": "HC.Event.EventNumber." },
+        { "name": "EventName", "type": "NVARCHAR(250)", "nullable": false, "description": "HC.Event.EventName." },
+        { "name": "EventStartLocal", "type": "DATETIME2(7)", "nullable": false, "description": "HC.Event.EventStartLocal — the run's wall-clock start (persisted computed column)." },
+        { "name": "OfficialTrail", "type": "NVARCHAR(MAX)", "nullable": false, "description": "DECOMPRESS(HC.Event.OfficialTrailGzip) as text: the lanes JSON, points [lat, lon] or [lat, lon, t]." },
+        { "name": "OfficialTrailInfo", "type": "NVARCHAR(MAX)", "nullable": true, "description": "HC.Event.OfficialTrailInfo — the trail's metadata JSON." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "StartPoints",
+      "description": "One row per visible, non-deleted, non-removed run of the kennel with a usable start position, ORDER BY EventStartDatetimeGmt DESC. Apps before 1442 ignore it.",
+      "columns": [
+        { "name": "EventId", "type": "NVARCHAR(40)", "nullable": false, "description": "HC.Event.id, lower-cased text." },
+        { "name": "EventNumber", "type": "SMALLINT", "nullable": false, "description": "HC.Event.EventNumber." },
+        { "name": "EventName", "type": "NVARCHAR(250)", "nullable": false, "description": "HC.Event.EventName." },
+        { "name": "EventStartLocal", "type": "DATETIME2(7)", "nullable": false, "description": "HC.Event.EventStartLocal." },
+        { "name": "Lat", "type": "DECIMAL(9,6)", "nullable": false, "description": "HC.Event.SyncLatitude (FbLatitude when UseFbLatLon = 1, else Latitude) cast to DECIMAL(9,6)." },
+        { "name": "Lon", "type": "DECIMAL(9,6)", "nullable": false, "description": "HC.Event.SyncLongitude cast to DECIMAL(9,6)." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.ErrorLog from the CATCH block (lines 71-73, after ROLLBACK)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Sentinel positions filtered by magic values",
+      "detail": "Lines 65-66 exclude 0/0 and -2/-2 as 'no position' sentinels written by the app. The meaning of -2/-2 lives only in this WHERE clause and the app; a third sentinel would need both sides changed."
+    },
+    {
+      "severity": "low",
+      "issue": "NULL @kennelId is not an error",
+      "detail": "There is no parameter check: a NULL or unknown kennel returns two empty rowsets and nothing is logged, so a client bug that drops the id looks like a kennel with no trails."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

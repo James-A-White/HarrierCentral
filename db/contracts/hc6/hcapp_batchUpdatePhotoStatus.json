@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_batchUpdatePhotoStatus",
-  "version": "1.0.0",
-  "description": "Applies a batch of photo-status changes in a single round-trip. Accepts a JSON array of {photoId, action} pairs parsed via OPENJSON. Auth is checked once at kennel level — caller must hold Hash Flash (0x20), GM (0x02), VGM (0x04), RA (0x08), or WebMeister (0x1000). Set-based UPDATEs are used throughout — no cursor or loop. Items referencing photos not found in the kennel are counted as failures; successful items are committed regardless. Action 6 also propagates the effective URL (EditedBlobUrl ?? BlobUrl) to HC.Event.EventCoverPhotoUrl.",
+  "version": "1.1.0",
+  "description": "Applies a batch of photo-status changes in one round-trip: @updates is a JSON array of {photoId, action}. Auth: HC6.ValidateAppAuth (spNumber 37, standard token). Gate, once per call: HC6.CheckKennelPermission 'batchPhotos' for @kennelId (Hash Flash / GM / VGM / RA / WebMeister by the data-driven matrix) → else 1334 (errorType 13). Rows whose photoId is not a UUID or whose action is outside 1-6 are dropped at parse time; zero valid rows returns success with both counts 0. Items whose photo is not in @kennelId are counted as failures (LEFT JOIN before the writes) and the rest are committed regardless. Actions, set-based: 1 soft-delete (DeletedAt); 2-6 the audience ladder — ONE Status per photo: 0 Private, 2 Members, 3 Public, 4 Featured, 5 Cover — which also clears DeletedAt; 6 additionally demotes any other Cover of the same event to 3 and writes COALESCE(EditedBlobUrl, BlobUrl) to HC.Event.EventCoverPhotoUrl. Action 7 (unfeature) is retired: Featured is a ladder rung, un-feature = pick a lower rung (matches the portal SP).",
   "parameters": [
     {
       "name": "deviceId",
@@ -30,20 +30,45 @@
       "type": "NVARCHAR(MAX)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "JSON array of update objects: [{\"photoId\":\"<uuid>\",\"action\":<1-6>}, ...]. Rows with unparseable photoIds or actions outside 1-6 are silently skipped before counting. Actions: 1=soft-delete (set DeletedAt), 2=private (status 0), 3=share (status 2), 4=run_gallery (status 3), 5=home_gallery (status 4), 6=event_cover (status 5)."
+      "description": "JSON array [{\"photoId\":\"<uuid>\",\"action\":<1-6>}, …]. Unparseable photoIds and actions outside 1-6 are silently skipped before counting. 1 soft-delete; 2 private (Status 0); 3 members (2); 4 public (3); 5 featured (4); 6 event cover (5). No SQL default."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "Envelope",
-      "description": "On auth failure or validation error: success=0, errorCode and errorType set, plus standard error detail at index 1. On empty/invalid batch (zero valid items after parsing): success=1, successCount=0, failureCount=0 (early return, no second rowset). On DB error: success=0, errorCode=1933, errorType=19. On success: success=1, successCount, failureCount.",
+      "description": "On success: { success = 1, successCount, failureCount } — also for an empty/invalid batch (0, 0) with no second rowset. On failure: { success = 0, errorCode, errorType } then the error detail at index 1: ValidateAppAuth 1137 (errorType 1) / 1337 (3) / 1237 (7); 1334 not authorised (13); 1933 unhandled (19). The two shapes share only the success column.",
       "columns": [
-        { "name": "success", "type": "INT", "nullable": false, "description": "1 on success or empty batch, 0 on auth/validation/DB failure." },
-        { "name": "successCount", "type": "INT", "nullable": true, "description": "Number of photos successfully actioned. NULL on error paths that include a second rowset." },
-        { "name": "failureCount", "type": "INT", "nullable": true, "description": "Number of submitted items where the photo was not found in the kennel. NULL on error paths." },
-        { "name": "errorCode", "type": "INT", "nullable": true, "description": "Numeric error code. Present only on error paths (auth/validation/DB failure)." },
-        { "name": "errorType", "type": "INT", "nullable": true, "description": "Error classification code. Present only on error paths." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success or empty batch, 0 on auth/validation/DB failure."
+        },
+        {
+          "name": "successCount",
+          "type": "INT",
+          "nullable": true,
+          "description": "Number of photos successfully actioned. NULL on error paths that include a second rowset."
+        },
+        {
+          "name": "failureCount",
+          "type": "INT",
+          "nullable": true,
+          "description": "Number of submitted items where the photo was not found in the kennel. NULL on error paths."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "Numeric error code. Present only on error paths (auth/validation/DB failure)."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "Error classification code. Present only on error paths."
+        }
       ]
     },
     {
@@ -53,21 +78,22 @@
     }
   ],
   "sideEffects": [
-    "Updates HC.KennelPhotos.DeletedAt, Status, UpdatedAt for matched photos.",
-    "When action=6: propagates COALESCE(EditedBlobUrl, BlobUrl) to HC.Event.EventCoverPhotoUrl for the affected event.",
-    "Writes to HC.ErrorLog on auth failure, role check failure, or unhandled DB error.",
-    "Creates and drops a #Updates temp table per call."
+    "UPDATE HC.KennelPhotos: DeletedAt + UpdatedAt for action 1; Status + DeletedAt = NULL + UpdatedAt for actions 2-6; previous Cover (Status 5) of the same event demoted to 3 for action 6 — all WHERE KennelId = @kennelId, inside one transaction.",
+    "UPDATE HC.Event.EventCoverPhotoUrl = COALESCE(KennelPhotos.EditedBlobUrl, BlobUrl) for action 6.",
+    "EXEC HC6.CheckKennelPermission 'batchPhotos' — pre-flight.",
+    "INSERT HC.ErrorLog on 1334 and in the CATCH (after ROLLBACK).",
+    "CREATE TABLE #Updates / DROP TABLE IF EXISTS #Updates per call (the DROP at line 190 is skipped by the early RETURN at line 111; the temp table is freed at procedure end anyway)."
   ],
   "codeSmells": [
     {
       "severity": "medium",
-      "issue": "Role mask inconsistency: getKennelPendingPhotos uses 0x002E, batchUpdate uses 0x102E",
-      "detail": "hcapp_getKennelPendingPhotos allows roles 0x002E (Hash Flash 0x20 | GM 0x02 | VGM 0x04 | RA 0x08). hcapp_batchUpdatePhotoStatus and hcapp_getRunAllPhotos use 0x102E (adds WebMeister 0x1000). The read and write permissions are inconsistent — a WebMeister can batch-update but cannot view the pending list to identify which photos to action."
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken, @kennelId, @updates (lines 3-6) have no SQL default. A client that omits any of them is refused by SQL BEFORE the procedure runs: no HC.ErrorLog row, an empty 500 in the app, and the SP's own graceful checks are unreachable (CLAUDE.md, Rack of Lamb 2026-09-29)."
     },
     {
       "severity": "low",
       "issue": "Failure count based on LEFT JOIN, not actual UPDATE outcome",
-      "detail": "failureCount is computed before the UPDATE by counting items where no matching KennelPhotos row exists. This does not capture rows that exist but fail during the UPDATE for other reasons (e.g. constraint violation). In practice this is unlikely but the count is not a guaranteed reflection of actual DB changes."
+      "detail": "Lines 115-123: failureCount is computed BEFORE the writes by counting items with no HC.KennelPhotos row in this kennel; successCount is submitted minus that. Neither reflects what the UPDATEs actually touched (e.g. a soft-deleted photo re-actioned counts as success)."
     },
     {
       "severity": "low",
@@ -76,8 +102,8 @@
     },
     {
       "severity": "low",
-      "issue": "HcVersion hardcoded to '<unknown>' in all ErrorLog inserts",
-      "detail": "Consistent with other HC6 SPs but means the version is never captured in the error log."
+      "issue": "errorCode 1933 is shared with other SPs' CATCH blocks",
+      "detail": "Line 183: 1933 is also the unhandled code in hcapp_addDownDown and hcapp_cancelDownDown; errorProc is what distinguishes them."
     }
   ],
   "breakingChanges": [

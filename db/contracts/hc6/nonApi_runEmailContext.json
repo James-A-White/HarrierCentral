@@ -1,0 +1,381 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_runEmailContext",
+  "version": "1.0.0",
+  "description": "The ONE place the run-email send list and context are built (E9.F6.S9). Called by hcapp_getRunEmailContext (app device auth) and hcportal_getRunEmailContext (portal auth) AFTER each has authenticated the caller and checked they may edit runs for the kennel, so the rule cannot drift between the two clients. Who gets it (James, 2026-10-09 evening): an OPT-IN and no OPT-OUT. Opt-ins: a current MEMBER (MembershipExpirationDate in the future), a FOLLOWER (HasherKennelMap.Following = 1), an RSVP of Yes/Maybe (RsvpState 2/3) to THIS run (visitors with no kennel row included), or email explicitly ON for the run (EventEmailAlertPreference 1) or the kennel (KennelEmailAlertPreference 1); 'never chose' (0/NULL) is NOT a no. Opt-outs, in precedence: blocked all email (HC.Hasher.EmailBlocked, the member's unsubscribe) beats everything; no/invalid/generated address (HC6.IsGeneratedEmail) and a bouncing address (EmailStatus 3) are never sent to; run emails OFF (2) beats every opt-in; run ON beats kennel OFF; kennel OFF (2) beats the remaining opt-ins. Removed or deleted accounts never. The sender IS included when they qualify. Every row carries a reasonCode and canMove so the clients label and badge without their own logic. Returns 2, 3 or 4 rowsets depending on @includeRecipients. No auth of its own; no TRY/CATCH (see code smells).",
+  "parameters": [
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.id",
+      "description": "The run. NULL or unknown ⇒ rowsets 0 and 1 are empty and the lists are empty. Default NULL."
+    },
+    {
+      "name": "userId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Hasher.id",
+      "description": "The sender (already authenticated by the wrapper). Joined INNER to HC.Hasher for rowset 0, so an unknown id empties rowset 0. Default NULL."
+    },
+    {
+      "name": "includeRecipients",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "0 = context only (rowsets 0–1); 1 = + rowset 2 (who gets it); 2 = + rowset 3 (who does not, and why — the audience page). Default 0."
+    },
+    {
+      "name": "callerMaySeeEmails",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Echoed back in rowset 1 so the audience page knows whether to show addresses (kennel admin / hare raiser yes; a hare who may edit only this run no — James, 2026-10-10). The SP does not use it to filter. Default 0; NULL ⇒ 0."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "RunContext",
+      "description": "One row (none when @eventId or @userId is unknown): the run, its kennel and the sender, as the email drafter needs them.",
+      "columns": [
+        {
+          "name": "eventId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "HC.Event.id, lowercase."
+        },
+        {
+          "name": "eventNumber",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HC.Event.EventNumber."
+        },
+        {
+          "name": "eventName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "HC.Event.EventName (not the Fb mirror)."
+        },
+        {
+          "name": "isCountedRun",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HC.Event.IsCountedRun."
+        },
+        {
+          "name": "publicEventId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "HC.Event.PublicEventId, lowercase — for links."
+        },
+        {
+          "name": "startLocal",
+          "type": "DATETIME2(7)",
+          "nullable": false,
+          "description": "HC.Event.EventStartLocal — the kennel's wall clock."
+        },
+        {
+          "name": "hares",
+          "type": "NVARCHAR(2500)",
+          "nullable": true,
+          "description": "HC.Event.Hares."
+        },
+        {
+          "name": "venue",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "HC.Event.LocationOneLineDesc."
+        },
+        {
+          "name": "street",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "HC.Event.SyncLocationStreet."
+        },
+        {
+          "name": "city",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "HC.Event.SyncLocationCity."
+        },
+        {
+          "name": "postCode",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "HC.Event.SyncLocationPostCode."
+        },
+        {
+          "name": "description",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "HC.Event.SyncDescription."
+        },
+        {
+          "name": "eventImage",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "HC.Event.EventImage URL."
+        },
+        {
+          "name": "priceMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": false,
+          "description": "Event price for members, else the kennel default."
+        },
+        {
+          "name": "priceNonMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": false,
+          "description": "Event price for non-members, else the kennel default."
+        },
+        {
+          "name": "currencySymbol",
+          "type": "NVARCHAR(5)",
+          "nullable": true,
+          "description": "HC.Kennel.CurrencySymbol."
+        },
+        {
+          "name": "kennelId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "HC.Kennel.id, lowercase."
+        },
+        {
+          "name": "kennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "HC.Kennel.KennelName."
+        },
+        {
+          "name": "kennelShortName",
+          "type": "NVARCHAR(25)",
+          "nullable": false,
+          "description": "HC.Kennel.KennelShortName."
+        },
+        {
+          "name": "kennelSlug",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "HC.Kennel.KennelUniqueShortName — the public-web path."
+        },
+        {
+          "name": "kennelLogo",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "HC.Kennel.KennelLogo URL."
+        },
+        {
+          "name": "senderId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "The sender's HC.Hasher.id, lowercase."
+        },
+        {
+          "name": "senderName",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "The sender's HC.Hasher.DisplayName."
+        },
+        {
+          "name": "senderEmail",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "The sender's HC.Hasher.Email (reply-to)."
+        },
+        {
+          "name": "instruction",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "HC.Kennel.RunEmailInstruction — the kennel's saved drafting instruction."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "EmailHistory",
+      "description": "One row (none when @eventId is unknown): what has already been sent for this run and how many would get the next one.",
+      "columns": [
+        {
+          "name": "emailSendCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HC.Event.EmailSendCount — sends so far."
+        },
+        {
+          "name": "emailLastSentAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "HC.Event.EmailLastSentAt."
+        },
+        {
+          "name": "emailLastSentCount",
+          "type": "INT",
+          "nullable": true,
+          "description": "HC.Event.EmailLastSentCount — recipients of the last send."
+        },
+        {
+          "name": "recipientCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "How many would get a send now (rows with willGet = 1)."
+        },
+        {
+          "name": "callerMaySeeEmails",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "@callerMaySeeEmails echoed (NULL ⇒ 0)."
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "Recipients",
+      "description": "Only when @includeRecipients >= 1. One row per hasher who WILL get the email (reasonCode 1, 2, 9, 10 or 11), ordered by lower-cased hash name. Always has canMove = 1.",
+      "columns": [
+        {
+          "name": "hasherId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "HC.Hasher.id, lowercase."
+        },
+        {
+          "name": "email",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "HC.Hasher.Email — including generated ones (shown dark red by the clients; never sent to, reasonCode 6)."
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "The name as the check-in list shows it: the kennel hash name (HasherKennelMap.KennelHashName), else HC.Hasher.DisplayName. Same value as hashName."
+        },
+        {
+          "name": "hashName",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Same as displayName (kept for the audience page's column naming)."
+        },
+        {
+          "name": "mortalName",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "FirstName + ' ' + LastName, trimmed; '' when neither is set."
+        },
+        {
+          "name": "photo",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "HasherKennelMap.KennelUserPhoto, else HC.Hasher.Photo."
+        },
+        {
+          "name": "emailStatus",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HC.Hasher.EmailStatus: 0 Unknown, 1 OK, 2 Suspect, 3 Bounced."
+        },
+        {
+          "name": "reasonCode",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Why they get it / do not: 1 on for this run, 2 on for the kennel, 9 member, 10 follower, 11 RSVP'd Yes/Maybe; 3 run emails off, 4 kennel emails off, 5 not a member/follower/RSVP, 6 no (or generated) address, 7 blocked all emails, 8 address bouncing."
+        },
+        {
+          "name": "canMove",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 when an admin may override for one send; 0 for reasonCodes 6, 7, 8."
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "name": "NonRecipients",
+      "description": "Only when @includeRecipients = 2. One row per hasher with a stake in the run (a live kennel row, or an RSVP row for this run) who will NOT get it, with the reason (reasonCode 3–8), ordered by lower-cased hash name.",
+      "columns": [
+        {
+          "name": "hasherId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "HC.Hasher.id, lowercase."
+        },
+        {
+          "name": "email",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "HC.Hasher.Email — including generated ones (shown dark red by the clients; never sent to, reasonCode 6)."
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "The name as the check-in list shows it: the kennel hash name (HasherKennelMap.KennelHashName), else HC.Hasher.DisplayName. Same value as hashName."
+        },
+        {
+          "name": "hashName",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Same as displayName (kept for the audience page's column naming)."
+        },
+        {
+          "name": "mortalName",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "FirstName + ' ' + LastName, trimmed; '' when neither is set."
+        },
+        {
+          "name": "photo",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "HasherKennelMap.KennelUserPhoto, else HC.Hasher.Photo."
+        },
+        {
+          "name": "emailStatus",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HC.Hasher.EmailStatus: 0 Unknown, 1 OK, 2 Suspect, 3 Bounced."
+        },
+        {
+          "name": "reasonCode",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Why they get it / do not: 1 on for this run, 2 on for the kennel, 9 member, 10 follower, 11 RSVP'd Yes/Maybe; 3 run emails off, 4 kennel emails off, 5 not a member/follower/RSVP, 6 no (or generated) address, 7 blocked all emails, 8 address bouncing."
+        },
+        {
+          "name": "canMove",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 when an admin may override for one send; 0 for reasonCodes 6, 7, 8."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "Read-only. Reads HC.Event, HC.Kennel, HC.Hasher, HC.HasherKennelMap, HC.HasherEventMap and calls HC6.IsGeneratedEmail per candidate row."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "SP body not wrapped in TRY/CATCH",
+      "detail": "No TRY/CATCH anywhere (lines 52–156). Both callers (hcapp_getRunEmailContext, hcportal_getRunEmailContext) EXEC it inside their own TRY, so a runtime error is caught and logged there under the wrapper's name; but a direct EXEC (e.g. from the API or an operator) would raise an unlogged error. CLAUDE.md asks for the read-SP wrapper (log, then THROW) on every SP."
+    },
+    {
+      "severity": "low",
+      "issue": "Header comment under-describes rowsets 2 and 3",
+      "detail": "The header (lines 45–48) lists rowset 2 as hasherId, email, displayName and rowset 3 as displayName, reason; both actually return the nine columns above (lines 146–147, 153–154). Documentation only — the contract describes the SQL."
+    },
+    {
+      "severity": "low",
+      "issue": "Scalar UDF per candidate row",
+      "detail": "HC6.IsGeneratedEmail(h.Email) is evaluated inside the CROSS APPLY for every candidate (line 83). The set is one kennel's roster plus the run's RSVPs — hundreds, not hundreds of thousands — so it is the small row-at-a-time gate CLAUDE.md allows, noted here so it is not copied into a query over all of HC.Hasher."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "nonApi_updateRunCountsByUser",
-  "version": "1.0.0",
-  "description": "Recalculates all run-count statistics for a single hasher across all kennels. Executes 5 stages: (1) Insert HasherKennelMap rows for any kennel the user has attended but has no existing HKM record; (2) Update run-count columns on HasherEventMap using window functions; (3) Clear counts on HEM rows where the user is no longer attending (AttendenceState < 20); (4) Update HasherKennelMap summary counters (HcTotalRunCount, HcHaringCount, YtdTotalRunCount, YtdHaringCount, DateOfLastRun); (5) Update rolling-year (~182-day) counts on HasherKennelMap. Exits immediately (no-op) if @userId is anonymous or not found. Called inside and after transactions by portal and app SPs.",
+  "version": "1.1.0",
+  "description": "Recalculates all run-count statistics for a single hasher across all kennels in five stages: (1) insert HasherKennelMap rows for any kennel the user has attended without one; (2) recompute the six HasherEventMap count columns with window functions over the user's QUALIFYING runs — AttendenceState >= 20, VirginVisitorType 0, event counted, visible, not removed, and EventStartDateTimeGmt earlier than 6 h from now (a pre-start check-in tallies in real time; a far-future check-in does not); (3) NULL the counts on rows that no longer qualify (not only AttendenceState < 20 — also virgin/visitor, missing/uncounted/hidden/removed event, start more than 6 h away), or Stage 4's MAX() would over-count from stale values; (4) recompute the HasherKennelMap summary counters (HcTotalRunCount, HcHaringCount, YtdTotalRunCount, YtdHaringCount, DateOfLastRun; CurrentHaringCount / CurrentPackRunCount / HistoricalPackRunCount forced to 0); (5) recompute RollingYearTotalRunCount / RollingYearHaringCount as the runs in the LAST 365 DAYS counted back from today (since 2026-09: the earlier 182-day bucket anchored six months in the past dropped the newest runs), driven from HKM with a LEFT JOIN so a count can be cleared as well as corrected. Every stage writes only rows whose values change, and the haring guards compare the CASE-adjusted value actually written (2026-07-30 fix). No-op for an anonymous or unknown hasher. Called (EXEC) inside and after transactions by portal and app SPs; internal, no auth. Returns nothing. No TRY/CATCH: an error propagates to the caller's CATCH.",
   "parameters": [
     {
       "name": "userId",
@@ -14,17 +14,17 @@
   ],
   "rowsets": [],
   "sideEffects": [
-    "Stage 1: May INSERT rows into HC.HasherKennelMap for kennels the user has attended but has no HKM record (default zeros for all counter and permission columns).",
-    "Stage 2: UPDATEs HC.HasherEventMap.TotalRuns, TotalHaring, TotalRunsThisKennel, TotalHaringThisKennel, YtdTotalRunsThisKennel, YtdHaringThisKennel, updatedAt for all attended events (AttendenceState >= 20) where any count has changed.",
-    "Stage 3: NULLs out the same six HEM count columns and updatedAt for non-attending rows (AttendenceState < 20) where any count is non-NULL.",
-    "Stage 4: UPDATEs HC.HasherKennelMap.CurrentHaringCount (to 0), CurrentPackRunCount (to 0), HistoricalPackRunCount (to 0), HcTotalRunCount, HcHaringCount, YtdTotalRunCount, YtdHaringCount, DateOfLastRun, updatedAt where any value has changed.",
-    "Stage 5: UPDATEs HC.HasherKennelMap.RollingYearTotalRunCount, RollingYearHaringCount, updatedAt where any value has changed."
+    "Stage 1: May INSERT HC.HasherKennelMap rows (all counters 0, permissions 0, DiscountDescription '') for kennels the user attended without an HKM row.",
+    "Stage 2: UPDATEs HC.HasherEventMap TotalRuns, TotalHaring, TotalRunsThisKennel, TotalHaringThisKennel, YtdTotalRunsThisKennel, YtdHaringThisKennel, updatedAt for the user's qualifying rows whose values changed.",
+    "Stage 3: NULLs the same six columns (and stamps updatedAt) on the user's rows that no longer qualify and still hold a value.",
+    "Stage 4: UPDATEs HC.HasherKennelMap HcTotalRunCount, HcHaringCount, YtdTotalRunCount, YtdHaringCount, DateOfLastRun, zeroes CurrentHaringCount / CurrentPackRunCount / HistoricalPackRunCount, stamps updatedAt — where any value changed.",
+    "Stage 5: UPDATEs HC.HasherKennelMap RollingYearTotalRunCount, RollingYearHaringCount, updatedAt where changed — every HKM row of the user, so a count with no qualifying runs left goes to 0."
   ],
   "codeSmells": [
     {
       "severity": "medium",
-      "issue": "Stage 3 clears counts on ALL non-attending HEM rows for the user, not just affected ones",
-      "detail": "The Stage 3 UPDATE does not filter by any per-event scope — it clears counts on every HEM row for @userId with AttendenceState < 20 and non-NULL counts. This is correct but potentially expensive for users with a long history of RSVP-only or cancelled attendance records. No practical impact for typical users."
+      "issue": "Stage 3 scans every HEM row of the user, not just the affected ones",
+      "detail": "The Stage 3 UPDATE (lines 164–191) is scoped to @userId only — it re-evaluates qualification for every row the user has, and the LEFT JOIN to HC.Event is per row. Correct, and the second predicate (some count IS NOT NULL) limits the writes, but a user with a long RSVP-only or visitor history pays the full scan on every RSVP/check-in. No practical impact for typical users."
     },
     {
       "severity": "medium",
@@ -33,19 +33,30 @@
     },
     {
       "severity": "low",
-      "issue": "Rolling-year window is ~182 days (6 months), not 365 days",
-      "detail": "The SP name and comment say 'rolling year' but the bucket calculation uses 182-day windows (DATEDIFF / 182). Bucket 0 = the current 182-day window. This is consistent with HC5's fn_GetRunCountsRolling but the naming is misleading."
+      "issue": "No TRY/CATCH wrapper",
+      "detail": "The SP has SET XACT_ABORT ON but no TRY/CATCH. Errors in any stage propagate as raw exceptions to the caller. Since this SP is typically called inside a caller's transaction, XACT_ABORT ensures the caller's transaction is rolled back, but there is no structured error rowset."
+    },
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@userId has no SQL default. Called only by EXEC from the attendance and payment SPs, which always pass it. A call that omits one fails before the body runs — no HC.ErrorLog row, no graceful check (CLAUDE.md 'SP parameter with NO default')."
     },
     {
       "severity": "low",
-      "issue": "No TRY/CATCH wrapper",
-      "detail": "The SP has SET XACT_ABORT ON but no TRY/CATCH. Errors in any stage propagate as raw exceptions to the caller. Since this SP is typically called inside a caller's transaction, XACT_ABORT ensures the caller's transaction is rolled back, but there is no structured error rowset."
+      "issue": "Unused INNER JOINs to HC.Kennel, HC.City and DomainValues.Timezone act as a filter",
+      "detail": "Stages 2 and 5 (lines 124–126, 279–281) join Kennel → City → Timezone but never read tz (the time gate uses EventStartDateTimeGmt directly). The joins only drop runs of a kennel whose city has no timezone row. Same shape in nonApi_updateRunCountsForAllUsers and nonApi_updateRunCountsForEventUsers (inherited from HC5.fn_GetRunCounts); change all three together if it is ever removed."
+    },
+    {
+      "severity": "low",
+      "issue": "GETDATE() (server local) decides 'this year' and the 365-day bucket",
+      "detail": "Lines 196 and 266–275 use GETDATE() where the rest of the stages use SYSUTCDATETIME(); EventStartLocal is a wall clock, so a local-ish 'today' is arguably right, but it is the server's zone (UTC on Azure SQL), not the kennel's. A run late on 31 December can count as last year for a kennel east of UTC. Same in both siblings."
     }
   ],
   "breakingChanges": [
     "@eventDateTime parameter removed (was accepted in HC5 but never used in the SP body).",
     "Timezone-aware event filter added to Stage 2 HEM update (was absent in HC5 nonApi_updateRunCountsByUser; HC5.fn_GetRunCounts already applied this filter).",
     "HC4.vwRunCountsRolling (no timezone filter) replaced with the timezone-aware logic inlined from HC5.fn_GetRunCountsRolling.",
-    "Asymmetric COALESCE sentinels (-999/999) in change-detection comparisons replaced with ISNULL(x, -1) pattern."
+    "Asymmetric COALESCE sentinels (-999/999) in change-detection comparisons replaced with ISNULL(x, -1) pattern.",
+    "2026-09: Stage 5 bucket changed from DATEDIFF(day, DATEADD(month, -6, today), EventStartLocal) / 182 to DATEDIFF(day, EventStartLocal, today) / 365, and the UPDATE now drives from HKM with a LEFT JOIN so a rolling count can be cleared. RollingYear* now means the last 365 days."
   ]
 }

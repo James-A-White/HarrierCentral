@@ -1,0 +1,71 @@
+{
+  "schema": "HC6",
+  "name": "CheckKennelPermission",
+  "version": "1.0.0",
+  "description": "Internal single authorizer for kennel-scoped features (Permissions V2, data-driven since 2026-07-27). Resolves whether @userId may perform the capability @functionKey (HC.PermissionFunction.FunctionKey, e.g. createEditRuns, manageReceipts, manageProducts) for @kennelId and returns the answer in @allowed OUTPUT. @allowed = 1 iff SuperAdmin (HasherKennelMap.AppAccessFlags & 0x40000000) OR the user holds a grantor whose EFFECTIVE grant for the function resolves to 1: the grantor is a MismanagementRoles bit ('mmRole'), an AppAccessFlags bit ('appFlag') or 'hare' (only when @isHareOfEvent = 1); the effective grant is the kennel-specific HC.RolePermission row (1 grant, -1 revoke, 0 inherit) over the global row (KennelId NULL), absent = 0. IsAdmin (0x01) is NOT a bypass. Grantor bits are read from the user's live (removed = 0) HasherKennelMap row; no row means no grantor. Called by almost every hcapp_/hcportal_ write SP after ValidateAppAuth / ValidatePortalAuth; NOT an API endpoint and does no auth of its own. Returns nothing: the answer is the OUTPUT parameter.",
+  "parameters": [
+    {
+      "name": "userId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "HasherKennelMap.UserId",
+      "description": "The hasher being authorised. Required (no default)."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "HasherKennelMap.KennelId",
+      "description": "The kennel the capability is scoped to. Also selects the kennel-specific HC.RolePermission override. Required (no default); a NULL kennel matches no HasherKennelMap row and no kennel override, so only a global grant to a grantor the user somehow holds could pass — in practice NULL yields 0."
+    },
+    {
+      "name": "functionKey",
+      "type": "NVARCHAR(80)",
+      "nullable": false,
+      "mapsToColumn": "PermissionFunction.FunctionKey",
+      "description": "Stable capability key (HC.PermissionFunction.FunctionKey, NVARCHAR(80) NOT NULL). An unknown key matches no function and yields 0. Required (no default)."
+    },
+    {
+      "name": "allowed",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "OUTPUT: 1 = allowed, 0 = denied. Always set."
+    },
+    {
+      "name": "isHareOfEvent",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "1 when the caller is a designated hare of the event the capability concerns, so 'hare'-grantor rows count (run-scoped capabilities such as createEditRuns and manageReceipts). Default 0. The caller derives it from HC.HasherEventMap.IsHare."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "None. Read-only over HC.HasherKennelMap, HC.PermissionFunction, HC.PermissionRole and HC.RolePermission. No logging."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "SP body not wrapped in TRY/CATCH",
+      "detail": "Lines 29-64 have no BEGIN TRY / BEGIN CATCH and no HC.ErrorLog write. Callers invoke it from their pre-flight section, OUTSIDE their own TRY (e.g. hcapp_addEditEvent line 241, hcapp_addEditReceipt line 125), so a runtime error here surfaces as a raw, unlogged 500. Internal helper, small exposure, but CLAUDE.md says flag on sight."
+    },
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@userId, @kennelId and @functionKey (lines 2-4) have no SQL default. Only other HC6 SPs call it, so an omission is a developer error rather than a client-facing unlogged 500, but the house rule is that every parameter carries a default."
+    },
+    {
+      "severity": "low",
+      "issue": "Permission tables are not in db/schema/tables",
+      "detail": "HC.PermissionFunction, HC.PermissionRole and HC.RolePermission are defined only by the archived migration scripts (db/hc6/app/archive/migration_permissions_v2_01_tables.sql and later). Column types in this contract were taken from those scripts."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

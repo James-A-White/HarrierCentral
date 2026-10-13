@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_getMyKennelRunTotals",
-  "version": "1.0.0",
-  "description": "Returns the calling user's run and haring totals per kennel, with an optional filter to a single kennel. A synthetic GRAND TOTAL row (KennelId = null UUID) is appended as the first row (rowNum=0), containing the sum of all kennel totals. Totals are computed live from HC.HasherEventMap (not from denormalised count columns). Requires device auth via HC6.ValidateAppAuth.",
+  "version": "1.1.0",
+  "description": "Returns the calling user's run and haring totals per kennel, with an optional filter to a single kennel. A synthetic GRAND TOTAL row (KennelId = null UUID) is appended as the first row (rowNum=0), containing the sum of all kennel totals. Totals are computed live from HC.HasherEventMap (not from denormalised count columns). Requires device auth via HC6.ValidateAppAuth. Auth: HC6.ValidateAppAuth (spNumber 91, @param NULL); the zero-UUID normalisation of @kennelId runs before auth. Runtime errors are logged to HC.ErrorLog and re-thrown.",
   "parameters": [
     {
       "name": "deviceId",
@@ -32,12 +32,42 @@
       "name": "AuthError",
       "description": "Returned when ValidateAppAuth rejects the request (bad token, unknown device, etc.). errorType values follow the HC6 app error code scheme.",
       "columns": [
-        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Unique ID of the HC.ErrorLog entry logged by ValidateAppAuth." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code. 11=auth failure." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Specific error code within the errorType category." },
-        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short error title for display." },
-        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
-        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name from OBJECT_NAME(@@PROCID)." }
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Unique ID of the HC.ErrorLog entry logged by ValidateAppAuth."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification code. 11=auth failure."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Specific error code within the errorType category."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Short error title for display."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name from OBJECT_NAME(@@PROCID)."
+        }
       ]
     },
     {
@@ -45,28 +75,70 @@
       "name": "RunTotals",
       "description": "Per-kennel run totals for the calling user, ordered by rowNum ascending. The GRAND TOTAL aggregate row is always first (rowNum=0) with KennelId='00000000-0000-0000-0000-000000000000'. Per-kennel rows follow, ordered by totalRunsThisKennel DESC. Rows where totalRunsThisKennel=0 are excluded. Filtered events must have IsCountedRun=1 and IsVisible=1.",
       "columns": [
-        { "name": "KennelId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The kennel's internal ID (HC.Kennel.id). '00000000-0000-0000-0000-000000000000' for the GRAND TOTAL row." },
-        { "name": "KennelLogo", "type": "NVARCHAR(500)", "nullable": true, "description": "Kennel logo URL (HC.Kennel.KennelLogo). '<no logo>' for the GRAND TOTAL row." },
-        { "name": "KennelName", "type": "NVARCHAR(250)", "nullable": true, "description": "Full kennel name (HC.Kennel.KennelName). 'GRAND TOTAL ALL KENNELS' for the aggregate row." },
-        { "name": "totalRunsThisKennel", "type": "INT", "nullable": false, "description": "Count of HasherEventMap rows where AttendenceState >= 20, IsCountedRun=1, IsVisible=1 for this kennel. Summed across all kennels for the GRAND TOTAL row." },
-        { "name": "totalPackRunsThisKennel", "type": "INT", "nullable": false, "description": "totalRunsThisKennel minus totalHaringThisKennel (i.e. attended runs where the user was not a hare)." },
-        { "name": "totalHaringThisKennel", "type": "INT", "nullable": false, "description": "Count of HasherEventMap rows where IsHare != 0 within the counted runs. Summed across all kennels for the GRAND TOTAL row." },
-        { "name": "following", "type": "SMALLINT", "nullable": false, "description": "HasherKennelMap.Following value for the calling user at this kennel. 0 if no HasherKennelMap row exists (LEFT JOIN with COALESCE). Always 0 for the GRAND TOTAL row." },
-        { "name": "KennelShortName", "type": "NVARCHAR(25)", "nullable": true, "description": "Kennel short name (HC.Kennel.KennelShortName). 'TOTALS' for the GRAND TOTAL row." }
+        {
+          "name": "KennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The kennel's internal ID (HC.Kennel.id). '00000000-0000-0000-0000-000000000000' for the GRAND TOTAL row."
+        },
+        {
+          "name": "KennelLogo",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Kennel logo URL (HC.Kennel.KennelLogo). '<no logo>' for the GRAND TOTAL row."
+        },
+        {
+          "name": "KennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Full kennel name (HC.Kennel.KennelName). 'GRAND TOTAL ALL KENNELS' for the aggregate row."
+        },
+        {
+          "name": "totalRunsThisKennel",
+          "type": "INT",
+          "nullable": false,
+          "description": "Count of HasherEventMap rows where AttendenceState >= 20, IsCountedRun=1, IsVisible=1 for this kennel. Summed across all kennels for the GRAND TOTAL row."
+        },
+        {
+          "name": "totalPackRunsThisKennel",
+          "type": "INT",
+          "nullable": false,
+          "description": "totalRunsThisKennel minus totalHaringThisKennel (i.e. attended runs where the user was not a hare)."
+        },
+        {
+          "name": "totalHaringThisKennel",
+          "type": "INT",
+          "nullable": false,
+          "description": "Count of HasherEventMap rows where IsHare != 0 within the counted runs. Summed across all kennels for the GRAND TOTAL row."
+        },
+        {
+          "name": "following",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherKennelMap.Following value for the calling user at this kennel. 0 if no HasherKennelMap row exists (LEFT JOIN with COALESCE). Always 0 for the GRAND TOTAL row."
+        },
+        {
+          "name": "KennelShortName",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "Kennel short name (HC.Kennel.KennelShortName). 'TOTALS' for the GRAND TOTAL row."
+        }
       ]
     }
   ],
-  "sideEffects": [],
+  "sideEffects": [
+    "INSERT HC.ErrorLog from the CATCH block (lines 132-134, after ROLLBACK)"
+  ],
   "codeSmells": [
     {
       "severity": "medium",
-      "issue": "No TRY/CATCH around main query body",
-      "detail": "ValidateAppAuth errors are caught and returned cleanly, but any SQL error in the CTE, temp table insert, or final SELECT (lines 70-123) will propagate as an unhandled exception with no standard error envelope. A TRY/CATCH wrapping the post-auth block should be added."
+      "issue": "Parameter without a default",
+      "detail": "@deviceId and @accessToken (lines 3-4) have no SQL default. A client that omits either gets 'expects parameter' — an unlogged empty 500 before the SP runs — instead of ValidateAppAuth's logged auth error."
     },
     {
       "severity": "low",
       "issue": "GRAND TOTAL row mixed into result set via null-UUID sentinel",
-      "detail": "Callers must detect KennelId='00000000-...' to identify the aggregate row. An explicit isGrandTotal BIT column would be cleaner and remove the need for callers to know the sentinel value."
+      "detail": "Callers must detect KennelId = '00000000-...' (with KennelLogo '<no logo>', KennelName 'GRAND TOTAL ALL KENNELS', KennelShortName 'TOTALS') to identify the aggregate row (lines 100-113). An explicit isGrandTotal SMALLINT column would remove the need for callers to know the sentinels."
     },
     {
       "severity": "low",

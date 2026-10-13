@@ -1,0 +1,77 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getOfficialTrail",
+  "version": "1.0.0",
+  "description": "A run's official (hare's) trail for the app (E5.F6.S6, decided with James 2026-10-03). Who sees it, when: the run's hares and the kennel's run admins (HC6.CheckKennelPermission 'createEditRuns' with @isHareOfEvent) — always; a LOST runner, from the I'm-lost flow (@lost = 1) — from 1 hour before the start to 12 hours after it; everyone else — once the run has ended (start + 4 hours, the same rule as publicWeb_getOfficialTrail and HC6.KennelOfficialTrails). Always one row: Available says whether the trail is returned; when it is not, OfficialTrail and OfficialTrailInfo are NULL. Points are [lat, lon] or [lat, lon, t] where t = ms after the trail's first point; a trail with no t is drawn whole. Auth: HC6.ValidateAppAuth (spNumber 147, @param NULL).",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Registered device. Default NULL (auth failure)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret). Default NULL."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.id",
+      "description": "The run (deleted = 0, removed = 0). NULL or unknown is not an error: the row comes back with Available = 0, CanEdit = 0."
+    },
+    {
+      "name": "lost",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "1 = asked for from the I'm-lost flow: within start - 1h .. start + 12h the trail is returned to anyone. Default 0. Client-asserted; the SP cannot tell a lost runner from one who merely says so."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "On auth failure only (ValidateAppAuth): the error detail alone, no envelope. Runtime errors are logged to HC.ErrorLog and re-thrown (THROW)."
+    },
+    {
+      "index": 0,
+      "name": "OfficialTrail",
+      "description": "Always exactly one row.",
+      "columns": [
+        { "name": "Available", "type": "SMALLINT", "nullable": false, "description": "1 when the trail is returned: the run has a trail AND (caller may edit the run, OR start + 4h has passed, OR @lost = 1 within start - 1h .. start + 12h). 0 otherwise, including no such run and no trail stored." },
+        { "name": "CanEdit", "type": "SMALLINT", "nullable": false, "description": "1 when the caller may edit this run (createEditRuns on its kennel, or its hare) — the app shows scout/promote/upload controls. 0 when the run was not found." },
+        { "name": "OfficialTrailInfo", "type": "NVARCHAR(MAX)", "nullable": true, "description": "HC.Event.OfficialTrailInfo (metadata JSON) when Available = 1; NULL otherwise." },
+        { "name": "OfficialTrail", "type": "NVARCHAR(MAX)", "nullable": true, "description": "DECOMPRESS(HC.Event.OfficialTrailGzip) as text — the lanes JSON — when Available = 1; NULL otherwise." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "EXEC HC6.CheckKennelPermission ('createEditRuns', @isHareOfEvent) when the run resolves a kennel, lines 58-60",
+    "INSERT HC.ErrorLog from the CATCH block (lines 78-80, after ROLLBACK)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "The I'm-lost gate is client-asserted",
+      "detail": "Lines 67-68 release the trail during the run to any caller who passes @lost = 1 within the 13-hour window; nothing records that the hasher was lost or limits it to one request. The design accepts this (the trail is public four hours later anyway), but it should not be read as a per-runner secret during the run."
+    },
+    {
+      "severity": "low",
+      "issue": "Unknown run and no trail look the same",
+      "detail": "A NULL or unknown @eventId (lines 48-51 find no row) yields Available = 0, CanEdit = 0 with nothing logged — the same row as a real run with no trail. The app cannot tell 'no such run' from 'no trail yet'."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

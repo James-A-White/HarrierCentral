@@ -1,39 +1,39 @@
 {
   "schema": "HC6",
   "name": "hcapp_rptKennelRunStats",
-  "version": "1.0.0",
-  "description": "Authenticated passthrough to HC.nonApi_rptKennelRunStats. Validates the device token via HC6.ValidateAppAuth (spNumber=51) then delegates entirely to the internal nonApi SP. This is a read SP — no success envelope is returned. On auth failure, a single error rowset is returned and execution halts. On success, the rowset(s) produced by HC.nonApi_rptKennelRunStats are passed through directly. The nonApi SP is an internal database object not under source control; its exact rowset schema is not captured in this contract.",
+  "version": "1.1.0",
+  "description": "Authenticated passthrough to HC6.nonApi_rptKennelRunStats (db/hc6/app): the kennel's pivoted run-stats matrix — one row per run, one column per hasher, the cell encoding attendance, hare status and payment in a single integer. Read SP, no success envelope. Auth: HC6.ValidateAppAuth (spNumber 51, @param NULL — device-secret token). No permission gate: any signed-in hasher may report on any kennel; the helper is not told who is asking. On auth failure a single error rowset is returned and the SP returns; otherwise the helper's rowset is streamed through at index 0. The body is wrapped in TRY/CATCH (lines 63-74): an unhandled error is logged to HC.ErrorLog and re-raised (THROW), so the client sees an HTTP 500 but the failure is recorded.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": "Device.id",
-      "description": "Registered device UUID. Passed to ValidateAppAuth to resolve the calling user and their device secret."
+      "description": "Registered device UUID. Passed to ValidateAppAuth to resolve the calling user and their device secret. No SQL default."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Short-lived cryptographic token validated by ValidateAppAuth against the device secret."
+      "description": "Short-lived cryptographic token validated by ValidateAppAuth against the device secret. No SQL default."
     },
     {
       "name": "kennelId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
-      "mapsToColumn": null,
-      "description": "Kennel to report on. Passed directly to HC.nonApi_rptKennelRunStats after auth succeeds."
+      "mapsToColumn": "Event.KennelId",
+      "description": "Kennel to report on. Passed straight to HC6.nonApi_rptKennelRunStats after auth succeeds; not checked against HC.Kennel. No SQL default."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "AuthError",
-      "description": "Returned when ValidateAppAuth rejects the request (bad token, unknown device, expired token, etc.). errorType follows the HC6 app error code scheme. Only returned on failure — not present on the success path.",
+      "description": "Returned only when ValidateAppAuth rejects the request (bad token, unknown or signed-out device). Single rowset — there is no success/errorCode/errorType envelope in front of it.",
       "columns": [
         { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Unique ID of the HC.ErrorLog entry logged by ValidateAppAuth." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code. 11=auth failure." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code from ValidateAppAuth." },
         { "name": "errorCode", "type": "INT", "nullable": false, "description": "Specific error code within the errorType category." },
         { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short error title for display." },
         { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
@@ -42,32 +42,46 @@
     },
     {
       "index": 0,
-      "name": "KennelRunStatsResult",
-      "description": "Returned on the success path. Contains whatever HC.nonApi_rptKennelRunStats returns for the given @kennelId. The nonApi SP is an internal database object not under source control — its exact column schema is not defined here. See HC.nonApi_rptKennelRunStats directly for the rowset definition.",
-      "columns": []
+      "name": "KennelRunStatsPivot",
+      "description": "Returned on the success path, produced by HC6.nonApi_rptKennelRunStats via sp_executesql PIVOT. One row per visible, non-removed run of the kennel that has at least one attended HasherEventMap row (AttendenceState >= 20, TotalRunsThisKennel set), ordered by Event_date DESC, plus two sentinel summary rows ('Run totals' dated 2200-01-01 and 'Times hared' dated 2100-01-01). The four fixed columns below are followed by ONE COLUMN PER HASHER named by the hasher's DisplayName (plus a 'Visitors & Virgins' column for rows whose hasher id equals the kennel id), ordered by run count descending. The per-hasher cell is an encoded INT: (DebitAmount * 10000 + PaymentType, or 99990000 when no uncancelled payment) + 100000000, negated when the hasher hared; NULL when the hasher did not attend. On the summary rows the cell is the hasher's run count or hare count instead. Clients must read the column list dynamically.",
+      "columns": [
+        { "name": "Event_name", "type": "NVARCHAR(250)", "nullable": true, "description": "Event.FbEventName when Event.UseFbRunDetails = 1, else Event.EventName; 'Run totals' / 'Times hared' on the two summary rows." },
+        { "name": "Run_number", "type": "INT", "nullable": true, "description": "Event.EventNumber; 0 on the summary rows." },
+        { "name": "Total_hashers", "type": "INT", "nullable": true, "description": "Count of HasherEventMap rows with AttendenceState >= 20 for the run; NULL on the summary rows." },
+        { "name": "Event_date", "type": "DATETIME2", "nullable": false, "description": "CONVERT(datetime2, Event.EventStartDatetime) — the raw column, which carries a spurious +00:00 on many rows (see /hc-event-datetimes); 2200-01-01 / 2100-01-01 sentinels on the summary rows." }
+      ]
     }
   ],
-  "sideEffects": [],
+  "sideEffects": [
+    "None on success (the helper builds and drops a #rpt temp table).",
+    "INSERT HC.ErrorLog then THROW on an unhandled error — once by the helper's CATCH (userId NULL, HcVersion '<unknown>') and again by this SP's CATCH (userId set, HcVersion from the device), so one failure produces two log rows."
+  ],
   "codeSmells": [
     {
       "severity": "medium",
-      "issue": "No TRY/CATCH block",
-      "detail": "The SP has no TRY/CATCH around the delegated EXEC HC.nonApi_rptKennelRunStats call. Any SQL error raised inside the nonApi SP will propagate as an unhandled exception with no standard HC6 error envelope. A TRY/CATCH should wrap the post-auth execution path."
+      "issue": "Parameter without a default",
+      "detail": "Lines 3-5: @deviceId, @accessToken and @kennelId have no SQL default. A client that omits any of them gets 'expects parameter ... which was not supplied' before the procedure runs — an empty 500 with no HC.ErrorLog row. Give every parameter a default and check for NULL inside (CLAUDE.md, 'SP parameter with NO default')."
     },
     {
-      "severity": "low",
-      "issue": "Rowset contract incomplete — depends on undocumented nonApi SP",
-      "detail": "HC.nonApi_rptKennelRunStats is an internal SP whose source is not in the repository and whose rowset schema is not captured in this contract. If the nonApi SP schema changes the app will break silently. HC6 should either inline the nonApi logic or document its rowset contract separately."
+      "severity": "medium",
+      "issue": "Delegated helper uses dynamic SQL",
+      "detail": "HC6.nonApi_rptKennelRunStats lines 122-130 build the PIVOT statement as a string and run it through sp_executesql, against the project rule 'No dynamic SQL. Ever.' The column names are hasher DisplayNames, bracket-escaped (']' doubled) — safe from injection, but a DisplayName that is blank is excluded and a very long name list can exceed the pivot column limit, failing the whole report. The helper's header documents the trade-off; it is recorded here because this SP is the only API-facing route to it."
     },
     {
       "severity": "low",
       "issue": "@kennelId not validated before delegation",
-      "detail": "The SP passes @kennelId directly to the nonApi SP without checking whether it resolves to a known kennel. If the nonApi SP does not perform this check itself, an invalid kennelId will return an empty rowset with no error signal, which the caller may not be able to distinguish from a valid-but-empty result."
+      "detail": "@kennelId goes straight to the helper (line 65) without checking it names a kennel. An unknown id yields an empty pivot with no error signal, indistinguishable from a kennel with no attended runs."
+    },
+    {
+      "severity": "low",
+      "issue": "No permission gate on another kennel's financial data",
+      "detail": "The pivot cell encodes each hasher's payment amount and type per run. Any authenticated device can request any kennel's matrix; nothing checks that the caller is a member or officer of @kennelId. If this is intended (the HC5 behaviour), it should be stated in the authorizations skill."
     }
   ],
   "breakingChanges": [
     "Auth model changed from HC5 inline device lookup + HC.CHECK_ACCESS_TOKEN_V2 call to HC6 ValidateAppAuth helper SP — callers must pass a token generated by the HC6 auth flow.",
     "Error rowset column set changed: HC5 error rowsets included 'debugMessage'; HC6 error rowset (from ValidateAppAuth) does not expose debugMessage to callers — it is logged internally only.",
-    "HC5 had a @timeWindows typo (extra 's') in the local variable name — corrected in HC6 to @timeWindow. No caller-visible impact."
+    "HC5 had a @timeWindows typo (extra 's') in the local variable name — corrected in HC6 to @timeWindow. No caller-visible impact.",
+    "1.1.0 (2026-10-13): contract corrections only — the helper is now HC6.nonApi_rptKennelRunStats in source control and its pivot shape is described; the TRY/CATCH smell was retired (added 2026-07-19)."
   ]
 }

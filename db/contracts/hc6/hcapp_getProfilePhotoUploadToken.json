@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_getProfilePhotoUploadToken",
-  "version": "1.0.0",
-  "description": "Validates auth and returns the userId so the calling Azure Function can construct a scoped SAS write token for the profile-photos blob container. No side effects — pure auth check. The simplest of the photo SPs: no additional parameters, no kennel lookup, no extra validation beyond auth.",
+  "version": "1.1.0",
+  "description": "Validates auth and returns the userId so the calling Azure Function can construct a scoped SAS write token for the profile-photos blob container. No side effects — pure auth check. The simplest of the photo SPs: no additional parameters, no kennel lookup, no extra validation beyond auth. Auth: HC6.ValidateAppAuth (spNumber 16, @param NULL). Runtime errors are logged to HC.ErrorLog and re-thrown.",
   "parameters": [
     {
       "name": "deviceId",
@@ -25,8 +25,18 @@
       "name": "Envelope",
       "description": "On auth failure: success=0, errorCode and errorType set. On success: success=1, plus userId. Note: on success the envelope and the userId are combined in a single rowset rather than split across two rowsets — this is an unusual shape for this SP family.",
       "columns": [
-        { "name": "success", "type": "INT", "nullable": false, "description": "1 on success, 0 on auth failure." },
-        { "name": "userId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "HC.Hasher.id of the authenticated user. NULL on failure." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 on auth failure."
+        },
+        {
+          "name": "userId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "HC.Hasher.id of the authenticated user. NULL on failure."
+        }
       ]
     },
     {
@@ -35,8 +45,15 @@
       "description": "Returned only on auth failure (paired with success=0 in rowset 0). Not present on success."
     }
   ],
-  "sideEffects": [],
+  "sideEffects": [
+    "INSERT HC.ErrorLog from the CATCH block (lines 66-68, after ROLLBACK)"
+  ],
   "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId and @accessToken (lines 3-4) have no SQL default. A client that omits either gets 'expects parameter' — an unlogged empty 500 before the SP runs — instead of ValidateAppAuth's logged auth error."
+    },
     {
       "severity": "medium",
       "issue": "Success rowset combines envelope and data in a single rowset",
@@ -44,8 +61,8 @@
     },
     {
       "severity": "low",
-      "issue": "No TRY/CATCH",
-      "detail": "The SP has no TRY/CATCH block. An unexpected DB error will propagate as a raw SQL error rather than a structured error rowset. Low risk for a read-only SP with no DB writes."
+      "issue": "Missing SET XACT_ABORT ON",
+      "detail": "The SP sets SET NOCOUNT ON only. Harmless for a read with no transaction, but inconsistent with the HC6 SP standard, which requires both."
     }
   ],
   "breakingChanges": [

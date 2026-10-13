@@ -1,108 +1,96 @@
 {
   "schema": "HC6",
   "name": "hcapp_searchHashers",
-  "version": "1.0.0",
-  "description": "Hasher search from Chats (E9.F1.S26). The found hasher's DirectoryVisibility is the only gate; hash name and home kennel always match, real name only with +16; blocks either way hide; 2..60 chars, 50 results, 30/min and 400/day per hasher.",
+  "version": "1.1.0",
+  "description": "Hasher search from Chats (E9.F1.S26, decided with James 2026-10-02). Auth: HC6.ValidateAppAuth (spNumber 143, @param NULL — device-secret token); any signed-in hasher may search. The FOUND hasher's choice (HC.Hasher.DirectoryVisibility & 3) is the only gate: 3 = anyone finds them; 1 = only people they have run with (HC6.CoRunners); 2 = only a member (HasherKennelMap.IsMember = 1, not a follower) of a kennel they are a member of; 0 / NULL = never found. Matches the hash name and the home kennel's name / short name; first name, last name and 'first last' only when the hasher also chose +16 (real name). A block either way (HasherFriendMap.Ignore = 1) hides them, and the searcher never finds themself. Results show the hasher's own display-name choice (HC.Hasher.DisplayName), names that START with the text first, then people the searcher has run with most. Scraping guards: 2..60 characters, at most 50 results, and a per-hasher limit of 30 searches a minute / 400 a day counted in LOG.GeneralLog (LogSource 'hasherSearch', Message = the user id; the search text is never logged). LIKE wildcards typed by the user are escaped and match literally. Read SP with a success envelope: the envelope is emitted only once the results exist.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
-      "mapsToColumn": null,
-      "description": "Registered device"
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "Registered device. Default NULL (ValidateAppAuth then fails gracefully)."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Short-lived token (standard, device secret)"
+      "description": "Short-lived token (standard, device secret). Default NULL."
     },
     {
       "name": "query",
       "type": "NVARCHAR(MAX)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "what was typed; LIKE wildcards are literal"
+      "description": "What was typed. Default NULL; NULL/blank or fewer than 2 or more than 60 characters after trimming is refused (14300). '[', '%' and '_' are escaped so they match literally."
     }
   ],
   "rowsets": [
     {
       "index": 0,
+      "name": "AuthError",
+      "description": "Auth failure ONLY (ValidateAppAuth): a single rowset with the error detail and no envelope in front of it — errorId, errorType, errorCode, errorTitle, errorUserMessage, errorProc. Note this differs from the two-rowset shape of the refusal and CATCH paths below.",
+      "columns": [
+        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog id written by ValidateAppAuth." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification from ValidateAppAuth." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Specific error code." },
+        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short title." },
+        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing message." },
+        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "OBJECT_NAME(@@PROCID)." }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Refused (14300, errorType 2: too short/long or rate limit — errorUserMessage is the user-facing refusal) or unhandled (14301, errorType 5): { success=0, errorCode, errorType }, followed by StandardErrorResult at index 1.",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "Always 0." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "14300 refused, 14301 unhandled." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "2 refused, 5 unhandled." }
+      ]
+    },
+    {
+      "index": 1,
       "ref": "StandardErrorResult",
-      "description": "14300 refused: too short/long or rate limit (2), message is user-facing; 14301 unhandled (5)"
+      "description": "Follows ErrorEnvelope on the 14300 / 14301 paths. errorUserMessage on 14300 is one of 'Type at least 2 letters of a name.' or 'You have searched a lot just now. Please wait a minute and try again.'"
     },
     {
       "index": 0,
       "name": "Envelope",
+      "description": "Success envelope, emitted after the results have been collected into #found so a failure can never follow a success row.",
       "columns": [
-        {
-          "name": "success",
-          "type": "INT",
-          "nullable": false,
-          "description": "1 ok"
-        },
-        {
-          "name": "errorMessage",
-          "type": "NVARCHAR(MAX)",
-          "nullable": true,
-          "description": "NULL on success"
-        }
+        { "name": "success", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "errorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Always NULL on success." }
       ]
     },
     {
       "index": 1,
       "name": "Hashers",
+      "description": "0..50 rows: prefix matches first, then by RunsTogether DESC, then DisplayName. Empty when nothing matched.",
       "columns": [
-        {
-          "name": "PublicHasherId",
-          "type": "NVARCHAR(40)",
-          "nullable": false,
-          "description": "upper-case text; the app lowercases"
-        },
-        {
-          "name": "DisplayName",
-          "type": "NVARCHAR",
-          "nullable": false,
-          "description": "the hasher's own display choice"
-        },
-        {
-          "name": "Photo",
-          "type": "NVARCHAR",
-          "nullable": true,
-          "description": "profile photo URL"
-        },
-        {
-          "name": "HomeKennelName",
-          "type": "NVARCHAR",
-          "nullable": true,
-          "description": ""
-        },
-        {
-          "name": "HomeKennelShortName",
-          "type": "NVARCHAR",
-          "nullable": true,
-          "description": ""
-        },
-        {
-          "name": "HomeKennelLogo",
-          "type": "NVARCHAR",
-          "nullable": true,
-          "description": ""
-        },
-        {
-          "name": "RunsTogether",
-          "type": "INT",
-          "nullable": false,
-          "description": "0 when never"
-        }
+        { "name": "PublicHasherId", "type": "NVARCHAR(40)", "nullable": false, "description": "UPPER(CAST(Hasher.PublicHasherId AS NVARCHAR(40))) — identification only, never a foreign key; the app lowercases it into an HcId on arrival." },
+        { "name": "DisplayName", "type": "NVARCHAR(501)", "nullable": false, "description": "Hasher.DisplayName (persisted computed column honouring NameDisplayPreference)." },
+        { "name": "Photo", "type": "NVARCHAR(1000)", "nullable": true, "description": "Hasher.Photo — profile photo URL or bundle:// avatar." },
+        { "name": "HomeKennelName", "type": "NVARCHAR(250)", "nullable": true, "description": "Kennel.KennelName of Hasher.HomeKennelId; NULL when no home kennel or it is deleted." },
+        { "name": "HomeKennelShortName", "type": "NVARCHAR(25)", "nullable": true, "description": "Kennel.KennelShortName; NULL as above." },
+        { "name": "HomeKennelLogo", "type": "NVARCHAR(500)", "nullable": true, "description": "Kennel.KennelLogo; NULL as above." },
+        { "name": "RunsTogether", "type": "INT", "nullable": false, "description": "Runs the searcher and this hasher attended together (HC6.CoRunners); 0 when never." }
       ]
     }
   ],
   "sideEffects": [
-    "INSERT LOG.GeneralLog (LogSource 'hasherSearch', Message = user id; the query is not logged)"
+    "INSERT LOG.GeneralLog (LogSource 'hasherSearch', Message = searcher's user id, Timestamp) — one row per accepted search; this is the rate-limit counter. The query text is not logged.",
+    "INSERT HC.ErrorLog on a refusal (14300, 'Hasher search refused', with the refusal reason and query length) and on an unhandled error (14301).",
+    "Creates and drops #co, #myKennels and #found temp tables."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Two error shapes from one SP",
+      "detail": "An auth failure (lines 49-50) returns the error detail as the ONLY rowset, while a refusal (74-76) or CATCH (153-155) returns {success, errorCode, errorType} first and the detail second. A client that reads rowset 0 as the envelope sees an auth failure as a row with no 'success' column. The other hcapp_ write SPs emit the envelope on the auth path too."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_getEventBadgeCount",
-  "version": "1.3.0",
-  "description": "Returns unread event message badge counts for the authenticated user. Three modes controlled by parameters: (1) reset all badge counts across all events and return a zero sentinel row; (2) query (and optionally reset) the badge count for a specific event; (3) return badge counts for all events where the user has a badge count row. Read SP — no success envelope; always returns a data or error rowset. Mode 3's query now lives in HC6.UserUnreadChatThreads (2026-09-28), the one definition of unread chat shared with the app-icon total HC6.UserUnreadChatTotal; output unchanged (verified row-for-row for three accounts).",
+  "version": "1.4.0",
+  "description": "Returns unread event message badge counts for the authenticated user. Three modes controlled by parameters: (1) reset all badge counts across every thread kind — run, kennel, room and direct message — and return a zero sentinel row; (2) query (and optionally reset) the badge count for a specific event; (3) return badge counts for all events where the user has a badge count row. Read SP — no success envelope; always returns a data or error rowset. Mode 3's query now lives in HC6.UserUnreadChatThreads (2026-09-28), the one definition of unread chat shared with the app-icon total HC6.UserUnreadChatTotal; output unchanged (verified row-for-row for three accounts). Auth: HC6.ValidateAppAuth (spNumber 63, @param NULL); no permission gate — every row is the caller's own.",
   "parameters": [
     {
       "name": "deviceId",
@@ -22,8 +22,8 @@
       "name": "publicEventId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": "EventMessage.PublicEventId",
-      "description": "Public event UUID to query or reset. NULL triggers Mode 3 (all events). The zero UUID ('00000000-...') is normalised to NULL before mode dispatch."
+      "mapsToColumn": "Event.PublicEventId",
+      "description": "Public event UUID to query or reset, resolved against HC.Event.PublicEventId. NULL triggers Mode 3 (all threads). The zero UUID is normalised to NULL before mode dispatch. An unknown id returns { 0, @publicEventId } without error."
     },
     {
       "name": "resetBadgeCount",
@@ -37,7 +37,7 @@
       "type": "INT",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "When non-zero, updates LastSequenceCount to the current MAX for all of the user's badge count rows AND inserts caught-up rows for every in-scope kennel/run thread that has messages but no badge row yet (both kinds surface unread without a row), then returns a zero-sentinel row. Takes precedence over @publicEventId. Default 0."
+      "description": "When non-zero (Mode 1): advances LastSequenceCount to the current MAX for every badge row the user holds (event, kennel, room and direct-message rows each resolve their own MAX), then INSERTs caught-up rows for every in-scope kennel thread, chat room (HC6.UserMayEnterChatRoom), direct-message thread (HasherFriendMap) and run thread (kennel followed or attendance row, start >= -90 days) that has messages but no badge row yet, and returns the zero-sentinel row. Takes precedence over @publicEventId. Default 0."
     }
   ],
   "rowsets": [
@@ -106,13 +106,13 @@
     {
       "index": 0,
       "name": "SingleEventBadgeCount",
-      "description": "Returned when @publicEventId is provided and @resetAllBadgeCounts=0. Zero or one rows — zero rows if the user has no badge count record for the event.",
+      "description": "Returned when @publicEventId is provided and @resetAllBadgeCounts = 0. Unknown public id: one row { 0, @publicEventId } (line 264). Known event: zero rows when the user has no badge row for it and @resetBadgeCount = 0; one row otherwise (the MERGE at lines 274-281 creates the row when @resetBadgeCount != 0).",
       "columns": [
         {
           "name": "BadgeCount",
           "type": "INT",
-          "nullable": true,
-          "description": "Computed as MAX(MessageSequenceCount) - LastSequenceCount. NULL if @messageSequenceCount is NULL (no messages for this event)."
+          "nullable": false,
+          "description": "COALESCE(MAX(MessageSequenceCount), 0) - COALESCE(LastSequenceCount, 0); 0 after a reset or for an unknown id."
         },
         {
           "name": "PublicEventId",
@@ -125,7 +125,7 @@
     {
       "index": 0,
       "name": "AllEventBadgeCounts",
-      "description": "Returned when @publicEventId is NULL and @resetAllBadgeCounts=0. v1.1.0 (2026-08-28): one row per RUN thread with ANY messages that the user can see — any event they hold a badge row for (posted/read, not time-bounded) OR an event in a kennel they have an HKM row for / an event they have an HEM row for, starting within the last 90 days or in the future — UNION one row per followed kennel-level thread with ANY messages. BadgeCount may be 0. Both thread kinds surface as unread BEFORE first read (no badge row => every message unread). BadgeCount is forced to 0 when the user's effective notification preference for the thread is ignore (2): runs use COALESCE(NULLIF(hem.EventNotificationPreference,0), hkm.KennelNotificationPreference, 0), kennels use hkm.KennelNotificationPreference. Silver Bell (mute=3) still badges. Kennel-thread rows have EventId/PublicEventId NULL and carry PublicKennelId. MessageCount lets the run/kennel cards distinguish unread / read / no-chats. Carries enough fields for the app to render the Unseen Chats list even when the event isn't locally synced (the app filters that list on BadgeCount > 0). First two columns (BadgeCount, PublicEventId) unchanged for back-compat. Previously (v1.0.0) only rows with BadgeCount > 0 were returned.",
+      "description": "Returned when @publicEventId is NULL and @resetAllBadgeCounts=0. v1.1.0 (2026-08-28): one row per RUN thread with ANY messages that the user can see — any event they hold a badge row for (posted/read, not time-bounded) OR an event in a kennel they have an HKM row for / an event they have an HEM row for, starting within the last 90 days or in the future — UNION one row per followed kennel-level thread with ANY messages. BadgeCount may be 0. Both thread kinds surface as unread BEFORE first read (no badge row => every message unread). BadgeCount is forced to 0 when the user's effective notification preference for the thread is ignore (2): runs use COALESCE(NULLIF(hem.EventNotificationPreference,0), hkm.KennelNotificationPreference, 0), kennels use hkm.KennelNotificationPreference. Silver Bell (mute=3) still badges. Kennel-thread rows have EventId/PublicEventId NULL and carry PublicKennelId. MessageCount lets the run/kennel cards distinguish unread / read / no-chats. Carries enough fields for the app to render the Unseen Chats list even when the event isn't locally synced (the app filters that list on BadgeCount > 0). First two columns (BadgeCount, PublicEventId) unchanged for back-compat. Previously (v1.0.0) only rows with BadgeCount > 0 were returned. Rows come from HC6.UserUnreadChatThreads(@userId); direct-message rows (ThreadId set) are included only for phones with BuildNumber >= HC6.MinBuildForDmPush() or for a browser (IsMobile = 0), and OtherHasherId is NULL for a browser (lines 313-325).",
       "columns": [
         {
           "name": "BadgeCount",
@@ -148,19 +148,19 @@
         {
           "name": "EventName",
           "type": "NVARCHAR(250)",
-          "nullable": false,
-          "description": "HC.Event.EventName."
+          "nullable": true,
+          "description": "HC.Event.EventName for run rows; NULL for kennel, room and DM rows."
         },
         {
           "name": "EventNumber",
           "type": "SMALLINT",
-          "nullable": false,
+          "nullable": true,
           "description": "HC.Event.EventNumber."
         },
         {
           "name": "EventStartDatetimeGmt",
           "type": "DATETIMEOFFSET(7)",
-          "nullable": false,
+          "nullable": true,
           "description": "HC.Event.EventStartDatetimeGmt — reliable instant for display/sort."
         },
         {
@@ -172,8 +172,8 @@
         {
           "name": "KennelId",
           "type": "UNIQUEIDENTIFIER",
-          "nullable": false,
-          "description": "HC.Event.KennelId (event rows) / HC.Kennel.id (kennel-thread rows)."
+          "nullable": true,
+          "description": "HC.Event.KennelId (run rows) / HC.Kennel.id (kennel rows); NULL for room and DM rows."
         },
         {
           "name": "PublicKennelId",
@@ -184,14 +184,14 @@
         {
           "name": "KennelShortName",
           "type": "NVARCHAR(25)",
-          "nullable": false,
-          "description": "HC.Kennel.KennelShortName."
+          "nullable": true,
+          "description": "HC.Kennel.KennelShortName; NULL for room and DM rows."
         },
         {
           "name": "KennelLogo",
           "type": "NVARCHAR(500)",
-          "nullable": false,
-          "description": "HC.Kennel.KennelLogo (may be 'bundle://defaultKennelLogo')."
+          "nullable": true,
+          "description": "HC.Kennel.KennelLogo (may be 'bundle://defaultKennelLogo'); NULL for room and DM rows."
         },
         {
           "name": "MessageCount",
@@ -257,16 +257,25 @@
     }
   ],
   "sideEffects": [
-    "UPDATE HC.EventMessageBadgeCounts SET LastSequenceCount — when @resetAllBadgeCounts != 0 (all user rows, outside a transaction)",
-    "INSERT HC.EventMessageBadgeCounts (caught-up rows for in-scope kennel and run threads with no badge row) — when @resetAllBadgeCounts != 0",
-    "MERGE HC.EventMessageBadgeCounts (upsert LastSequenceCount) — when @publicEventId is provided and @resetBadgeCount != 0 (outside a transaction)",
-    "INSERT HC.ErrorLog (via ValidateAppAuth) — on auth failure"
+    "Mode 1 (@resetAllBadgeCounts != 0): UPDATE HC.EventMessageBadgeCounts.LastSequenceCount for every row of the user (lines 125-158); INSERT caught-up rows for followed kennel threads (164-181), rooms the user may enter (188-202), direct-message threads the user holds (207-219) and in-scope run threads (225-243) that have messages but no badge row — five statements, no transaction",
+    "Mode 2 (@publicEventId set, @resetBadgeCount != 0): MERGE HC.EventMessageBadgeCounts on (UserId, EventId) — UPDATE LastSequenceCount or INSERT (lines 274-281)",
+    "INSERT HC.ErrorLog via ValidateAppAuth on auth failure, and from the CATCH block (lines 332-334, after ROLLBACK)"
   ],
   "codeSmells": [
     {
-      "severity": "high",
-      "issue": "MERGE and UPDATE run outside a transaction",
-      "detail": "Both the Mode 1 UPDATE and Mode 2 MERGE write to HC.EventMessageBadgeCounts without an explicit BEGIN TRANSACTION / COMMIT. If a concurrent modification occurs mid-write, there is no rollback protection."
+      "severity": "medium",
+      "issue": "Mode 1 is five auto-committed statements, not one unit",
+      "detail": "Lines 125-243 run an UPDATE and four INSERTs with no BEGIN TRANSACTION; SET XACT_ABORT ON makes a failing statement abort the batch, but the statements before it stay committed, so 'mark all read' can half-apply (runs cleared, rooms not). The CATCH logs and re-throws, so the client retries and the remainder catches up."
+    },
+    {
+      "severity": "low",
+      "issue": "Mode 2 MERGE without HOLDLOCK",
+      "detail": "Lines 274-281 match on (UserId, EventId) with no UPDLOCK/HOLDLOCK hint; two phones of the same hasher opening the chat at once can both take the NOT MATCHED branch and insert duplicate badge rows, after which the SELECT at lines 284-288 returns two rows."
+    },
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId and @accessToken (lines 3-4) have no SQL default. A client that omits either gets 'expects parameter' — an unlogged empty 500 before the SP runs — instead of ValidateAppAuth's logged auth error."
     },
     {
       "severity": "medium",
@@ -281,7 +290,7 @@
     {
       "severity": "low",
       "issue": "@resetBadgeCount and @resetAllBadgeCounts typed as INT used as boolean flags",
-      "detail": "Both parameters are INT but are only tested for non-zero (!= 0). BIT would be a more accurate type. Not a breaking change risk but documents an HC5 pattern carried forward."
+      "detail": "Both parameters are INT but are only tested for non-zero (!= 0). SMALLINT 0/1 is the house type for a flag. Not a breaking-change risk; documents an HC5 pattern carried forward."
     },
     {
       "severity": "low",

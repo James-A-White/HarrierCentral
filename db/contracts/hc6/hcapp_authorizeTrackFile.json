@@ -1,0 +1,59 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_authorizeTrackFile",
+  "version": "1.0.0",
+  "description": "Identity check behind the API's ParseTrackFile function (E5.F6.S6): a hare uploading a GPX/TCX/FIT file so the API can read its points back for the run's official trail. The function only READS the file — saving the trail is hcapp_setOfficialTrail, which does the hare/admin check — so a signed-in device is all this asks. Auth: HC6.ValidateAppAuth (spNumber 149, standard token, @param NULL). No permission gate. Returns the authenticated hasher's id so the API can attribute the parse.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Registered device. Default NULL (ValidateAppAuth then answers 'Device not registered', 1449 / errorType 3)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret). Default NULL."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "On auth failure only: { success = 0, errorCode, errorType } (1249 invalid token / errorType 1, 1349 device not registered / 3, 1349 signed out / 7 — see ValidateAppAuth), followed by the error detail at index 1.",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "Always 0." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "1100/1200/1300 + 49 from ValidateAppAuth." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "1 invalid token, 3 device not found, 7 signed out." }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Auth failure detail (errorId, errorType, errorCode, errorTitle, errorUserMessage, errorProc). No debugMessage column."
+    },
+    {
+      "index": 0,
+      "name": "Authorized",
+      "description": "On success: the authenticated hasher. Mutually exclusive with ErrorEnvelope.",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "userId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "The calling hasher (HC.Device.UserId resolved by ValidateAppAuth). Emitted as a UNIQUEIDENTIFIER, so the API's JSON carries it lowercase." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "None on success. HC.ErrorLog written by ValidateAppAuth on auth failure, and by the CATCH (which then re-raises with THROW rather than returning an envelope)."
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

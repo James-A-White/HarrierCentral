@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_findHashersByHashName",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Pre-login account discovery. Searches for active hashers by hash name or last name and returns each matched hasher with their kennel memberships and run counts, so a new user can identify their existing account and request an invite code. Uses a global shared token validated against the null UUID (same mechanism as hcapp_authorizeDevice) — no device record is required. Optionally filters kennels by proximity: if @lat and @lon are provided, only kennels whose home city is within 500 miles (804,672 m) are returned.",
   "parameters": [
     {
@@ -39,9 +39,24 @@
       "name": "Envelope",
       "description": "Always returned as rowset 0. success=0 on auth or validation error; success=1 on success. Mutually exclusive with the error detail rowset at index 1.",
       "columns": [
-        { "name": "success", "type": "INT", "nullable": false, "description": "1 on success, 0 on any error." },
-        { "name": "errorCode", "type": "INT", "nullable": true, "description": "NULL on success. 1312 for auth failure, 1313 for search term too short." },
-        { "name": "errorType", "type": "INT", "nullable": true, "description": "NULL on success. 11 for auth failure, 2 for validation error." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 on any error."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success. 1312 for auth failure, 1313 for search term too short."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success. 11 for auth failure, 2 for validation error."
+        }
       ]
     },
     {
@@ -49,12 +64,42 @@
       "name": "ErrorDetail",
       "description": "Returned at index 1 when success=0. Contains the standard HC6 app error shape. Mutually exclusive with HasherResults rowset.",
       "columns": [
-        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID. As of 1.1.0 a row is written for BOTH error branches, so this id is always resolvable in HC.ErrorLog." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification: 11 = auth failure, 2 = validation error." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "1312 = auth failure, 1313 = search term too short." },
-        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "'Invalid access token' or 'Search term too short'." },
-        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
-        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.ErrorLog GUID. As of 1.1.0 a row is written for BOTH error branches, so this id is always resolvable in HC.ErrorLog."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification: 11 = auth failure, 2 = validation error."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "1312 = auth failure, 1313 = search term too short."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "'Invalid access token' or 'Search term too short'."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name via OBJECT_NAME(@@PROCID)."
+        }
       ]
     },
     {
@@ -112,6 +157,11 @@
     "Logging the search term is deliberate: this is a pre-login SP with no userId and no deviceId, so the term typed is the only identifying detail available when troubleshooting a blocked sign-in. The term is a hash name or last name the user entered; HC.ErrorLog is pruned at 90 days by HC.nonApi_pruneLogs."
   ],
   "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@accessToken, @searchTerm (lines 3-4) have no SQL default. A client that omits one is refused by SQL before the procedure runs — no HC.ErrorLog row, an empty 500 in the app (CLAUDE.md 'SP parameter with NO default'). The body tolerates NULL for both (COALESCE at lines 55 and 71), so a default of NULL would route an omission to the logged 1312/1313 branches."
+    },
     {
       "severity": "low",
       "issue": "FLOAT used for @lat and @lon parameters",

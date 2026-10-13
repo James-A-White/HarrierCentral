@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_addEditEvent",
-  "version": "1.0.0",
-  "description": "Creates or updates an HC.Event record for the authenticated device's kennel. Mode is determined by whether @eventId already exists in HC.Event for the given @kennelId: if found, performs a partial UPDATE; if not found (or @eventId is NULL), performs an INSERT. Sentinel values control partial-update behaviour: NULL = keep existing, -1 = keep existing (normalised to NULL before COALESCE), -2 = explicitly clear for numeric/decimal fields, '<remove>' = explicitly clear for string fields, 0 = explicitly clear for absoluteEventNumber. On INSERT, generates a placeholder name if @eventName is empty and falls back to kennel default prices and run start time. After a successful write, delegates to HC6.hcapp_syncUserData to return refreshed sync data. Returns a success envelope rowset plus syncUserData rowsets on success, or a success envelope rowset plus an error detail rowset on failure.",
+  "version": "1.1.0",
+  "description": "Creates or updates an HC.Event for a kennel. Mode is whether @eventId already exists in HC.Event for @kennelId: found → partial UPDATE; not found or NULL → INSERT. @kennelId may be omitted when @eventId is given (default NULL since 2026-09-30, derived from the event; the run-number edit sends only @eventId); missing on both counts → 1220. Sentinels: NULL = keep existing; -1 = keep (normalised to NULL) for numeric fields; -2 = explicitly clear for lat/lon/prices; '<remove>' clears strings ('<none>' for extrasDescription, 0 for absoluteEventNumber); @deleteEventImage = 1 clears the cover photo. On INSERT a placeholder name is generated if @eventName is empty, the kennel's DefaultRunStartTime is applied to a midnight start, and kennel default prices fill missing prices. Auth: HC6.ValidateAppAuth (spNumber 20, standard token). Gate: HC6.CheckKennelPermission 'createEditRuns' for @kennelId, with the designated hare of an EXISTING event allowed (HasherEventMap.IsHare) → else 1321 (errorType 13). An event that exists but belongs to another kennel → 1320. Editing a run the AI imported from the kennel's runs page adopts it (HC6.nonApi_adoptImportedRun) so the import stops updating it, and forces the UseFb* mirror flags off. After the write: HC.nonApi_updateRunNumbers, HC6.nonApi_updateRunCountsForEventUsers, COMMIT, the success envelope, an adHocData row { adHocDataId = 1, eventId } and then HC6.hcapp_syncUserData's rowsets (events / HasherEventMap / HasherKennelMap for the given watermarks, hashers 'ignore'). The same SP serves the portal's run editor (James, 2026-10-09: run editing is ONE feature on both sides).",
   "parameters": [
     {
       "name": "deviceId",
@@ -23,7 +23,7 @@
       "type": "NVARCHAR(50)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Sync watermark for events passed through to HC6.hcapp_syncUserData. Pass 'ignore' to skip event sync. NULL is defaulted to 'ignore' internally."
+      "description": "Sync watermark for events passed through to HC6.hcapp_syncUserData. Pass 'ignore' to skip event sync; NULL is defaulted to 'ignore' internally. NO SQL DEFAULT — a client that omits it is refused before the procedure runs (see codeSmells)."
     },
     {
       "name": "eventId",
@@ -35,9 +35,9 @@
     {
       "name": "kennelId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Event.KennelId",
-      "description": "Required. Missing or null-UUID (00000000-...) returns error 1220. Scopes the write to the correct kennel and guards against cross-kennel data corruption."
+      "description": "The event's kennel. Default NULL (since 2026-09-30): when NULL or the zero UUID and @eventId names an existing event, taken from HC.Event.KennelId. Still missing after that → error 1220. Scopes the write and the permission check; an @eventId that belongs to a different kennel → 1320."
     },
     {
       "name": "startDatetime",
@@ -171,7 +171,14 @@
       "type": "NVARCHAR(500)",
       "nullable": true,
       "mapsToColumn": "Event.EventImage",
-      "description": "URL of the event cover photo. Sentinel: LEN < 5 normalised to NULL."
+      "description": "URL of the event cover photo (Event.EventImage). Sentinel: LEN < 5 normalised to NULL (keep existing). To clear, send @deleteEventImage = 1 rather than a short string."
+    },
+    {
+      "name": "deleteEventImage",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.EventImage",
+      "description": "1 = clear Event.EventImage to NULL on UPDATE (wins over @coverPhotoUrl). Default 0. Ignored on INSERT."
     },
     {
       "name": "coverPhotoOffsetX",
@@ -289,10 +296,11 @@
     },
     {
       "name": "deleted",
-      "type": "BIT",
+      "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": "Event.deleted",
-      "description": "Soft-delete flag. NULL = keep existing. 1 = mark event as deleted via the standard UPDATE COALESCE path. The HC5 stub deletion block is removed — @deleted=1 now executes the UPDATE."
+      "description": "Soft-delete flag. NULL (default) = keep existing; 1 = mark the event deleted via the standard UPDATE COALESCE path; 0 on INSERT when NULL. SMALLINT by house rule; Event.deleted is the pre-existing BIT column and converts implicitly. The HC5 -1 'keep' sentinel is gone — pass NULL.",
+      "typeMismatch": "SMALLINT parameter — Event.deleted is BIT (the one sanctioned BIT column; implicit conversion)."
     },
     {
       "name": "hasherEventMapUpdatedAfter",
@@ -320,85 +328,112 @@
     {
       "index": 0,
       "name": "SuccessEnvelope",
-      "description": "Always returned as the first rowset. success=1 on success (errorCode and errorType are NULL); success=0 on any failure (errorCode and errorType are populated). On auth failure (errorCode=11xx), missing kennelId (1220), cross-kennel conflict (1320), or unhandled DB error (1920), success=0.",
+      "description": "Always the first rowset. success = 1 with NULL errorCode/errorType on success; success = 0 with the code on any failure: ValidateAppAuth 1120 invalid token (errorType 1) / 1320 device not registered (3) / 1220 signed out (7); 1220 missing kennelId (12); 1321 not authorised (13); 1320 event belongs to another kennel (13); 1920 unhandled DB error (19). Note 1220 and 1320 are each used for two different conditions (auth vs validation).",
       "columns": [
         {
           "name": "success",
-          "type": "BIT",
+          "type": "INT",
           "nullable": false,
-          "description": "1 = operation succeeded; 0 = operation failed."
+          "description": "1 = succeeded; 0 = failed."
         },
         {
           "name": "errorCode",
           "type": "INT",
           "nullable": true,
-          "description": "Numeric error code on failure; NULL on success. Known codes: 1220 = missing kennelId, 1320 = cross-kennel event conflict, 1920 = unhandled DB error. Auth error codes come from HC6.ValidateAppAuth."
+          "description": "NULL on success; otherwise see description."
         },
         {
           "name": "errorType",
           "type": "INT",
           "nullable": true,
-          "description": "Error type classification on failure; NULL on success. 12 = validation/param error (1220), 13 = auth/not-found error (1320 and auth failures), 19 = unhandled DB error (1920)."
+          "description": "NULL on success; 1/3/7 auth, 12 validation, 13 not authorised / not found, 19 unhandled."
         }
       ]
     },
     {
       "index": 1,
       "name": "ErrorDetail",
-      "description": "Returned as rowset 1 only on failure (when success=0 in rowset 0). Not present on success.",
+      "description": "Rowset 1 on failure only (success = 0).",
       "columns": [
         {
           "name": "errorId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": "GUID of the HC.ErrorLog entry created for this failure."
+          "description": "GUID of the HC.ErrorLog entry."
         },
         {
           "name": "errorType",
           "type": "INT",
           "nullable": false,
-          "description": "Error type classification. Same value as in the SuccessEnvelope."
+          "description": "Same as the envelope."
         },
         {
           "name": "errorCode",
           "type": "INT",
           "nullable": false,
-          "description": "Numeric error code. Same value as in the SuccessEnvelope."
+          "description": "Same as the envelope."
         },
         {
           "name": "errorTitle",
           "type": "NVARCHAR(500)",
           "nullable": false,
-          "description": "Short error title for display (e.g. 'Missing parameter', 'Event not found', 'Unexpected error')."
+          "description": "'Missing parameter', 'Not authorised', 'Event not found', 'Unexpected error' or the ValidateAppAuth title."
         },
         {
           "name": "errorUserMessage",
           "type": "NVARCHAR(MAX)",
           "nullable": false,
-          "description": "User-facing error message."
+          "description": "User-facing message."
         },
         {
           "name": "errorProc",
           "type": "NVARCHAR(128)",
           "nullable": false,
-          "description": "SP name from OBJECT_NAME(@@PROCID)."
+          "description": "OBJECT_NAME(@@PROCID)."
         }
       ]
     },
     {
-      "index": "1+",
+      "index": 1,
+      "name": "AdHocData",
+      "description": "Rowset 1 on success only: identifies the saved event (adHocDataId pattern, /hc6-adhoc-data) so the client can open it — essential after an INSERT, where the id was generated server-side.",
+      "columns": [
+        {
+          "name": "adHocDataId",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
+        },
+        {
+          "name": "eventId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "LOWER(CAST(@eventId AS NVARCHAR(40))) — the created or updated HC.Event.id."
+        }
+      ]
+    },
+    {
+      "index": "2+",
       "name": "SyncUserDataRowsets",
-      "description": "On success only. Multiple rowsets returned by HC6.hcapp_syncUserData (events, hasher-event map, hasher-kennel map, etc.). See hcapp_syncUserData contract for the full rowset shape. The sync SP re-authenticates with the same @deviceId and @accessToken; hashersUpdatedAfter is hardcoded to 'ignore'."
+      "description": "On success only, after AdHocData: the rowsets of HC6.hcapp_syncUserData (see its contract) called with @hashersUpdatedAfter = 'ignore', the three caller watermarks (NULL → 'ignore'), @usePaging = 0, @procName = this SP's name and @param NULL — so the token the client generated for hcapp_addEditEvent validates inside the sync SP too."
     }
   ],
   "sideEffects": [
-    "UPDATE HC.Event — when @eventId exists and belongs to @kennelId",
-    "INSERT HC.Event — when @eventId is NULL or not found for @kennelId; only when @eventName (or placeholder) is non-empty AND @startDatetime is non-NULL AND @kennelId is non-NULL",
-    "INSERT HC.ErrorLog — on missing kennelId (1220), cross-kennel conflict (1320), or unhandled CATCH error (1920)",
-    "EXEC HC.nonApi_updateRunNumbers @eventId — called inside transaction, after INSERT or UPDATE",
-    "EXEC HC6.hcapp_syncUserData — called outside TRY/CATCH after COMMIT; returns multiple result sets to the caller"
+    "UPDATE HC.Event — when @eventId exists for @kennelId (COALESCE partial update; EventSource = 'HC app'; updatedAt = GETDATE(), so the row re-syncs).",
+    "INSERT HC.Event — when @eventId is NULL or not found; only when a name (or placeholder) is non-empty AND @startDatetime is non-NULL. InboundIntegrationId 0, countryId from the kennel.",
+    "EXEC HC6.nonApi_adoptImportedRun @eventId — on UPDATE; when it reports adopted = 1 a second UPDATE forces UseFbRunDetails/UseFbLocation/UseFbLatLon/UseFbImage = 0 and recomputes EventGeolocation from Latitude/Longitude.",
+    "EXEC HC.nonApi_updateRunNumbers @eventId — inside the transaction after the write.",
+    "EXEC HC6.nonApi_updateRunCountsForEventUsers @eventId — inside the transaction; a renumber cascade that shifts LATER events leaves their attendees briefly stale until the nightly recompute.",
+    "EXEC HC6.CheckKennelPermission 'createEditRuns' (@isHareOfEvent from HasherEventMap.IsHare) — pre-flight, outside the transaction.",
+    "INSERT HC.ErrorLog — on 1220, 1321, 1320 (pre-flight) and in the CATCH (after ROLLBACK).",
+    "EXEC HC6.hcapp_syncUserData — after COMMIT and outside TRY/CATCH; its rowsets stream to the caller."
   ],
   "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken, @narrowEventsUpdatedAfter (lines 3-5) have no SQL default. A client that omits any of them is refused by SQL BEFORE the procedure runs: no HC.ErrorLog row, an empty 500 in the app, and the SP's own graceful checks are unreachable (CLAUDE.md, Rack of Lamb 2026-09-29). @kennelId was given a NULL default on 2026-09-30 for exactly this reason (18 unlogged 500s); @narrowEventsUpdatedAfter is still exposed in the same way."
+    },
     {
       "severity": "medium",
       "issue": "Inconsistent clear sentinels across parameter groups",
@@ -422,23 +457,28 @@
     {
       "severity": "low",
       "issue": "INSERT guard redundantly re-checks @kennelId IS NOT NULL",
-      "detail": "The INSERT guard at line 319 includes AND @kennelId IS NOT NULL. By this point, @kennelId has already been validated (not NULL and not null-UUID) at lines 145-157 and would have returned early. The redundant check is harmless but adds noise."
+      "detail": "The INSERT guard at line 365 includes AND @kennelId IS NOT NULL. By this point @kennelId has already been validated (lines 151-167) and would have returned early. Harmless noise."
+    },
+    {
+      "severity": "medium",
+      "issue": "Sync delegation runs outside TRY/CATCH after the envelope has been sent",
+      "detail": "Lines 496-509: EXEC HC6.hcapp_syncUserData runs after COMMIT and outside the TRY. The write is committed and { success = 1 } plus the adHocData row have already gone out, so a failure inside the sync SP reaches the client as a raw error after a success envelope; the client sees the save as failed although it is on the server."
     },
     {
       "severity": "low",
-      "issue": "HcVersion hardcoded to '<unknown>' in ErrorLog inserts",
-      "detail": "All INSERT HC.ErrorLog statements pass '<unknown>' for HcVersion. Ideally the HC version constant would be stored in a table or configuration and referenced here."
+      "issue": "errorCode values collide with ValidateAppAuth codes",
+      "detail": "1220 (missing kennelId, line 157) equals ValidateAppAuth's signed-out code 1200 + 20, and 1320 (cross-kennel event, line 264) equals its device-not-registered code 1300 + 20; only errorType distinguishes them (12/13 vs 7/3)."
     }
   ],
   "breakingChanges": [
     "@eventName widened from NVARCHAR(120) to NVARCHAR(250) to match Event.EventName column.",
     "@locationPostCode widened from NVARCHAR(50) to NVARCHAR(250) to match Event.LocationPostCode column.",
     "@eventPriceForMembers, @eventPriceForNonMembers, @eventPriceForExtras changed from FLOAT to DECIMAL(10,4) to match Event column types.",
-    "@deleted changed from SMALLINT to BIT. The SMALLINT -1 sentinel (keep existing) is removed; pass NULL to keep the existing value.",
+    "@deleted stays SMALLINT (maps to the BIT column by implicit conversion). The SMALLINT -1 sentinel (keep existing) is removed; pass NULL to keep the existing value.",
     "@narrowEventsUpdatedAfter changed from DATETIMEOFFSET(7) to NVARCHAR(50) to match the hcapp_syncUserData watermark pattern.",
     "@hasherEventMapUpdatedAfter changed from DATETIMEOFFSET(7) to NVARCHAR(50).",
     "@hasherKennelMapUpdatedAfter changed from DATETIMEOFFSET(7) to NVARCHAR(50).",
-    "@kennelId is now required (no default); NULL or null-UUID returns error 1220 instead of silently falling through.",
+    "@kennelId: NULL or null-UUID with no resolvable event returns error 1220 instead of silently falling through. Since 2026-09-30 it has a NULL default and is derived from @eventId when omitted.",
     "HC5 INSERT bug fixed: Event.Hares now receives @hares (HC5 incorrectly used @locationOneLineDesc).",
     "HC5 deletion stub removed: @deleted=1 now executes a real soft-delete via the UPDATE path.",
     "HC.nonApi_updateRunNumbers moved inside the transaction (HC5 called it outside any transaction).",
@@ -446,6 +486,9 @@
     "Success envelope rowset added as rowset 0 (HC5 had no envelope — results came from syncUserData only).",
     "Cross-kennel guard added: @eventId belonging to a different kennel now returns error 1320 instead of silently creating a duplicate INSERT (HC5 bug).",
     "DATALENGTH replaced with LEN for all string length guards.",
-    "Delegation target updated from HC5.hcapp_syncUserData to HC6.hcapp_syncUserData."
+    "Delegation target updated from HC5.hcapp_syncUserData to HC6.hcapp_syncUserData.",
+    "2026-09-30: @kennelId gained a NULL default (derived from @eventId) — additive.",
+    "@deleteEventImage SMALLINT = 0 added (clears the cover photo) — additive.",
+    "adHocData rowset { adHocDataId, eventId } now precedes the syncUserData rowsets on success — a client that indexed the sync rowsets from 1 must index from 2."
   ]
 }

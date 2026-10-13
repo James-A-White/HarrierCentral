@@ -1,0 +1,92 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_deletePasskey",
+  "version": "1.0.0",
+  "description": "Removes one passkey from the calling hasher's account (E9.F7.S18) by clearing the four credential columns (PasskeyCredentialId, PasskeyPublicKey, PasskeyCounter, PasskeyTransports) on that HC.Device row. The DEVICE ROW SURVIVES: it still holds the device secret that signs this hasher's API calls, so deleting the passkey does not sign the browser out — it only removes one-tap sign-in. Auth: HC6.ValidateAppAuth (spNumber 120, standard token — the only reachable target is the caller's own credential, so a compound token would add a failure mode without removing a risk). Authorization: @userId comes from the token and the UPDATE is scoped to UserId = @userId, so a forged @targetDeviceId belonging to someone else matches no row and is reported as 'not found' (1951), revealing nothing. Idempotent in effect: a passkey already gone is also 'not found'. A revoked passkey is then refused at sign-in by publicWeb_getPasskey finding no row. On success the reply carries the hasher's REMAINING passkeys in the shape of hcapp_listPasskeys so the screen can repaint from the reply.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Registered device making the call. Default NULL. Also used to flag IsThisDevice in the remaining-passkeys rowset and recorded in the LOG.GeneralLog audit line ('by=')."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret). Default NULL."
+    },
+    {
+      "name": "targetDeviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "The HC.Device row whose passkey is removed. Default NULL → 1950 'Missing fields'. Must belong to the caller, be live (removed = 0) and hold a PasskeyCredentialId → else 1951 'Not found'."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Auth failure (ValidateAppAuth: 1220/1320 + signed-out 1220 errorType 7) returns the error detail ALONE — no envelope row before it."
+    },
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "On a refusal after auth: { success = 0, errorCode, errorType } then the detail at index 1. 1950 missing targetDeviceId (errorType 2); 1951 passkey not found / not yours / already gone (3); 1952 unhandled (5) — on that path the envelope is { success = 0, errorMessage = ERROR_MESSAGE() } instead.",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "Always 0." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "1950 / 1951. (Absent on the CATCH path, which emits errorMessage.)" },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "2 / 3. (Absent on the CATCH path.)" }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Error detail after an ErrorEnvelope (1950, 1951, 1952)."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "On success: the standard success envelope.",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "errorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Always NULL." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Passkeys",
+      "description": "On success: the hasher's REMAINING passkey-bearing live devices, newest sign-in first — identical in shape to hcapp_listPasskeys rowset 1. May be empty.",
+      "columns": [
+        { "name": "DeviceId", "type": "NVARCHAR(40)", "nullable": false, "description": "Device.id as text." },
+        { "name": "Label", "type": "NVARCHAR", "nullable": false, "description": "'Safari on iPhone', 'Harrier Central on iPhone' — from Device.OperatingSystem / IsMobile and HC6.DevicePlatformName(DeviceData)." },
+        { "name": "Platform", "type": "NVARCHAR", "nullable": true, "description": "HC6.DevicePlatformName(Device.DeviceData)." },
+        { "name": "IsThisDevice", "type": "INT", "nullable": false, "description": "1 when the row is the calling @deviceId." },
+        { "name": "LastLogin", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "Device.LastLogin." },
+        { "name": "IsMobile", "type": "SMALLINT", "nullable": false, "description": "ISNULL(Device.IsMobile, 0)." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Device SET PasskeyCredentialId/PasskeyPublicKey/PasskeyCounter/PasskeyTransports = NULL, updatedAt = GETDATE() WHERE id = @targetDeviceId AND UserId = @userId AND removed = 0 AND PasskeyCredentialId IS NOT NULL (inside a transaction).",
+    "INSERT LOG.GeneralLog ('HC6.hcapp_deletePasskey', 'Passkey removed', userId, 'device=… label=… by=…') — audit trail of the revocation, in the same transaction.",
+    "INSERT HC.ErrorLog on 1950 (pre-flight, outside the transaction), 1951 (after ROLLBACK, so the row survives) and in the CATCH."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Passkey columns are not in db/schema/tables/HC.Device.Table.sql",
+      "detail": "PasskeyCredentialId NVARCHAR(500), PasskeyPublicKey NVARCHAR(2000), PasskeyCounter BIGINT and PasskeyTransports NVARCHAR(100) were added by db/hc6/public-web/archive/2026-09-16_device_passkey.sql and the schema file has not been refreshed. Nothing wrong in the SP; the schema snapshot is stale."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

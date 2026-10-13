@@ -1,0 +1,82 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_clearEmailBounce",
+  "version": "1.0.0",
+  "description": "A run admin clears a hasher's bounced (3) or suspect (2) email status from the 'Who gets the email' card (E19.F4.S5, James 2026-10-10) — after checking the address with them, or when the mailbox was only full. HC.Hasher.EmailStatus goes back to Unknown (0) and the next run email is sent to them again; a further bounce marks it again. Never touches the member's own block (EmailBlocked), which is theirs. Auth: HC6.ValidateAppAuth (spNumber 153, standard token). Gate: HC6.CheckKennelPermission 'createEditRuns' for the run's kennel (hare of the run counts), i.e. the same gate as sending the email; and @hasherId must be someone the run's email could reach — a live HC.HasherKennelMap row for the kennel or any HC.HasherEventMap row for the run. The work is HC6.nonApi_resetEmailStatus (shared with the address-change path); it never stamps updatedAt, so nothing re-syncs.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Registered device. Default NULL."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret). Default NULL."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.id",
+      "description": "The run whose audience the admin is looking at. Default NULL → 1530. Must be a live run (deleted = 0, removed = 0) → else 1531. Its KennelId is the permission scope."
+    },
+    {
+      "name": "hasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Hasher.id",
+      "description": "Whose EmailStatus to reset. Default NULL → 1530. Must be in the run's audience (kennel row or run row) → else 1533."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "On EVERY refusal the error detail is the ONLY rowset — there is no compact { success, errorCode, errorType } envelope before it, unlike the older hcapp_ SPs. Codes: ValidateAppAuth 1253/1353 (invalid token 1, device 3, signed out 7); 1530 missing eventId/hasherId (errorType 2); 1531 run not found (3); 1532 not authorised (13); 1533 hasher not in audience (13); 1539 unhandled (5, from the CATCH)."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "On success only.",
+      "columns": [
+        { "name": "success", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Always 0." },
+        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 0." }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "AdHocData",
+      "description": "On success only. adHocDataId pattern (see /hc6-adhoc-data).",
+      "columns": [
+        { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "Always 1." },
+        { "name": "hasherId", "type": "NVARCHAR(40)", "nullable": false, "description": "LOWER(CAST(@hasherId AS NVARCHAR(40))) — the hasher whose status was reset." },
+        { "name": "emailStatus", "type": "SMALLINT", "nullable": true, "description": "HC.Hasher.EmailStatus after the reset: 0 Unknown (1 OK, 2 Suspect, 3 Bounced). Read back from the row; NULL only if the hasher row vanished." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "EXEC HC6.nonApi_resetEmailStatus @hasherId, @reason = 'cleared by admin <userId>' — resets HC.Hasher.EmailStatus to 0 without touching updatedAt; its Success/ErrorMessage row is captured into a table variable and a non-1 Success is re-raised as THROW 50000 into the CATCH.",
+    "INSERT HC.ErrorLog on every refusal and in the CATCH (kennelId / eventId columns filled where known).",
+    "EXEC HC6.CheckKennelPermission 'createEditRuns' with @isHareOfEvent from HC.HasherEventMap.IsHare."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Error rowset shape differs from success rowset shape at index 0",
+      "detail": "Refusals (lines 61, 71, 83, 98, 109, 130) emit the error detail as rowset 0 with no leading { success, errorCode, errorType } row, while success emits that envelope at rowset 0 and adHocData at rowset 1. A client must detect failure by the presence of errorId in rowset 0 rather than by success = 0. This is the newer hcapp_ convention (hcapp_getChatRooms, hcapp_endDirectMessage), documented here so nobody adds the envelope and breaks the app."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

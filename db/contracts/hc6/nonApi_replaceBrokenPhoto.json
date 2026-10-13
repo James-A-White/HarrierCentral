@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "nonApi_replaceBrokenPhoto",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Replaces a profile photo whose blob no longer exists with a bundled avatar (E16.F3.S1). Called only by the ReportBrokenPhoto Azure Function, and only after that function has HEAD-checked the URL against blob storage and been told it is gone — a phone's report is never acted on unverified. Corrects HC.Hasher.Photo (replaced) and HC.HasherKennelMap.KennelUserPhoto (cleared; the app falls back to the hasher photo). Both tables re-sync the corrected rows through their updatedAt triggers.",
   "parameters": [
     {
@@ -32,8 +32,18 @@
       "name": "ReplacedCounts",
       "description": "One row: how many rows each table corrected. Zero in both means the URL was already gone from the database (a second phone reporting the same photo).",
       "columns": [
-        { "name": "HasherRows", "type": "INT", "nullable": false, "description": "HC.Hasher rows whose Photo was replaced." },
-        { "name": "KennelRows", "type": "INT", "nullable": false, "description": "HC.HasherKennelMap rows whose KennelUserPhoto was cleared." }
+        {
+          "name": "HasherRows",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC.Hasher rows whose Photo was replaced."
+        },
+        {
+          "name": "KennelRows",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC.HasherKennelMap rows whose KennelUserPhoto was cleared."
+        }
       ]
     }
   ],
@@ -43,7 +53,13 @@
     "Inserts one LOG.GeneralLog row (LogSource 'ReportBrokenPhoto') recording the URL, the status and the row counts.",
     "On any runtime error: rolls back, logs to HC.ErrorLog, re-throws."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@url, @replacement, @httpStatus have no SQL default. Called only by the ReportBrokenPhoto Azure Function, which always passes all three. A call that omits one fails before the body runs — no HC.ErrorLog row, no graceful check (CLAUDE.md 'SP parameter with NO default')."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

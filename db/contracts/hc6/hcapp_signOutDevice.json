@@ -1,0 +1,167 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_signOutDevice",
+  "version": "1.0.0",
+  "description": "Cuts one device off the caller's account (E9.F7.S19). Auth: device-bound token via HC6.ValidateAppAuth (spNumber 122, @param NULL); no role needed — the UPDATE is scoped to the caller's own UserId, so a hasher can only sign out their own devices and a forged @targetDeviceId reads as not found. Revocation is the SECRET ROTATION: ValidateAppAuth resolves a device by id with no removed filter and validates the token against DeviceSecret, so minting a new secret (exactly as hcapp_authorizeDevice does) revokes that device instantly and the phone cannot re-derive it. SignedOutAt is stamped so ValidateAppAuth refuses the device with the DISTINCT errorType 7 (the client wipes the install on type 7, never on an ordinary bad-token error). FcmToken and ApnsToken are cleared because the push queries key on the token, not on removed. removed = 1 is set only so the row leaves hcapp_listDevices. A passkey on the device is deliberately NOT removed (two acts, two consequences). Wrapped by publicWeb_signOutDevice; also called by hcapp_gdprDelete.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "The calling device. Default NULL (ValidateAppAuth then fails gracefully). Recorded as 'by=' in the audit line."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived token (standard, device secret)."
+    },
+    {
+      "name": "targetDeviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "The device to sign out. NULL returns 1960. Must belong to the caller and still have removed = 0, else 1961 (already signed out / not yours)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "Auth failure (ValidateAppAuth: 1322 device not registered / type 3, 1122 bad token / type 1, signed-out device / type 7) returns this detail rowset ALONE. The SP's own refusals return an envelope at index 0 and this detail at index 1: 1960 missing targetDeviceId (errorType 2), 1961 not found / already signed out (3), 1962 unhandled (5). No debugMessage column."
+    },
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Index 0 on 1960 and 1961. NOTE the CATCH (1962) emits {success:0, errorMessage:ERROR_MESSAGE()} instead — see codeSmells.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "The SP's error code."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "The SP's error type."
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "On success.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Always NULL on success; ERROR_MESSAGE() text on the CATCH path."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Devices",
+      "description": "On success: the caller's devices after the change, the same shape as hcapp_listDevices (WHERE UserId = @userId AND (removed = 0 OR PasskeyCredentialId IS NOT NULL), most recent sign-in first). The signed-out row stays listed only while it still holds a passkey.",
+      "columns": [
+        {
+          "name": "DeviceId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "Device.id as text."
+        },
+        {
+          "name": "Label",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "'<OperatingSystem or Harrier Central/Browser> on <platform>' — built from Device.OperatingSystem, IsMobile and HC6.DevicePlatformName(DeviceData)."
+        },
+        {
+          "name": "Platform",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "HC6.DevicePlatformName(Device.DeviceData)."
+        },
+        {
+          "name": "IsThisDevice",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when the row is the calling @deviceId."
+        },
+        {
+          "name": "LastLogin",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "Device.LastLogin."
+        },
+        {
+          "name": "IsMobile",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "ISNULL(Device.IsMobile, 0)."
+        },
+        {
+          "name": "AppVersion",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "Device.Version as of the last sign-in; NULL when blank (564 rows platform-wide)."
+        },
+        {
+          "name": "AppBuild",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "Device.BuildNumber as of the last sign-in; NULL when blank."
+        },
+        {
+          "name": "HasPasskey",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when Device.PasskeyCredentialId is set. The credential id and public key never leave the server."
+        },
+        {
+          "name": "IsSignedOut",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when Device.SignedOutAt is set — deliberately NOT from `removed`, which 300 legacy rows carry without meaning."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.Device SET DeviceSecret = <new 75-char secret from CRYPT_GEN_RANDOM>, SignedOutAt = now, FcmToken = NULL, ApnsToken = NULL, removed = 1, updatedAt WHERE id = @targetDeviceId AND UserId = @userId AND removed = 0 — in a transaction; @@ROWCOUNT = 0 rolls back FIRST, then logs, then returns 1961.",
+    "INSERT LOG.GeneralLog ('HC6.hcapp_signOutDevice', 'Device signed out', hasher, device label, acting device).",
+    "INSERT HC.ErrorLog on 1960, 1961 and in the CATCH.",
+    "The device's passkey (PasskeyCredentialId) is left in place."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "CATCH envelope has a different shape and leaks ERROR_MESSAGE()",
+      "detail": "Line 185 returns {success:0, errorMessage:ERROR_MESSAGE()} where every other refusal in this SP returns {success:0, errorCode, errorType} (lines 83, 128). A client that reads errorCode from rowset 0 finds nothing on the 1962 path, and the raw SQL error text goes to the phone. The detail rowset at index 1 is correct."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

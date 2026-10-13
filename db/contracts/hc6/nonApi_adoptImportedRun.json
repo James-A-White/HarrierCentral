@@ -1,0 +1,42 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_adoptImportedRun",
+  "version": "1.0.0",
+  "description": "Internal (no auth). A run imported from a kennel's runs page by AI (HC.Event.InboundIntegrationId 6) that somebody edits in a Harrier Central editor becomes a Harrier Central run and the AI stops updating it (James, 2026-10-05). Called by HC6.hcportal_addEditEvent and HC6.hcapp_addEditEvent BEFORE they apply the edit, INSIDE their transaction: (1) whatever the run was showing from the import (each Fb* mirror column while its UseFb* flag is on) is copied into the run's own columns so nothing visible is lost; (2) InboundIntegrationId -> 0 and every UseFb* flag -> 0. EventFacebookId ('runspage:<n>') is kept as the record of where the run came from; nonApi_importRunsPageRuns then reports it 'already in Harrier Central' and leaves it alone. No-op (@adopted = 0) for any run not on integration 6.",
+  "parameters": [
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.id",
+      "description": "The run being edited. Default NULL (matches nothing)."
+    },
+    {
+      "name": "adopted",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "OUTPUT. 1 when the run was an integration-6 import and has just been adopted; 0 otherwise. Default 0."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "UPDATE HC.Event WITH (ROWLOCK): EventName, EventDescription, LocationOneLineDesc (when UseFbRunDetails = 1), LocationStreet/City/PostCode/SubRegion/Region/Country (when UseFbLocation = 1), Latitude/Longitude (when UseFbLatLon = 1 and FbLatitude is set), EventImage (when UseFbImage = 1); then InboundIntegrationId = 0 and all four UseFb* = 0. WHERE id = @eventId AND InboundIntegrationId = 6.",
+    "Fires HC.trgUpdateModifiedOnDateForEvent (updatedAt), so the adopted run re-syncs — intended, the caller is about to change it anyway.",
+    "Runs inside the caller's transaction; on error it re-THROWs and the caller rolls back and logs."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "CATCH re-throws without logging to HC.ErrorLog",
+      "detail": "Lines 50-53. Deliberate: the SP runs inside the caller's open transaction, where an INSERT HC.ErrorLog would be erased by the caller's ROLLBACK (CLAUDE.md 'never roll back an error log'). Both callers log in their own CATCH after rolling back, so nothing is lost — but a new caller must do the same."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

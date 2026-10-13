@@ -1,28 +1,87 @@
 {
   "schema": "HC6",
   "name": "hcapp_deleteTrackImport",
-  "version": "1.0.0",
-  "description": "Clears one of the caller's own track-import uploads off their Import Tracks list by stamping DeletedAt. The row and its BlobUrl are kept (the archives are retained for historic-run discovery); tracks already imported from the upload are untouched.",
+  "version": "1.1.0",
+  "description": "Clears one of the caller's own track-import uploads off their Import Tracks list (E5.F5.S8) by stamping HC.TrackImport.DeletedAt. The row and its BlobUrl are kept (the archives are retained on purpose for historic-run discovery) and tracks already imported from the upload are untouched — they belong to the runs now. Auth: HC6.ValidateAppAuth (spNumber 101, standard token). Authorization: the row must have HasherId = the token's user and DeletedAt NULL → else 1011 'not found' (errorType 3, revealing nothing about other people's uploads); a job with Status = 1 (processing — the slice loop and the nightly backstop still read it) is refused with 1012 (errorType 2). Both checks are pre-flight, before the transaction.",
   "parameters": [
-    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": null, "description": "Calling device; validated by ValidateAppAuth (spNumber 101)." },
-    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Standard app access token." },
-    { "name": "jobId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": "TrackImport.id", "description": "The upload to clear. Must belong to the caller and must not be mid-import." }
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Calling device; validated by ValidateAppAuth (spNumber 101)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Standard app access token."
+    },
+    {
+      "name": "jobId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "TrackImport.id",
+      "description": "The upload to clear. Must belong to the caller and must not be mid-import."
+    }
   ],
   "rowsets": [
-    { "index": 0, "name": "SuccessEnvelope", "description": "Envelope only. { success } on success; { success, errorCode, errorType } on failure.", "columns": [
-      { "name": "success", "type": "INT", "nullable": false, "description": "1 on success, 0 on failure." },
-      { "name": "errorCode", "type": "INT", "nullable": true, "description": "1011 not found or not the caller's, 1012 still processing, 1013 unhandled." },
-      { "name": "errorType", "type": "INT", "nullable": true, "description": "3 not found, 2 validation, 5 unhandled." }
-    ]},
-    { "index": 1, "name": "DeletedJob", "description": "The job that was cleared.", "columns": [
-      { "name": "jobId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Echo of the cleared upload's id." }
-    ]},
-    { "index": 1, "ref": "StandardErrorResult", "description": "Returned in place of DeletedJob on any failure." }
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Envelope only. { success } on success; { success, errorCode, errorType } on failure.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 on failure."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "1011 not found / not the caller's / already cleared; 1012 still processing; 1013 unhandled; ValidateAppAuth 1201 (invalid token) / 1301 (device) / 1201 (signed out)."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "3 not found; 2 validation; 5 unhandled; 1/3/7 auth."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "DeletedJob",
+      "description": "The job that was cleared.",
+      "columns": [
+        {
+          "name": "jobId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Echo of the cleared upload's id."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Returned in place of DeletedJob on any failure."
+    }
   ],
   "sideEffects": [
-    "Stamps HC.TrackImport.DeletedAt. The blob is NOT deleted and imported tracks are NOT removed."
+    "UPDATE HC.TrackImport SET DeletedAt = SYSUTCDATETIME() WHERE id = @jobId AND HasherId = @userId AND DeletedAt IS NULL — inside a transaction. The blob is NOT deleted and imported tracks are NOT removed.",
+    "INSERT HC.ErrorLog on 1011, 1012 (pre-flight) and in the CATCH (1013, after ROLLBACK)."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken, @jobId (lines 2-4) have no SQL default. A client that omits any of them is refused by SQL BEFORE the procedure runs: no HC.ErrorLog row, an empty 500 in the app, and the SP's own graceful checks are unreachable (CLAUDE.md, Rack of Lamb 2026-09-29). A NULL @jobId VALUE is handled (no row → 1011); omission is not."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

@@ -1,0 +1,58 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_updateRunCountsForEventUsers",
+  "version": "1.0.0",
+  "description": "Recalculates run-count statistics for every non-anonymous hasher who has a HasherEventMap row for @eventId. The same five-stage pipeline as nonApi_updateRunCountsForAllUsers, with #affected scoped to this event's attendees instead of a datetime watermark: (1) insert missing HasherKennelMap rows for kennels those users have attended; (2) recompute the six HEM count columns (TotalRuns, TotalHaring, TotalRunsThisKennel, TotalHaringThisKennel, YtdTotalRunsThisKennel, YtdHaringThisKennel) with window functions over qualifying runs (attended, not virgin/visitor, counted, visible, not removed, starting within the next 6 h or earlier); (3) NULL the counts on rows that no longer qualify; (4) recompute the HKM summary counters (HcTotalRunCount, HcHaringCount, YtdTotalRunCount, YtdHaringCount, DateOfLastRun; CurrentHaringCount / CurrentPackRunCount / HistoricalPackRunCount forced to 0); (5) recompute the HKM rolling-year counts. Every stage writes only rows whose values change. Called by addEditEvent AFTER nonApi_updateRunNumbers so an event edit refreshes its attendees' counts immediately rather than at the nightly sweep (nonApi_updateRunNumbers touches only HC.Event, so a watermark-based recompute would miss them). Known, accepted limitation: when the edit cascades a renumbering onto LATER runs, those runs' attendees are not in #affected and stay stale until the 03:10 UTC sweep. No TRY/CATCH by design — it runs inside the caller's transaction and any error propagates to the caller's CATCH. Internal; no auth. Returns nothing. Writes one LOG.GeneralLog row ('RUN COUNTS', 'Updated run counts for event users') per call.",
+  "parameters": [
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "HasherEventMap.EventId",
+      "description": "The event whose attendees' counts to recompute. NULL or unknown ⇒ #affected empty ⇒ no-op (no log row)."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "Stage 1: INSERTs HC.HasherKennelMap rows (all counters 0, permissions 0, DiscountDescription '') for affected users who attended a kennel without an HKM row.",
+    "Stage 2: UPDATEs HC.HasherEventMap TotalRuns, TotalHaring, TotalRunsThisKennel, TotalHaringThisKennel, YtdTotalRunsThisKennel, YtdHaringThisKennel, updatedAt for affected users' qualifying rows whose values changed.",
+    "Stage 3: NULLs the same six columns (and stamps updatedAt) on affected users' rows that no longer qualify (AttendenceState < 20, virgin/visitor, missing/uncounted/hidden/removed event, or start more than 6 h in the future) and still hold a value.",
+    "Stage 4: UPDATEs HC.HasherKennelMap HcTotalRunCount, HcHaringCount, YtdTotalRunCount, YtdHaringCount, DateOfLastRun, zeroes CurrentHaringCount / CurrentPackRunCount / HistoricalPackRunCount, stamps updatedAt — where any value changed.",
+    "Stage 5: UPDATEs HC.HasherKennelMap RollingYearTotalRunCount, RollingYearHaringCount, updatedAt where changed — only for (user, kennel) pairs with at least one qualifying run (INNER JOIN; see code smells).",
+    "Inserts one LOG.GeneralLog row (LogSource 'RUN COUNTS', Timestamp from the table default). Creates and drops #affected."
+  ],
+  "codeSmells": [
+    {
+      "severity": "high",
+      "issue": "Stage 5 rolling-year bucket is the OLD 182-day formula the two sibling SPs replaced — an event edit and the nightly sweep write different numbers",
+      "detail": "Lines 266–275 bucket runs with DATEDIFF(day, DATEADD(month, -6, GETDATE()), EventStartLocal) / 182 — the 182-day window anchored six months in the past that nonApi_updateRunCountsByUser and nonApi_updateRunCountsForAllUsers (Stage 5 comments) replaced with DATEDIFF(day, EventStartLocal, GETDATE()) / 365 after it dropped the newest runs from the leaderboard (Flash Princess, GNH, Sep 2026). This copy was not updated: every run-admin edit of an event recomputes its attendees' RollingYear* counts with the broken formula (under-reporting runs from the last few days), and the 03:10 sweep then rewrites them with the right one, so the figures flip-flop and every edit forces an HKM re-sync for nothing. Copy the sibling's Stage 5 CTE verbatim."
+    },
+    {
+      "severity": "medium",
+      "issue": "Stage 5 INNER JOINs the aggregate, so a rolling count can never be cleared here",
+      "detail": "Line 303: JOIN rollingAgg ra … — the two sibling SPs changed this to drive from HKM with a LEFT JOIN precisely because a user whose qualifying runs all disappear produces no aggregate row and so keeps a stale non-zero rolling count (42 such rows were found). This copy keeps the INNER JOIN; the nightly sweep repairs it, but the edit-time recompute cannot."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH (by design) — an error is attributed to the caller",
+      "detail": "Documented in the header (lines 23–25): it runs inside addEditEvent's transaction and the caller's CATCH logs the failure under the caller's name. Noted here because CLAUDE.md asks for the wrapper on every SP; the design reason is real."
+    },
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@eventId has no SQL default. Called only by EXEC from hcapp_/hcportal_ addEditEvent, which always pass it. A call that omits one fails before the body runs — no HC.ErrorLog row, no graceful check (CLAUDE.md 'SP parameter with NO default')."
+    },
+    {
+      "severity": "low",
+      "issue": "Unused INNER JOINs to HC.Kennel, HC.City and DomainValues.Timezone act as a filter",
+      "detail": "Stages 2 and 5 (lines 143–145, 280–282) join Kennel → City → Timezone but never read tz; the joins only drop runs of a kennel whose city has no timezone row. Same shape in the two sibling SPs (inherited from HC5.fn_GetRunCounts); listed so the three are changed together if it is ever removed."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_logAiUsage",
+  "version": "1.0.0",
+  "description": "Records one AI model call in LOG.AiUsage (2026-10-05): tokens, USD cost, time taken and outcome, so AI spend can be tracked per call, per session (@sessionId = one timer run or one portal Test) and on the portal's Usage Data monitor ('AI Tokens'). Failed calls are logged too, with whatever tokens were billed. Called by the API only (RunsPageImport); no device or portal auth — it is never reachable through the shim by name. Text parameters are NVARCHAR(MAX) and cut to the column width here (LEFT), so an over-long value is trimmed rather than refused; blank Feature/Model/Outcome become 'unknown'. Returns nothing. A runtime error is rolled back, logged to HC.ErrorLog (HcVersion '<api>') and re-thrown.",
+  "parameters": [
+    {
+      "name": "sessionId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "AiUsage.SessionId",
+      "description": "Groups the calls of one timer run or one portal Test. Default NULL."
+    },
+    {
+      "name": "feature",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "AiUsage.Feature",
+      "description": "Which feature made the call (e.g. 'runs-page'). Cut to 50; blank or NULL ⇒ 'unknown'. Column is NVARCHAR(50) NOT NULL.",
+      "typeMismatch": "Parameter NVARCHAR(MAX) vs column NVARCHAR(50) — deliberate; trimmed with LEFT(…, 50) in the SP."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "AiUsage.KennelId",
+      "description": "The kennel the call was for, when there is one. Default NULL."
+    },
+    {
+      "name": "model",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "AiUsage.Model",
+      "description": "Model deployment name. Cut to 100; blank or NULL ⇒ 'unknown'. Column is NVARCHAR(100) NOT NULL.",
+      "typeMismatch": "Parameter NVARCHAR(MAX) vs column NVARCHAR(100) — deliberate; trimmed with LEFT(…, 100)."
+    },
+    {
+      "name": "promptTokens",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "AiUsage.PromptTokens",
+      "description": "Prompt tokens billed. Default 0; NULL ⇒ 0."
+    },
+    {
+      "name": "completionTokens",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "AiUsage.CompletionTokens",
+      "description": "Completion tokens billed. Default 0; NULL ⇒ 0."
+    },
+    {
+      "name": "costUsd",
+      "type": "DECIMAL(12,8)",
+      "nullable": true,
+      "mapsToColumn": "AiUsage.CostUsd",
+      "description": "Computed USD cost of the call. Default NULL. Matches the column exactly."
+    },
+    {
+      "name": "durationMs",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "AiUsage.DurationMs",
+      "description": "Wall-clock time of the call in milliseconds. Default NULL."
+    },
+    {
+      "name": "outcome",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "AiUsage.Outcome",
+      "description": "'ok', an error class, etc. Cut to 50; blank or NULL ⇒ 'unknown'.",
+      "typeMismatch": "Parameter NVARCHAR(MAX) vs column NVARCHAR(50) — deliberate; trimmed with LEFT(…, 50)."
+    },
+    {
+      "name": "detail",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "AiUsage.Detail",
+      "description": "Free text (error message, kennel name…). Cut to 500. Column is NVARCHAR(500) NULL.",
+      "typeMismatch": "Parameter NVARCHAR(MAX) vs column NVARCHAR(500) — deliberate; trimmed with LEFT(…, 500)."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "Inserts one row into LOG.AiUsage. Id (IDENTITY) and CalledAt (SYSUTCDATETIME()) come from table defaults.",
+    "On any runtime error: rolls back if a transaction is open, inserts one HC.ErrorLog row (HcVersion '<api>', ErrorName 'Unhandled error in logAiUsage'), then THROWs."
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

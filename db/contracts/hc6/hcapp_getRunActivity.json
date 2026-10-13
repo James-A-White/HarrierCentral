@@ -1,26 +1,126 @@
 {
   "schema": "HC6",
   "name": "hcapp_getRunActivity",
-  "version": "1.1.0",
-  "description": "What a run has to show, for the activity icons on a run card: whether a PackTrack track exists (HC.EventTrack), and how many photos the viewer may see, chat messages and down-down charges. Batched: the app sends the ids of the cards on screen.",
+  "version": "1.2.0",
+  "description": "What a run has to show, for the activity icons on a run card: whether a PackTrack track exists (HC.EventTrack, or any attendance row with TrackPointCount > 0), how many runners recorded one, how many photos the viewer may see, chat messages and down-down charges. Batched: the app sends the '|'-delimited ids of the cards on screen. Since E5.F7.S1 (2026-09-12) the cards read these counts from the synced HC.Event columns instead; this SP remains for callers that still batch-fetch. Auth: HC6.ValidateAppAuth (spNumber 94, @param NULL); no permission gate. Runtime errors are logged to HC.ErrorLog and re-thrown.",
   "parameters": [
-    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": false, "mapsToColumn": null, "description": "Registered device UUID (auth)" },
-    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": false, "mapsToColumn": null, "description": "Short-lived token (auth)" },
-    { "name": "eventIds", "type": "NVARCHAR(MAX)", "nullable": false, "mapsToColumn": "Event.id", "description": "'|'-delimited HC.Event.id values; invalid entries are dropped, duplicates collapsed" }
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Registered device UUID (auth)"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token (auth)"
+    },
+    {
+      "name": "eventIds",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "mapsToColumn": "Event.id",
+      "description": "'|'-delimited HC.Event.id values; invalid entries are dropped, duplicates collapsed"
+    }
   ],
   "rowsets": [
-    { "index": 0, "ref": "StandardErrorResult", "description": "Only on auth failure: success envelope then error detail" },
-    { "index": 0, "name": "RunActivity", "description": "One row per valid id, unordered.",
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "On auth failure only (ValidateAppAuth): { success=0, errorCode, errorType }, paired with StandardErrorResult at index 1. Mutually exclusive with RunActivity.",
       "columns": [
-        { "name": "eventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.Event.id" },
-        { "name": "hasTrack", "type": "INT", "nullable": false, "description": "1 when HC.EventTrack has a row or any attendance row carries a track — at least one GPS point was ever stored for the run" },
-        { "name": "runnerCount", "type": "INT", "nullable": false, "description": "Attendance rows (HC.HasherEventMap, not removed) with TrackPointCount > 0 — how many runners recorded a track. 0 for an old track whose runner had no attendance row when the backfill ran" },
-        { "name": "photoCount", "type": "INT", "nullable": false, "description": "Photos not deleted, at Status >= 2 or uploaded by the viewer" },
-        { "name": "messageCount", "type": "INT", "nullable": false, "description": "Chat messages not removed" },
-        { "name": "downDownCount", "type": "INT", "nullable": false, "description": "Down-down charges not cancelled" }
-      ] }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on this path."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Numeric error code."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification code."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Paired with ErrorEnvelope on auth failure. Not present on success."
+    },
+    {
+      "index": 0,
+      "name": "RunActivity",
+      "description": "One row per valid id, unordered.",
+      "columns": [
+        {
+          "name": "eventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.Event.id"
+        },
+        {
+          "name": "hasTrack",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when HC.EventTrack has a row or any attendance row carries a track — at least one GPS point was ever stored for the run"
+        },
+        {
+          "name": "runnerCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Attendance rows (HC.HasherEventMap, not removed) with TrackPointCount > 0 — how many runners recorded a track. 0 for an old track whose runner had no attendance row when the backfill ran"
+        },
+        {
+          "name": "photoCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Photos not deleted, at Status >= 2 or uploaded by the viewer"
+        },
+        {
+          "name": "messageCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Chat messages not removed"
+        },
+        {
+          "name": "downDownCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Down-down charges not cancelled"
+        }
+      ]
+    }
   ],
-  "sideEffects": [],
-  "codeSmells": [],
-  "breakingChangeRules": [ "Never remove a column from any rowset", "Never rename a parameter", "Never change a parameter type" ]
+  "sideEffects": [
+    "INSERT HC.ErrorLog from the CATCH block (lines 83-85, after ROLLBACK)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "All three parameters (lines 2-4) have no SQL default. A client that omits @eventIds gets 'expects parameter' — an unlogged empty 500 before the SP runs; the body itself tolerates NULL (ISNULL(@eventIds, '') at line 58), so a default of NULL would cost nothing."
+    },
+    {
+      "severity": "low",
+      "issue": "Missing SET XACT_ABORT ON",
+      "detail": "The SP sets SET NOCOUNT ON only. Harmless for a read with no transaction, but inconsistent with the HC6 SP standard, which requires both."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
 }

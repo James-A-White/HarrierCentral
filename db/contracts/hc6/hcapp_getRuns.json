@@ -1,15 +1,15 @@
 {
   "schema": "HC6",
   "name": "hcapp_getRuns",
-  "version": "1.0.0",
-  "description": "Returns a user's run attendance history for a specific kennel — all past events where the user's HasherEventMap AttendenceState >= 20, IsCountedRun=1, IsVisible=1, ordered by effective start date descending. Read-only SP; no success envelope.",
+  "version": "1.1.0",
+  "description": "Returns a user's run attendance history for a specific kennel — every event where their HasherEventMap AttendenceState >= 20, IsCountedRun = 1, IsVisible = 1 and the run has started (EventStartDatetimeGmt < SYSUTCDATETIME(), the reliable instant), ORDER BY CONVERT(DATETIME2, EventStartDatetime) DESC. Facebook-override columns (UseFbRunDetails, UseFbLocation) select between locally stored and imported name/location. Auth: HC6.ValidateAppAuth (spNumber 22, @param NULL); the rows are the caller's own. Read SP — no success envelope; runtime errors are logged to HC.ErrorLog and re-thrown.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Registered device UUID. Passed to HC6.ValidateAppAuth for auth resolution."
+      "description": "Registered device UUID. No SQL default."
     },
     {
       "name": "accessToken",
@@ -32,12 +32,42 @@
       "name": "AuthError",
       "description": "Returned when HC6.ValidateAppAuth fails (device not found, token invalid, etc.). errorType set by ValidateAppAuth (typically 11 for auth failures). Mutually exclusive with RunHistory rowset.",
       "columns": [
-        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code from ValidateAppAuth." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code from ValidateAppAuth." },
-        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short error title." },
-        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
-        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.ErrorLog GUID."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification code from ValidateAppAuth."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Numeric error code from ValidateAppAuth."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Short error title."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name via OBJECT_NAME(@@PROCID)."
+        }
       ]
     },
     {
@@ -45,12 +75,42 @@
       "name": "KennelIdValidationError",
       "description": "Returned when @kennelId is NULL or zero-UUID. errorCode=1222, errorType=12. Mutually exclusive with RunHistory rowset.",
       "columns": [
-        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.ErrorLog GUID." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Always 12." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Always 1222." },
-        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Always 'Missing kennel'." },
-        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Always 'A kennel must be specified.'." },
-        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.ErrorLog GUID."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 12."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1222."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Always 'Missing kennel'."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Always 'A kennel must be specified.'."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name via OBJECT_NAME(@@PROCID)."
+        }
       ]
     },
     {
@@ -68,7 +128,7 @@
           "name": "eventStartDatetime",
           "type": "DATETIME2",
           "nullable": false,
-          "description": "Effective start datetime — CONVERT(DATETIME2, EventStartDatetime) or CONVERT(DATETIME2, FbEventStartDatetime) depending on UseFbRunDetails. Timezone offset is stripped by the CONVERT; client receives local time without UTC offset. Table column is DATETIMEOFFSET(7)."
+          "description": "CONVERT(DATETIME2, Event.EventStartDatetime) — the wall-clock start with the offset stripped (the Fb variant is NOT consulted). Table column is DATETIMEOFFSET(7) and carries a spurious +00:00 on ~67% of rows (see /hc-event-datetimes)."
         },
         {
           "name": "eventEndDatetime",
@@ -80,7 +140,7 @@
           "name": "eventName",
           "type": "NVARCHAR(250)",
           "nullable": true,
-          "description": "Effective event name — FbEventName or EventName depending on UseFbRunDetails. Table column is NVARCHAR(250)."
+          "description": "FbEventName when Event.UseFbRunDetails = 1, else EventName (NVARCHAR(250); EventName is NOT NULL, FbEventName may be NULL)."
         },
         {
           "name": "eventNumber",
@@ -170,13 +230,18 @@
     }
   ],
   "sideEffects": [
-    "Writes to HC.ErrorLog on kennelId validation failure."
+    "INSERT HC.ErrorLog on missing kennelId (lines 74-76) and from the CATCH block (lines 119-121, after ROLLBACK)"
   ],
   "codeSmells": [
     {
       "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId (line 3) has no SQL default (the other two do). A client that omits it gets 'expects parameter' — an unlogged empty 500 before the SP runs — instead of ValidateAppAuth's logged auth error."
+    },
+    {
+      "severity": "low",
       "issue": "eventStartDatetime loses timezone offset via CONVERT to DATETIME2",
-      "detail": "Both EventStartDatetime and FbEventStartDatetime are stored as DATETIMEOFFSET(7), but the SP strips the offset with CONVERT(DATETIME2, ...). The client receives local time with no UTC offset, creating an implicit dependency on the server's local timezone. The SP comment acknowledges this. The ORDER BY also uses the same CONVERT, so sorting is consistent but still timezone-unaware."
+      "detail": "Line 85 strips the offset with CONVERT(DATETIME2, e.EventStartDatetime); the client receives the run's wall-clock start with no UTC offset, which is what the history list displays. The filter at line 110 correctly uses EventStartDateTimeGmt for 'in the past'; the ORDER BY at line 114 sorts by the stripped wall-clock value, which within one kennel is the natural order."
     },
     {
       "severity": "low",
@@ -187,11 +252,6 @@
       "severity": "low",
       "issue": "isVisible and isCountedRun are redundant in the result set",
       "detail": "Both columns are constrained to 1 by the WHERE clause (e.IsVisible = 1 AND e.IsCountedRun = 1), so they carry no information for the client. Including them wastes bandwidth but preserves symmetry with other event SPs."
-    },
-    {
-      "severity": "low",
-      "issue": "No TRY/CATCH block",
-      "detail": "The SP has no error handling for the main SELECT. An unexpected DB error (e.g. deadlock, timeout) will propagate as a raw SQL error rather than a structured error rowset. HC6 SPs should wrap the main query in TRY/CATCH."
     }
   ],
   "breakingChanges": [
