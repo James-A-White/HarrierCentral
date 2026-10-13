@@ -16,7 +16,9 @@ AS
 --   kennel: a room is global, so holding the role anywhere qualifies. A
 --   'platform' room reads HC.PlatformAdmin instead (2026-09-30) — the
 --   0x40000000 flag is the kennel-founder grant held by 294 hashers, so it
---   cannot stand for platform staff.
+--   cannot stand for platform staff. A 'beta' room reads the beta cohort
+--   column on the hasher's own row (HC.Hasher.BetaFeaturesEnabled
+--   non-empty; 2026-10-13, E18.F9) — a hand-kept list, no bitfield.
 --
 --   Returns 0 for an unknown room type, so a bad or retired @roomType is
 --   refused rather than silently opening an empty room.
@@ -36,6 +38,11 @@ BEGIN
                   (c.GrantColumn = 'platform'
                    AND EXISTS (SELECT 1 FROM HC.PlatformAdmin pa
                                WHERE pa.UserId = @userId AND pa.removed = 0))
+                  -- Beta testers: the cohort column on the hasher row.
+               OR (c.GrantColumn = 'beta'
+                   AND EXISTS (SELECT 1 FROM HC.Hasher h
+                               WHERE h.id = @userId AND h.deleted = 0
+                                 AND LEN(h.BetaFeaturesEnabled) > 0))
                   -- A role or flag held in ANY kennel.
                OR EXISTS (SELECT 1 FROM HC.HasherKennelMap hkm
                           WHERE hkm.UserId = @userId
