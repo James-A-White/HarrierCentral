@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_setMultiRunRsvpAndCheckin",
-  "version": "1.1.0",
-  "description": "Processes the multi-run check-in dialog result in a single transaction. For each event in @checkInEventIds, upserts HasherEventMap with AttendenceState=20 (at hash) and RsvpState=3 (RSVP yes), guarded so existing check-ins (AttendenceState >= 20) are never downgraded. For each event in @rsvpNoEventIds, upserts HasherEventMap with RsvpState=1 (not coming), guarded so rows where the hasher is already checked in are not touched. Both lists are pipe-delimited UUID strings; an id with no HC.Event row is silently skipped (INNER JOIN). Auth: HC6.ValidateAppAuth (spNumber 93, device-secret token, @param NULL). There is NO permission gate: @hasherId defaults to the caller but any value is accepted. After the transaction, runs HC6.nonApi_updateRunCountsByUser for check-in events, then delegates to HC6.hcapp_syncUserData (common domain) to replicate attendance changes back to the device.",
+  "version": "1.2.0",
+  "description": "Processes the multi-run check-in dialog result in a single transaction. For each event in @checkInEventIds, upserts HasherEventMap with AttendenceState=20 (at hash) and RsvpState=3 (RSVP yes), guarded so existing check-ins (AttendenceState >= 20) are never downgraded. For each event in @rsvpNoEventIds, upserts HasherEventMap with RsvpState=1 (not coming), guarded so rows where the hasher is already checked in are not touched. Both lists are pipe-delimited UUID strings; an id with no HC.Event row is silently skipped (INNER JOIN). Auth: HC6.ValidateAppAuth (spNumber 93, device-secret token, @param NULL). There is NO permission gate: @hasherId defaults to the caller but any value is accepted. After the transaction, runs HC6.nonApi_updateRunCountsByUser for check-in events, then delegates to HC6.hcapp_syncUserData (common domain) to replicate attendance changes back to the device. Self only: @hasherId other than the caller returns errorCode 1393 / errorType 13 'Not authorised' (2026-10-13).",
   "parameters": [
     {
       "name": "deviceId",
@@ -141,6 +141,31 @@
       "name": "SyncUserDataRowsets",
       "description": "Rowsets 2+ are the output of HC6.hcapp_syncUserData (common domain) called with @hashersUpdatedAfter='ignore', the caller-supplied HEM and HKM watermarks. The exact rowset count and shapes match hcapp_syncUserData's contract. Only present when success=1.",
       "columns": []
+    },
+    {
+      "index": 0,
+      "name": "NotAuthorisedError",
+      "description": "Returned when the caller may not act for @hasherId: rowset 0 {success 0, errorCode 1393, errorType 13}, rowset 1 {errorId, errorType, errorCode, errorTitle, errorUserMessage, errorProc}. Logged to HC.ErrorLog before return; no transaction is open.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "0"
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "1393"
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "13"
+        }
+      ]
     }
   ],
   "sideEffects": [
@@ -151,11 +176,6 @@
     "Writes to HC.ErrorLog on auth failure (via ValidateAppAuth) and on CATCH error."
   ],
   "codeSmells": [
-    {
-      "severity": "high",
-      "issue": "@hasherId acts for any hasher with no permission check",
-      "detail": "Line 73 only defaults @hasherId to the caller; any non-NULL id is used as-is in both MERGEs (lines 89, 113) and in nonApi_updateRunCountsByUser (line 148). Any signed-in device can check another hasher in to any run (inflating their run count) or RSVP them No. The app sends its own userId, so nothing legitimate needs the override; either drop the parameter or gate it (e.g. CheckKennelPermission per event kennel)."
-    },
     {
       "severity": "medium",
       "issue": "Parameter without a default",
