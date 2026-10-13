@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_syncKennelAdminData",
-  "version": "1.2.0",
-  "description": "Incremental pull-sync for kennel-level admin data (ValidateAppAuth, spNumber 72). Each of the five entity types is gated by a watermark parameter — 'ignore' (default), NULL or a date <= 2000-01-01 skips that table. HasherKennelMap is scoped to @kennelId; Payments and HasherEventMap are scoped to @targetHasherId (a NULL @targetHasherId returns no rows for either). Kennels and Hashers are global. Permission gate on a DIRECT call (@procName NULL): HC6.CheckAreaEntry areaKey 'kennelTools' on the app surface (derived entry — any one kennel-tools capability), else errorCode 1372. Delegated calls from write SPs (@procName set) skip the gate because the write SP already authorised the caller, and validate the token with the delegating SP's name and @param suffix. @includeUnboundPayments (default 0) hides event-less payments from pre-3.1 clients that cannot parse them. Read SP: no success envelope; body is wrapped in TRY/CATCH that logs to HC.ErrorLog and re-throws.",
+  "version": "1.3.0",
+  "description": "Incremental pull-sync for kennel-level admin data (ValidateAppAuth, spNumber 72). Each of the five entity types is gated by a watermark parameter — 'ignore' (default), NULL or a date <= 2000-01-01 skips that table. HasherKennelMap is scoped to @kennelId; Payments and HasherEventMap are scoped to @targetHasherId (a NULL @targetHasherId returns no rows for either). Kennels and Hashers are global. Permission gate on a DIRECT call (@procName NULL): HC6.CheckAreaEntry areaKey 'kennelTools' on the app surface (derived entry — any one kennel-tools capability), else errorCode 1372. Delegated calls from write SPs (@procName set) skip the gate because the write SP already authorised the caller, and validate the token with the delegating SP's name and @param suffix. @includeUnboundPayments (default 0) hides event-less payments from pre-3.1 clients that cannot parse them. Read SP: no success envelope; body is wrapped in TRY/CATCH that logs to HC.ErrorLog and re-throws. Since 2026-10-13 the Payments and HasherEventMap rowsets for @targetHasherId are limited to @kennelId (pmt.KennelId / hem.KennelId); before, they carried the hasher's rows at every kennel.",
   "parameters": [
     {
       "name": "deviceId",
@@ -1342,11 +1342,6 @@
       "severity": "medium",
       "issue": "Parameter without a default",
       "detail": "Lines 3-5: @deviceId, @accessToken and @kennelId have no SQL default. A client that omits @kennelId is refused by SQL ('expects parameter') before the body runs — an empty 500 with no HC.ErrorLog row — and the SP's own 1272 'Missing kennel' path is unreachable. Give each a default (= NULL) and keep the NULL check."
-    },
-    {
-      "severity": "medium",
-      "issue": "Payments not scoped to @kennelId",
-      "detail": "The Payments rowset filters only on pmt.UserId = @targetHasherId with no kennelId restriction (line 339). A call for kennel A returns the hasher's payments at kennels B and C too. Possibly intentional (full hasher ledger) but it contradicts the 'scoped to the given kennel' wording in the header (line 23) and lets a kennel-A admin pull another kennel's payment rows for that hasher."
     },
     {
       "severity": "medium",

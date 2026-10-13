@@ -41,6 +41,7 @@ AS
 --   @hasherEventMapUpdatedAfter  - Watermark for HC.HasherEventMap (targetHasher-scoped)
 --   @paymentsUpdatedAfter        - Watermark for HC.Payment (targetHasher-scoped)
 --   @targetHasherId              - Optional: scope HEM and Payment to this hasher
+--                                  (always within @kennelId since 2026-10-13)
 --   @usePaging                   - 1 = enforce page limits; 0 = unlimited
 --   @procName                    - Delegating SP name (NULL = direct call)
 --   @param                       - Delegating SP token suffix (NULL = DeviceSecret only)
@@ -337,6 +338,11 @@ BEGIN
         CONVERT(NVARCHAR(50), CAST(pmt.updatedAt AS DATETIME2))             AS updatedAt
     FROM HC.Payment pmt
     WHERE pmt.updatedAt > @ua AND pmt.UserId = @targetHasherId
+      -- This kennel's payments only (2026-10-13). The admin is entitled to
+      -- the member's dealings with THIS kennel; until now the sync sent the
+      -- hasher's payments at every kennel. Every HC.Payment row carries
+      -- KennelId (93,076 of 93,076 checked).
+      AND pmt.KennelId = @kennelId
       AND (
             -- Event-less payments (run packages, hare rewards) must NOT reach a
             -- client that cannot parse them: payments_model_ns.dart declares
@@ -406,6 +412,9 @@ BEGIN
     INNER JOIN HC.Event evt ON evt.id = hem.EventId
     LEFT OUTER JOIN HC.HasherKennelMap hkm ON hkm.UserId = hem.UserId AND hkm.KennelId = hem.KennelId
     WHERE hem.UserId = @targetHasherId AND hem.updatedAt > @ua
+      -- This kennel's runs only (2026-10-13), for the same reason as the
+      -- payments above. HasherEventMap.KennelId always equals its run's.
+      AND hem.KennelId = @kennelId
     ORDER BY hem.updatedAt ASC, hem.id ASC;
 END
 
