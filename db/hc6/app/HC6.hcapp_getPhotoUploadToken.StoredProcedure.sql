@@ -2,8 +2,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_getPhotoUploadToken]
 
     @deviceId   UNIQUEIDENTIFIER,
     @accessToken NVARCHAR(1000),
-    @kennelId   UNIQUEIDENTIFIER,
-    @photoGuid  UNIQUEIDENTIFIER
+    @kennelId   UNIQUEIDENTIFIER = NULL,
+    @photoGuid  UNIQUEIDENTIFIER = NULL
 
 AS
 -- =====================================================================

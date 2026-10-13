@@ -3,7 +3,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_processBulkPayment]
     @deviceId                    UNIQUEIDENTIFIER,
     @accessToken                 NVARCHAR(1000),
     @userIdsWhoPaid              NVARCHAR(MAX)      = NULL,
-    @eventId                     UNIQUEIDENTIFIER,
+    @eventId                     UNIQUEIDENTIFIER = NULL,
     @paymentType                 SMALLINT,
     @productType                 SMALLINT           = 1,
     @hasherEventMapUpdatedAfter  NVARCHAR(50)       = 'ignore',

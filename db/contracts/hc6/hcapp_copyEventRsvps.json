@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_copyEventRsvps",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Copies RSVP rows from one event to another: for every live (removed = 0) HC.HasherEventMap row of @fromEvent whose hasher has NO row for @toEvent, inserts a new row carrying RsvpState, IsHare and VirginVisitorType (AttendenceState is not copied). Used by run admins to pre-populate a rescheduled run. Auth: HC6.ValidateAppAuth (spNumber 21, standard token). @fromEvent and @toEvent required (both 1221 / errorType 12). Inside the transaction: both events must exist and belong to the same kennel (1221 / 12, after ROLLBACK), and the caller must hold HC6.CheckKennelPermission 'copyRsvps' for that kennel (1321 / 13, after ROLLBACK). On success returns the envelope, an adHocData row { adHocDataId = 1, serverMessage = 'Copied N RSVPs' } and then HC6.hcapp_syncEventAdminData's rowsets for @toEvent with only the HasherEventMap watermark live.",
   "parameters": [
     {
@@ -21,21 +21,21 @@
     {
       "name": "fromEvent",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "HasherEventMap.EventId",
-      "description": "Source event UUID. RSVPs are copied from this event. Validated as non-null and non-zero-UUID before the transaction."
+      "description": "Source event UUID. RSVPs are copied from this event. Validated as non-null and non-zero-UUID before the transaction. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "toEvent",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "HasherEventMap.EventId",
-      "description": "Target event UUID. RSVPs are copied into this event. Validated as non-null and non-zero-UUID before the transaction."
+      "description": "Target event UUID. RSVPs are copied into this event. Validated as non-null and non-zero-UUID before the transaction. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "hasherEventMapUpdatedAfter",
       "type": "NVARCHAR(50)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
       "description": "Sync watermark forwarded to hcapp_syncEventAdminData for the HasherEventMap rowset; NULL → 'ignore'. NO SQL DEFAULT — the client must pass it (NULL is fine, omission is not)."
     }
@@ -144,7 +144,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "@deviceId, @accessToken, @fromEvent, @toEvent, @hasherEventMapUpdatedAfter (lines 3-7) have no SQL default. A client that omits any of them is refused by SQL BEFORE the procedure runs: no HC.ErrorLog row, an empty 500 in the app, and the SP's own graceful checks are unreachable (CLAUDE.md, Rack of Lamb 2026-09-29). The 1221 checks cover NULL values only."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "medium",

@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_getEventRsvps",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Returns RSVP attendance data for a specific event, accessible by any authenticated app user (no admin role required). Returns the same Hashers and HasherEventMap column shapes as hcapp_syncEventAdminData so the client can reuse the same sync infrastructure, but deliberately omits contact info (email, phoneNumber are returned as NULL). HasherKennelMap, Payments, and Receipts rowsets are not returned — those remain admin-only. Both rowsets are watermark-gated: if the watermark is 'ignore', that rowset is skipped entirely. Auth: HC6.ValidateAppAuth (spNumber 75, @param NULL). No permission gate: any authenticated user may read any run's RSVP rows (names only), and the Hashers rowset is a global page of HC.Hasher regardless of the event. Runtime errors are logged to HC.ErrorLog and re-thrown.",
   "parameters": [
     {
@@ -21,9 +21,9 @@
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Event.id",
-      "description": "Event to fetch RSVPs for. NULL or zero-UUID returns errorCode 1272, errorType 2."
+      "description": "Event to fetch RSVPs for. NULL or zero-UUID returns errorCode 1272, errorType 2. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "hashersUpdatedAfter",
@@ -361,7 +361,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "@deviceId, @accessToken and @eventId (lines 3-5) have no SQL default. A client that omits any of them gets 'expects parameter' — an unlogged empty 500 before the SP runs, so the graceful 1272 check for eventId at line 75 is unreachable for an omitted parameter."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "low",

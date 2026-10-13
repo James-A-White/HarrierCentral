@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_getCompletedDownDowns",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Returns the DownDown charges a member may see for a run, with each charge's list of named hashers: completed ones (IsDone=1, IsCancelled=0) while the run is upcoming or under way, and every non-cancelled charge — pending included, isDone says which — once the run started more than six hours ago (the app's own past-run rule). Visible to any kennel member (non-removed HasherKennelMap row). Returns two result rowsets on success. Intended for the run detail history view — non-admin users see only what was delivered. Read-only SP — no success envelope. New feature — no HC5 equivalent.",
   "parameters": [
     {
@@ -21,16 +21,16 @@
     {
       "name": "kennelId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "DownDowns.KennelId",
-      "description": "Kennel that owns the event. Required — null or zero-UUID triggers validation error."
+      "description": "Kennel that owns the event. Required — null or zero-UUID triggers validation error. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "DownDowns.EventId",
-      "description": "Event to fetch completed DownDowns for. Required — null or zero-UUID triggers validation error."
+      "description": "Event to fetch completed DownDowns for. Required — null or zero-UUID triggers validation error. Defaults to NULL when omitted (2026-10-13)."
     }
   ],
   "rowsets": [
@@ -170,7 +170,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "@deviceId, @accessToken, @kennelId, @eventId (lines 3-6) have no SQL default. A client that omits one is refused by SQL before the procedure runs — no HC.ErrorLog row, an empty 500 in the app (CLAUDE.md 'SP parameter with NO default'). The graceful 1234 check at line 80 is unreachable for an omitted parameter."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "medium",

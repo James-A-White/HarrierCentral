@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_processThirdPartyLogin",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Handles OAuth sign-in (Apple, Google; the Facebook branch is a defunct-integration leftover). Resolves an existing Hasher by thirdPartyUserId, email or thirdPartyEmail (five-way OR, TOP 1), updating the OAuth token fields, name, photo (only if none) and Removed = 0 when found; inserts a new Hasher otherwise (Preferences 14 + USA-miles flag from the device location, IncludeInGlobalHashDirectory from the parameter or 0). When thirdPartyLoginType = 'facebook' it also copies the token onto any HC.Kennel whose KennelFacebookTokenUsername matches either email. Auth: does NOT use HC6.ValidateAppAuth — it reads HC.Device itself (errorCode 1305 / type 13 when the device is unknown or has no user) and calls HC.CHECK_ACCESS_TOKEN_V2 with the compound context DeviceSecret + UPPER(userId) (errorCode 1105 / type 11 on failure). No permission gate: the device's own user is the one signed in. Write SP: envelope at rowset 0; on success the resolved hasher's profile at rowset 1, on failure the error detail at rowset 1.",
   "parameters": [
     {
@@ -28,35 +28,35 @@
     {
       "name": "firstName",
       "type": "NVARCHAR(250)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Hasher.FirstName",
       "description": "First name from OAuth provider. Applied via COALESCE on update (preserves existing value if NULL). No SQL default."
     },
     {
       "name": "lastName",
       "type": "NVARCHAR(250)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Hasher.LastName",
       "description": "Last name from OAuth provider. Applied via COALESCE on update. No SQL default."
     },
     {
       "name": "hashName",
       "type": "NVARCHAR(250)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Hasher.HashName",
       "description": "Hash name. Empty string normalised to NULL before use. Applied via COALESCE on update (preserves existing value if NULL/empty). No SQL default."
     },
     {
       "name": "email",
       "type": "NVARCHAR(250)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Hasher.Email",
       "description": "Primary email from OAuth provider. Used in hasher resolution lookup and update. No SQL default."
     },
     {
       "name": "photo",
       "type": "NVARCHAR(1000)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Hasher.Photo",
       "description": "Profile photo URL. Empty string normalised to NULL. On update: COALESCE(existing, @photo, generated bundle avatar) — photo is NOT overwritten if already set. No SQL default."
     },
@@ -357,7 +357,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "Lines 3-14 and 19: thirteen of the seventeen parameters (@deviceId through @thirdPartyAuthorizationCode, and @thirdPartyEmail) have no SQL default. A client that omits any one — e.g. no authorization code from Google, no separate thirdPartyEmail from Apple — gets 'expects parameter ... which was not supplied' before the body runs: an empty 500 with no HC.ErrorLog row, at the one moment (sign-in) the user has no other way in. Give every parameter a default (= NULL); the body already COALESCEs them."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken, @hcVersion, @thirdPartyLoginType, @thirdPartyUserId, @thirdPartyAccessToken, @thirdPartyAuthorizationCode, @thirdPartyEmail. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "medium",

@@ -3,11 +3,11 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_setEventRsvp]
     @deviceId                    UNIQUEIDENTIFIER,
     @accessToken                 NVARCHAR(1000),
     @eventId                     UNIQUEIDENTIFIER,
-    @hasherId                    UNIQUEIDENTIFIER,
+    @hasherId                    UNIQUEIDENTIFIER = NULL,
     @isHare                      INT              = -1,
     @rsvpState                   INT              = -1,
-    @hasherEventMapUpdatedAfter  NVARCHAR(50),
-    @hasherKennelMapUpdatedAfter NVARCHAR(50),
+    @hasherEventMapUpdatedAfter  NVARCHAR(50) = 'ignore',
+    @hasherKennelMapUpdatedAfter NVARCHAR(50) = 'ignore',
     @hemId                       UNIQUEIDENTIFIER = NULL,
     @autoSetNotifications        SMALLINT         = 1
 

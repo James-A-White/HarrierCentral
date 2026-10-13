@@ -2,8 +2,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_getRunAllPhotos]
 
     @deviceId   UNIQUEIDENTIFIER,
     @accessToken NVARCHAR(1000),
-    @kennelId   UNIQUEIDENTIFIER,
-    @eventId    UNIQUEIDENTIFIER
+    @kennelId   UNIQUEIDENTIFIER = NULL,
+    @eventId    UNIQUEIDENTIFIER = NULL
 
 AS
 -- =====================================================================

@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_submitTrackImport",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Registers an uploaded track file (GPX/TCX/FIT or a Strava/Garmin zip) as an HC.TrackImport job for the caller (E5.F5.S7). The bytes are already in blob storage (container track-imports, uploaded with a SAS from GetTrackImportUploadToken, which minted @jobId). Idempotent on @jobId. Auth: HC6.ValidateAppAuth (spNumber 96, @param NULL); no permission gate — the job is always the caller's. The ProcessTrackImport function then does the work in slices the app drives, with a timer backstop.",
   "parameters": [
     {
@@ -21,16 +21,16 @@
     {
       "name": "jobId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "TrackImport.id",
-      "description": "Minted by GetTrackImportUploadToken; names the blob."
+      "description": "Minted by GetTrackImportUploadToken; names the blob. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "blobUrl",
       "type": "NVARCHAR(1000)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "TrackImport.BlobUrl",
-      "description": "The uploaded blob."
+      "description": "The uploaded blob. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "fileName",
@@ -113,7 +113,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "@deviceId, @accessToken, @jobId, @blobUrl (lines 2-5) have no SQL default. A client that omits one is refused by SQL before the procedure runs: no HC.ErrorLog row, an empty 500 in the app, and any graceful check inside is unreachable (CLAUDE.md, Rack of Lamb 2026-09-29)."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "low",

@@ -4,9 +4,9 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_setMultiRunRsvpAndCheckin]
     @accessToken                 NVARCHAR(1000),
     @checkInEventIds             NVARCHAR(MAX),    -- pipe-delimited event UUIDs to check in to
     @rsvpNoEventIds              NVARCHAR(MAX),    -- pipe-delimited event UUIDs to RSVP No
-    @hasherId                    UNIQUEIDENTIFIER,
-    @hasherEventMapUpdatedAfter  NVARCHAR(50),
-    @hasherKennelMapUpdatedAfter NVARCHAR(50)
+    @hasherId                    UNIQUEIDENTIFIER = NULL,
+    @hasherEventMapUpdatedAfter  NVARCHAR(50) = 'ignore',
+    @hasherKennelMapUpdatedAfter NVARCHAR(50) = 'ignore'
 
 AS
 -- =====================================================================

@@ -3,13 +3,13 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_setEventAttendence]
     @deviceId                    UNIQUEIDENTIFIER,
     @accessToken                 NVARCHAR(1000),
     @eventId                     UNIQUEIDENTIFIER,
-    @hasherId                    UNIQUEIDENTIFIER,
-    @attendenceState             SMALLINT,
+    @hasherId                    UNIQUEIDENTIFIER = NULL,
+    @attendenceState             SMALLINT = NULL,
     @isHare                      SMALLINT         = NULL,
-    @hasherEventMapUpdatedAfter  NVARCHAR(50),
-    @hasherKennelMapUpdatedAfter NVARCHAR(50),
+    @hasherEventMapUpdatedAfter  NVARCHAR(50) = 'ignore',
+    @hasherKennelMapUpdatedAfter NVARCHAR(50) = 'ignore',
     @returnUserRecords           SMALLINT         = 0,
-    @qrScanText                  NVARCHAR(250),
+    @qrScanText                  NVARCHAR(250) = NULL,
     @hemId                       UNIQUEIDENTIFIER = NULL
 
 AS

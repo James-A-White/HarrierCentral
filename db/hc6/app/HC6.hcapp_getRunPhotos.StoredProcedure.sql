@@ -2,7 +2,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_getRunPhotos]
 
     @deviceId       UNIQUEIDENTIFIER,
     @accessToken    NVARCHAR(1000),
-    @eventId        UNIQUEIDENTIFIER,
+    @eventId        UNIQUEIDENTIFIER = NULL,
     @afterUpdatedAt DATETIME2        = NULL
     -- NULL = return all matching records (initial load).
     -- Non-null = return only records updated after this timestamp (incremental).

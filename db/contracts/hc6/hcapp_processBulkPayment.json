@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_processBulkPayment",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Records payments for multiple hashers at a single event in one operation. Auth: HC6.ValidateAppAuth (spNumber 41, @param NULL — device-secret token). Permission gate: HC6.CheckKennelPermission @functionKey = 'bulkPayment' in the event's kennel, with @isHareOfEvent = 1 when the caller hares this run (errorCode 1341, errorType 13 otherwise; see /hc-authorizations). Accepts a COMMA-separated list of hasher UUIDs, upserts HasherEventMap attendance (AttendenceState = 20, RsvpState = 3), sets Event.DoTrackHashCash, cancels EVERY uncancelled payment those hashers hold at the event (any ProductType), auto-creates follower HasherKennelMap rows for hash-credit payers who have none, and inserts one Payment per hasher with set-based per-hasher RUN pricing (member vs non-member rate, HKM discount amount then percent). After commit it refreshes kennel credit per hasher (CURSOR over HC6.nonApi_updateKennelCreditByUser), run counts for everyone changed in the last second (HC6.nonApi_updateRunCountsForAllUsers), then delegates to HC6.hcapp_syncEventAdminData whose rowsets follow the SP's own. Supported paymentTypes: 2=free, 3=cash, 4=bank transfer, 5=cash other, 6=hash credit, 7=bank transfer other, 8=credit other; any other value (1, 100) skips the INSERT silently. Since 2026-10-13 the cancel-existing step only cancels uncancelled payments of the same @productType on the event, as hcapp_processPayment does.",
   "parameters": [
     {
@@ -28,7 +28,7 @@
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Event.id",
       "description": "The event to record payments against. Required — NULL or empty GUID triggers a param validation error (errorCode=1241, errorType=12). No SQL default."
     },
@@ -190,7 +190,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "Lines 3, 4, 6, 7: @deviceId, @accessToken, @eventId and @paymentType have no SQL default. Omitting one is 'expects parameter ... which was not supplied' before the body runs — an empty 500 with no HC.ErrorLog row — and the SP's own 1241 'Missing event' path is unreachable."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken, @paymentType. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "medium",

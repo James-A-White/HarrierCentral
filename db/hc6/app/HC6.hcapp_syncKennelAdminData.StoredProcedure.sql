@@ -2,7 +2,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_syncKennelAdminData]
 
     @deviceId                    UNIQUEIDENTIFIER,
     @accessToken                 NVARCHAR(1000),
-    @kennelId                    UNIQUEIDENTIFIER,
+    @kennelId                    UNIQUEIDENTIFIER = NULL,
     @hashersUpdatedAfter         NVARCHAR(50)      = 'ignore',
     @kennelsUpdatedAfter         NVARCHAR(50)      = 'ignore',
     @hasherKennelMapUpdatedAfter NVARCHAR(50)      = 'ignore',

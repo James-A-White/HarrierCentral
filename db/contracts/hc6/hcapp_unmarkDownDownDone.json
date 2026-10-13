@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_unmarkDownDownDone",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Clears the done flag on a DownDown charge (IsDone = 0), returning it to pending. Does not touch IsCancelled. Idempotent — an already-pending charge succeeds. Auth: HC6.ValidateAppAuth (spNumber 59, standard token). @kennelId, @eventId and @downDownId all required (NULL or all-zero → 1234 / errorType 2). Gate: HC6.CheckKennelPermission 'manageDownDowns' for @kennelId (GM / RA by the data-driven matrix) → else 1337 (errorType 3). The UPDATE is keyed on id + EventId + KennelId; no row → 4041 (3). No transaction (single statement). New feature — no HC5 equivalent.",
   "parameters": [
     {
@@ -21,23 +21,23 @@
     {
       "name": "kennelId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "DownDowns.KennelId",
-      "description": "Kennel that owns the event. Used as auth scope and as part of the UPDATE WHERE clause. Required — null or zero-UUID triggers validation error."
+      "description": "Kennel that owns the event. Used as auth scope and as part of the UPDATE WHERE clause. Required — null or zero-UUID triggers validation error. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "DownDowns.EventId",
-      "description": "Event the DownDown belongs to. Used as part of the UPDATE WHERE clause. Required — null or zero-UUID triggers validation error."
+      "description": "Event the DownDown belongs to. Used as part of the UPDATE WHERE clause. Required — null or zero-UUID triggers validation error. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "downDownId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "DownDowns.id",
-      "description": "DownDown to unmark. Required — null or zero-UUID triggers validation error. If no DownDown matches downDownId + eventId + kennelId, returns errorCode 4041, errorType 3."
+      "description": "DownDown to unmark. Required — null or zero-UUID triggers validation error. If no DownDown matches downDownId + eventId + kennelId, returns errorCode 4041, errorType 3. Defaults to NULL when omitted (2026-10-13)."
     }
   ],
   "rowsets": [
@@ -106,7 +106,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "@deviceId, @accessToken, @kennelId, @eventId, @downDownId (lines 3-7) have no SQL default. A client that omits one is refused by SQL before the procedure runs: no HC.ErrorLog row, an empty 500 in the app, and any graceful check inside is unreachable (CLAUDE.md, Rack of Lamb 2026-09-29)."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "medium",

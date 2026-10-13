@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_joinEventAsVisitor",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Records a non-member attendee (virgin = 1, visitor = 2) against an event. Uses a per-kennel placeholder Hasher whose id equals the KennelId; this row is created on demand if it does not already exist. The HasherEventMap row is idempotent by DisplayName: if a row already exists for that display name and event it is reused and the caller receives the existing hasherEventMapId without updating any fields. On success delegates to HC6.hcapp_syncEventAdminData to return fresh event admin sync data. Auth: HC6.ValidateAppAuth (spNumber 23, @param NULL). No permission gate of its own: any authenticated user may add a visitor to any visible event (the delegated sync re-validates auth for its own rowsets).",
   "parameters": [
     {
@@ -21,9 +21,9 @@
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "HasherEventMap.EventId",
-      "description": "Event UUID to add the visitor to. Must not be null or the zero UUID."
+      "description": "Event UUID to add the visitor to. Must not be null or the zero UUID. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "displayName",
@@ -66,14 +66,14 @@
     {
       "name": "hasherEventMapUpdatedAfter",
       "type": "NVARCHAR(50)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
       "description": "Sync watermark forwarded to HC6.hcapp_syncEventAdminData; NULL is coerced to 'ignore' (line 213) — but the parameter has NO SQL default, so it must be passed."
     },
     {
       "name": "paymentsUpdatedAfter",
       "type": "NVARCHAR(50)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
       "description": "Sync watermark forwarded to HC6.hcapp_syncEventAdminData; NULL is coerced to 'ignore' (line 214) — but the parameter has NO SQL default, so it must be passed."
     }
@@ -182,7 +182,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "All ten parameters (lines 3-12) have no SQL default. A client that omits any of them — including the optional @email / @phoneNumber and the two watermarks the body COALESCEs to 'ignore' at lines 213-214 — gets 'expects parameter': an unlogged empty 500 before the SP runs, so the graceful 1223 checks at lines 89 and 102 are unreachable for an omitted parameter. The four that tolerate NULL should default to it."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken, @displayName, @virginVisitorType, @attendenceState, @email, @phoneNumber. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "high",

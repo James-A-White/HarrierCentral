@@ -2,8 +2,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_selectSong]
 
     @deviceId    UNIQUEIDENTIFIER,
     @accessToken NVARCHAR(1000),
-    @eventId     UNIQUEIDENTIFIER,
-    @songId      UNIQUEIDENTIFIER
+    @eventId     UNIQUEIDENTIFIER = NULL,
+    @songId      UNIQUEIDENTIFIER = NULL
 
 AS
 -- =====================================================================

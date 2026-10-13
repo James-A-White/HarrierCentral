@@ -2,7 +2,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_getResetCode]
 
     @deviceId    UNIQUEIDENTIFIER,
     @accessToken NVARCHAR(1000),
-    @supportCode NVARCHAR(250)
+    @supportCode NVARCHAR(250) = NULL
 
 AS
 -- =====================================================================

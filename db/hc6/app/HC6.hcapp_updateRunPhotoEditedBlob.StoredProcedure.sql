@@ -2,9 +2,9 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_updateRunPhotoEditedBlob]
 
     @deviceId      UNIQUEIDENTIFIER,
     @accessToken   NVARCHAR(1000),
-    @kennelId      UNIQUEIDENTIFIER,
-    @photoId       UNIQUEIDENTIFIER,
-    @editedBlobUrl NVARCHAR(500)
+    @kennelId      UNIQUEIDENTIFIER = NULL,
+    @photoId       UNIQUEIDENTIFIER = NULL,
+    @editedBlobUrl NVARCHAR(500) = NULL
 
 AS
 -- =====================================================================

@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_findRunForTrack",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Which run does an imported GPX file belong to (E5.F5.S6)? Given a track's first and last point times (UTC) and its first point's position, returns the runs that started between three hours before the first point and the last point, nearest start first, with the distance from each run's recorded start to that first point, whether the caller already has a PackTrack trail on it, and their attendance state. The app applies the rule: a run with a recorded location must be within a mile; one with no location is accepted on time alone after the user confirms. Server-side because the phone only holds runs for followed kennels and the last ten days. 1.0.1: delegates to nonApi_findRunForTrack so the server-side import processor matches identically.",
   "parameters": [
     {
@@ -21,30 +21,30 @@
     {
       "name": "firstPointUtc",
       "type": "DATETIME2(3)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Capture time of the track's first point, UTC."
+      "description": "Capture time of the track's first point, UTC. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "lastPointUtc",
       "type": "DATETIME2(3)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Capture time of the track's last point, UTC. Must not precede firstPointUtc."
+      "description": "Capture time of the track's last point, UTC. Must not precede firstPointUtc. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "latitude",
       "type": "DECIMAL(18,15)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "First point's latitude."
+      "description": "First point's latitude. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "longitude",
       "type": "DECIMAL(19,15)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "First point's longitude."
+      "description": "First point's longitude. Defaults to NULL when omitted (2026-10-13)."
     }
   ],
   "rowsets": [
@@ -154,7 +154,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "@deviceId, @accessToken, @firstPointUtc, @lastPointUtc, @latitude, @longitude (lines 2-7) have no SQL default. A client that omits one is refused by SQL before the procedure runs — no HC.ErrorLog row, an empty 500 in the app (CLAUDE.md 'SP parameter with NO default'). The graceful 1295 check at line 67 is unreachable for an omitted parameter."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "low",

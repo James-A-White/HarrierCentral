@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_getRunActivity",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "What a run has to show, for the activity icons on a run card: whether a PackTrack track exists (HC.EventTrack, or any attendance row with TrackPointCount > 0), how many runners recorded one, how many photos the viewer may see, chat messages and down-down charges. Batched: the app sends the '|'-delimited ids of the cards on screen. Since E5.F7.S1 (2026-09-12) the cards read these counts from the synced HC.Event columns instead; this SP remains for callers that still batch-fetch. Auth: HC6.ValidateAppAuth (spNumber 94, @param NULL); no permission gate. Runtime errors are logged to HC.ErrorLog and re-thrown.",
   "parameters": [
     {
@@ -21,9 +21,9 @@
     {
       "name": "eventIds",
       "type": "NVARCHAR(MAX)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Event.id",
-      "description": "'|'-delimited HC.Event.id values; invalid entries are dropped, duplicates collapsed"
+      "description": "'|'-delimited HC.Event.id values; invalid entries are dropped, duplicates collapsed Defaults to NULL when omitted (2026-10-13)."
     }
   ],
   "rowsets": [
@@ -108,7 +108,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "All three parameters (lines 2-4) have no SQL default. A client that omits @eventIds gets 'expects parameter' — an unlogged empty 500 before the SP runs; the body itself tolerates NULL (ISNULL(@eventIds, '') at line 58), so a default of NULL would cost nothing."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "low",

@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_setEventRsvp",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Updates a hasher's RSVP (RsvpState 1 no, 2 maybe, 3 yes) and/or hare flag for an event, inserting the HasherEventMap row if there is none. A hasher already checked in (AttendenceState >= 20) keeps their RSVP — only a hare-flag change is applied, and the SP still answers success = 1 with an explanatory serverMessage. RSVP 1 (not coming) forces IsHare 0. With @autoSetNotifications = 1 the event's notification/email preferences are set at the same time: 2 (off) on a No, otherwise copied from the CALLER's HasherKennelMap row. HC.Event.Hares is kept in step when the hare flag changes (rebuilt only where the text is this SP's own; admin-typed text only ever gains a name). Run counts are recalculated for the hasher after every call, the final row state is returned as adHocData, and the SP delegates to HC6.hcapp_syncEventAdminData. Auth: device-bound token via HC6.ValidateAppAuth (spNumber 26, @param NULL). Permission gate: NONE — @hasherId defaults to the caller but may name any hasher (see code smells). Acting for another hasher (via @hasherId or @hemId) requires manageAttendance for the run's kennel or being a hare of this run, as in hcapp_setEventAttendence; otherwise errorCode 1326 / errorType 13 'Not authorised' (2026-10-13). Since 2026-10-13 @autoSetNotifications copies the TARGET hasher's kennel notification and email preferences (it read the caller's).",
   "parameters": [
     {
@@ -28,7 +28,7 @@
     {
       "name": "hasherId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "HasherEventMap.UserId",
       "description": "Target hasher; NULL = the caller. Replaced by the row's UserId when @hemId is given. No SQL default — the client must send it (NULL is fine)."
     },
@@ -51,14 +51,14 @@
     {
       "name": "hasherEventMapUpdatedAfter",
       "type": "NVARCHAR(50)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
       "description": "Sync watermark passed to hcapp_syncEventAdminData; NULL is coerced to 'ignore'. No SQL default — omitting it is an unlogged 500."
     },
     {
       "name": "hasherKennelMapUpdatedAfter",
       "type": "NVARCHAR(50)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
       "description": "Sync watermark passed to hcapp_syncEventAdminData; NULL is coerced to 'ignore'. No SQL default — omitting it is an unlogged 500."
     },
@@ -250,7 +250,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "Lines 3-6, 9-10: @deviceId, @accessToken, @eventId, @hasherId and both sync watermarks have no SQL default. @hasherId is documented as 'defaults to caller if NULL' yet a client that leaves it out gets 'expects parameter @hasherId, which was not supplied' before the procedure runs — an empty 500 with no HC.ErrorLog row."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken, @eventId. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "medium",

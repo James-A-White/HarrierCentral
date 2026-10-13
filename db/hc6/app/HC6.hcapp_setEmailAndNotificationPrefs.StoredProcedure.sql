@@ -2,13 +2,13 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_setEmailAndNotificationPrefs]
 
     @deviceId                      UNIQUEIDENTIFIER,
     @accessToken                   NVARCHAR(1000),
-    @hasherId                      UNIQUEIDENTIFIER,
+    @hasherId                      UNIQUEIDENTIFIER = NULL,
     @emailPreference               INT             = -1,
     @notificationPreference        INT             = -1,
     @kennelId                      UNIQUEIDENTIFIER = NULL,
     @eventId                       UNIQUEIDENTIFIER = NULL,
-    @hasherEventMapUpdatedAfter    NVARCHAR(50),
-    @hasherKennelMapUpdatedAfter   NVARCHAR(50)
+    @hasherEventMapUpdatedAfter    NVARCHAR(50) = 'ignore',
+    @hasherKennelMapUpdatedAfter   NVARCHAR(50) = 'ignore'
 
 AS
 -- =====================================================================

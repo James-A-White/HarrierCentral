@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_setEventAttendence",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Records or updates one hasher's attendance at an event (AttendenceState 0-40: <20 not at the run, 20-29 on trail, 30+ On Inn). The hasher is resolved three ways: @hasherId (NULL = the caller), a QR scan (@qrScanText → HC.Hasher.QR_code, in which case @eventId may be the PublicEventId and is resolved to Event.id), or @hemId (the row itself, for visitor/virgin rows whose UserId is the KennelId; its EventId must match @eventId — 1224/12). A hasher marked attended (>= 20) cannot be set back below 20 while a non-cancelled HC.Payment exists on the row (1524/5). Writes the HasherEventMap row (update, or insert with RsvpState 3), keeps HC.Event.Hares in step when @isHare is given (rebuilt only where the text is this SP's own; admin-typed text only ever gains a name), recalculates the hasher's run counts when attendance crosses 20, returns adHocData in one of two shapes (manual vs scan) and delegates to hcapp_syncEventAdminData (@returnUserRecords 0) or hcapp_syncUserData (1). Auth: device-bound token via HC6.ValidateAppAuth (spNumber 24, @param NULL). Permission gate: self-attendance needs nothing; attendance for another hasher needs HC6.CheckKennelPermission 'manageAttendance' in the event's kennel, satisfied also by being a hare of this event (1324/13 otherwise). Since 2026-10-13 a newly inserted HasherEventMap row takes IsHare from @isHare (NULL -> 0).",
   "parameters": [
     {
@@ -28,14 +28,14 @@
     {
       "name": "hasherId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "HasherEventMap.UserId",
       "description": "Target hasher. NULL without @qrScanText = the caller; ignored and replaced by the QR lookup when @qrScanText is given; replaced by the row's UserId when @hemId is given. No SQL default — the client must send it (NULL is fine)."
     },
     {
       "name": "attendenceState",
       "type": "SMALLINT",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "HasherEventMap.AttendenceState",
       "description": "New state, 0-40; NULL or out of range is refused with 1224/12. No SQL default."
     },
@@ -49,14 +49,14 @@
     {
       "name": "hasherEventMapUpdatedAfter",
       "type": "NVARCHAR(50)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
       "description": "Sync watermark passed to the delegated sync SP; NULL is coerced to 'ignore'. No SQL default — omitting it is an unlogged 500."
     },
     {
       "name": "hasherKennelMapUpdatedAfter",
       "type": "NVARCHAR(50)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
       "description": "Sync watermark passed to the delegated sync SP; NULL is coerced to 'ignore'. No SQL default — omitting it is an unlogged 500."
     },
@@ -70,7 +70,7 @@
     {
       "name": "qrScanText",
       "type": "NVARCHAR(250)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Hasher.QR_code",
       "description": "QR code text from the scanned hasher's app. When not NULL the SP is in scan mode: @hasherId comes from HC.Hasher.QR_code (1324/13 'Unknown user' if no match), @eventId may be a PublicEventId, and rowset 1 takes the richer scan shape. No SQL default — the client must send it (NULL for manual mode).",
       "typeMismatch": "Parameter NVARCHAR(250) is wider than Hasher.QR_code NVARCHAR(50); harmless for a lookup (a longer value simply matches nothing). The HC5 parameter was NVARCHAR(50)."
@@ -339,7 +339,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "Lines 3-7, 9-10, 12: @deviceId, @accessToken, @eventId, @hasherId, @attendenceState, both sync watermarks and @qrScanText have no SQL default. @hasherId and @qrScanText are documented as optional ('NULL = caller', 'NULL = manual mode') but a client that leaves either out gets 'expects parameter @x, which was not supplied' before the procedure runs — an empty 500 with no HC.ErrorLog row."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken, @eventId. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "medium",

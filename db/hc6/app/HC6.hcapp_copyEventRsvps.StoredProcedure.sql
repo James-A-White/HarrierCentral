@@ -2,9 +2,9 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_copyEventRsvps]
 
     @deviceId                   UNIQUEIDENTIFIER,
     @accessToken                NVARCHAR(1000),
-    @fromEvent                  UNIQUEIDENTIFIER,
-    @toEvent                    UNIQUEIDENTIFIER,
-    @hasherEventMapUpdatedAfter NVARCHAR(50)
+    @fromEvent                  UNIQUEIDENTIFIER = NULL,
+    @toEvent                    UNIQUEIDENTIFIER = NULL,
+    @hasherEventMapUpdatedAfter NVARCHAR(50) = 'ignore'
 
 AS
 -- =====================================================================

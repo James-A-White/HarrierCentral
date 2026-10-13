@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_updateRunPhotoEditedBlob",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Saves the URL of a Hash-Flash-edited (cropped) version of a run photo. Writes only KennelPhotos.EditedBlobUrl — the original BlobUrl is never modified; callers should always start a re-edit from BlobUrl. If the run's cover (HC.Event.EventCoverPhotoUrl, a COPY of the chosen photo's URL) currently holds this photo's original or previous edit, it is re-pointed at the new edit (2026-09-12); a cover showing another photo is left alone. Auth: HC6.ValidateAppAuth (spNumber 48). Gate: HC6.CheckKennelPermission 'editPhoto' for @kennelId (else 1334 / 3). @photoId + @kennelId must match a row (else 4040 / 3).",
   "parameters": [
     {
@@ -21,23 +21,23 @@
     {
       "name": "kennelId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "KennelPhotos.KennelId",
-      "description": "Kennel that owns the photo. Used for auth scope and included in the UPDATE WHERE clause. Null or zero-UUID triggers a validation error (errorCode 1234, errorType 2)."
+      "description": "Kennel that owns the photo. Used for auth scope and included in the UPDATE WHERE clause. Null or zero-UUID triggers a validation error (errorCode 1234, errorType 2). Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "photoId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "KennelPhotos.id",
-      "description": "Photo to update. Null or zero-UUID triggers a validation error (errorCode 1234, errorType 2). If the combination of @photoId + @kennelId matches no row (@@ROWCOUNT=0 after UPDATE), a 'Photo not found' error is returned (errorCode 4040, errorType 3)."
+      "description": "Photo to update. Null or zero-UUID triggers a validation error (errorCode 1234, errorType 2). If the combination of @photoId + @kennelId matches no row (@@ROWCOUNT=0 after UPDATE), a 'Photo not found' error is returned (errorCode 4040, errorType 3). Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "editedBlobUrl",
       "type": "NVARCHAR(500)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "KennelPhotos.EditedBlobUrl",
-      "description": "Blob URL of the cropped/edited version. Must be non-empty (LEN check after LTRIM/RTRIM). Triggers a validation error if empty or whitespace-only."
+      "description": "Blob URL of the cropped/edited version. Must be non-empty (LEN check after LTRIM/RTRIM). Triggers a validation error if empty or whitespace-only. Defaults to NULL when omitted (2026-10-13)."
     }
   ],
   "rowsets": [
@@ -82,7 +82,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "All five parameters (@deviceId, @accessToken, @kennelId, @photoId, @editedBlobUrl) (lines 3-7) have no SQL default. A client that omits one is refused by SQL before the procedure runs: no HC.ErrorLog row, an empty 500 in the app, and any graceful check inside is unreachable (CLAUDE.md, Rack of Lamb 2026-09-29)."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "medium",

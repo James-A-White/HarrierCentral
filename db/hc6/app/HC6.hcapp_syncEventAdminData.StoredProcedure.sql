@@ -2,7 +2,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_syncEventAdminData]
 
     @deviceId                    UNIQUEIDENTIFIER,
     @accessToken                 NVARCHAR(1000),
-    @eventId                     UNIQUEIDENTIFIER,
+    @eventId                     UNIQUEIDENTIFIER = NULL,
     @hashersUpdatedAfter         NVARCHAR(50)      = 'ignore',
     @hasherEventMapUpdatedAfter  NVARCHAR(50)      = 'ignore',
     @hasherKennelMapUpdatedAfter NVARCHAR(50)      = 'ignore',

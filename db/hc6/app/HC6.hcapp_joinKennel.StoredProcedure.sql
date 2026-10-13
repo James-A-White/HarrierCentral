@@ -2,8 +2,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_joinKennel]
 
     @deviceId                    UNIQUEIDENTIFIER,
     @accessToken                 NVARCHAR(1000),
-    @kennelId                    UNIQUEIDENTIFIER,
-    @targetUserId                UNIQUEIDENTIFIER,
+    @kennelId                    UNIQUEIDENTIFIER = NULL,
+    @targetUserId                UNIQUEIDENTIFIER = NULL,
     @isFollowing                 SMALLINT         = NULL,
     @isHomeKennel                SMALLINT         = NULL,
     @notificationState           SMALLINT         = NULL,
@@ -14,8 +14,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_joinKennel]
     @kennelStandingSet           INT              = NULL,
     @kennelStandingClear         INT              = NULL,
     @paymentAmount               DECIMAL(12,6)    = NULL,
-    @kennelsUpdatedAfter         NVARCHAR(50),
-    @hasherKennelMapUpdatedAfter NVARCHAR(50),
+    @kennelsUpdatedAfter         NVARCHAR(50) = 'ignore',
+    @hasherKennelMapUpdatedAfter NVARCHAR(50) = 'ignore',
     @hashersUpdatedAfter         NVARCHAR(50)     = 'ignore'
 
 AS

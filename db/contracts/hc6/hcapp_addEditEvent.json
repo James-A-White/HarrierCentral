@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_addEditEvent",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Creates or updates an HC.Event for a kennel. Mode is whether @eventId already exists in HC.Event for @kennelId: found → partial UPDATE; not found or NULL → INSERT. @kennelId may be omitted when @eventId is given (default NULL since 2026-09-30, derived from the event; the run-number edit sends only @eventId); missing on both counts → 1220. Sentinels: NULL = keep existing; -1 = keep (normalised to NULL) for numeric fields; -2 = explicitly clear for lat/lon/prices; '<remove>' clears strings ('<none>' for extrasDescription, 0 for absoluteEventNumber); @deleteEventImage = 1 clears the cover photo. On INSERT a placeholder name is generated if @eventName is empty, the kennel's DefaultRunStartTime is applied to a midnight start, and kennel default prices fill missing prices. Auth: HC6.ValidateAppAuth (spNumber 20, standard token). Gate: HC6.CheckKennelPermission 'createEditRuns' for @kennelId, with the designated hare of an EXISTING event allowed (HasherEventMap.IsHare) → else 1321 (errorType 13). An event that exists but belongs to another kennel → 1320. Editing a run the AI imported from the kennel's runs page adopts it (HC6.nonApi_adoptImportedRun) so the import stops updating it, and forces the UseFb* mirror flags off. After the write: HC.nonApi_updateRunNumbers, HC6.nonApi_updateRunCountsForEventUsers, COMMIT, the success envelope, an adHocData row { adHocDataId = 1, eventId } and then HC6.hcapp_syncUserData's rowsets (events / HasherEventMap / HasherKennelMap for the given watermarks, hashers 'ignore'). The same SP serves the portal's run editor (James, 2026-10-09: run editing is ONE feature on both sides).",
   "parameters": [
     {
@@ -21,7 +21,7 @@
     {
       "name": "narrowEventsUpdatedAfter",
       "type": "NVARCHAR(50)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
       "description": "Sync watermark for events passed through to HC6.hcapp_syncUserData. Pass 'ignore' to skip event sync; NULL is defaulted to 'ignore' internally. NO SQL DEFAULT — a client that omits it is refused before the procedure runs (see codeSmells)."
     },
@@ -432,7 +432,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "@deviceId, @accessToken, @narrowEventsUpdatedAfter (lines 3-5) have no SQL default. A client that omits any of them is refused by SQL BEFORE the procedure runs: no HC.ErrorLog row, an empty 500 in the app, and the SP's own graceful checks are unreachable (CLAUDE.md, Rack of Lamb 2026-09-29). @kennelId was given a NULL default on 2026-09-30 for exactly this reason (18 unlogged 500s); @narrowEventsUpdatedAfter is still exposed in the same way."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "medium",

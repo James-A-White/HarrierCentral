@@ -2,11 +2,11 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_setBulkEventAttendence]
 
     @deviceId                    UNIQUEIDENTIFIER,
     @accessToken                 NVARCHAR(1000),
-    @eventId                     UNIQUEIDENTIFIER,
-    @hasherIds                   NVARCHAR(MAX),
-    @attendenceState             SMALLINT,
-    @hasherEventMapUpdatedAfter  NVARCHAR(50),
-    @hasherKennelMapUpdatedAfter NVARCHAR(50)
+    @eventId                     UNIQUEIDENTIFIER = NULL,
+    @hasherIds                   NVARCHAR(MAX) = NULL,
+    @attendenceState             SMALLINT = NULL,
+    @hasherEventMapUpdatedAfter  NVARCHAR(50) = 'ignore',
+    @hasherKennelMapUpdatedAfter NVARCHAR(50) = 'ignore'
 
 AS
 -- =====================================================================

@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_getKennelPendingPhotos",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Returns all photos with Status = 1 (pending review) for a kennel, newest first, for the photo review screen; optionally restricted to one event. Gate: HC6.CheckKennelPermission 'reviewPhotos' on @kennelId (feature 'Review / approve photos'; SuperAdmin always) — errorCode 1334, errorType 13 otherwise. Status and Featured are returned (always 1 / as stored) so these rows map onto the same model as hcapp_getRunAllPhotos (2026-09-13). Auth: HC6.ValidateAppAuth (spNumber 34, @param NULL). Parameter and permission checks run before the TRY; the SELECT is wrapped, with runtime errors logged and re-thrown.",
   "parameters": [
     {
@@ -21,9 +21,9 @@
     {
       "name": "kennelId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "KennelPhotos.KennelId",
-      "description": "Kennel to fetch pending photos for. Null or zero-UUID triggers a validation error (errorCode 1234, errorType 12)."
+      "description": "Kennel to fetch pending photos for. Null or zero-UUID triggers a validation error (errorCode 1234, errorType 12). Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "eventId",
@@ -176,7 +176,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "@deviceId, @accessToken and @kennelId (lines 3-5) have no SQL default. A client that omits @kennelId gets 'expects parameter' — an unlogged empty 500 before the SP runs, so the graceful 1234 check at line 63 is unreachable for an omitted parameter."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "low",

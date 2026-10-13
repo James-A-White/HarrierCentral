@@ -1,10 +1,10 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcapp_findRunForTrack]
     @deviceId       UNIQUEIDENTIFIER,
     @accessToken    NVARCHAR(1000),
-    @firstPointUtc  DATETIME2(3),
-    @lastPointUtc   DATETIME2(3),
-    @latitude       DECIMAL(18, 15),
-    @longitude      DECIMAL(19, 15)
+    @firstPointUtc  DATETIME2(3) = NULL,
+    @lastPointUtc   DATETIME2(3) = NULL,
+    @latitude       DECIMAL(18, 15) = NULL,
+    @longitude      DECIMAL(19, 15) = NULL
 AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_findRunForTrack

@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_setBulkEventAttendence",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Sets attendance for many hashers at one event in a single call. @hasherIds is a comma-separated list of hasher UUIDs, parsed with STRING_SPLIT + TRY_CAST (tokens that are not UUIDs are dropped silently). Existing HasherEventMap rows for the event are updated (AttendenceState, RsvpState = 3); hashers with no row get one inserted (IsHare 0, VirginVisitorType 0, RsvpState 3). Only states 20-40 (on trail or On Inn) are accepted — bulk un-attend is not supported. After the commit, run counts are recalculated for every user whose HEM row changed (HC6.nonApi_updateRunCountsForAllUsers), then the SP delegates to HC6.hcapp_syncEventAdminData and streams its rowsets. Auth: device-bound token via HC6.ValidateAppAuth (spNumber 25, @param NULL). Permission gate: HC6.CheckKennelPermission 'manageAttendance' in the event's kennel, satisfied also by being a hare of this event (IsHare = 1 on the caller's own HEM row); refused with 1325/13.",
   "parameters": [
     {
@@ -21,35 +21,35 @@
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "HasherEventMap.EventId",
       "description": "Event to update. NULL or the zero UUID is refused with 1225/12. No SQL default."
     },
     {
       "name": "hasherIds",
       "type": "NVARCHAR(MAX)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
       "description": "Comma-separated hasher UUIDs (HasherEventMap.UserId values). NULL is refused with 1225/12; an empty string or a list of unparseable tokens succeeds with '0 records updated, 0 records inserted'. No SQL default."
     },
     {
       "name": "attendenceState",
       "type": "SMALLINT",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "HasherEventMap.AttendenceState",
       "description": "State applied to every listed hasher. Must be 20-40 inclusive; NULL or out of range is refused with 1225/12. No SQL default."
     },
     {
       "name": "hasherEventMapUpdatedAfter",
       "type": "NVARCHAR(50)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
       "description": "Sync watermark passed to hcapp_syncEventAdminData; NULL is coerced to 'ignore' before delegation. No SQL default — omitting it is an unlogged 500."
     },
     {
       "name": "hasherKennelMapUpdatedAfter",
       "type": "NVARCHAR(50)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
       "description": "Sync watermark passed to hcapp_syncEventAdminData; NULL is coerced to 'ignore' before delegation. No SQL default — omitting it is an unlogged 500."
     }
@@ -60,9 +60,24 @@
       "name": "WriteEnvelope",
       "description": "Always the first rowset. success = 0 on auth, validation, permission or CATCH failure with errorCode/errorType set; success = 1 after the commit with both NULL.",
       "columns": [
-        { "name": "success", "type": "INT", "nullable": false, "description": "1 on success, 0 on failure." },
-        { "name": "errorCode", "type": "INT", "nullable": true, "description": "ValidateAppAuth code; 1225 validation (eventId, attendenceState, hasherIds); 1325 not authorised; 1925 unhandled. NULL on success." },
-        { "name": "errorType", "type": "INT", "nullable": true, "description": "1/3/7 from ValidateAppAuth; 12 validation; 13 not authorised; 19 unhandled (CATCH). NULL on success." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 on failure."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "ValidateAppAuth code; 1225 validation (eventId, attendenceState, hasherIds); 1325 not authorised; 1925 unhandled. NULL on success."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "1/3/7 from ValidateAppAuth; 12 validation; 13 not authorised; 19 unhandled (CATCH). NULL on success."
+        }
       ]
     },
     {
@@ -70,12 +85,42 @@
       "name": "ErrorDetail",
       "description": "Rowset 1 on failure only. The HC6 app error detail; every failure path writes HC.ErrorLog (the permission refusal rolls back FIRST, then logs, so the row survives).",
       "columns": [
-        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "ID of the HC.ErrorLog entry." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Application error code." },
-        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": false, "description": "Short human-readable error title." },
-        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": false, "description": "User-facing error message." },
-        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "OBJECT_NAME(@@PROCID)." }
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "ID of the HC.ErrorLog entry."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification code."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Application error code."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Short human-readable error title."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "OBJECT_NAME(@@PROCID)."
+        }
       ]
     },
     {
@@ -83,8 +128,18 @@
       "name": "BulkAttendanceResult",
       "description": "Rowset 1 on success. One row summarising how many HEM rows were updated and inserted.",
       "columns": [
-        { "name": "adHocDataId", "type": "INT", "nullable": false, "description": "Always 1." },
-        { "name": "serverMessage", "type": "NVARCHAR", "nullable": false, "description": "'N records updated, M records inserted'." }
+        {
+          "name": "adHocDataId",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
+        },
+        {
+          "name": "serverMessage",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "'N records updated, M records inserted'."
+        }
       ]
     },
     {
@@ -104,7 +159,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "Lines 3-9: none of the seven parameters has a SQL default. A client that omits one — the two sync watermarks are the likely ones — gets 'expects parameter @x, which was not supplied' before the procedure runs: an empty 500 with no HC.ErrorLog row, and the body's own NULL checks never run. Give each a default (= NULL) and keep the checks."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "medium",

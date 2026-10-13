@@ -1,7 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcapp_getRunActivity]
     @deviceId    UNIQUEIDENTIFIER,
     @accessToken NVARCHAR(1000),
-    @eventIds    NVARCHAR(MAX)
+    @eventIds    NVARCHAR(MAX) = NULL
 AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_getRunActivity

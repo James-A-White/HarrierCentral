@@ -1,8 +1,8 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcapp_submitTrackImport]
     @deviceId    UNIQUEIDENTIFIER,
     @accessToken NVARCHAR(1000),
-    @jobId       UNIQUEIDENTIFIER,
-    @blobUrl     NVARCHAR(1000),
+    @jobId       UNIQUEIDENTIFIER = NULL,
+    @blobUrl     NVARCHAR(1000) = NULL,
     @fileName    NVARCHAR(250) = NULL,
     @byteSize    BIGINT        = NULL
 AS

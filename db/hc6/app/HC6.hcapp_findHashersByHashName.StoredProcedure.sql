@@ -1,7 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcapp_findHashersByHashName]
 
     @accessToken  NVARCHAR(1000),
-    @searchTerm   NVARCHAR(250),
+    @searchTerm   NVARCHAR(250) = NULL,
     @lat          FLOAT = NULL,
     @lon          FLOAT = NULL
 

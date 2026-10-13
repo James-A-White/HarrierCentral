@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_saveHashTrash",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Creates or updates the HashTrash article for a run. HashTrash is a headline + markdown article written per run by mismanagement. Status 0 = draft (mismanagement only); 1 = published (visible to all). Only the three HashTrash columns on HC.Event are touched — updatedAt is deliberately NOT updated so that the sync pipeline does not re-distribute the event row to all clients. Auth: HC6.ValidateAppAuth (spNumber 53, @param NULL — device-secret token). Permission gate: HC6.CheckKennelPermission @functionKey = 'writeHashTrash' in @kennelId (Hash Flash 0x20, WebMeister 0x1000 or GM 0x02 — bitmask 0x1022; see /hc-authorizations). Write SP: two-rowset error shape ({success=0, errorCode, errorType} then the error detail) or the single success envelope. New feature — no HC5 equivalent.",
   "parameters": [
     {
@@ -21,21 +21,21 @@
     {
       "name": "kennelId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Event.KennelId",
       "description": "Kennel that owns the event; also the scope of the permission check. Required — NULL or zero-UUID returns errorCode 1234, errorType 2. No SQL default."
     },
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Event.id",
       "description": "Event to write HashTrash for. Required — NULL or zero-UUID returns errorCode 1234, errorType 2. If no non-deleted event matches eventId + kennelId, returns errorCode 4040, errorType 3. No SQL default."
     },
     {
       "name": "headline",
       "type": "NVARCHAR(500)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Event.HashTrashHeadline",
       "description": "Short article headline. Required — NULL, empty or whitespace-only returns errorCode 1234, errorType 2. No SQL default. Event.HashTrashHeadline is not in db/schema/tables/HC.Event.Table.sql (added by a later migration); its width could not be checked against the parameter.",
       "typeMismatch": "Column definition not in db/schema/tables — width unverified. The NVARCHAR(500) parameter silently truncates longer user text (see codeSmells)."
@@ -61,9 +61,24 @@
       "name": "ErrorEnvelope",
       "description": "Compact error envelope returned on auth failure (ValidateAppAuth codes), validation (1234 / type 2), permission (1334 / type 3), event-not-found (4040 / type 3) or unhandled error (1933 / type 5): { success=0, errorCode, errorType }. Followed by StandardErrorResult at index 1. Mutually exclusive with SuccessEnvelope.",
       "columns": [
-        { "name": "success", "type": "INT", "nullable": false, "description": "Always 0 on error." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Numeric error code."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification code."
+        }
       ]
     },
     {
@@ -71,9 +86,24 @@
       "name": "SuccessEnvelope",
       "description": "Returned on successful save: { success=1, errorCode=NULL, errorType=NULL }. The only rowset on success. Mutually exclusive with ErrorEnvelope.",
       "columns": [
-        { "name": "success", "type": "INT", "nullable": false, "description": "Always 1 on success." },
-        { "name": "errorCode", "type": "INT", "nullable": true, "description": "Always NULL on success." },
-        { "name": "errorType", "type": "INT", "nullable": true, "description": "Always NULL on success." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1 on success."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "Always NULL on success."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "Always NULL on success."
+        }
       ]
     },
     {
@@ -90,7 +120,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "Lines 3-9: none of the seven parameters has a SQL default. A client that omits any one of them (most plausibly @content on a headline-only draft, or @status) gets 'expects parameter ... which was not supplied' before the body runs — an empty 500 with no HC.ErrorLog row, and the SP's own 1234 'Missing parameter' path is unreachable. Give every parameter a default (= NULL) and keep the NULL checks."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken, @content, @status. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "medium",

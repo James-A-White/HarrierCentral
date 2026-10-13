@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_selectSong",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Records a song selection for an event in the interactive songbook. Auth: HC6.ValidateAppAuth (spNumber 76, @param NULL — device-secret token). Gate: the caller must hold a HasherEventMap row for the event with RsvpState >= 2 (Maybe/Yes) and Removed = 0 — errorCode 1283, errorType 3 otherwise; no kennel role is needed. All selections are retained in HC.SongSession for history — this does not replace a previous selection. Returns three rowsets on success: a compact envelope, adHocData with song details for the Flutter caller plus metadata for the Azure Function fan-out, and a third rowset of FCM recipients (RSVP'd Maybe/Yes or checked in, not marked absent, mobile devices only, honouring the event/kennel notification preference) for the Azure Function to push a visible notification to. New feature — no HC5 equivalent.",
   "parameters": [
     {
@@ -21,14 +21,14 @@
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "SongSession.EventId",
       "description": "Event the song is being selected for. Required — null or zero-UUID triggers validation error (errorCode 1281, errorType 2). No SQL default."
     },
     {
       "name": "songId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "SongSession.SongId",
       "description": "Song being selected. Must exist in HC.Song with Removed = 0. Required — null or zero-UUID triggers validation error (errorCode 1282, errorType 2). Song-not-found returns errorCode 1284, errorType 2. No SQL default."
     }
@@ -167,7 +167,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "Lines 3-6: @deviceId, @accessToken, @eventId and @songId have no SQL default. A client that omits one gets 'expects parameter ... which was not supplied' before the body runs — an empty 500 with no HC.ErrorLog row — and the SP's own 1281/1282 'Missing event/song' paths are unreachable. Give every parameter a default (= NULL) and keep the NULL checks."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "medium",

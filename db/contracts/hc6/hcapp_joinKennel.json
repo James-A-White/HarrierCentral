@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_joinKennel",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Creates or updates a HasherKennelMap row for a target user at a kennel: follow state, home kennel, membership duration, notification and email preferences, app access flags, mismanagement roles and manual KennelStanding bits. Auth: device-bound token via HC6.ValidateAppAuth (spNumber 50, @param NULL). Permission gates (HC6.CheckKennelPermission in @kennelId): @appAccessFlags / @kennelStandingSet / @kennelStandingClear need 'assignAppAccessFlags'; @mismanagementRoles needs 'assignMismanagementRoles'; editing another user, @monthsToAddToMembership or @paymentAmount needs 'manageMembers'. Self-service (own row, follow / home kennel / preferences only) needs no role — a hasher cannot alter their own membership. After commit, when roles changed, HC.Kennel.KennelMismanagementTeam is rebuilt inline from HC.HasherKennelMap + DomainValues.MismanagementRoles. On success the SP then delegates to hcapp_syncUserData (self) or hcapp_syncKennelAdminData (another user) and streams those rowsets after its own. Sentinel -1 on most parameters means 'keep'. Bit 0x0001 of KennelStanding (the old automated MEMBER bit) is retired since 2026-10-13: membership is MembershipExpirationDate and nothing else, and this SP no longer calls HC6.nonApi_syncMemberStandingBit (dropped). HC.HasherKennelMap.IsMember is still written here but is DEPRECATED (2026-10-13): never read it.",
   "parameters": [
     {
@@ -21,16 +21,16 @@
     {
       "name": "kennelId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "HasherKennelMap.KennelId",
-      "description": "Kennel to join or update. NULL or zero-UUID returns errorCode 1250, errorType 12."
+      "description": "Kennel to join or update. NULL or zero-UUID returns errorCode 1250, errorType 12. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "targetUserId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "HasherKennelMap.UserId",
-      "description": "User whose HKM row is created or updated. Equal to the caller = self-service; different = admin edit, which requires 'manageMembers' and switches the delegate to hcapp_syncKennelAdminData."
+      "description": "User whose HKM row is created or updated. Equal to the caller = self-service; different = admin edit, which requires 'manageMembers' and switches the delegate to hcapp_syncKennelAdminData. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "isFollowing",
@@ -105,14 +105,14 @@
     {
       "name": "kennelsUpdatedAfter",
       "type": "NVARCHAR(50)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
       "description": "Sync watermark for Kennels, passed through to the delegate. NULL is coerced to 'ignore' before the delegate call, but the parameter has no SQL default."
     },
     {
       "name": "hasherKennelMapUpdatedAfter",
       "type": "NVARCHAR(50)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
       "description": "Sync watermark for HasherKennelMap, passed through to the delegate. NULL is coerced to 'ignore', but the parameter has no SQL default."
     },
@@ -250,7 +250,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "@deviceId, @accessToken, @kennelId, @targetUserId, @kennelsUpdatedAfter and @hasherKennelMapUpdatedAfter (lines 3-6, 17-18) have no SQL default. A client that omits any of them gets 'expects parameter' — an unlogged empty 500 before the SP runs, so the graceful 1250 check for kennelId is unreachable in that case. The two watermarks are COALESCEd to 'ignore' at lines 348-349, so they clearly tolerate NULL and should default to it."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "medium",

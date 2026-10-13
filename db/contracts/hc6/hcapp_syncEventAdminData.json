@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_syncEventAdminData",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Incremental pull-sync of event-scoped admin data (ValidateAppAuth, spNumber 71). Returns up to 6 result sets — each only when its 'updatedAfter' watermark is not 'ignore' (NULL or <= 2000-01-01 is treated as 'ignore'). Callers track the max updatedAt from each result set as the next watermark. HasherEventMap, Payments and Receipts are scoped to @eventId; HasherKennelMap to the event's kennel; Hashers are global. Permission gate on a DIRECT call (@procName NULL): HC6.CheckAreaEntry areaKey 'runAdmin' on the app surface (derived entry — any run-admin capability), with @isHareOfEvent set when the caller is a designated hare of this event; else errorCode 1371. Used as a delegate by write SPs (addEditEvent, processPayment, joinEventAsVisitor, etc.) that return fresh data after writing: the delegating SP passes its own name and compound token suffix (@procName/@param), the token is validated against that context and the admin gate is skipped. Read SP: no success envelope; the body is wrapped in TRY/CATCH that logs to HC.ErrorLog and re-throws.",
   "parameters": [
     {
@@ -21,9 +21,9 @@
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Event to scope the sync to. Required — validated against null/all-zeros and logged to HC.ErrorLog if missing."
+      "description": "Event to scope the sync to. Required — validated against null/all-zeros and logged to HC.ErrorLog if missing. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "hashersUpdatedAfter",
@@ -1218,7 +1218,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "Lines 3-5: @deviceId, @accessToken and @eventId have no SQL default. A client that omits @eventId is refused by SQL ('expects parameter') before the body runs — an empty 500 with no HC.ErrorLog row — and the SP's own 1271 'Missing event' path is unreachable. Give each a default (= NULL) and keep the NULL check."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "low",

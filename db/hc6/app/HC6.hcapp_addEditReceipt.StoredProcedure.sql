@@ -2,18 +2,18 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_addEditReceipt]
 
     @deviceId              UNIQUEIDENTIFIER,
     @accessToken           NVARCHAR(1000),
-    @receiptId             UNIQUEIDENTIFIER,
-    @eventId               UNIQUEIDENTIFIER,
-    @receiptShortDesc      NVARCHAR(500),
-    @receiptAmount         DECIMAL(12,4),
-    @notes                 NVARCHAR(1000),
-    @reimbursedBy          UNIQUEIDENTIFIER,
+    @receiptId             UNIQUEIDENTIFIER = NULL,
+    @eventId               UNIQUEIDENTIFIER = NULL,
+    @receiptShortDesc      NVARCHAR(500) = NULL,
+    @receiptAmount         DECIMAL(12,4) = NULL,
+    @notes                 NVARCHAR(1000) = NULL,
+    @reimbursedBy          UNIQUEIDENTIFIER = NULL,
     @reimbursedOn          DATETIMEOFFSET(7),
-    @reimbursedAmount      DECIMAL(12,4),
-    @reimbursedNotes       NVARCHAR(1000),
-    @imageUrl              NVARCHAR(1000),
-    @receiptsUpdatedAfter  NVARCHAR(50),
-    @removed               SMALLINT
+    @reimbursedAmount      DECIMAL(12,4) = NULL,
+    @reimbursedNotes       NVARCHAR(1000) = NULL,
+    @imageUrl              NVARCHAR(1000) = NULL,
+    @receiptsUpdatedAfter  NVARCHAR(50) = 'ignore',
+    @removed               SMALLINT = NULL
 
 AS
 -- =====================================================================

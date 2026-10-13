@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_setEmailAndNotificationPrefs",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Sets a hasher's email-alert and/or push-notification preference at kennel scope (HasherKennelMap.Kennel*Preference) or, when @eventId is given, at event scope (HasherEventMap.Event*Preference). At least one of @kennelId / @eventId is required (1214/12 otherwise); @kennelId is resolved from the event when only @eventId is given. -1 means 'do not change' and is normalised to NULL before any write. At event scope a value of 0 means 'inherit from the kennel' and is stored as NULL. The map row is upserted inside a transaction, the effective (post-write, event-then-kennel) values are read back as adHocData, and the SP delegates to HC6.hcapp_syncUserData. Auth: device-bound token via HC6.ValidateAppAuth (spNumber 14, @param NULL). Permission gate: NONE — @hasherId defaults to the caller but may name any hasher (see code smells). Self only: @hasherId other than the caller returns errorCode 1314 / errorType 13 'Not authorised' (2026-10-13).",
   "parameters": [
     {
@@ -21,7 +21,7 @@
     {
       "name": "hasherId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "HasherKennelMap.UserId",
       "description": "Target hasher. NULL or the zero UUID means the caller (@userId). No SQL default — the client must pass it (NULL is fine) or the call fails before the SP runs."
     },
@@ -58,14 +58,14 @@
     {
       "name": "hasherEventMapUpdatedAfter",
       "type": "NVARCHAR(50)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
       "description": "Sync watermark passed to hcapp_syncUserData; NULL is coerced to 'ignore'. No SQL default — omitting it is an unlogged 500."
     },
     {
       "name": "hasherKennelMapUpdatedAfter",
       "type": "NVARCHAR(50)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
       "description": "Sync watermark passed to hcapp_syncUserData; NULL is coerced to 'ignore'. No SQL default — omitting it is an unlogged 500."
     }
@@ -207,7 +207,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "Lines 3-5, 10-11: @deviceId, @accessToken, @hasherId, @hasherEventMapUpdatedAfter and @hasherKennelMapUpdatedAfter have no SQL default. A client that omits one gets 'expects parameter @x, which was not supplied' before the procedure runs — an empty 500 with no HC.ErrorLog row. @hasherId in particular is documented as 'defaults to caller if NULL' yet must still be sent."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "medium",
