@@ -81,7 +81,7 @@
       "severity": "low",
       "issue": "HcVersion hardcoded as '<unknown>' in ErrorLog INSERT",
       "detail": "The ErrorLog INSERT at line 80 passes '<unknown>' as HcVersion. HC6 SPs should pass a meaningful version identifier or a shared constant."
-    },
+    }
   ],
   "breakingChanges": [
     "@supportCode narrowed from NVARCHAR(1000) (HC5) to NVARCHAR(250) (HC6). Any caller passing a string longer than 250 characters will receive a truncation error.",

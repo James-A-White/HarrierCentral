@@ -1254,4 +1254,4 @@
   "breakingChanges": [
     "@procName parameter type widened from NVARCHAR(100) (HC5) to NVARCHAR(128) (HC6) — compatible for all real SP names but is a type change."
   ]
-}\n
+}
