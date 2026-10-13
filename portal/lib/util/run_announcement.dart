@@ -64,7 +64,9 @@ class RunAnnouncement {
     final String desc = run.eventDescription.trim();
     if (desc.isNotEmpty) {
       b.writeln();
-      b.writeln(desc.length > 300 ? '${desc.substring(0, 297)}…' : desc);
+      // The whole description (James, 2026-10-13); it was cut to 300 here
+      // and 220 in the app. Same in the app's run_announcement.dart.
+      b.writeln(desc);
     }
     b.writeln();
     b.writeln('✅ I\'m in: ${rsvpUrl(true)}');

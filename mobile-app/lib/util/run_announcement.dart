@@ -136,9 +136,12 @@ class RunAnnouncement {
     final String desc = (event.eventDescription ?? '').trim();
     if (desc.isNotEmpty) {
       b.writeln();
-      // Enough to say what kind of run it is, not the whole notice — the link
-      // carries the rest, and a wall of text is what people scroll past.
-      b.writeln(desc.length > 220 ? '${desc.substring(0, 217).trimRight()}…' : desc);
+      // The whole description (James, 2026-10-13). It was cut to 220
+      // characters as a teaser, and hares found their notice truncated.
+      // Same in the portal's run_announcement.dart: one feature, both sides.
+      // Telegram caps a message at 4,096 characters; a description that long
+      // is the kennel's call, not ours to shorten.
+      b.writeln(desc);
     }
 
     // A blank line between the links so each reads as its own thing, and
