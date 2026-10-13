@@ -34,10 +34,19 @@ final class PhoneWatchBridge: NSObject {
         result: @escaping FlutterResult
     ) {
         switch call.method {
+        // Reply is a String: "" when the context was accepted, otherwise
+        // WHY it was not — the WCError name. Until 2026-10-13 this answered
+        // true/false, so an hour of pushes to a watch that never received
+        // them (Kilty, Glasgow run 2239) left no trace anywhere; Dart now
+        // logs the reason to the session harvest.
         case "updateState":
-            guard WCSession.default.activationState == .activated,
-                  let args = call.arguments as? [String: Any] else {
-                result(false)
+            let session = WCSession.default
+            guard session.activationState == .activated else {
+                result("not-activated(\(session.activationState.rawValue))")
+                return
+            }
+            guard let args = call.arguments as? [String: Any] else {
+                result("bad-args")
                 return
             }
             // Phase trail in the system log — makes any raced/unexpected
@@ -45,12 +54,26 @@ final class PhoneWatchBridge: NSObject {
             NSLog("[PhoneWatchBridge] push phase=%@",
                   (args["phase"] as? String) ?? "?")
             do {
-                try WCSession.default.updateApplicationContext(args)
-                result(true)
+                try session.updateApplicationContext(args)
+                result("")
             } catch {
-                // No paired watch / app not installed — not an error worth surfacing.
-                result(false)
+                // No paired watch / app not installed / payload refused —
+                // never surfaced to the hasher, but named for the log.
+                result(Self.describe(error))
             }
+
+        // One snapshot of what WatchConnectivity thinks of the pairing, logged
+        // by Dart at the start of every session so a silent wrist can be
+        // diagnosed from the harvest (installed? activated? reachable?).
+        case "sessionInfo":
+            let session = WCSession.default
+            result([
+                "supported": WCSession.isSupported(),
+                "activationState": session.activationState.rawValue,
+                "paired": session.isPaired,
+                "watchAppInstalled": session.isWatchAppInstalled,
+                "reachable": session.isReachable,
+            ] as [String: Any])
         // Mark-button appearance (kennel glyph/text for Check and False).
         // Sent ONCE per session, not on the 1 Hz state push: the PNGs are a
         // few KB each and applicationContext is latest-wins, so bundling them
@@ -130,5 +153,38 @@ extension PhoneWatchBridge: WCSessionDelegate {
     func sessionDidDeactivate(_ session: WCSession) {
         // Re-activate after a watch switch so the new watch keeps working.
         session.activate()
+    }
+}
+
+extension PhoneWatchBridge {
+    /// A WCError by name (plus code), or any other error's description.
+    static func describe(_ error: Error) -> String {
+        let ns = error as NSError
+        guard ns.domain == WCErrorDomain, let code = WCError.Code(rawValue: ns.code) else {
+            return "\(ns.domain)#\(ns.code) \(ns.localizedDescription)"
+        }
+        let name: String
+        switch code {
+        case .sessionNotSupported: name = "sessionNotSupported"
+        case .sessionMissingDelegate: name = "sessionMissingDelegate"
+        case .sessionNotActivated: name = "sessionNotActivated"
+        case .deviceNotPaired: name = "deviceNotPaired"
+        case .watchAppNotInstalled: name = "watchAppNotInstalled"
+        case .notReachable: name = "notReachable"
+        case .invalidParameter: name = "invalidParameter"
+        case .payloadTooLarge: name = "payloadTooLarge"
+        case .payloadUnsupportedTypes: name = "payloadUnsupportedTypes"
+        case .messageReplyFailed: name = "messageReplyFailed"
+        case .messageReplyTimedOut: name = "messageReplyTimedOut"
+        case .fileAccessDenied: name = "fileAccessDenied"
+        case .deliveryFailed: name = "deliveryFailed"
+        case .insufficientSpace: name = "insufficientSpace"
+        case .sessionInactive: name = "sessionInactive"
+        case .transferTimedOut: name = "transferTimedOut"
+        case .companionAppNotInstalled: name = "companionAppNotInstalled"
+        case .watchOnlyApp: name = "watchOnlyApp"
+        @unknown default: name = "wcError"
+        }
+        return "\(name)(\(ns.code))"
     }
 }
