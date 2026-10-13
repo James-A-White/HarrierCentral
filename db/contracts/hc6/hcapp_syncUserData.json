@@ -2458,9 +2458,9 @@
       "detail": "HasherKennelMap rowset always returns '' and 0 for these columns. If the Flutter app still reads them, it will silently receive empty data. These columns should be removed from the contract once the app no longer references them."
     },
     {
-      "severity": "medium",
+      "severity": "low",
       "issue": "Force-replicate path cannot page past its first 250 rows",
-      "detail": "ForceReplicateKennelEvents (lines 667-735) applies no updatedAt watermark but does FETCH NEXT @paging250 with ORDER BY updatedAt. With @usePaging = 1 a followed kennel with more than 250 runs returns the same oldest-updated 250 on every call; the rest can only arrive through NarrowEvents."
+      "detail": "The force-replicate rowset (@forceReplicateAllRunsForKennel) has no updatedAt watermark but shares @paging250: 1,000,000 rows with @usePaging = 0, 250 with @usePaging = 1. With paging on, every call would return the same first 250 rows, so a kennel with more than 250 runs would never finish loading. Not live: all three app callers (kennel_list_controller follow, kennel_admin_controller, kennel_history deep link) pass usePaging = false. James chose on 2026-10-13 to document rather than guard; the SQL carries a warning comment above the query."
     },
     {
       "severity": "low",
