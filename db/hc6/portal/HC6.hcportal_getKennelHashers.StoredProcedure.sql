@@ -174,6 +174,12 @@ BEGIN TRY
 		INNER JOIN HC.Hasher h on hkm.UserId = h.id
 		WHERE hkm.KennelId = @kennelId
 		AND (hkm.MembershipExpirationDate > @now OR hkm.Following = 1)
+		-- Live people only (2026-10-13): not removed from the kennel, and an
+		-- account not closed -- merged duplicates and GDPR deletions set
+		-- Hasher.Removed. 48 such rows across 29 kennels were on rosters.
+		AND hkm.removed = 0
+		AND h.Removed = 0
+		AND h.deleted = 0
 	),
 	cte2 AS (
 		SELECT

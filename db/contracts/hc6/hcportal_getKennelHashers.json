@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_getKennelHashers",
-  "version": "1.1.0",
-  "description": "Returns the kennel's roster for the portal Members screen: every hasher with an HC.HasherKennelMap row in the kennel who is a current member (MembershipExpirationDate > now) or following (Following = 1), with profile, membership status, notification and email-alert preferences, historic and HC run/haring counts, credit and discount, and what they paid at the last two counted runs (eventNumber-PaymentTypeCode). Email is shown only for current members ('<hidden>' otherwise); the invite code only for hashers who have never logged in. Order of checks: @publicKennelId NULL, then HC6.ValidatePortalAuth (@publicKennelId as context), then kennel exists, then the gate: the caller's HKM.AppAccessFlags must have a bit of 0x40000019 (super admin | manage members | manage hash cash | admin). Read-only.",
+  "version": "1.2.0",
+  "description": "Returns the kennel's roster for the portal Members screen: every hasher with an HC.HasherKennelMap row in the kennel who is a current member (MembershipExpirationDate > now) or following (Following = 1), with profile, membership status, notification and email-alert preferences, historic and HC run/haring counts, credit and discount, and what they paid at the last two counted runs (eventNumber-PaymentTypeCode). Email is shown only for current members ('<hidden>' otherwise); the invite code only for hashers who have never logged in. Order of checks: @publicKennelId NULL, then HC6.ValidatePortalAuth (@publicKennelId as context), then kennel exists, then the gate: the caller's HKM.AppAccessFlags must have a bit of 0x40000019 (super admin | manage members | manage hash cash | admin). Read-only. Since 2026-10-13 the roster excludes HasherKennelMap rows with removed = 1 and hashers with Removed = 1 or deleted = 1 (merged duplicates, GDPR deletions).",
   "parameters": [
     {
       "name": "deviceId",
@@ -269,16 +269,6 @@
   "codeSmells": [
     {
       "severity": "medium",
-      "issue": "Removed kennel rows and removed/deleted accounts are listed",
-      "detail": "cte1 (lines 173-176) filters only on MembershipExpirationDate/Following: no `hkm.removed = 0`, no `h.Removed = 0`, no `h.deleted = 0`. A hasher removed from the kennel with Following still 1, or a GDPR-deleted account, appears on the roster."
-    },
-    {
-      "severity": "medium",
-      "issue": "Permission gate ignores HasherKennelMap.removed",
-      "detail": "Lines 80-88 read the caller's AppAccessFlags without `hkm.removed = 0`."
-    },
-    {
-      "severity": "medium",
       "issue": "CATCH block does not log to HC.ErrorLog",
       "detail": "Lines 212-215 return {Success 0, ErrorMessage} with no HC.ErrorLog row."
     },
@@ -291,6 +281,11 @@
       "severity": "low",
       "issue": "Validation before auth",
       "detail": "Lines 43-47 return 'Null or invalid publicKennelId' before ValidatePortalAuth, unlike most HC6 portal SPs."
+    },
+    {
+      "severity": "medium",
+      "issue": "Permission gate ignores HasherKennelMap.removed",
+      "detail": "Lines 80-88 read the caller's AppAccessFlags without `hkm.removed = 0`."
     }
   ]
 }
