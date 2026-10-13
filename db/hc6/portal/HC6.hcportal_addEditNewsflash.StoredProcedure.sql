@@ -79,6 +79,18 @@ BEGIN TRY
         RETURN;
     END
 
+    -- Platform admins with the newsflash right only (2026-10-13), as the
+    -- portal's Newsflash screen already requires. Until now any signed-in
+    -- portal user could create, change or delete platform newsflashes.
+    DECLARE @mayNewsflash SMALLINT = 0;
+    EXEC HC6.nonApi_portalKennelAccess @hasherId = @hasherId, @callerType = @callerType,
+         @platformCap = 'CanManageNewsflash', @allowed = @mayNewsflash OUTPUT;
+    IF (@mayNewsflash = 0)
+    BEGIN
+        SELECT 0 AS Success, 'Not authorised to manage newsflashes' AS ErrorMessage;
+        RETURN;
+    END
+
     -- Validate kennelId if provided
     IF @kennelId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM HC.Kennel WHERE id = @kennelId)
     BEGIN

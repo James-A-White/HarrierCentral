@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_toggleKennelSong",
-  "version": "1.1.0",
-  "description": "Toggles whether a song is associated with a kennel. @publicKennelId is resolved to the internal HC.Kennel.id (@kennelId) before all KennelSongMap operations — fixing the HC5 bug where @publicKennelId was used directly and no songs were ever actually toggled. If adding (@isInKennel=1), either creates a new KennelSongMap record or un-soft-deletes an existing one (Removed=0). If removing (@isInKennel=0), soft-deletes the mapping (Removed=1). All writes wrapped in a transaction. Auth: HC6.ValidatePortalAuth with @songId in the token param string; there is NO kennel permission check — any signed-in portal user can change any kennel's songbook.",
+  "version": "1.2.0",
+  "description": "Toggles whether a song is associated with a kennel. @publicKennelId is resolved to the internal HC.Kennel.id (@kennelId) before all KennelSongMap operations — fixing the HC5 bug where @publicKennelId was used directly and no songs were ever actually toggled. If adding (@isInKennel=1), either creates a new KennelSongMap record or un-soft-deletes an existing one (Removed=0). If removing (@isInKennel=0), soft-deletes the mapping (Removed=1). All writes wrapped in a transaction. Auth: HC6.ValidatePortalAuth with @songId in the token param string; there is NO kennel permission check — any signed-in portal user can change any kennel's songbook. Permission (2026-10-13): unknown kennel refused; HC6.nonApi_portalKennelAccess — AppAccessFlags 0x400000C1 (SuperAdmin, Admin, Manage songs 0x40, 0x80) or manageSongs; otherwise {Success 0, 'Not authorised to change this kennel''s songs'}.",
   "parameters": [
     {
       "name": "deviceId",
@@ -83,7 +83,8 @@
   "sideEffects": [
     "INSERT into HC.KennelSongMap when adding a song that has no existing mapping (uses resolved internal @kennelId)",
     "UPDATE HC.KennelSongMap.Removed = 0 and updatedAt when adding a song that already has a mapping (un-soft-delete, uses resolved internal @kennelId)",
-    "UPDATE HC.KennelSongMap.Removed = 1 and updatedAt when removing a song (soft-delete, uses resolved internal @kennelId)"
+    "UPDATE HC.KennelSongMap.Removed = 1 and updatedAt when removing a song (soft-delete, uses resolved internal @kennelId)",
+    "Calls HC6.nonApi_portalKennelAccess (read-only) for its permission check."
   ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
@@ -92,11 +93,6 @@
     "Never change a sentinel value meaning"
   ],
   "codeSmells": [
-    {
-      "severity": "high",
-      "issue": "No kennel permission gate",
-      "detail": "Lines 54-80: after ValidatePortalAuth only the parameters are checked. Nothing ties the caller to the kennel, so any signed-in portal user can add or remove songs in any kennel's songbook."
-    },
     {
       "severity": "medium",
       "issue": "Unknown kennel not refused",

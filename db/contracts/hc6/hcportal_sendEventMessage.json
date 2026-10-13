@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_sendEventMessage",
-  "version": "1.4.0",
-  "description": "Posts a message to a run's chat from the portal and returns the push audience. Inserts into HC.EventMessage (optionally a photo/location kind, optionally quoting a message of the same run), then returns the message details and two FCM token lists — visible push and silent (badge-only) push — built with the same rules as hcapp_sendEventMessage: the effective preference (run bell when non-zero, else kennel bell), the 6-hour window for preference 4, HC6.RunChatTie for which runs buzz, one push per device token, retired / 180-day-idle devices and removed hashers skipped, and senders blocked by the recipient left out. Auth: HC6.ValidatePortalAuth with the compound param string '<publicEventId>:<messageId>'; service accounts refused. There is NO check that the caller belongs to the kennel or may post in that run's chat.",
+  "version": "1.5.0",
+  "description": "Posts a message to a run's chat from the portal and returns the push audience. Inserts into HC.EventMessage (optionally a photo/location kind, optionally quoting a message of the same run), then returns the message details and two FCM token lists — visible push and silent (badge-only) push — built with the same rules as hcapp_sendEventMessage: the effective preference (run bell when non-zero, else kennel bell), the 6-hour window for preference 4, HC6.RunChatTie for which runs buzz, one push per device token, retired / 180-day-idle devices and removed hashers skipped, and senders blocked by the recipient left out. Auth: HC6.ValidatePortalAuth with the compound param string '<publicEventId>:<messageId>'; service accounts refused. There is NO check that the caller belongs to the kennel or may post in that run's chat. Who may post (2026-10-13): the sender must have a HasherKennelMap row for the run's kennel (removed = 0) or a HasherEventMap row on the run, as hcapp_sendEventMessage; otherwise {Success 0, 'Not authorised to post in this run''s chat'}.",
   "parameters": [
     {
       "name": "deviceId",
@@ -229,14 +229,10 @@
     "INSERT HC.EventMessage (inside a transaction)",
     "The API shim sends a visible push to rowset 2 tokens and a silent data push to rowset 3 tokens",
     "Reads HC6.RunChatTie, HC6.UserUnreadChatTotal, HC6.ChatMessagePreview, HC6.ChatMessageKindError, HC6.MinBuildForIconBadge",
-    "On a runtime error: INSERT HC.ErrorLog after the ROLLBACK"
+    "On a runtime error: INSERT HC.ErrorLog after the ROLLBACK",
+    "Membership check reads HC.HasherKennelMap / HC.HasherEventMap before the insert."
   ],
   "codeSmells": [
-    {
-      "severity": "high",
-      "issue": "No check that the caller may post in this run's chat",
-      "detail": "Lines 85-99 authenticate and refuse service accounts, then the SP inserts and fans out. hcapp_sendEventMessage refuses a sender who does not belong to the kennel ('Not authorised to post', its line ~196); this portal twin has no equivalent, so any signed-in portal user who knows a PublicEventId can post into that run's chat and, with flag 0x20, push the whole kennel."
-    },
     {
       "severity": "low",
       "issue": "Run start instant derived from raw EventStartDatetime",

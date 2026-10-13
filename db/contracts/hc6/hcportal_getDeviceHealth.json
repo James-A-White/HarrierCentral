@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_getDeviceHealth",
-  "version": "1.6.0",
-  "description": "Per-device health for one user, for the Usage Data user tile. Extracts the [METRICS] instrumentation (app 3.0.14+) from the user's uploaded session logs in HC.ClientErrorLog: per session the last '[METRICS] why=' line before the ring block (cumulative summary), the first 'why=start' line, the [METRICS:PEAKS] line, the [METRICS:RING] block (every session), the first app error and the [ERROR] lines. The SP extracts lines; the portal parses key=value pairs, so new app fields need no SP change. Runs at READ UNCOMMITTED with NOLOCK hints. Auth: HC6.ValidatePortalAuth (device-bound token, NULL callerParamString). No permission gate beyond authentication — any authenticated portal caller may query any @userId.",
+  "version": "1.7.0",
+  "description": "Per-device health for one user, for the Usage Data user tile. Extracts the [METRICS] instrumentation (app 3.0.14+) from the user's uploaded session logs in HC.ClientErrorLog: per session the last '[METRICS] why=' line before the ring block (cumulative summary), the first 'why=start' line, the [METRICS:PEAKS] line, the [METRICS:RING] block (every session), the first app error and the [ERROR] lines. The SP extracts lines; the portal parses key=value pairs, so new app fields need no SP change. Runs at READ UNCOMMITTED with NOLOCK hints. Auth: HC6.ValidatePortalAuth (device-bound token, NULL callerParamString). No permission gate beyond authentication — any authenticated portal caller may query any @userId. Permission (2026-10-13): platform admins with CanViewMonitor only; otherwise {Success 0, 'Not authorised to view the monitor'}.",
   "parameters": [
     {
       "name": "deviceId",
@@ -189,14 +189,10 @@
     }
   ],
   "sideEffects": [
-    "On a runtime error only: INSERT HC.ErrorLog (HcVersion from HC6.DeviceHcVersion(@deviceId))"
+    "On a runtime error only: INSERT HC.ErrorLog (HcVersion from HC6.DeviceHcVersion(@deviceId))",
+    "Calls HC6.nonApi_portalKennelAccess (read-only) for its permission check."
   ],
   "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "No permission gate on another user's logs",
-      "detail": "After ValidatePortalAuth (line 53) the SP serves any @userId's device list and raw [ERROR] log text to any authenticated portal user; there is no PlatformAdmin / super-admin check. The portal only shows the tile to admins, but the SP itself does not enforce it."
-    },
     {
       "severity": "low",
       "issue": "Stale header comment",

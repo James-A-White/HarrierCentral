@@ -198,6 +198,21 @@ DECLARE @resultInt int;
                 RETURN;
         END
 
+        -- Permission (2026-10-13): creating or editing a run needs the
+        -- kennel's run rights -- Admin/SuperAdmin or Manage runs (0x4), as
+        -- the portal's own Edit button tests, or createEditRuns. Until now
+        -- any signed-in portal user could write any kennel's runs.
+        DECLARE @mayEditRuns SMALLINT = 0;
+        EXEC HC6.nonApi_portalKennelAccess @hasherId = @hasherId, @callerType = @callerType,
+             @kennelId = @kennelId, @flagMask = 0x00000085, @functionKey = 'createEditRuns',
+             @platformCap = 'CanEditKennel', @allowed = @mayEditRuns OUTPUT;
+        IF (@mayEditRuns = 0)
+        BEGIN
+                ROLLBACK TRANSACTION;
+                SELECT 0 AS Success, 'Not authorised to edit runs for this kennel' AS ErrorMessage;
+                RETURN;
+        END
+
         -- Look up eventId with lock if publicEventId is provided.
         -- KennelId guard prevents cross-kennel event edits (H9 IDOR fix).
         IF @publicEventId IS NOT NULL

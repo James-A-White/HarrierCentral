@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_getUsageData",
-  "version": "1.3.0",
-  "description": "Returns platform usage statistics for the HC Admin Tools usage dashboard in five rowsets: app version distribution (iOS vs Android), integration job status, usage metrics across data types (Account, Activity, Event, Kennel, Login, Payment, Portal, Error, Push, App Error, PackTrack, AI Tokens, Azure Cost in pence incl. VAT, Email, First Sign-in), the last day's login details per user, and recently updated/active runs. Device-bound portal auth via HC6.ValidatePortalAuth; the SP applies NO platform-admin gate (HC.PlatformAdmin.CanViewMonitor exists but is not checked here).",
+  "version": "1.4.0",
+  "description": "Returns platform usage statistics for the HC Admin Tools usage dashboard in five rowsets: app version distribution (iOS vs Android), integration job status, usage metrics across data types (Account, Activity, Event, Kennel, Login, Payment, Portal, Error, Push, App Error, PackTrack, AI Tokens, Azure Cost in pence incl. VAT, Email, First Sign-in), the last day's login details per user, and recently updated/active runs. Device-bound portal auth via HC6.ValidatePortalAuth; the SP applies NO platform-admin gate (HC.PlatformAdmin.CanViewMonitor exists but is not checked here). Permission (2026-10-13): platform admins with CanViewMonitor only; otherwise {Success 0, 'Not authorised to view the monitor'}.",
   "parameters": [
     {
       "name": "deviceId",
@@ -429,7 +429,9 @@
       ]
     }
   ],
-  "sideEffects": [],
+  "sideEffects": [
+    "Calls HC6.nonApi_portalKennelAccess (read-only) for its permission check."
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",
@@ -446,11 +448,6 @@
     "2026-10-13 (contract sweep): rowset 3 now lists PackTrack (10), Email (13) and First Sign-in (14, added 2026-10-11); rowset 5 gains kennelUniqueShortName, eventNumber, isCountedRun (added 2026-10-09)."
   ],
   "codeSmells": [
-    {
-      "severity": "high",
-      "issue": "No platform-admin gate",
-      "detail": "Lines 54-59: only ValidatePortalAuth runs. Any signed-in portal user receives rowset 4 — every user who signed in in the last day with names, photo URL, user id, device and home kennel — plus platform cost and error figures. HC.PlatformAdmin.CanViewMonitor exists for exactly this and is not checked."
-    },
     {
       "severity": "medium",
       "issue": "CATCH block does not log to HC.ErrorLog",

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_getLoginHistory",
-  "version": "1.1.0",
-  "description": "Returns the login history (HC.LaunchAndLogin) of a specified user over the last 365 days — timestamps, app versions, device OS and city geolocation — most recent first. Device-bound portal auth via HC6.ValidatePortalAuth; there is NO permission gate beyond being a signed-in portal user (the portal calls it from the platform Usage Data page). Reads with READ UNCOMMITTED / NOLOCK.",
+  "version": "1.2.0",
+  "description": "Returns the login history (HC.LaunchAndLogin) of a specified user over the last 365 days — timestamps, app versions, device OS and city geolocation — most recent first. Device-bound portal auth via HC6.ValidatePortalAuth; there is NO permission gate beyond being a signed-in portal user (the portal calls it from the platform Usage Data page). Reads with READ UNCOMMITTED / NOLOCK. Permission (2026-10-13): platform admins with CanViewMonitor only; otherwise {Success 0, 'Not authorised to view the monitor'}.",
   "parameters": [
     {
       "name": "deviceId",
@@ -96,7 +96,9 @@
       ]
     }
   ],
-  "sideEffects": [],
+  "sideEffects": [
+    "Calls HC6.nonApi_portalKennelAccess (read-only) for its permission check."
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",
@@ -104,11 +106,6 @@
     "Never change a sentinel value meaning"
   ],
   "codeSmells": [
-    {
-      "severity": "high",
-      "issue": "No permission gate — any portal user can read any user's login history",
-      "detail": "Lines 48-60: after ValidatePortalAuth the SP only checks @userId IS NOT NULL. Nothing ties the caller (@hasherId) to platform-admin status or to the target user, so any signed-in portal user who knows a userId gets that person's login times, device OS and city locations. The UI reaches it only from the platform Usage Data page, but the SP itself is open."
-    },
     {
       "severity": "medium",
       "issue": "CATCH block does not log to HC.ErrorLog",

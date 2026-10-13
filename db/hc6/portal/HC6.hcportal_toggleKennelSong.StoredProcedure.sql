@@ -83,6 +83,25 @@ BEGIN TRY
 	DECLARE @kennelId UNIQUEIDENTIFIER;
 	SELECT @kennelId = ken.id FROM HC.Kennel ken WHERE ken.PublicKennelId = @publicKennelId;
 
+	IF @kennelId IS NULL
+	BEGIN
+		SELECT 0 AS Success, 'Kennel not found' AS ErrorMessage;
+		RETURN;
+	END
+
+	-- Permission (2026-10-13): a kennel's songbook is its managers' --
+	-- Admin/SuperAdmin or Manage songs (0x40), or manageSongs. Until now any
+	-- signed-in portal user could change any kennel's songbook.
+	DECLARE @maySongs SMALLINT = 0;
+	EXEC HC6.nonApi_portalKennelAccess @hasherId = @hasherId, @callerType = @callerType,
+	     @kennelId = @kennelId, @flagMask = 0x000000C1, @functionKey = 'manageSongs',
+	     @allowed = @maySongs OUTPUT;
+	IF (@maySongs = 0)
+	BEGIN
+		SELECT 0 AS Success, 'Not authorised to change this kennel''s songs' AS ErrorMessage;
+		RETURN;
+	END
+
 	-- =============================================
 	-- Add or remove song from kennel
 	-- =============================================

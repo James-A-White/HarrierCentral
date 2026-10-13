@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_addEditEvent",
-  "version": "1.1.0",
-  "description": "Creates a new run/event or updates an existing one for a kennel from the Flutter portal run editor. @publicEventId NULL = insert, non-NULL = update (the event must belong to @publicKennelId). Handles name, description, location, structured CountryId/RegionId/CityId, manual TimezoneId, pricing, tags, dissemination settings; optionally saves the tags as the kennel's defaults; then renumbers runs (HC6.nonApi_updateRunNumbers) and refreshes attendees' run counts (HC6.nonApi_updateRunCountsForEventUsers) inside the same transaction. On update, a run imported by the AI runs-page import is 'adopted' (HC6.nonApi_adoptImportedRun) and its UseFb* mirror flags are forced to 0 so the import stops overwriting it. Auth: HC6.ValidatePortalAuth with @publicKennelId as callerParamString (token = UPPER(deviceSecret):UPPER(publicKennelId)). There is NO kennel permission gate — any authenticated portal device can write events for any kennel (see codeSmells). Renamed from HC5 hcportal_addEditEvent2; @deleted removed — deletion is exclusively via hcportal_deleteEvent.",
+  "version": "1.2.0",
+  "description": "Creates a new run/event or updates an existing one for a kennel from the Flutter portal run editor. @publicEventId NULL = insert, non-NULL = update (the event must belong to @publicKennelId). Handles name, description, location, structured CountryId/RegionId/CityId, manual TimezoneId, pricing, tags, dissemination settings; optionally saves the tags as the kennel's defaults; then renumbers runs (HC6.nonApi_updateRunNumbers) and refreshes attendees' run counts (HC6.nonApi_updateRunCountsForEventUsers) inside the same transaction. On update, a run imported by the AI runs-page import is 'adopted' (HC6.nonApi_adoptImportedRun) and its UseFb* mirror flags are forced to 0 so the import stops overwriting it. Auth: HC6.ValidatePortalAuth with @publicKennelId as callerParamString (token = UPPER(deviceSecret):UPPER(publicKennelId)). There is NO kennel permission gate — any authenticated portal device can write events for any kennel (see codeSmells). Renamed from HC5 hcportal_addEditEvent2; @deleted removed — deletion is exclusively via hcportal_deleteEvent. Permission (2026-10-13): HC6.nonApi_portalKennelAccess — AppAccessFlags 0x40000085 (SuperAdmin, Admin, public-web 0x80, Manage runs 0x4), createEditRuns, or platform CanEditKennel; otherwise {Success 0, ErrorMessage 'Not authorised to edit runs for this kennel'} after rollback.",
   "parameters": [
     {
       "name": "deviceId",
@@ -400,14 +400,10 @@
     "Insert path: INSERT HC.Event with new id and PublicEventId, EventSource='HC Portal', InboundIntegrationId=0, UseFb* = 0",
     "UPDATE HC.Kennel DefaultRunTags1/2/3 when @saveTagsAsKennelDefault = 1 and a value differs",
     "EXEC HC6.nonApi_updateRunNumbers @eventId and EXEC HC6.nonApi_updateRunCountsForEventUsers @eventId, inside the transaction",
-    "HC.Event triggers (updatedAt / sync) fire on the INSERT/UPDATE"
+    "HC.Event triggers (updatedAt / sync) fire on the INSERT/UPDATE",
+    "Calls HC6.nonApi_portalKennelAccess (read-only) for its permission check."
   ],
   "codeSmells": [
-    {
-      "severity": "high",
-      "issue": "No kennel permission gate",
-      "detail": "After HC6.ValidatePortalAuth (line 104) the SP never checks that @hasherId holds a run-editing role or HC admin access on @publicKennelId (no HasherKennelMap / AppAccessFlags / PlatformAdmin check anywhere in the body). The token binds publicKennelId but any authenticated portal user can create or edit runs for any kennel, unlike hcportal_deleteEvent which does gate."
-    },
     {
       "severity": "medium",
       "issue": "CATCH does not log to HC.ErrorLog",

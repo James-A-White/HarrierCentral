@@ -1,0 +1,78 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_portalKennelAccess",
+  "version": "1.0.0",
+  "description": "The one permission check for hcportal_ SPs that act on a kennel or on the platform (2026-10-13). Portal sign-in proves only identity and the portal API passes calls straight through, so this is the only gate. Allowed when ANY holds: @callerType <> 0 (Harrier Central service accounts); the caller's HC.PlatformAdmin row grants @platformCap; the caller's HasherKennelMap row for @kennelId has SuperAdmin 0x40000000 or any @flagMask bit in AppAccessFlags; or HC6.CheckKennelPermission grants @functionKey. Read-only; not API-callable (nonApi_).",
+  "parameters": [
+    {
+      "name": "hasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Hasher.id",
+      "description": "Caller, from ValidatePortalAuth."
+    },
+    {
+      "name": "callerType",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "ValidatePortalAuth caller type; 0 = person, anything else = service account (allowed). Default 0."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.id",
+      "description": "Kennel acted on; NULL for platform-only checks (then only callerType and platformCap apply)."
+    },
+    {
+      "name": "flagMask",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.AppAccessFlags",
+      "description": "AppAccessFlags bits that grant the action, OR-ed with SuperAdmin 0x40000000."
+    },
+    {
+      "name": "functionKey",
+      "type": "NVARCHAR(80)",
+      "nullable": true,
+      "mapsToColumn": "PermissionFunction.FunctionKey",
+      "description": "Permissions V2 function that grants the action, via HC6.CheckKennelPermission."
+    },
+    {
+      "name": "platformCap",
+      "type": "NVARCHAR(40)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "HC.PlatformAdmin right that grants the action: CanViewMonitor, CanManageNewsflash, CanEditKennel or CanManagePermissions."
+    },
+    {
+      "name": "allowed",
+      "type": "SMALLINT",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "OUTPUT: 1 allowed, 0 refused."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Parameter without a default",
+      "detail": "@hasherId and @allowed (OUTPUT) have no default. Only called from SQL, never from a client, so the unlogged-500 risk does not apply."
+    },
+    {
+      "severity": "low",
+      "issue": "No TRY/CATCH",
+      "detail": "A small read-only gate called inside each caller's TRY; a failure surfaces through the caller's CATCH."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

@@ -258,6 +258,23 @@ BEGIN TRY
 	LEFT JOIN HC.City evtCity ON evtCity.id = evt.CityId
 	WHERE evt.id = @eventId
 
+	-- Payments are for the kennel's money people (2026-10-13): Admin/
+	-- SuperAdmin or Manage hash cash (0x8), or viewPaymentReport. Anyone
+	-- else asking for them gets the plain attendee list -- the run itself
+	-- is public, its takings are not. Until now any signed-in portal user
+	-- could read any run's payments. (The portal does not ask for them
+	-- today; this closes the door for a hand-built request.)
+	IF (@includePaymentInfo <> 0)
+	BEGIN
+		DECLARE @payKennelId UNIQUEIDENTIFIER;
+		SELECT @payKennelId = KennelId FROM HC.Event WHERE id = @eventId;
+		DECLARE @mayReadPayments SMALLINT = 0;
+		EXEC HC6.nonApi_portalKennelAccess @hasherId = @hasherId, @callerType = 0,
+		     @kennelId = @payKennelId, @flagMask = 0x00000089, @functionKey = 'viewPaymentReport',
+		     @allowed = @mayReadPayments OUTPUT;
+		IF (@mayReadPayments = 0) SET @includePaymentInfo = 0;
+	END
+
 	-- Rowset 1: Attendee List (only for non-service-account callers)
 	IF (@callerType = 0)
 	BEGIN

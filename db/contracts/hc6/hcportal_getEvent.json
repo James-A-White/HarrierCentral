@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_getEvent",
-  "version": "1.3.0",
-  "description": "Retrieves one event by @publicEventId, by @kennelUniqueShortName + @runDesignator (EventNumber), or by the keywords 'nextrun'/'lastrun'. Returns an EventDetails rowset and, for regular users (callerType 0), an attendee list whose shape depends on @includePaymentInfo. Auth: HC6.ValidatePortalAuth with @publicEventId as the compound callerParamString (token paramString = UPPER(deviceSecret):UPPER(publicEventId), or the device secret alone when @publicEventId is NULL). No kennel permission gate: any authenticated caller can read any event and its attendee/payment list. The attendee list is suppressed for the service accounts (callerType 1 = HashRuns.org 11111111-..., 2 = admin portal 22222222-...). Used by the admin portal and the public HashRuns.org site.",
+  "version": "1.4.0",
+  "description": "Retrieves one event by @publicEventId, by @kennelUniqueShortName + @runDesignator (EventNumber), or by the keywords 'nextrun'/'lastrun'. Returns an EventDetails rowset and, for regular users (callerType 0), an attendee list whose shape depends on @includePaymentInfo. Auth: HC6.ValidatePortalAuth with @publicEventId as the compound callerParamString (token paramString = UPPER(deviceSecret):UPPER(publicEventId), or the device secret alone when @publicEventId is NULL). No kennel permission gate: any authenticated caller can read any event and its attendee/payment list. The attendee list is suppressed for the service accounts (callerType 1 = HashRuns.org 11111111-..., 2 = admin portal 22222222-...). Used by the admin portal and the public HashRuns.org site. Payments (2026-10-13): @includePaymentInfo = 1 is honoured only for AppAccessFlags 0x40000089 or viewPaymentReport on the run's kennel; anyone else silently gets the basic attendee list (includePaymentInfo treated as 0).",
   "parameters": [
     {
       "name": "deviceId",
@@ -889,7 +889,9 @@
       ]
     }
   ],
-  "sideEffects": [],
+  "sideEffects": [
+    "Calls HC6.nonApi_portalKennelAccess (read-only) for its permission check."
+  ],
   "codeSmells": [
     {
       "severity": "high",
@@ -900,11 +902,6 @@
       "severity": "medium",
       "issue": "Raw EventStartDatetime used for ordering",
       "detail": "Lines 84 and 102 ORDER BY EventStartDatetime, which carries a spurious +00:00 on most rows (see /hc-event-datetimes); the filter uses EventStartDateTimeGmt. Ordering by an instant should use EventStartDateTimeGmt. extEventStartDatetime/eventStartDatetime/eventEndDatetime (lines 189-191) are CONVERTed to DATETIME2, dropping the offset."
-    },
-    {
-      "severity": "medium",
-      "issue": "No permission gate on attendee and payment data",
-      "detail": "After ValidatePortalAuth (line 56) any authenticated regular user receives the full attendee list, and with @includePaymentInfo <> 0 every attendee's payment amounts, types and references, for any event in any kennel."
     },
     {
       "severity": "medium",

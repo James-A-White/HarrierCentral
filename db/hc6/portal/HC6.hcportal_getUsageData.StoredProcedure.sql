@@ -58,6 +58,18 @@ BEGIN TRY
 		RETURN;
 	END
 
+	-- Platform admins with the monitor right only (2026-10-13), as the
+	-- portal's Monitor screen already requires. Until now any signed-in
+	-- portal user could read this.
+	DECLARE @mayMonitor SMALLINT = 0;
+	EXEC HC6.nonApi_portalKennelAccess @hasherId = @hasherId, @callerType = @callerType,
+	     @platformCap = 'CanViewMonitor', @allowed = @mayMonitor OUTPUT;
+	IF (@mayMonitor = 0)
+	BEGIN
+		SELECT 0 AS Success, 'Not authorised to view the monitor' AS ErrorMessage;
+		RETURN;
+	END
+
 	-- Get future run count
 	DECLARE @futureRunCount INT;
 	SELECT @futureRunCount = COUNT(*)

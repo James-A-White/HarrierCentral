@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_getCategoryDetail",
-  "version": "1.1.0",
-  "description": "Older drill-down for the admin portal dashboard (superseded by hcportal_getCategoryDetail2, which returns different shapes for categories 7 and 8). Returns ONE rowset of raw typed columns for @categoryId: 0=New Hashers, 1=Event RSVPs, 2=New Events, 3=New Kennels, 4=App Logins, 5=Payments, 6=Portal Access, 7=Errors, 8=HashRuns.Org Traffic, 100=Version Adoption. An unknown categoryId returns no rowset at all. Window: @days days (0 or NULL = 60 minutes). READ UNCOMMITTED with NOLOCK hints and OPTION (RECOMPILE). Auth: HC6.ValidatePortalAuth (NULL callerParamString); no permission gate.",
+  "version": "1.2.0",
+  "description": "Older drill-down for the admin portal dashboard (superseded by hcportal_getCategoryDetail2, which returns different shapes for categories 7 and 8). Returns ONE rowset of raw typed columns for @categoryId: 0=New Hashers, 1=Event RSVPs, 2=New Events, 3=New Kennels, 4=App Logins, 5=Payments, 6=Portal Access, 7=Errors, 8=HashRuns.Org Traffic, 100=Version Adoption. An unknown categoryId returns no rowset at all. Window: @days days (0 or NULL = 60 minutes). READ UNCOMMITTED with NOLOCK hints and OPTION (RECOMPILE). Auth: HC6.ValidatePortalAuth (NULL callerParamString); no permission gate. Permission (2026-10-13): platform admins with CanViewMonitor only; otherwise {Success 0, 'Not authorised to view the monitor'}.",
   "parameters": [
     {
       "name": "deviceId",
@@ -534,17 +534,14 @@
       ]
     }
   ],
-  "sideEffects": [],
+  "sideEffects": [
+    "Calls HC6.nonApi_portalKennelAccess (read-only) for its permission check."
+  ],
   "codeSmells": [
     {
       "severity": "medium",
       "issue": "CATCH does not log to HC.ErrorLog",
       "detail": "The CATCH block (line 346) returns the envelope without an HC.ErrorLog row; getCategoryDetail2 was fixed on 2026-10-05, this copy was not."
-    },
-    {
-      "severity": "medium",
-      "issue": "No permission gate on platform-wide data",
-      "detail": "After ValidatePortalAuth (line 57) any authenticated portal user can read every kennel's payments, error logs and login history. The dashboard is shown only to platform admins in the portal, but the SP does not check HC.PlatformAdmin or a super-admin bit."
     },
     {
       "severity": "low",

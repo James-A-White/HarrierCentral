@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_getKennel",
-  "version": "1.3.0",
-  "description": "Returns one kennel's full profile for the portal's kennel editor and the HashRuns.org service account: identity, location (city/region/country with flags), website settings, dissemination flags, default run settings, membership settings, three payment-scheme slots, bank details, card payment provider, runs-page import status, trail symbol/type config and notification windows. Auth: HC6.ValidatePortalAuth with @publicKennelId as the context identifier. There is no kennel permission gate: any authenticated portal caller (regular user callerType 0, or service account 1/2) can read any kennel. Read-only.",
+  "version": "1.4.0",
+  "description": "Returns one kennel's full profile for the portal's kennel editor and the HashRuns.org service account: identity, location (city/region/country with flags), website settings, dissemination flags, default run settings, membership settings, three payment-scheme slots, bank details, card payment provider, runs-page import status, trail symbol/type config and notification windows. Auth: HC6.ValidatePortalAuth with @publicKennelId as the context identifier. There is no kennel permission gate: any authenticated portal caller (regular user callerType 0, or service account 1/2) can read any kennel. Read-only. Permission (2026-10-13): HC6.nonApi_portalKennelAccess — AppAccessFlags 0x4000008B (SuperAdmin, Admin, Manage kennel 0x2, Manage hash cash 0x8, 0x80), manageKennelSettings, or platform CanEditKennel; otherwise {Success 0, 'Not authorised to manage this kennel'}.",
   "parameters": [
     {
       "name": "deviceId",
@@ -678,7 +678,9 @@
       ]
     }
   ],
-  "sideEffects": [],
+  "sideEffects": [
+    "Calls HC6.nonApi_portalKennelAccess (read-only) for its permission check."
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",
@@ -687,11 +689,6 @@
     "Never fix the 'canEditRunAttendence' typo without coordinating with all clients"
   ],
   "codeSmells": [
-    {
-      "severity": "high",
-      "issue": "No kennel permission gate on sensitive columns",
-      "detail": "After auth (line 51) nothing checks the caller's HasherKennelMap rights for this kennel, yet the row carries bankAccountNumber/bankBic/bankBeneficiary (146-149), extApiKey (182), cardPaymentMerchantCode (106) and kennelAdminEmailList (133). Any hasher with a portal device token can read them for any kennel."
-    },
     {
       "severity": "medium",
       "issue": "CATCH block does not log to HC.ErrorLog",

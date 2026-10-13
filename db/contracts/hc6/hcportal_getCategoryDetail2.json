@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_getCategoryDetail2",
-  "version": "1.2.0",
-  "description": "Drill-down feed for the HC admin portal dashboard tiles. Returns ONE rowset of raw typed columns for @categoryId: 0=New Hashers, 1=Event RSVPs, 2=New Events, 3=New Kennels, 4=App Logins, 5=Payments, 6=Portal Access, 7=Errors, 8=Push Notification Log, 9=App Errors (client session logs), 10=PackTrack tracks, 11=AI Tokens, 12=Azure Cost, 13=Run Email, 14=First Sign-in, 100=Version Adoption. An unknown categoryId returns no rowset at all. Window: @days days (0 or NULL = 60 minutes); category 12 uses its own day range. READ UNCOMMITTED with NOLOCK hints. Portal does all formatting; HC5's header metadata rowset is gone. Auth: HC6.ValidatePortalAuth (NULL callerParamString); no permission gate.",
+  "version": "1.3.0",
+  "description": "Drill-down feed for the HC admin portal dashboard tiles. Returns ONE rowset of raw typed columns for @categoryId: 0=New Hashers, 1=Event RSVPs, 2=New Events, 3=New Kennels, 4=App Logins, 5=Payments, 6=Portal Access, 7=Errors, 8=Push Notification Log, 9=App Errors (client session logs), 10=PackTrack tracks, 11=AI Tokens, 12=Azure Cost, 13=Run Email, 14=First Sign-in, 100=Version Adoption. An unknown categoryId returns no rowset at all. Window: @days days (0 or NULL = 60 minutes); category 12 uses its own day range. READ UNCOMMITTED with NOLOCK hints. Portal does all formatting; HC5's header metadata rowset is gone. Auth: HC6.ValidatePortalAuth (NULL callerParamString); no permission gate. Permission (2026-10-13): platform admins with CanViewMonitor only; otherwise {Success 0, 'Not authorised to view the monitor'}.",
   "parameters": [
     {
       "name": "deviceId",
@@ -901,14 +901,10 @@
     }
   ],
   "sideEffects": [
-    "On a runtime error only: INSERT HC.ErrorLog (ProcName = OBJECT_NAME(@@PROCID), userId = caller)"
+    "On a runtime error only: INSERT HC.ErrorLog (ProcName = OBJECT_NAME(@@PROCID), userId = caller)",
+    "Calls HC6.nonApi_portalKennelAccess (read-only) for its permission check."
   ],
   "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "No permission gate on platform-wide data",
-      "detail": "After ValidatePortalAuth (line 61) any authenticated portal user can read every kennel's payments, error logs and login history. The dashboard is shown only to platform admins in the portal, but the SP does not check HC.PlatformAdmin or a super-admin bit."
-    },
     {
       "severity": "low",
       "issue": "Hard-coded ids and sentinel coordinates",

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_deleteNewsflash",
-  "version": "1.1.0",
-  "description": "Soft-deletes a portal newsflash by setting IsDeleted=1 and UpdatedAt=GETUTCDATE(). The newsflash immediately stops being returned by hcportal_getPendingNewsflashes. Associated HC.PortalNewsflashRead records are retained for audit; hcportal_getNewsflashReaders continues to work on soft-deleted newsflashes. Auth: HC6.ValidatePortalAuth with a NULL callerParamString; any authenticated portal user may call it — there is no permission gate in the SP (the portal restricts the screen). HC.PortalNewsflash has no file in db/schema/tables; its definition is in db/hc6/portal/archive/create_portal_newsflash_tables.sql.",
+  "version": "1.2.0",
+  "description": "Soft-deletes a portal newsflash by setting IsDeleted=1 and UpdatedAt=GETUTCDATE(). The newsflash immediately stops being returned by hcportal_getPendingNewsflashes. Associated HC.PortalNewsflashRead records are retained for audit; hcportal_getNewsflashReaders continues to work on soft-deleted newsflashes. Auth: HC6.ValidatePortalAuth with a NULL callerParamString; any authenticated portal user may call it — there is no permission gate in the SP (the portal restricts the screen). HC.PortalNewsflash has no file in db/schema/tables; its definition is in db/hc6/portal/archive/create_portal_newsflash_tables.sql. Permission (2026-10-13): platform admins with CanManageNewsflash only; otherwise {Success 0, 'Not authorised to manage newsflashes'}.",
   "parameters": [
     {
       "name": "deviceId",
@@ -48,18 +48,14 @@
     }
   ],
   "sideEffects": [
-    "UPDATE HC.PortalNewsflash SET IsDeleted=1, UpdatedAt=GETUTCDATE() WHERE NewsflashId=@newsflashId"
+    "UPDATE HC.PortalNewsflash SET IsDeleted=1, UpdatedAt=GETUTCDATE() WHERE NewsflashId=@newsflashId",
+    "Calls HC6.nonApi_portalKennelAccess (read-only) for its permission check."
   ],
   "codeSmells": [
     {
       "severity": "medium",
       "issue": "CATCH does not log to HC.ErrorLog",
       "detail": "Lines 70-73: the CATCH rolls back and returns ERROR_MESSAGE() but writes no HC.ErrorLog row, so a runtime failure leaves no server record."
-    },
-    {
-      "severity": "medium",
-      "issue": "No permission gate",
-      "detail": "After ValidatePortalAuth (line 40) any authenticated portal user can delete any newsflash; the check that the caller is a platform admin lives only in the client."
     },
     {
       "severity": "low",

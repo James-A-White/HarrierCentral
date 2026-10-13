@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_addEditNewsflash",
-  "version": "1.1.0",
-  "description": "Creates or updates a portal newsflash. When @newsflashId is NULL a new row is inserted with the calling admin's hasherId recorded as CreatedByHasherId. When @newsflashId is provided the existing active (IsDeleted=0) newsflash is updated. Image upload to Azure Blob Storage is handled by the Flutter portal before calling this SP — @imageUrl receives the resulting blob URL. An empty or whitespace-only @imageUrl is treated as NULL (no image / clear existing image). Validation is fast-failed before the auth round-trip. Auth: HC6.ValidatePortalAuth with NULL callerParamString. There is no permission gate beyond a valid portal token (see codeSmells). HC.PortalNewsflash is defined in db/hc6/portal/archive/create_portal_newsflash_tables.sql (not in db/schema/tables).",
+  "version": "1.2.0",
+  "description": "Creates or updates a portal newsflash. When @newsflashId is NULL a new row is inserted with the calling admin's hasherId recorded as CreatedByHasherId. When @newsflashId is provided the existing active (IsDeleted=0) newsflash is updated. Image upload to Azure Blob Storage is handled by the Flutter portal before calling this SP — @imageUrl receives the resulting blob URL. An empty or whitespace-only @imageUrl is treated as NULL (no image / clear existing image). Validation is fast-failed before the auth round-trip. Auth: HC6.ValidatePortalAuth with NULL callerParamString. There is no permission gate beyond a valid portal token (see codeSmells). HC.PortalNewsflash is defined in db/hc6/portal/archive/create_portal_newsflash_tables.sql (not in db/schema/tables). Permission (2026-10-13): platform admins with CanManageNewsflash only; otherwise {Success 0, 'Not authorised to manage newsflashes'}.",
   "parameters": [
     {
       "name": "deviceId",
@@ -91,14 +91,10 @@
   ],
   "sideEffects": [
     "INSERT HC.PortalNewsflash — when @newsflashId is NULL",
-    "UPDATE HC.PortalNewsflash SET Title, BodyText, ImageUrl, StartDate, EndDate, KennelId, UpdatedAt — when @newsflashId is provided"
+    "UPDATE HC.PortalNewsflash SET Title, BodyText, ImageUrl, StartDate, EndDate, KennelId, UpdatedAt — when @newsflashId is provided",
+    "Calls HC6.nonApi_portalKennelAccess (read-only) for its permission check."
   ],
   "codeSmells": [
-    {
-      "severity": "high",
-      "issue": "No permission gate",
-      "detail": "After HC6.ValidatePortalAuth (lines 72-80) any authenticated portal user may create or overwrite a newsflash, including a platform-wide one (@kennelId NULL) and one targeted at any kennel. There is no HC.PlatformAdmin or kennel-role check, and no ownership check on edit (CreatedByHasherId is not compared)."
-    },
     {
       "severity": "medium",
       "issue": "CATCH does not log to HC.ErrorLog",
