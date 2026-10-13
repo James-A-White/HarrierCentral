@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_processPayment",
-  "version": "1.9.0",
-  "description": "Records, confirms, or cancels a single payment for an event attendance (or membership/haberdashery when productType != 1). Auth: HC6.ValidateAppAuth (spNumber 40) with a COMPOUND token context — @param = UPPER(DeviceSecret) + UPPER(hasherEventMapId or GUID_EMPTY) + '#' + INT(paymentAmount or 0), built from the parameters before validation (lines 171-180), so the token binds the call to one HEM and one whole-unit amount. paymentType codes: 1=not paid (cancel existing), 2=free, 3=cash, 4=bank transfer, 5=cash (other amount), 6=hash credit, 7=bank transfer (other amount), 8=credit (other amount), 100=confirm bank transfer (WankerBanker confirmation only). Creates HasherEventMap if none exists. Cancels any prior active payment before inserting a new one. On success, delegates to hcapp_syncEventAdminData or hcapp_syncUserData based on @appDomainType. Permission gate: HC6.CheckKennelPermission @functionKey = 'takePayment' in the paying event's kennel (errorCode 1340, errorType 13) is required for every money path, with two exemptions — a hare of the event being paid for, and SELF-SERVICE (1.6.0): a hasher settling their OWN run fee (payer = caller, productType 1, paymentType 4 or 6, no @specialRunPrice). Self-service covers the run-start check-in prompt and the run detail payment icons; cash (3/5), other-amount (7/8), mark-not-paid (1) and confirm-transfer (100) remain admin-only. Idempotent replays (@clientPaymentId) are acknowledged with alreadyProcessed = 1 and no writes. Rowsets 2+ are the delegated sync SP's.",
+  "version": "1.10.0",
+  "description": "Records, confirms, or cancels a single payment for an event attendance (or membership/haberdashery when productType != 1). Auth: HC6.ValidateAppAuth (spNumber 40) with a COMPOUND token context — @param = UPPER(DeviceSecret) + UPPER(hasherEventMapId or GUID_EMPTY) + '#' + INT(paymentAmount or 0), built from the parameters before validation (lines 171-180), so the token binds the call to one HEM and one whole-unit amount. paymentType codes: 1=not paid (cancel existing), 2=free, 3=cash, 4=bank transfer, 5=cash (other amount), 6=hash credit, 7=bank transfer (other amount), 8=credit (other amount), 100=confirm bank transfer (WankerBanker confirmation only). Creates HasherEventMap if none exists. Cancels any prior active payment before inserting a new one. On success, delegates to hcapp_syncEventAdminData or hcapp_syncUserData based on @appDomainType. Permission gate: HC6.CheckKennelPermission @functionKey = 'takePayment' in the paying event's kennel (errorCode 1340, errorType 13) is required for every money path, with two exemptions — a hare of the event being paid for, and SELF-SERVICE (1.6.0): a hasher settling their OWN run fee (payer = caller, productType 1, paymentType 4 or 6, no @specialRunPrice). Self-service covers the run-start check-in prompt and the run detail payment icons; cash (3/5), other-amount (7/8), mark-not-paid (1) and confirm-transfer (100) remain admin-only. Idempotent replays (@clientPaymentId) are acknowledged with alreadyProcessed = 1 and no writes. Rowsets 2+ are the delegated sync SP's. Since 2026-10-13 paymentType 100 (confirm bank transfer) that confirms no row returns success 0 / errorCode 1356 'Nothing to confirm' instead of success.",
   "parameters": [
     {
       "name": "deviceId",
@@ -396,11 +396,6 @@
       "severity": "high",
       "issue": "@paymentAmount cast to INT in token derivation — truncates fractional units",
       "detail": "Lines 177-180: the compound suffix uses CAST(CAST(COALESCE(@paymentAmount, 0) AS INT) AS NVARCHAR(50)). A payment of 5.75 signs against 5; the client must build the token with the same truncation (paymentAmount.toInt()) or every fractional payment fails auth. Inherited from HC5; both sides agree today, so this is a trap for the next client, not a live fault."
-    },
-    {
-      "severity": "high",
-      "issue": "paymentType 100 with a NULL HEM confirms nothing and reports success",
-      "detail": "Lines 326-359: the confirm-transfer branch updates WHERE HasherEventMapId = @hasherEventMapId. @hasherEventMapId is optional and is never resolved from @userIdWhoPaid on this branch (that lookup is at 364-406, after the GOTO), so a confirm sent without the HEM id matches zero rows and still returns success=1 — the WankerBanker sees 'confirmed', the row stays unconfirmed. Resolve the HEM first, or refuse NULL on this branch."
     },
     {
       "severity": "medium",

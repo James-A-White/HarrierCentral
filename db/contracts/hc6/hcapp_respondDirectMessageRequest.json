@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_respondDirectMessageRequest",
-  "version": "1.1.0",
-  "description": "Accepts or declines a pending request to direct-message the caller (E9.F1.S19). A request is pending when the requester holds a HasherFriendMap row (UserId = requester, Friend_UserId = caller) with FriendSince NULL and Removed 0. Accept: both rows (created or revived) become friends — FriendSince set, Removed 0, a freshly minted ThreadId shared by both — and the requester is pushed '<name> accepted' (rowsets 2–3). Decline: the requester's row is marked Removed and they are told NOTHING — their app keeps saying 'requested'; a decline is final unless the caller later starts a DM with them. Auth: HC6.ValidateAppAuth (spNumber 131, @param NULL — a standard token). Permission gate: the request must be addressed to the token's user; nothing else. Uses the two-rowset error shape: {success 0, errorCode, errorType} then the standard error detail.",
+  "version": "1.2.0",
+  "description": "Accepts or declines a pending request to direct-message the caller (E9.F1.S19). A request is pending when the requester holds a HasherFriendMap row (UserId = requester, Friend_UserId = caller) with FriendSince NULL and Removed 0. Accept: both rows (created or revived) become friends — FriendSince set, Removed 0, a freshly minted ThreadId shared by both — and the requester is pushed '<name> accepted' (rowsets 2–3). Decline: the requester's row is marked Removed and they are told NOTHING — their app keeps saying 'requested'; a decline is final unless the caller later starts a DM with them. Auth: HC6.ValidateAppAuth (spNumber 131, @param NULL — a standard token). Permission gate: the request must be addressed to the token's user; nothing else. Uses the two-rowset error shape: {success 0, errorCode, errorType} then the standard error detail. Since 2026-10-13 a NULL @accept is refused (it passed NOT IN (0,1) and declined).",
   "parameters": [
     {
       "name": "deviceId",
@@ -44,9 +44,24 @@
       "name": "ErrorEnvelope",
       "description": "Every other refusal: {success 0, errorCode, errorType} at index 0, then the StandardErrorResult detail at index 1. Codes: 2004 no such pending request — requester unknown, @accept out of range, or nothing pending ('That request is no longer waiting.', errorType 2); 2005 unhandled error from the CATCH (5).",
       "columns": [
-        { "name": "success", "type": "INT", "nullable": false, "description": "Always 0." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "2004 or 2005." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "2 validation, 5 unhandled." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "2004 or 2005."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "2 validation, 5 unhandled."
+        }
       ]
     },
     {
@@ -59,8 +74,18 @@
       "name": "Envelope",
       "description": "On success, after the commit.",
       "columns": [
-        { "name": "success", "type": "INT", "nullable": false, "description": "Always 1." },
-        { "name": "errorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Always NULL." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Always NULL."
+        }
       ]
     },
     {
@@ -68,11 +93,36 @@
       "name": "Result",
       "description": "On success: the outcome and the other party, one row.",
       "columns": [
-        { "name": "Outcome", "type": "VARCHAR(8)", "nullable": false, "description": "'open' on accept, 'declined' on decline." },
-        { "name": "ThreadId", "type": "NVARCHAR(40)", "nullable": true, "description": "UPPER(new ThreadId) on accept; NULL on decline." },
-        { "name": "OtherPublicHasherId", "type": "NVARCHAR(40)", "nullable": false, "description": "UPPER(requester's Hasher.PublicHasherId)." },
-        { "name": "OtherDisplayName", "type": "NVARCHAR(250)", "nullable": false, "description": "Requester's Hasher.DisplayName." },
-        { "name": "OtherPhoto", "type": "NVARCHAR(1000)", "nullable": true, "description": "Requester's Hasher.Photo." }
+        {
+          "name": "Outcome",
+          "type": "VARCHAR(8)",
+          "nullable": false,
+          "description": "'open' on accept, 'declined' on decline."
+        },
+        {
+          "name": "ThreadId",
+          "type": "NVARCHAR(40)",
+          "nullable": true,
+          "description": "UPPER(new ThreadId) on accept; NULL on decline."
+        },
+        {
+          "name": "OtherPublicHasherId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "UPPER(requester's Hasher.PublicHasherId)."
+        },
+        {
+          "name": "OtherDisplayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Requester's Hasher.DisplayName."
+        },
+        {
+          "name": "OtherPhoto",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Requester's Hasher.Photo."
+        }
       ]
     },
     {
@@ -80,11 +130,36 @@
       "name": "PushDetail",
       "description": "ACCEPT ONLY, API-only (stripped): what the shim needs to tell the requester. Absent on decline — the client reply has two rowsets, the API sees four only on accept.",
       "columns": [
-        { "name": "Kind", "type": "VARCHAR(10)", "nullable": false, "description": "Always 'dmAccepted'." },
-        { "name": "ThreadId", "type": "NVARCHAR(40)", "nullable": false, "description": "UPPER(new ThreadId)." },
-        { "name": "FromPublicHasherId", "type": "NVARCHAR(40)", "nullable": false, "description": "UPPER(the CALLER's Hasher.PublicHasherId) — the accepter, who the push is from." },
-        { "name": "FromDisplayName", "type": "NVARCHAR(250)", "nullable": false, "description": "The caller's Hasher.DisplayName." },
-        { "name": "FromPhoto", "type": "NVARCHAR(1000)", "nullable": true, "description": "The caller's Hasher.Photo." }
+        {
+          "name": "Kind",
+          "type": "VARCHAR(10)",
+          "nullable": false,
+          "description": "Always 'dmAccepted'."
+        },
+        {
+          "name": "ThreadId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "UPPER(new ThreadId)."
+        },
+        {
+          "name": "FromPublicHasherId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "UPPER(the CALLER's Hasher.PublicHasherId) — the accepter, who the push is from."
+        },
+        {
+          "name": "FromDisplayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "The caller's Hasher.DisplayName."
+        },
+        {
+          "name": "FromPhoto",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "The caller's Hasher.Photo."
+        }
       ]
     },
     {
@@ -92,9 +167,24 @@
       "name": "Recipients",
       "description": "ACCEPT ONLY, API-only (stripped): the requester's live devices (removed 0, FcmToken present, LastLogin within 180 days, build >= HC6.MinBuildForDmPush()). May be empty.",
       "columns": [
-        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Device.UserId — the requester's internal Hasher.id." },
-        { "name": "FcmToken", "type": "NVARCHAR(500)", "nullable": false, "description": "Device.FcmToken." },
-        { "name": "BadgeTotal", "type": "INT", "nullable": true, "description": "HC6.UserUnreadChatTotal for the requester; NULL when the device's build is below HC6.MinBuildForIconBadge()." }
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Device.UserId — the requester's internal Hasher.id."
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Device.FcmToken."
+        },
+        {
+          "name": "BadgeTotal",
+          "type": "INT",
+          "nullable": true,
+          "description": "HC6.UserUnreadChatTotal for the requester; NULL when the device's build is below HC6.MinBuildForIconBadge()."
+        }
       ]
     }
   ],
@@ -105,11 +195,6 @@
     "The API pushes 'dmAccepted' to rowset 3 on accept; nothing is queued in the database."
   ],
   "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "NULL @accept silently declines",
-      "detail": "Line 52 guards with `@accept NOT IN (0, 1)`. When @accept is NULL (omitted, or sent as null) that predicate is UNKNOWN, so with a valid requester and a pending request the whole IF is UNKNOWN and is NOT taken; line 67 `IF (@accept = 1)` is then also UNKNOWN and control falls into the ELSE — the request is DECLINED, Removed is set, and the reply says Outcome 'declined' with success 1. The guard should be `@accept IS NULL OR @accept NOT IN (0, 1)`. The app always sends 0 or 1 today, so this is latent."
-    },
     {
       "severity": "low",
       "issue": "Accept reads the requester's photo/name after the commit without re-checking Removed",

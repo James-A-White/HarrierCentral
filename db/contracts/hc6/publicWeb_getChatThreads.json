@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getChatThreads",
-  "version": "1.0.0",
-  "description": "The app's chat thread list for a web member (E9.F7.S15): every run, kennel, room and direct-message thread the member can see, with its unread badge and message count — HC6.hcapp_getEventBadgeCount in its list mode, the same rows the app's Unseen Chats list and the chat bubbles on the run cards read. Wraps the app SP (EXEC) after emitting its own envelope carrying the caller's PublicHasherId (Me). Auth: the wrapped SP's HC6.ValidateAppAuth — the token is signed for hcapp_getEventBadgeCount; the wrapper itself checks nothing before resolving Me from HC.Device.",
+  "version": "1.1.0",
+  "description": "The app's chat thread list for a web member (E9.F7.S15): every run, kennel, room and direct-message thread the member can see, with its unread badge and message count — HC6.hcapp_getEventBadgeCount in its list mode, the same rows the app's Unseen Chats list and the chat bubbles on the run cards read. Wraps the app SP (EXEC) after emitting its own envelope carrying the caller's PublicHasherId (Me). Auth: the wrapped SP's HC6.ValidateAppAuth — the token is signed for hcapp_getEventBadgeCount; the wrapper itself checks nothing before resolving Me from HC.Device. Since 2026-10-13 the token is checked (HC6.ValidateAppAuth as hcapp_getEventBadgeCount, sp 63) BEFORE the success row; a refusal returns success 0 + error detail instead of success 1 and an empty list.",
   "parameters": [
     {
       "name": "deviceId",
@@ -262,11 +262,6 @@
       "severity": "medium",
       "issue": "Parameter without a default",
       "detail": "@deviceId and @accessToken have no SQL default (line 14). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
-    },
-    {
-      "severity": "medium",
-      "issue": "Success envelope sent before the work",
-      "detail": "Rowset 0 { success = 1 } is SELECTed before the wrapped SP runs. When the wrapped SP fails auth its StandardErrorResult arrives at index 1 after a success envelope, and when it THROWs the CATCH appends { success = 0, 1500, 5 } after the success row — so a client reading rowset 0 alone sees success on every call. The web must look for errorId / the trailing row by column name."
     },
     {
       "severity": "low",

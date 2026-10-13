@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_setEventRsvp",
-  "version": "1.5.0",
-  "description": "Updates a hasher's RSVP (RsvpState 1 no, 2 maybe, 3 yes) and/or hare flag for an event, inserting the HasherEventMap row if there is none. A hasher already checked in (AttendenceState >= 20) keeps their RSVP — only a hare-flag change is applied, and the SP still answers success = 1 with an explanatory serverMessage. RSVP 1 (not coming) forces IsHare 0. With @autoSetNotifications = 1 the event's notification/email preferences are set at the same time: 2 (off) on a No, otherwise copied from the CALLER's HasherKennelMap row. HC.Event.Hares is kept in step when the hare flag changes (rebuilt only where the text is this SP's own; admin-typed text only ever gains a name). Run counts are recalculated for the hasher after every call, the final row state is returned as adHocData, and the SP delegates to HC6.hcapp_syncEventAdminData. Auth: device-bound token via HC6.ValidateAppAuth (spNumber 26, @param NULL). Permission gate: NONE — @hasherId defaults to the caller but may name any hasher (see code smells). Acting for another hasher (via @hasherId or @hemId) requires manageAttendance for the run's kennel or being a hare of this run, as in hcapp_setEventAttendence; otherwise errorCode 1326 / errorType 13 'Not authorised' (2026-10-13). Since 2026-10-13 @autoSetNotifications copies the TARGET hasher's kennel notification and email preferences (it read the caller's).",
+  "version": "1.6.0",
+  "description": "Updates a hasher's RSVP (RsvpState 1 no, 2 maybe, 3 yes) and/or hare flag for an event, inserting the HasherEventMap row if there is none. A hasher already checked in (AttendenceState >= 20) keeps their RSVP — only a hare-flag change is applied, and the SP still answers success = 1 with an explanatory serverMessage. RSVP 1 (not coming) forces IsHare 0. With @autoSetNotifications = 1 the event's notification/email preferences are set at the same time: 2 (off) on a No, otherwise copied from the CALLER's HasherKennelMap row. HC.Event.Hares is kept in step when the hare flag changes (rebuilt only where the text is this SP's own; admin-typed text only ever gains a name). Run counts are recalculated for the hasher after every call, the final row state is returned as adHocData, and the SP delegates to HC6.hcapp_syncEventAdminData. Auth: device-bound token via HC6.ValidateAppAuth (spNumber 26, @param NULL). Permission gate: NONE — @hasherId defaults to the caller but may name any hasher (see code smells). Acting for another hasher (via @hasherId or @hemId) requires manageAttendance for the run's kennel or being a hare of this run, as in hcapp_setEventAttendence; otherwise errorCode 1326 / errorType 13 'Not authorised' (2026-10-13). Since 2026-10-13 @autoSetNotifications copies the TARGET hasher's kennel notification and email preferences (it read the caller's). Since 2026-10-13 a new row gets RsvpState COALESCE(@rsvpState, 0) (0 = no RSVP, the column default); NULL failed the NOT NULL column.",
   "parameters": [
     {
       "name": "deviceId",
@@ -251,11 +251,6 @@
       "severity": "medium",
       "issue": "Parameter without a default",
       "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken, @eventId. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
-    },
-    {
-      "severity": "medium",
-      "issue": "INSERT with no RSVP writes NULL into a NOT NULL column",
-      "detail": "Line 242: a first call for a hasher with @rsvpState -1/NULL (e.g. flag as hare only) inserts RsvpState = NULL. HasherEventMap.RsvpState is NOT NULL, so the insert fails and is reported as 1926/19 'Unexpected error' rather than a validation error. @rsvpState is otherwise unchecked (any INT is accepted, narrowed to SMALLINT)."
     },
     {
       "severity": "medium",

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getChatMessages",
-  "version": "1.1.0",
-  "description": "One chat thread's messages for a web member (E9.F7.S15) through the app's own SPs, chosen by @kind: 'run' → HC6.hcapp_getEventMessages, 'kennel' → HC6.hcapp_getKennelMessages, 'dm' → HC6.hcapp_getDirectMessages (@apiOnlyRowsets = 0, so no read-receipt device rowset), 'room' → HC6.hcapp_getRoomMessages. The wrapper only resolves public ids (PublicEventId → Event.id, PublicKennelId → Kennel.id) and the caller's PublicHasherId (Me), emits its own envelope, then EXECs the app SP, whose rowsets follow unchanged. Auth: the wrapped SP's HC6.ValidateAppAuth — the token must be signed for the SP that @kind selects. @markRead applies to 'dm' and 'room' only; the run and kennel SPs take no such parameter (the kennel SP's full fetch turns a never-chosen kennel bell on).",
+  "version": "1.2.0",
+  "description": "One chat thread's messages for a web member (E9.F7.S15) through the app's own SPs, chosen by @kind: 'run' → HC6.hcapp_getEventMessages, 'kennel' → HC6.hcapp_getKennelMessages, 'dm' → HC6.hcapp_getDirectMessages (@apiOnlyRowsets = 0, so no read-receipt device rowset), 'room' → HC6.hcapp_getRoomMessages. The wrapper only resolves public ids (PublicEventId → Event.id, PublicKennelId → Kennel.id) and the caller's PublicHasherId (Me), emits its own envelope, then EXECs the app SP, whose rowsets follow unchanged. Auth: the wrapped SP's HC6.ValidateAppAuth — the token must be signed for the SP that @kind selects. @markRead applies to 'dm' and 'room' only; the run and kennel SPs take no such parameter (the kennel SP's full fetch turns a never-chosen kennel bell on). Since 2026-10-13 the token is checked (HC6.ValidateAppAuth as the inner SP for @kind) BEFORE the success row; a refusal returns success 0 + error detail.",
   "parameters": [
     {
       "name": "deviceId",
@@ -417,11 +417,6 @@
       "severity": "medium",
       "issue": "Parameter without a default",
       "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
-    },
-    {
-      "severity": "medium",
-      "issue": "Success envelope sent before the work",
-      "detail": "Rowset 0 { success = 1 } is SELECTed before the wrapped SP runs. When the wrapped SP fails auth its StandardErrorResult arrives at index 1 after a success envelope, and when it THROWs the CATCH appends { success = 0, 1500, 5 } after the success row — so a client reading rowset 0 alone sees success on every call. The web must look for errorId / the trailing row by column name."
     },
     {
       "severity": "low",

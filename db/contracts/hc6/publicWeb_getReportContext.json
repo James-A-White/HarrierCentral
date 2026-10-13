@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getReportContext",
-  "version": "1.0.0",
-  "description": "What the SendRunCountsReport Azure Function needs before a web member's emailed run-counts report (E9.F7.S17, the app's floating-action-button report): the INTERNAL kennel id, the kennel's name, the caller's display name and email address — none of which the member web session holds, since it only carries public ids. Resolving them server-side keeps the internal id and the address out of the browser. Auth: HC6.ValidateAppAuth (spNumber 118, @param NULL); the hasher is the token's user. No permission gate. Read-only.",
+  "version": "1.1.0",
+  "description": "What the SendRunCountsReport Azure Function needs before a web member's emailed run-counts report (E9.F7.S17, the app's floating-action-button report): the INTERNAL kennel id, the kennel's name, the caller's display name and email address — none of which the member web session holds, since it only carries public ids. Resolving them server-side keeps the internal id and the address out of the browser. Auth: HC6.ValidateAppAuth (spNumber 118, @param NULL); the hasher is the token's user. No permission gate. Read-only. Since 2026-10-13 a @publicKennelId that is not found returns success 0 / errorCode 1240 'Kennel not found' instead of silently becoming the all-kennels report.",
   "parameters": [
     {
       "name": "deviceId",
@@ -122,11 +122,6 @@
       "severity": "medium",
       "issue": "Parameter without a default",
       "detail": "@deviceId and @accessToken have no SQL default (line 18). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
-    },
-    {
-      "severity": "medium",
-      "issue": "Unknown kennel silently becomes the all-kennels report",
-      "detail": "Lines 44-50: @kennelId / @kennelName start as the empty GUID / 'All kennels' and are only overwritten when the kennel is found. A wrong, deleted or removed @publicKennelId therefore returns the all-kennels context with success = 1 instead of an error, and the member is emailed a different report from the one they asked for."
     },
     {
       "severity": "low",

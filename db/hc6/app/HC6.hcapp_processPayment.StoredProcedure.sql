@@ -331,6 +331,23 @@ BEGIN TRY
                 updatedAt          = GETDATE()
             WHERE HasherEventMapId = @hasherEventMapId AND CancelledDate IS NULL;
 
+            -- Nothing confirmed (no attendance row given, or no open payment on
+            -- it): refuse instead of reporting success (2026-10-13).
+            IF (@@ROWCOUNT = 0)
+            BEGIN
+                SET @errorId = NEWID();
+                ROLLBACK TRANSACTION;   -- FIRST: the log row must survive
+                INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+                VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Nothing to confirm',
+                        CONCAT('hem=', COALESCE(CAST(@hasherEventMapId AS NVARCHAR(40)), 'null')), @procName, @userId);
+                SELECT 0 AS success, 1356 AS errorCode, 3 AS errorType;
+                SELECT @errorId AS errorId, 3 AS errorType, 1356 AS errorCode,
+                       'Nothing to confirm' AS errorTitle,
+                       'There is no open payment to confirm for that hasher.' AS errorUserMessage,
+                       @procName AS errorProc;
+                RETURN;
+            END
+
             COMMIT TRANSACTION;
 
             SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;

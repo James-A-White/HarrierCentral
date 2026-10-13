@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_setDirectMessageMute",
-  "version": "1.1.0",
-  "description": "Mutes (silent pushes, the Silver Bell) or unmutes one direct-message thread for the caller (E9.F1.S7): writes HasherFriendMap.FriendNotificationPreference 3 (mute) or 0 (auto) on the caller's own row for @threadId. The other party is not told. Auth: device-bound token via HC6.ValidateAppAuth (spNumber 133, @param NULL); no permission gate beyond owning a HasherFriendMap row for the thread — a thread the caller is not party to is refused as 'No such conversation' (2008). Not transacted (a single UPDATE).",
+  "version": "1.2.0",
+  "description": "Mutes (silent pushes, the Silver Bell) or unmutes one direct-message thread for the caller (E9.F1.S7): writes HasherFriendMap.FriendNotificationPreference 3 (mute) or 0 (auto) on the caller's own row for @threadId. The other party is not told. Auth: device-bound token via HC6.ValidateAppAuth (spNumber 133, @param NULL); no permission gate beyond owning a HasherFriendMap row for the thread — a thread the caller is not party to is refused as 'No such conversation' (2008). Not transacted (a single UPDATE). Since 2026-10-13 a NULL @mute is refused (it passed NOT IN (0,1) and unmuted).",
   "parameters": [
     {
       "name": "deviceId",
@@ -44,8 +44,18 @@
       "name": "Envelope",
       "description": "On success.",
       "columns": [
-        { "name": "success", "type": "INT", "nullable": false, "description": "1" },
-        { "name": "errorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "NULL on success" }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1"
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success"
+        }
       ]
     },
     {
@@ -53,7 +63,12 @@
       "name": "Muted",
       "description": "On success: echoes the request, not a re-read of the row.",
       "columns": [
-        { "name": "Muted", "type": "SMALLINT", "nullable": true, "description": "@mute as passed (1 muted, 0 normal; NULL if NULL was passed)." }
+        {
+          "name": "Muted",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "@mute as passed (1 muted, 0 normal; NULL if NULL was passed)."
+        }
       ]
     }
   ],
@@ -61,13 +76,7 @@
     "UPDATE HC.HasherFriendMap SET FriendNotificationPreference = 3|0, updatedAt = SYSDATETIMEOFFSET() WHERE UserId = @userId AND ThreadId = @threadId (line 53).",
     "INSERT HC.ErrorLog on refusal (line 44) and in the CATCH (line 61)."
   ],
-  "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "NULL @mute slips past validation and unmutes",
-      "detail": "Line 39: `@threadId IS NULL OR @mute NOT IN (0, 1) OR NOT EXISTS (...)`. With @mute NULL the middle term is UNKNOWN, so for a valid thread the whole predicate is UNKNOWN and the guard does not fire. Line 53 then writes CASE WHEN NULL = 1 ... ELSE 0 — the thread is silently unmuted and rowset 1 returns Muted = NULL. Add `@mute IS NULL OR` to the guard."
-    }
-  ],
+  "codeSmells": [],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

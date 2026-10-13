@@ -281,7 +281,9 @@ BEGIN TRY
                  [EventNotificationPreference], [updatedAt])
             VALUES
                 (@hemId, @eventId, @kennelId, @hasherId,
-                 @rsvpState,
+                 -- 0 = no RSVP (the column default) when the call changes only
+                 -- the hare flag; NULL failed the NOT NULL column (2026-10-13).
+                 COALESCE(@rsvpState, 0),
                  CASE WHEN @isHare > 0 THEN 1 ELSE 0 END,
                  0,
                  @kennelNotificationPreference,

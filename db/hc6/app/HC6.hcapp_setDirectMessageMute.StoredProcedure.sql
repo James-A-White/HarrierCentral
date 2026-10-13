@@ -36,7 +36,7 @@ BEGIN
     RETURN;
 END
 
-IF (@threadId IS NULL OR @mute NOT IN (0, 1)
+IF (@threadId IS NULL OR @mute IS NULL OR @mute NOT IN (0, 1)   -- NULL NOT IN (...) is not true: it used to pass and unmute (2026-10-13)
     OR NOT EXISTS (SELECT 1 FROM HC.HasherFriendMap f WHERE f.UserId = @userId AND f.ThreadId = @threadId))
 BEGIN
     DECLARE @detail NVARCHAR(200) = CONCAT('thread=', COALESCE(CAST(@threadId AS NVARCHAR(40)), 'null'), ' mute=', @mute);

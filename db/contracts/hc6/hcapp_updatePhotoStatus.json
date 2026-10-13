@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_updatePhotoStatus",
-  "version": "1.1.0",
-  "description": "Actions one kennel photo, of any current status (initial review or re-review). Auth: HC6.ValidateAppAuth (spNumber 33). Gate: HC6.CheckKennelPermission 'editPhoto' on the photo's own kennel (Hash Flash / GM / VGM / RA and whoever the data-driven matrix grants), OR the photo's own uploader when setting it Private (action 2) — their photo, their call, at any point (James, 2026-09-13). Action 1 soft-deletes (DeletedAt; Status unchanged). Actions 2-6 clear DeletedAt and set the single-rung Status (0 Private, 2 Members, 3 Public, 4 Featured, 5 Cover). Going Private or deleted clears HC.Event.EventCoverPhotoUrl if this photo was the cover; action 6 demotes any previous cover to Public (3) and writes COALESCE(EditedBlobUrl, BlobUrl) as the run's cover. Used by the app's photo viewer ('Make private', map_photo_page.dart) — the header comment saying it is unused is wrong; review screens use hcapp_batchUpdatePhotoStatus.",
+  "version": "1.2.0",
+  "description": "Actions one kennel photo, of any current status (initial review or re-review). Auth: HC6.ValidateAppAuth (spNumber 33). Gate: HC6.CheckKennelPermission 'editPhoto' on the photo's own kennel (Hash Flash / GM / VGM / RA and whoever the data-driven matrix grants), OR the photo's own uploader when setting it Private (action 2) — their photo, their call, at any point (James, 2026-09-13). Action 1 soft-deletes (DeletedAt; Status unchanged). Actions 2-6 clear DeletedAt and set the single-rung Status (0 Private, 2 Members, 3 Public, 4 Featured, 5 Cover). Going Private or deleted clears HC.Event.EventCoverPhotoUrl if this photo was the cover; action 6 demotes any previous cover to Public (3) and writes COALESCE(EditedBlobUrl, BlobUrl) as the run's cover. Used by the app's photo viewer ('Make private', map_photo_page.dart) — the header comment saying it is unused is wrong; review screens use hcapp_batchUpdatePhotoStatus. Called by the app's photo viewer for 'Make private' (action 2); the app never sends action 7 (2026-10-13).",
   "parameters": [
     {
       "name": "deviceId",
@@ -143,11 +143,6 @@
       "detail": "@deviceId, @accessToken, @photoId, @action (lines 3-6) have no SQL default. A client that omits one is refused by SQL before the procedure runs: no HC.ErrorLog row, an empty 500 in the app, and any graceful check inside is unreachable (CLAUDE.md, Rack of Lamb 2026-09-29)."
     },
     {
-      "severity": "medium",
-      "issue": "Retired action 7 still accepted and silently makes the photo Private",
-      "detail": "Line 84 accepts 7, and the CASE at lines 160-167 has no WHEN 7, so it falls to ELSE 0: an old client 'unfeaturing' a photo gets it set Private, DeletedAt cleared and possibly the run cover removed. Either refuse 7 or map it explicitly."
-    },
-    {
       "severity": "low",
       "issue": "newStatus is misleading for action=1 (soft-delete)",
       "detail": "The CASE expression that computes @newStatus defaults WHEN 1 THEN 0, so when action=1 (soft-delete), the returned newStatus is 0 (private) even though the photo is soft-deleted (DeletedAt is set). A caller reading newStatus=0 cannot distinguish a soft-deleted photo from a truly private one — they must inspect deletedAt."
@@ -164,8 +159,8 @@
     },
     {
       "severity": "low",
-      "issue": "Header comment says the SP is unused",
-      "detail": "Line 159 says 'this single-update SP is currently unused'; the app calls it from map_photo_page.dart for 'Make private'."
+      "issue": "Retired action 7 still accepted and silently makes the photo Private",
+      "detail": "Line 84 accepts 7, and the CASE at lines 160-167 has no WHEN 7, so it falls to ELSE 0: an old client 'unfeaturing' a photo gets it set Private, DeletedAt cleared and possibly the run cover removed. Either refuse 7 or map it explicitly. Not reachable from the app (it never sends action 7; checked 2026-10-13)."
     }
   ],
   "breakingChanges": [

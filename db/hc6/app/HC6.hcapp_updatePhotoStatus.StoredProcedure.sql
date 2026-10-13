@@ -156,7 +156,8 @@ END
 -- Map action → new status. Single-tag ladder: 0=Private, 1=Pending, 2=Members,
 -- 3=Public, 4=Featured, 5=Cover. Action 5 (Feature) is now a ladder rung (Status=4),
 -- not an orthogonal flag; action 7 (unfeature) is retired.
--- (NOTE: this single-update SP is currently unused; the app writes via the batch SP.)
+-- Called by the app's photo viewer for "Make private" (action 2); the review
+-- queue writes via the batch SP. The app never sends action 7 (2026-10-13).
 DECLARE @newStatus TINYINT = CASE @action
     WHEN 2 THEN 0
     WHEN 3 THEN 2
