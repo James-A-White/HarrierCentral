@@ -64,12 +64,24 @@ class RunAnnouncement {
     final String desc = run.eventDescription.trim();
     if (desc.isNotEmpty) {
       b.writeln();
-      b.writeln(desc.length > 300 ? '${desc.substring(0, 297)}…' : desc);
+      // The whole description (James, 2026-10-13); it was cut to 300 here
+      // and 220 in the app. Same in the app's run_announcement.dart.
+      b.writeln(desc);
     }
+    // Matches the app's run_announcement.dart line for line (2026-10-13): run
+    // editing is one feature on both sides, so a run posted from the portal
+    // reads exactly as one posted from the app. A blank line between the
+    // links so each reads as its own thing, and "I'll be there" rather than
+    // "I'm in" — plain words for hashers whose first language is not English
+    // (James, 2026-09-16).
     b.writeln();
-    b.writeln('✅ I\'m in: ${rsvpUrl(true)}');
-    b.writeln('❌ Can\'t make it: ${rsvpUrl(false)}');
-    b.writeln('Details: $url');
+    b.writeln('🗺️ Details & map: $url');
+    b.writeln();
+    b.writeln("✅ I'll be there: ${rsvpUrl(true)}");
+    b.writeln();
+    b.writeln("❌ Can't make it: ${rsvpUrl(false)}");
+    b.writeln();
+    b.write('via Harrier Central');
     return b.toString();
   }
 
