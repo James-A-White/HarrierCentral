@@ -307,9 +307,12 @@ BEGIN TRY
             INSERT INTO HC.HasherEventMap
                 ([id], [EventId], [KennelId], [UserId],
                  [AttendenceState], [RsvpState], [IsHare], [VirginVisitorType], [updatedAt])
+            -- IsHare honours @isHare on a new row too (2026-10-13); it was
+            -- written 0 regardless, so the Event.Hares rebuild below missed
+            -- the new hare. NULL (keep existing) means not a hare here.
             VALUES
                 (@hemId, @eventId, @kennelId, @hasherId,
-                 @attendenceState, 3, 0, 0, GETDATE());
+                 @attendenceState, 3, COALESCE(@isHare, 0), 0, GETDATE());
 
             SET @recalculateRunNumbers = 1;
         END
