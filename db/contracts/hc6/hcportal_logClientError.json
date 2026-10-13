@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_logClientError",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Records a client-side error from the Flutter admin portal into HC.ErrorLog — the portal's equivalent of publicWeb_logWebError. Auth is attempted, not required: an unauthenticated report is accepted only from a device that exists in HC.Device. Added 2026-09-23; before it the portal had no client error telemetry at all.",
   "parameters": [
     {
@@ -21,9 +21,9 @@
     {
       "name": "errorName",
       "type": "NVARCHAR(500)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "ErrorLog.ErrorName",
-      "description": "Required. One line: the exception's message or type. Truncated to 250 (ErrorLog.ErrorName width). Blank or NULL returns 'errorName is required'.",
+      "description": "Required. One line: the exception's message or type. Truncated to 250 (ErrorLog.ErrorName width). Blank or NULL returns 'errorName is required'. Defaults to NULL when omitted (2026-10-13).",
       "typeMismatch": "NVARCHAR(500) parameter vs ErrorLog.ErrorName NVARCHAR(250); truncated deliberately with LEFT(…, 250)."
     },
     {
@@ -81,11 +81,6 @@
     "INSERT HC.ErrorLog (HcVersion = 'portal <appVersion>', ErrorName, ErrorDescription, ProcName = @source, userId when authenticated, deviceId as text, string_1 = @route)"
   ],
   "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "Parameter without a default",
-      "detail": "Line 4: @errorName NVARCHAR(500) has no default. A client that omits it gets SQL's 'expects parameter' refusal (an unlogged empty 500) instead of the SP's own 'errorName is required' envelope on line 45, which is unreachable for an omitted parameter."
-    },
     {
       "severity": "low",
       "issue": "CATCH does not log (by design)",

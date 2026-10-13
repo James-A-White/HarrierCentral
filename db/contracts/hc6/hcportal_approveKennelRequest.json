@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_approveKennelRequest",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Approves a kennel request (E12.F1.S6): creates HC.Kennel (unique short name LH3 / LH3-GB / LH3-GBn, coin logo URL, parsed price), makes the requester HC admin (account created if the email has none), adds CanEditKennel platform admins as helpers, ensures an invite code, marks the request approved. UPDLOCK on the request row. Requires HC.PlatformAdmin with CanEditKennel = 1 (E12.F1). Visitors' price from NonMemberPrice when numeric, else the members' price. Membership: MembershipPrice / MembershipRenewalMode from the request (none ⇒ price 0, rolling). Since 2026-10-10 (E12.F1.S10) it also copies the request's logo (our blob only, else a coin), founding date, usual run day and start time, social links and runs page — a runs page switches on the runs-page import (InboundIntegrationId 6). Since 2026-10-11 it refuses a request that already has a KennelId (set by the old HC3W.importKennel without moving the status), so approving cannot create the kennel twice. Auth: HC6.ValidatePortalAuth with NULL callerParamString. HC.HasherKennelMap.IsMember is still written here but is DEPRECATED (2026-10-13): never read it.",
   "parameters": [
     {
@@ -21,7 +21,7 @@
     {
       "name": "kennelImportId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "OfficeForms_KennelImport.KennelImportId",
       "description": "Required: EXT.OfficeForms_KennelImport.KennelImportId of the request to approve. NO SQL default — omitting it fails before the SP runs (unlogged 500); an explicit NULL returns 'kennelImportId is required' (checked after auth and the CanEditKennel gate)."
     }
@@ -116,13 +116,7 @@
     "UPDATE EXT.OfficeForms_KennelImport RequestStatus 2, KennelId, ReviewedBy/At",
     "API: welcome email via the Logic App"
   ],
-  "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "Parameter without a default",
-      "detail": "@kennelImportId (line 4) has no SQL default. A client that omits it gets SQL's 'expects parameter' error before the SP runs — an empty 500 with no HC.ErrorLog row — and the graceful NULL check at line 80 is unreachable. Give it '= NULL'."
-    }
-  ],
+  "codeSmells": [],
   "breakingChangesVsHc3w": [
     "No dbo.Users login / hard-coded password hash",
     "Logo is a blob URL, not bundle://",

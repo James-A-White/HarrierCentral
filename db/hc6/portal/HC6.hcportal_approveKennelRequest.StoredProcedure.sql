@@ -1,7 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_approveKennelRequest]
     @deviceId       UNIQUEIDENTIFIER = NULL,
     @accessToken    NVARCHAR(1000)   = NULL,
-    @kennelImportId UNIQUEIDENTIFIER
+    @kennelImportId UNIQUEIDENTIFIER = NULL
 AS
 -- =====================================================================
 -- Procedure: HC6.hcportal_approveKennelRequest

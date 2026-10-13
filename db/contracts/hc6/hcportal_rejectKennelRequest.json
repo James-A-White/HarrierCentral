@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_rejectKennelRequest",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Closes kennel requests without creating a kennel (E12.F1.S5) — rejected (3), spam (4) or duplicate (5), with an optional note — or reopens a closed one (1). Several ids at once, '|'-delimited. Never touches a request that is approved (RequestStatus 2) or already has a kennel. Since 2026-10-11 a call that changes nothing returns Success = 0 with the reason. Replaces the DELETE branch of the HC3W INSTEAD OF trigger on EXT.vwOfficeForms_KennelImport. Auth: HC6.ValidatePortalAuth; caller must hold a live HC.PlatformAdmin row with CanEditKennel = 1.",
   "parameters": [
     {
@@ -21,7 +21,7 @@
     {
       "name": "kennelImportIds",
       "type": "NVARCHAR(MAX)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "OfficeForms_KennelImport.KennelImportId",
       "description": "One or more KennelImportIds, '|'-delimited; values that are not GUIDs are ignored. Required (no SQL default)."
     },
@@ -75,12 +75,12 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "Line 4: @kennelImportIds NVARCHAR(MAX) has no default. A client that omits it gets SQL's 'expects parameter' refusal (an unlogged empty 500) and the SP's own 'kennelImportIds and newStatus … are required' check on line 62 never runs."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @newStatus. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "Line 5: @newStatus SMALLINT has no default; omitting it is an unlogged empty 500 for the same reason."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @newStatus. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     }
   ],
   "breakingChangeRules": [

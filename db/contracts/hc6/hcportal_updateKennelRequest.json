@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_updateKennelRequest",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "A reviewer corrects an open (RequestStatus 0/1) kennel request before approving it (E12.F1.S5; website-read fields added 2026-10-10 for E12.F1.S10): requester details, kennel names and links, prices, location (country/region/city ids from our own tables), logo, founding date, run day/time, runs page and social links. NULL keeps a field; '' clears an optional one. User text arrives as NVARCHAR(MAX) and is LEN-checked against the column widths, so nothing is truncated silently. Region/city must agree with country/region; a country or region change clears what sits below it, and the Country/Region/City text columns are refreshed from the ids. The row is locked WITH (UPDLOCK, HOLDLOCK) for the edit. Replaces the UPDATE branch of the HC3W INSTEAD OF trigger. Auth: HC6.ValidatePortalAuth; caller must hold a live HC.PlatformAdmin row with CanEditKennel = 1.",
   "parameters": [
     {
@@ -21,7 +21,7 @@
     {
       "name": "kennelImportId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "OfficeForms_KennelImport.KennelImportId",
       "description": "The request to edit. Required — no SQL default; must be open (RequestStatus 0 awaiting email or 1 new)."
     },
@@ -198,13 +198,7 @@
     "UPDATE EXT.OfficeForms_KennelImport (the given fields, location ids with dependent clears, updatedAt), then the Country/Region/City text columns from the ids — one transaction",
     "On a runtime error: INSERT HC.ErrorLog after the ROLLBACK"
   ],
-  "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "Parameter without a default",
-      "detail": "Line 4: @kennelImportId has no default. A client that omits it gets SQL's 'expects parameter' refusal (an unlogged empty 500); the SP's own 'kennelImportId is required' check on line 100 is unreachable for an omitted parameter."
-    }
-  ],
+  "codeSmells": [],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

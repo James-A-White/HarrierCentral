@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_setHasherNotesSuppression",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Platform Admin override on shared run notes (E3.F4.S5): sets or clears bit 0x2000 of HC.Hasher.Preferences, which hides every note the hasher shares in every kennel. Requires HC.PlatformAdmin.CanEditKennel. Private notes are unaffected. No portal UI yet — callable from the portal shim.",
   "parameters": [
     {
@@ -21,7 +21,7 @@
     {
       "name": "hasherId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Hasher.id",
       "description": "The hasher (HC.Hasher.id, not deleted). Required — no SQL default."
     },
@@ -63,12 +63,12 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "Line 4: @hasherId has no default; omitting it is SQL's 'expects parameter' refusal (an unlogged empty 500) and the SP's own check on line 44 never runs."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @suppressed. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "Line 5: @suppressed has no default; same consequence."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @suppressed. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     }
   ],
   "breakingChangeRules": [
