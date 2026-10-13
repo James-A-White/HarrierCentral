@@ -135,13 +135,18 @@ BEGIN TRY
     -- ---------------------------------------------------------------
     IF (@kennelId IS NOT NULL)
     BEGIN
-        IF EXISTS (SELECT 1 FROM HC.HasherKennelMap
+        -- A new row (2026-10-13) is created the way posting in the kennel's
+        -- chat creates one (hcapp_sendKennelMessage): Following = 0 and
+        -- MemberSince NULL, because the columns DEFAULT to 1 and now, and
+        -- pinning a chat is neither following the kennel nor joining it.
+        -- Locked as there, so a double tap cannot hit the unique key.
+        IF EXISTS (SELECT 1 FROM HC.HasherKennelMap WITH (UPDLOCK, HOLDLOCK)
                     WHERE UserId = @userId AND KennelId = @kennelId)
             UPDATE HC.HasherKennelMap SET Pinned = @pinned
              WHERE UserId = @userId AND KennelId = @kennelId;
         ELSE
-            INSERT HC.HasherKennelMap (UserId, KennelId, Pinned)
-            VALUES (@userId, @kennelId, @pinned);
+            INSERT HC.HasherKennelMap (UserId, KennelId, Pinned, Following, MemberSince)
+            VALUES (@userId, @kennelId, @pinned, 0, NULL);
     END
 
     -- ---------------------------------------------------------------
