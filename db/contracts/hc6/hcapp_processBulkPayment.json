@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_processBulkPayment",
-  "version": "1.1.0",
-  "description": "Records payments for multiple hashers at a single event in one operation. Auth: HC6.ValidateAppAuth (spNumber 41, @param NULL — device-secret token). Permission gate: HC6.CheckKennelPermission @functionKey = 'bulkPayment' in the event's kennel, with @isHareOfEvent = 1 when the caller hares this run (errorCode 1341, errorType 13 otherwise; see /hc-authorizations). Accepts a COMMA-separated list of hasher UUIDs, upserts HasherEventMap attendance (AttendenceState = 20, RsvpState = 3), sets Event.DoTrackHashCash, cancels EVERY uncancelled payment those hashers hold at the event (any ProductType), auto-creates follower HasherKennelMap rows for hash-credit payers who have none, and inserts one Payment per hasher with set-based per-hasher RUN pricing (member vs non-member rate, HKM discount amount then percent). After commit it refreshes kennel credit per hasher (CURSOR over HC6.nonApi_updateKennelCreditByUser), run counts for everyone changed in the last second (HC6.nonApi_updateRunCountsForAllUsers), then delegates to HC6.hcapp_syncEventAdminData whose rowsets follow the SP's own. Supported paymentTypes: 2=free, 3=cash, 4=bank transfer, 5=cash other, 6=hash credit, 7=bank transfer other, 8=credit other; any other value (1, 100) skips the INSERT silently.",
+  "version": "1.2.0",
+  "description": "Records payments for multiple hashers at a single event in one operation. Auth: HC6.ValidateAppAuth (spNumber 41, @param NULL — device-secret token). Permission gate: HC6.CheckKennelPermission @functionKey = 'bulkPayment' in the event's kennel, with @isHareOfEvent = 1 when the caller hares this run (errorCode 1341, errorType 13 otherwise; see /hc-authorizations). Accepts a COMMA-separated list of hasher UUIDs, upserts HasherEventMap attendance (AttendenceState = 20, RsvpState = 3), sets Event.DoTrackHashCash, cancels EVERY uncancelled payment those hashers hold at the event (any ProductType), auto-creates follower HasherKennelMap rows for hash-credit payers who have none, and inserts one Payment per hasher with set-based per-hasher RUN pricing (member vs non-member rate, HKM discount amount then percent). After commit it refreshes kennel credit per hasher (CURSOR over HC6.nonApi_updateKennelCreditByUser), run counts for everyone changed in the last second (HC6.nonApi_updateRunCountsForAllUsers), then delegates to HC6.hcapp_syncEventAdminData whose rowsets follow the SP's own. Supported paymentTypes: 2=free, 3=cash, 4=bank transfer, 5=cash other, 6=hash credit, 7=bank transfer other, 8=credit other; any other value (1, 100) skips the INSERT silently. Since 2026-10-13 the cancel-existing step only cancels uncancelled payments of the same @productType on the event, as hcapp_processPayment does.",
   "parameters": [
     {
       "name": "deviceId",
@@ -182,11 +182,6 @@
     "EXEC HC6.hcapp_syncEventAdminData with the three forwarded watermarks, @procName = this SP and @param = the device secret (equivalent to NULL in ValidateAppAuth) (371-383)."
   ],
   "codeSmells": [
-    {
-      "severity": "high",
-      "issue": "Cancel-existing is not ProductType-scoped",
-      "detail": "Lines 221-228 cancel every uncancelled HC.Payment the listed hashers hold at the event, whatever its ProductType. hcapp_processPayment deliberately scopes its cancel to the same product (a membership charge must never cancel the run fee on the same HEM, and vice versa). A bulk run payment here silently cancels a membership or haberdashery payment anchored to this run, and a bulk call with productType 2 cancels the run fees. Add 'AND pay.ProductType = @productType' and, for productType 3, skip the cancel entirely as the single-payment SP does."
-    },
     {
       "severity": "high",
       "issue": "@productType accepted but priced and attendance-marked as a run payment",

@@ -225,7 +225,11 @@ BEGIN TRY
             pay.updatedAt          = GETDATE()
         FROM HC.Payment pay
         INNER JOIN ParsedGuids pg ON pg.UserId = pay.UserId
-        WHERE pay.EventId = @eventId AND pay.CancelledDate IS NULL;
+        WHERE pay.EventId = @eventId AND pay.CancelledDate IS NULL
+          -- Same kind only (2026-10-13), as hcapp_processPayment: a run-fee
+          -- payment replaces a run fee, never a membership or merchandise
+          -- payment the hasher made at the same run.
+          AND pay.ProductType = @productType;
 
         -- ---------------------------------------------------------------
         -- Insert new payment rows (set-based, per-hasher pricing)
