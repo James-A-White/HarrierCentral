@@ -1,22 +1,22 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getEvents",
-  "version": "1.1.0",
-  "description": "Returns upcoming or past events for a single kennel, optionally limited by count, absolute date cutoff, or relative days offset. Fee columns reflect the resolved fee: event-level override when set, otherwise the kennel's default fee. Supports summary mode to omit heavy text fields for list views.",
+  "version": "1.3.0",
+  "description": "Returns upcoming or past runs for one kennel (by PublicKennelId), limited by count, an absolute date cutoff or a relative number of days. Upcoming = EventStartDatetimeGmt within the last 8 hours or later (a morning run stays visible that evening), ascending; past = EventStartDatetimeGmt before now, descending — so a run can be in both lists for up to 8 hours. Only visible, live runs (IsVisible = 1, deleted = 0, removed = 0) of a live kennel. Fee columns resolve the event-level override against the kennel's default fee. @SummaryOnly = 1 nulls the heavy text fields for list views. Two rowsets so an empty event list is not read as a 404. No authentication (anonymous PublicWebApi GET). Read-only.",
   "parameters": [
     {
       "name": "PublicKennelId",
       "type": "NVARCHAR(50)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Kennel.PublicKennelId",
-      "description": "Public kennel GUID. Used to resolve the internal KennelId. Empty rowset (Rowset 0) returned if not found — shim emits 404."
+      "description": "Public kennel GUID as text; CONVERTed to UNIQUEIDENTIFIER (a malformed value raises a conversion error → CatchEnvelope). Unknown or inactive kennel → empty rowset 0 → shim 404. No SQL default."
     },
     {
       "name": "IsFuture",
-      "type": "BIT",
+      "type": "SMALLINT",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "1 = upcoming events (EventStartDatetime >= now); 0 = past events."
+      "description": "1 = upcoming (EventStartDatetimeGmt >= now − 8 h, ascending); 0 = past (EventStartDatetimeGmt < now, descending). No SQL default."
     },
     {
       "name": "MaxEvents",
@@ -30,7 +30,7 @@
       "type": "NVARCHAR(50)",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Absolute far-boundary date (ISO 8601). Mutually exclusive with DaysOffset."
+      "description": "Absolute far boundary, CONVERTed to DATETIMEOFFSET(7) (an ISO date with no offset is taken as UTC) and compared with EventStartDatetimeGmt. Mutually exclusive with DaysOffset."
     },
     {
       "name": "DaysOffset",
@@ -41,17 +41,36 @@
     },
     {
       "name": "SummaryOnly",
-      "type": "BIT",
+      "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "When 1, heavy text fields (EventDescription, EventUrl, w3wJson) are returned as NULL. Use for list views to reduce payload."
+      "description": "When 1, EventDescription, EventUrl and w3wJson are returned as NULL (list views). Default 0."
     }
   ],
   "rowsets": [
     {
       "index": 0,
+      "name": "ValidationError",
+      "description": "Instead of the normal rowsets when a guard fails (PublicKennelId blank; none of MaxEvents / DateCutoff / DaysOffset; both DateCutoff and DaysOffset; MaxEvents <= 0; DaysOffset <= 0; lines 68-99). Not logged to HC.ErrorLog. The SP returns.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "0."
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "VARCHAR(70)",
+          "nullable": false,
+          "description": "Fixed text describing the bad input."
+        }
+      ]
+    },
+    {
+      "index": 0,
       "name": "CountHeader",
-      "description": "Always exactly 1 row when the kennel exists. Empty (0 rows) = kennel not found → shim returns 404. Prevents a false 404 when the kennel simply has no matching events.",
+      "description": "Exactly one row when the kennel is found; zero rows (SELECT TOP 0) when the kennel is unknown or inactive → shim returns 404. Counts every matching run before the MaxEvents cap.",
       "columns": [
         {
           "name": "TotalMatchingEvents",
@@ -64,171 +83,239 @@
     {
       "index": 1,
       "name": "Events",
-      "description": "One row per event, ordered by EventStartDatetime ASC (upcoming) or DESC (past). Empty when no events match the filter.",
+      "description": "One row per matching run, at most @MaxEvents, ORDER BY EventStartDatetimeGmt ASC (upcoming) or DESC (past). Empty when nothing matches.",
       "columns": [
+        {
+          "name": "EventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.Event.id — internal event primary key."
+        },
         {
           "name": "PublicEventId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": "Public event GUID."
+          "description": "HC.Event.PublicEventId — public-facing event UUID for deep-links."
         },
         {
           "name": "EventNumber",
-          "type": "INT",
+          "type": "SMALLINT",
           "nullable": false,
-          "description": "Sequential run number for the kennel. Used in public-facing URLs (/runs/{EventNumber})."
+          "description": "HC.Event.EventNumber — kennel-scoped run number."
         },
         {
           "name": "EventName",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(250)",
           "nullable": false,
-          "description": "Display name of the event."
+          "description": "HC.Event.EventName — event name. Table column NOT NULL."
         },
         {
           "name": "EventStartDatetime",
-          "type": "DATETIMEOFFSET(7)",
+          "type": "DATETIME2(7)",
           "nullable": false,
-          "description": "Event start time with timezone offset."
+          "description": "CAST(Event.EventStartDatetime AS datetime2(7)) — timezone offset stripped. Client receives local time without UTC offset. Use KennelIANATimezone to reconstruct the offset if needed."
         },
         {
           "name": "EventEndDatetime",
-          "type": "DATETIMEOFFSET(7)",
+          "type": "DATETIME2(7)",
           "nullable": true,
-          "description": "Event end time, or NULL if not set."
+          "description": "CAST(Event.EventEndDatetime AS datetime2(7)) — timezone offset stripped. NULL when no end time is set."
+        },
+        {
+          "name": "EventStartDatetimeGmt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "COALESCE(HC.Event.EventStartDatetimeGmt, EventStartDatetime converted from the kennel's Windows timezone) — the true UTC instant. The table column is NOT NULL (trigger-maintained), so the fallback no longer fires."
+        },
+        {
+          "name": "KennelIANATimezone",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "IANA zone of the kennel's city (DomainValues.TimeZoneMap, territory '001' preferred) — one value for every row. NULL when the city has no mapped timezone."
         },
         {
           "name": "EventTypeName",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(250)",
           "nullable": true,
-          "description": "Human-readable event type from DomainValues.EventThemeType. NULL when ThemeRunType has no matching row."
+          "description": "DomainValues.EventThemeType.EventEnumName — human-readable event theme type (e.g. 'Red Dress Run'). NULL when Event.ThemeRunType has no matching DomainValues row (ThemeRunType = 0 = normal run)."
         },
         {
           "name": "EventPriceForMembers",
           "type": "DECIMAL(10,4)",
           "nullable": false,
-          "description": "Resolved member fee: COALESCE(Event.EventPriceForMembers, Kennel.DefaultEventPriceForMembers). Event-level value takes precedence when set (non-NULL); kennel default used otherwise. 0 means free. Never NULL in the result."
+          "description": "COALESCE(Event.EventPriceForMembers, Kennel.DefaultEventPriceForMembers) — event-level price overrides kennel default. NULL when neither is set. Kennel defaults are NOT NULL, so never NULL here."
         },
         {
           "name": "EventPriceForNonMembers",
           "type": "DECIMAL(10,4)",
           "nullable": false,
-          "description": "Resolved non-member fee: COALESCE(Event.EventPriceForNonMembers, Kennel.DefaultEventPriceForNonMembers). Same resolution logic as EventPriceForMembers. Never NULL in the result."
+          "description": "COALESCE(Event.EventPriceForNonMembers, Kennel.DefaultEventPriceForNonMembers) — event-level price overrides kennel default. NULL when neither is set. Kennel defaults are NOT NULL, so never NULL here."
         },
         {
           "name": "EventCurrencyType",
           "type": "NVARCHAR(10)",
           "nullable": true,
-          "description": "Resolved currency code: COALESCE(Event.EventCurrencyType, Kennel.DefaultEventCurrencyType). NULL only when neither the event nor the kennel has a currency set."
+          "description": "COALESCE(Event.EventCurrencyType, Kennel.DefaultEventCurrencyType) — currency code (e.g. 'USD'). NULL when neither is set."
         },
         {
           "name": "Hares",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(2500)",
           "nullable": true,
-          "description": "Comma-separated hare names, or NULL if not set."
+          "description": "HC.Event.Hares — free-text hare names. Table column is NVARCHAR(2500) NULL."
         },
         {
           "name": "LocationOneLineDesc",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(250)",
           "nullable": true,
-          "description": "Single-line location description."
+          "description": "HC.Event.LocationOneLineDesc — one-line human-readable location."
         },
         {
           "name": "LocationStreet",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(250)",
           "nullable": true,
-          "description": "Street address from SyncLocationStreet computed column (handles Facebook data override)."
+          "description": "HC.Event.SyncLocationStreet — computed column (LocationStreet or FbLocationStreet depending on UseFbLocation)."
         },
         {
           "name": "LocationCity",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(250)",
           "nullable": true,
-          "description": "City from SyncLocationCity computed column."
+          "description": "HC.Event.SyncLocationCity — computed column."
         },
         {
           "name": "LocationPostCode",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(250)",
           "nullable": true,
-          "description": "Postcode from SyncLocationPostCode computed column."
+          "description": "HC.Event.SyncLocationPostCode — computed column."
         },
         {
           "name": "LocationRegion",
           "type": "NVARCHAR(250)",
           "nullable": true,
-          "mapsToColumn": "Event.SyncLocationRegion",
-          "description": "State/county/region from SyncLocationRegion computed column (Facebook override aware)."
+          "description": "HC.Event.SyncLocationRegion — computed column."
         },
         {
           "name": "LocationCountry",
           "type": "NVARCHAR(250)",
           "nullable": true,
-          "mapsToColumn": "Event.SyncLocationCountry",
-          "description": "Country name from SyncLocationCountry computed column (Facebook override aware)."
+          "description": "HC.Event.SyncLocationCountry — computed column."
         },
         {
           "name": "Latitude",
-          "type": "FLOAT",
+          "type": "DECIMAL(18,15)",
           "nullable": true,
-          "description": "Latitude from SyncLatitude computed column. NULL if no coordinates set."
+          "description": "HC.Event.SyncLatitude — computed column (Latitude or FbLatitude depending on UseFbLatLon). Table column type DECIMAL(18,15) NULL."
         },
         {
           "name": "Longitude",
-          "type": "FLOAT",
+          "type": "DECIMAL(19,15)",
           "nullable": true,
-          "description": "Longitude from SyncLongitude computed column. NULL if no coordinates set."
+          "description": "HC.Event.SyncLongitude — computed column. Table column type DECIMAL(19,15) NULL."
         },
         {
           "name": "w3wJson",
-          "type": "NVARCHAR(MAX)",
+          "type": "NVARCHAR(1000)",
           "nullable": true,
-          "description": "What3Words JSON blob. NULL when SummaryOnly = 1."
+          "description": "HC.Event.w3wJson; NULL when @SummaryOnly = 1."
         },
         {
           "name": "EventDescription",
-          "type": "NVARCHAR(MAX)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
-          "description": "Full event description from SyncDescription computed column. NULL when SummaryOnly = 1."
+          "description": "HC.Event.SyncDescription (import-mirror aware); NULL when @SummaryOnly = 1."
         },
         {
           "name": "EventImage",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(500)",
           "nullable": true,
-          "description": "Event image URL, or NULL if not set."
+          "description": "HC.Event.EventImage — URL of the event image. NULL when not set."
         },
         {
           "name": "EventUrl",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(500)",
           "nullable": true,
-          "description": "External event URL (e.g. Facebook event). NULL when SummaryOnly = 1."
+          "description": "HC.Event.EventUrl; NULL when @SummaryOnly = 1."
         },
         {
           "name": "Tags1",
           "type": "INT",
           "nullable": false,
-          "description": "Bitflag column 1 for run tags. Decoded client-side against the RunTag enum."
+          "description": "HC.Event.Tags1 — raw bitflag integer for event tags set 1. Decoded client-side."
         },
         {
           "name": "Tags2",
           "type": "INT",
           "nullable": false,
-          "description": "Bitflag column 2 for run tags."
+          "description": "HC.Event.Tags2 — raw bitflag integer for event tags set 2. Decoded client-side."
         },
         {
           "name": "Tags3",
           "type": "INT",
           "nullable": false,
-          "description": "Bitflag column 3 for run tags (reserved for future use)."
+          "description": "HC.Event.Tags3 — raw bitflag integer for event tags set 3. Decoded client-side."
         },
         {
           "name": "IsCountedRun",
-          "type": "BIT",
+          "type": "SMALLINT",
           "nullable": false,
-          "description": "1 if this event counts toward a member's run tally."
+          "description": "HC.Event.IsCountedRun — whether this run counts toward run totals. SMALLINT NOT NULL."
+        },
+        {
+          "name": "IsPromotedEvent",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HC.Event.IsPromotedEvent — whether this event is promoted/featured. SMALLINT NOT NULL."
+        },
+        {
+          "name": "EventGeographicScope",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HC.Event.EventGeographicScope — scope code (1=normal, 2=local special, 3=regional, etc.). SMALLINT NOT NULL."
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "CatchEnvelope",
+      "description": "On a runtime error (CATCH, line 358): { Success = 0, ErrorMessage = ERROR_MESSAGE() }, possibly after rowsets already sent. NOT logged to HC.ErrorLog and not re-raised.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "0."
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "ERROR_MESSAGE()."
         }
       ]
     }
   ],
   "sideEffects": [],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH does not log to HC.ErrorLog",
+      "detail": "The CATCH (lines 356-359) returns { Success = 0, ErrorMessage } without writing HC.ErrorLog and without THROW, so a timeout or bad input surfaces to the shim as a data rowset and leaves no server-side record (CLAUDE.md 'Every CATCH must log')."
+    },
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @IsFuture. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
+    },
+    {
+      "severity": "low",
+      "issue": "Kennel id passed as text",
+      "detail": "@PublicKennelId is NVARCHAR(50) and CONVERTed at line 107; a malformed id is a conversion error caught as a generic failure instead of a validation message. UNIQUEIDENTIFIER would let the shim reject it."
+    },
+    {
+      "severity": "low",
+      "issue": "Dead GMT fallback",
+      "detail": "Lines 216-226 / 294-304 COALESCE EventStartDatetimeGmt with an AT TIME ZONE computation for NULLs, but the column is NOT NULL and the WHERE already requires it — the fallback (and the timezone lookup feeding it) never fires."
+    }
+  ],
   "feeResolutionLogic": {
     "description": "Fee fields follow a two-level fallback. The event record stores a per-event fee override; NULL means 'use the kennel default'. The SP resolves this at query time so callers always receive the effective fee.",
     "precedence": [

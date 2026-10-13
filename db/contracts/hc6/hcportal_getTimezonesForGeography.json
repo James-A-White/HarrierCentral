@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_getTimezonesForGeography",
-  "version": "1.0.0",
-  "description": "Returns the distinct timezones used by cities in a given country (optionally narrowed to a region). Powers the manual timezone dropdown shown when a run's location is entered as free text ('Other' region/city) with no structured city to derive a timezone from. Requires standard portal authentication.",
+  "version": "1.1.0",
+  "description": "Returns the distinct timezones used by cities in a given country (optionally narrowed to a region). Powers the manual timezone dropdown shown when a run's location is entered as free text ('Other' region/city) with no structured city to derive a timezone from. Device-bound portal auth via HC6.ValidatePortalAuth; any signed-in portal user. Only live cities (Removed = 0) that belong to a region of the country are considered.",
   "parameters": [
     {
       "name": "deviceId",
@@ -22,14 +22,14 @@
       "name": "countryId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": "Country.id",
-      "description": "Required filter: only timezones used by cities in this country are returned."
+      "mapsToColumn": "Region.CountryId",
+      "description": "Filter: only timezones used by cities in this country are returned. Not validated — NULL returns an empty rowset. Matched against Region.CountryId."
     },
     {
       "name": "regionId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": "Region.id",
+      "mapsToColumn": "City.RegionId",
       "description": "Optional filter: when provided, narrows the result to timezones used by cities in this region."
     }
   ],
@@ -37,10 +37,20 @@
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "description": "Returned on auth failure (HC6.ValidatePortalAuth message) or from the CATCH block (ERROR_MESSAGE()).",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Human-readable error message"
+        }
       ]
     },
     {
@@ -48,10 +58,30 @@
       "name": "TimezonesForGeographyResult",
       "description": "Distinct timezones used by cities in the geography, ordered by displayName. Empty if the geography has no cities/timezones.",
       "columns": [
-        { "name": "id", "type": "INT", "nullable": false, "description": "DomainValues.Timezone.id — store this in Event.TimezoneId" },
-        { "name": "displayName", "type": "NVARCHAR(303)", "nullable": false, "description": "DomainValues.Timezone.FullTimezone, e.g. 'GMT Standard Time (London)'" },
-        { "name": "ianaTimeZone", "type": "NVARCHAR(300)", "nullable": true, "description": "IANA zone name, e.g. 'Europe/London' (may be null)" },
-        { "name": "utcOffset", "type": "NVARCHAR(20)", "nullable": false, "description": "Standard-time offset hint, formatted 'UTC±HH:MM'" }
+        {
+          "name": "id",
+          "type": "INT",
+          "nullable": false,
+          "description": "DomainValues.Timezone.id — store this in Event.TimezoneId"
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(303)",
+          "nullable": false,
+          "description": "DomainValues.Timezone.FullTimezone, e.g. 'GMT Standard Time (London)'"
+        },
+        {
+          "name": "ianaTimeZone",
+          "type": "NVARCHAR(300)",
+          "nullable": true,
+          "description": "IANA zone name, e.g. 'Europe/London' (may be null)"
+        },
+        {
+          "name": "utcOffset",
+          "type": "VARCHAR(12)",
+          "nullable": false,
+          "description": "Standard-time offset hint (the smaller of the 1 Jan / 1 Jul offsets this year, via AT TIME ZONE on DomainValues.Timezone.Timezone), formatted 'UTC+HH:MM' / 'UTC-HH:MM'."
+        }
       ]
     }
   ],
@@ -61,5 +91,17 @@
     "Never rename a parameter",
     "Never change a parameter type",
     "Never change a sentinel value meaning"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 83-86: CATCH returns the envelope without an HC.ErrorLog row."
+    },
+    {
+      "severity": "low",
+      "issue": "Required filter not validated",
+      "detail": "The header calls @countryId required, but nothing checks it; NULL simply returns no rows."
+    }
   ]
 }

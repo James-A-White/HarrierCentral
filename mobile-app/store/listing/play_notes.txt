@@ -1,13 +1,9 @@
-Harrier Central 3.1 — everything since 3.0.12, in one update.
+Harrier Central 3.1.9
 
-Post a run straight into your kennel's WhatsApp, Telegram or Signal group. Run links now open in the app.
-
-Bring your history with you: import a Strava or Garmin export, or a single GPX, TCX or FIT file, and your old runs join your run counts.
-
-Chat for your kennel and every role you hold, with notifications.
-
-Your trails live on your phone, so they draw offline.
-
-Find my photos pulls a run's photos from your camera roll.
+Save and send: email a run to your kennel, written by AI in your house style.
+The hare's official trail on PackTrack, and a kennel trail map of every start.
+PackTrack Me mode, a street map on the radar, and auto start that arms itself.
+Find a hasher, and chat with them from any list. Chats split into Groups and Friends.
+Mark yourself at a past run, and many fixes.
 
 On On!

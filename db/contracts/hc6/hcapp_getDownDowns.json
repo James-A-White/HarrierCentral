@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_getDownDowns",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Returns all DownDown charges for a run (pending, done and cancelled), with each charge's list of named in-app hashers; names of people who are not registered users travel in the charge's externalNames JSON. Two rowsets on success. Gate: HC6.CheckKennelPermission 'manageDownDowns' on @kennelId (feature 'Manage Down Downs': the GM / VGM / RA / Beermeister roles or the Manage Awards flag, SuperAdmin always) — errorCode 1336, errorType 3 otherwise. Auth: HC6.ValidateAppAuth (spNumber 56, @param NULL). Read SP — no success envelope on the happy path. New feature — no HC5 equivalent.",
   "parameters": [
     {
@@ -21,16 +21,16 @@
     {
       "name": "kennelId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "DownDowns.KennelId",
-      "description": "Kennel that owns the event. Required — null or zero-UUID triggers validation error."
+      "description": "Kennel that owns the event. Required — null or zero-UUID triggers validation error. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "DownDowns.EventId",
-      "description": "Event to fetch DownDowns for. Required — null or zero-UUID triggers validation error."
+      "description": "Event to fetch DownDowns for. Required — null or zero-UUID triggers validation error. Defaults to NULL when omitted (2026-10-13)."
     }
   ],
   "rowsets": [
@@ -171,7 +171,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "All four parameters (lines 3-6) have no SQL default. A client that omits @kennelId or @eventId gets 'expects parameter' — an unlogged empty 500 before the SP runs, so the graceful 1234 'Missing parameter' check at line 71 is unreachable for an omitted parameter."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "medium",

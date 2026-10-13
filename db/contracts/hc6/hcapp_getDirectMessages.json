@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_getDirectMessages",
-  "version": "1.1.0",
-  "description": "Reads a direct-message thread (E9.F1.S7) in hcapp_getRoomMessages' shape, newest first, and marks it read when @markRead = 1. The caller must hold a HC.HasherFriendMap row for @threadId — an ended (Removed) friendship still reads; a blocked hasher's messages are hidden like every reader (E9.F1.S16). Every message row carries replyToMessageId, replyToText (NULL when deleted), replyToKind, replyToAuthor, replyToRemoved and reactions (E9.F1.S21/S22, 2026-09-30). The Thread row carries pinned and otherReadSequenceCount (E9.F1.S24 read receipts, 2026-10-01); a read that reaches the other hasher's messages ends with an API-only { ReadReceiptThreadId, UserId, FcmToken } rowset that the shim strips and turns into a silent push. Auth: HC6.ValidateAppAuth (spNumber 135, @param NULL). Also called by publicWeb_getChatMessages with @apiOnlyRowsets = 0.",
+  "version": "1.2.0",
+  "description": "Reads a direct-message thread (E9.F1.S7) in hcapp_getRoomMessages' shape, newest first, and marks it read when @markRead = 1. The caller must hold a HC.HasherFriendMap row for @threadId — an ended (Removed) friendship still reads; a blocked hasher's messages are hidden like every reader (E9.F1.S16). Every message row carries replyToMessageId, replyToText (NULL when deleted), replyToKind, replyToAuthor, replyToRemoved and reactions (E9.F1.S21/S22, 2026-09-30). The Thread row carries pinned and otherReadSequenceCount (E9.F1.S24 read receipts, 2026-10-01); a read that reaches the other hasher's messages ends with an API-only { ReadReceiptThreadId, UserId, FcmToken } rowset that the shim strips and turns into a silent push. Auth: HC6.ValidateAppAuth (spNumber 135, @param NULL). Also called by publicWeb_getChatMessages with @apiOnlyRowsets = 0. Since 2026-10-13 its MERGE into HC.EventMessageBadgeCounts holds HOLDLOCK: the table has no unique key on (UserId, EventId, KennelId, ThreadId, MessageType), and two concurrent MERGEs could each insert a row.",
   "parameters": [
     {
       "name": "deviceId",
@@ -306,11 +306,6 @@
     "INSERT HC.ErrorLog on not found (lines 56-58) and from the CATCH block (lines 183-184, after ROLLBACK)"
   ],
   "codeSmells": [
-    {
-      "severity": "low",
-      "issue": "MERGE without HOLDLOCK on a non-unique key",
-      "detail": "Lines 143-150 match the badge row on (UserId, NULLs, ThreadId, MessageType) with no UPDLOCK/HOLDLOCK hint; two phones of the same hasher opening the thread at once can both INSERT, and the reads at lines 70-71 and 126-128 then pick one row arbitrarily."
-    },
     {
       "severity": "low",
       "issue": "Ids returned as UPPER-cased text",

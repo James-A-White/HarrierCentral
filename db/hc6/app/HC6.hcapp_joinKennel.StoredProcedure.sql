@@ -2,8 +2,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_joinKennel]
 
     @deviceId                    UNIQUEIDENTIFIER,
     @accessToken                 NVARCHAR(1000),
-    @kennelId                    UNIQUEIDENTIFIER,
-    @targetUserId                UNIQUEIDENTIFIER,
+    @kennelId                    UNIQUEIDENTIFIER = NULL,
+    @targetUserId                UNIQUEIDENTIFIER = NULL,
     @isFollowing                 SMALLINT         = NULL,
     @isHomeKennel                SMALLINT         = NULL,
     @notificationState           SMALLINT         = NULL,
@@ -14,8 +14,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_joinKennel]
     @kennelStandingSet           INT              = NULL,
     @kennelStandingClear         INT              = NULL,
     @paymentAmount               DECIMAL(12,6)    = NULL,
-    @kennelsUpdatedAfter         NVARCHAR(50),
-    @hasherKennelMapUpdatedAfter NVARCHAR(50),
+    @kennelsUpdatedAfter         NVARCHAR(50) = 'ignore',
+    @hasherKennelMapUpdatedAfter NVARCHAR(50) = 'ignore',
     @hashersUpdatedAfter         NVARCHAR(50)     = 'ignore'
 
 AS
@@ -256,6 +256,8 @@ BEGIN TRY
         BEGIN
             UPDATE HC.HasherKennelMap SET
                 [Following]                  = COALESCE(@isFollowing, [Following]),
+                -- IsMember is DEPRECATED (2026-10-13): written here for old rows' sake, never
+                -- read. Membership is MembershipExpirationDate in the future, nothing else.
                 [IsMember]                   = CASE
                     WHEN @monthsToAddToMembership IS NULL  THEN IsMember
                     WHEN @monthsToAddToMembership = -9999  THEN 0
@@ -267,8 +269,9 @@ BEGIN TRY
                 [HcWebPermissionFlags]       = COALESCE(@appAccessFlags, HcWebPermissionFlags),
                 [MismanagementRoles]         = COALESCE(@mismanagementRoles, MismanagementRoles),
                 -- Manual standing grants (ALUMNI/TRUSTED/ADMIN): set/clear specific
-                -- bits without read-modify-write races. The automated MEMBER bit
-                -- (0x0001) is owned by nonApi_syncMemberStandingBit (runs below).
+                -- bits without read-modify-write races. Bit 0x0001 (the old
+                -- automated MEMBER bit) is RETIRED (2026-10-13): membership is
+                -- MembershipExpirationDate and nothing else.
                 [KennelStanding]             = (KennelStanding | COALESCE(@kennelStandingSet, 0))
                                                & ~COALESCE(@kennelStandingClear, 0),
                 [KennelNotificationPreference] = COALESCE(@notificationState, KennelNotificationPreference, 0),
@@ -290,10 +293,6 @@ BEGIN TRY
                 [updatedAt]                  = GETDATE()
             WHERE id = @hkmId;
         END
-
-        -- Keep the automated MEMBER standing bit (0x0001) in sync (covers both
-        -- the INSERT and UPDATE branches above).
-        EXEC HC6.nonApi_syncMemberStandingBit @userId = @targetUserId, @kennelId = @kennelId;
 
         -- Update kennel mismanagement team string when roles change
         IF (@mismanagementRoles IS NOT NULL)

@@ -1,0 +1,162 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getKennelArt",
+  "version": "1.0.0",
+  "description": "The app's Run art gallery for one kennel, for a web member (E9.F7.S12): every visible, live run of the kennel that has an EventImage, newest first — what QueryKennels.queryKennelGallery reads from the phone's synced events. Auth: HC6.ValidateAppAuth (spNumber 116, @param NULL); no permission gate beyond a signed-in device. Read-only.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "The browser's HC.Device id (the web member session). No SQL default."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token signed for this SP (ValidateAppAuth spNumber 116, @param NULL). No SQL default."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "The kennel. No SQL default; an unknown id returns the success envelope and no rows."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "AuthErrorEnvelope",
+      "description": "On a ValidateAppAuth failure: { success = 0, errorCode, errorType } then the detail at index 1; the SP RETURNs.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "ValidateAppAuth's error code."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "ValidateAppAuth's error type."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Error detail after the AuthErrorEnvelope (errorId, errorType, errorCode, errorTitle, errorUserMessage, errorProc)."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "On success: { success = 1, errorCode = NULL, errorType = NULL }.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "Always NULL."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "Always NULL."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "KennelArt",
+      "description": "On success: one row per run with IsVisible = 1, deleted = 0, removed = 0 and a non-empty EventImage, ORDER BY EventStartDatetimeGmt DESC. The kennel's own deleted/removed flags are not checked.",
+      "columns": [
+        {
+          "name": "PublicEventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Event.PublicEventId"
+        },
+        {
+          "name": "EventNumber",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Event.EventNumber"
+        },
+        {
+          "name": "EventName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Event.EventName"
+        },
+        {
+          "name": "EventImage",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Event.EventImage (never NULL or empty here)."
+        },
+        {
+          "name": "EventStartDatetime",
+          "type": "DATETIME2(7)",
+          "nullable": false,
+          "description": "CAST(Event.EventStartDatetime AS datetime2(7)) — the local wall-clock time with the offset dropped (see /hc-event-datetimes)."
+        },
+        {
+          "name": "EventStartDatetimeGmt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "Event.EventStartDatetimeGmt — the instant; the sort key."
+        },
+        {
+          "name": "KennelSlug",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "Kennel.KennelUniqueShortName"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.ErrorLog ('<web>', userId, deviceId) then THROW in the CATCH. ValidateAppAuth logs its own failures."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken and @publicKennelId have no SQL default (line 13). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
+    },
+    {
+      "severity": "low",
+      "issue": "Raw EventStartDatetime used as local time",
+      "detail": "Line 46 casts EventStartDatetime to datetime2 to get the wall clock. CLAUDE.md / /hc-event-datetimes: the raw column carries a spurious +00:00 on ~67% of rows; EventStartLocal is the canonical local-clock column. The cast happens to give the wall clock either way, but the canonical column would make the intent explicit."
+    },
+    {
+      "severity": "low",
+      "issue": "Kennel not checked for deleted/removed",
+      "detail": "The join at line 50 has no k.deleted / k.removed filter, so a removed kennel's art is still returned for its public id."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getPageLayout",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Returns the saved Puck page layout JSON blob for a kennel. Uses LEFT JOIN so kennels without a KennelWebsite row return one row with PageLayoutJson = NULL rather than zero rows (which the shim would misread as 404). Callers fall back to the hardcoded default layout when the value is NULL. No authentication required.",
   "parameters": [
     {
@@ -9,7 +9,7 @@
       "type": "NVARCHAR(100)",
       "nullable": false,
       "mapsToColumn": "Kennel.KennelUniqueShortName",
-      "description": "URL slug of the kennel whose layout to load"
+      "description": "URL slug of the kennel whose layout to load. No SQL default."
     }
   ],
   "rowsets": [
@@ -25,10 +25,39 @@
           "description": "JSON blob of shape PageLayoutBlob = Partial<Record<PageType, Data>> where PageType is 'home'|'runs'|'about'|'events'|'songs'|'stats'. NULL when no layout has been saved."
         }
       ]
+    },
+    {
+      "index": 0,
+      "name": "CatchEnvelope",
+      "description": "Only on a runtime error: { Success = 0, ErrorMessage } instead of the layout row. The error is neither logged nor re-raised.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "0."
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "ERROR_MESSAGE()."
+        }
+      ]
     }
   ],
   "sideEffects": [],
   "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH does not log to HC.ErrorLog",
+      "detail": "Lines 32-34 turn any runtime error into a { Success = 0, ErrorMessage } row with no HC.ErrorLog record and no THROW. The Next.js caller reads rowset 0 for PageLayoutJson, finds no such column, and falls back to the default layout — so a failure is silent: the kennel's saved layout just disappears from the page."
+    },
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@KennelSlug have no SQL default (line 2). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
+    },
     {
       "severity": "low",
       "issue": "Does not check kw.Enabled",

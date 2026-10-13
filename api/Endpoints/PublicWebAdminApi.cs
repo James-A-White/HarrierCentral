@@ -228,6 +228,15 @@ namespace HcWebApi.Endpoints
                                 for (int i = 0; i < reader.FieldCount; i++)
                                 {
                                     string? name = reader.GetName(i);
+                                    // A phone's push token is for the API, never for
+                                    // a browser or the web server (2026-10-13). The
+                                    // app's chat send and react SPs return their push
+                                    // recipients, tokens and all, and the web wrappers
+                                    // pass those rowsets through. Dropping the column
+                                    // here, rather than whole rowsets, keeps every
+                                    // rowset's position and row count unchanged.
+                                    if (name != null && name.Equals("FcmToken", StringComparison.OrdinalIgnoreCase))
+                                        continue;
                                     object? val = reader.IsDBNull(i) ? null : reader.GetValue(i);
                                     if (name != null && val != null)
                                         row[name] = val;

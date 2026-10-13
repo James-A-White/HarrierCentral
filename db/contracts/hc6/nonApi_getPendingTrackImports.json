@@ -1,67 +1,77 @@
 {
   "schema": "HC6",
   "name": "nonApi_getPendingTrackImports",
-  "version": "1.0.0",
-  "description": "The timer backstop's worklist: jobs uploaded and never started, or started more than @staleMinutes ago and not finished. Oldest first.",
+  "version": "1.1.0",
+  "description": "Internal, no auth. The timer backstop's worklist (E5.F5.S7), read by ProcessTrackImportsNightly (api/Endpoints/TrackImportFunctions.cs): HC.TrackImport jobs the phone never finished driving — Status 0 (uploaded, never started) or 1 (processing) whose StartedAt is NULL or more than @staleMinutes ago. Oldest UploadedAt first. Read only.",
   "parameters": [
     {
       "name": "staleMinutes",
       "type": "INT",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Default 15."
+      "description": "How long a claimed slice may run before the job counts as abandoned. Default 15. NULL makes the StartedAt comparison unknown, so only never-started jobs are returned."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "PendingJobs",
-      "description": "",
+      "description": "Zero or more jobs, ORDER BY UploadedAt ASC.",
       "columns": [
         {
           "name": "jobId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": ""
+          "description": "HC.TrackImport.id."
         },
         {
           "name": "hasherId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": ""
+          "description": "HC.TrackImport.HasherId — the uploader."
         },
         {
           "name": "blobUrl",
           "type": "NVARCHAR(1000)",
           "nullable": false,
-          "description": ""
+          "description": "HC.TrackImport.BlobUrl — the uploaded file in the track-imports container."
         },
         {
           "name": "fileName",
           "type": "NVARCHAR(250)",
           "nullable": true,
-          "description": ""
+          "description": "HC.TrackImport.FileName as uploaded."
         },
         {
           "name": "nextIndex",
           "type": "INT",
           "nullable": false,
-          "description": ""
+          "description": "HC.TrackImport.NextIndex — activities before this index are done; the processor resumes here."
         },
         {
           "name": "resultJson",
           "type": "NVARCHAR(MAX)",
           "nullable": true,
-          "description": ""
+          "description": "HC.TrackImport.ResultJson — the itemised result so far, appended to on resume."
         }
       ]
     }
   ],
-  "sideEffects": [],
-  "codeSmells": [],
+  "sideEffects": [
+    "None (read only). On a runtime error: INSERT HC.ErrorLog ('<unknown>') then THROW."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Header names a column that does not exist",
+      "detail": "Line 10 says the rowset returns 'cursor'; the SQL returns nextIndex (line 20) — 'Cursor' is a reserved word and the column was named NextIndex."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",
-    "Never change a parameter type"
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
   ]
 }

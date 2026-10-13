@@ -1,0 +1,82 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_clearEmailBounce",
+  "version": "1.0.0",
+  "description": "Portal door to clearing a hasher's bounced or suspect email status from a run's \"Who gets the email\" list (E19.F4.S5). Parity twin of HC6.hcapp_clearEmailBounce: same gate, same shared worker HC6.nonApi_resetEmailStatus. Auth: HC6.ValidatePortalAuth with a NULL callerParamString (the token is not bound to the run or hasher). Gate: HC6.CheckKennelPermission 'createEditRuns' on the run's kennel (a hare of the run qualifies via @isHareOfEvent), and the target hasher must have a non-removed HasherKennelMap row for that kennel or any HasherEventMap row for the run. Resets EmailStatus to 0 (Unknown) and the soft-bounce count to 0; never touches EmailBlocked (the member's own opt-out).",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: registered portal device. Validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived portal token, validated with a NULL callerParamString."
+    },
+    {
+      "name": "publicEventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.PublicEventId",
+      "description": "The run whose email list the hasher appears on. Identification only; resolved to HC.Event.id (deleted = 0 AND removed = 0). NULL returns 'The run or the hasher was missing.'"
+    },
+    {
+      "name": "hasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Hasher.id",
+      "description": "The hasher whose email status is cleared. NULL returns 'The run or the hasher was missing.'"
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned on auth failure, missing parameter, run not found, not authorised, or hasher not in the run's audience. Two columns only — the hasherId/emailStatus columns are absent on these paths.",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "0" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": false, "description": "User-facing reason" }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "ResultEnvelope",
+      "description": "Returned on success, and from the CATCH block (Success = 0, hasherId and emailStatus NULL).",
+      "columns": [
+        { "name": "Success", "type": "INT", "nullable": false, "description": "1 on success, 0 from CATCH" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "NULL on success; 'The bounce could not be cleared. Please try again.' from CATCH" },
+        { "name": "hasherId", "type": "NVARCHAR(40)", "nullable": true, "description": "Lowercase hasher id; NULL from CATCH" },
+        { "name": "emailStatus", "type": "SMALLINT", "nullable": true, "description": "HC.Hasher.EmailStatus after the reset (0 Unknown, 1 OK, 2 Suspect, 3 Bounced); NULL from CATCH. Column added by db/hc6/app/archive/2026-10-09_hasher_email_status_columns.sql (not yet in db/schema/tables)." }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "EXEC HC6.nonApi_resetEmailStatus @hasherId, @reason = 'cleared by admin <userId>': UPDATE HC.Hasher SET EmailStatus = 0, EmailSoftBounceCount = 0, EmailStatusChangedAt = SYSDATETIMEOFFSET() when either is non-zero; never sets updatedAt (no re-sync)",
+    "INSERT LOG.GeneralLog (LogSource 'EmailStatus', 'Email status reset') when a row changed",
+    "INSERT HC.ErrorLog on 'Not authorised', 'Not in audience' and unhandled errors"
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Rowset shape differs by path",
+      "detail": "Early-exit error paths (lines 28, 34, 43, 56, 65) return two columns; success and CATCH (lines 75, 82) return four. Clients must not index hasherId/emailStatus unless Success = 1."
+    },
+    {
+      "severity": "low",
+      "issue": "INSERT ... EXEC of a proc whose CATCH rolls back",
+      "detail": "Line 72 runs HC6.nonApi_resetEmailStatus under INSERT-EXEC. If that proc fails, its CATCH ROLLBACK is illegal inside INSERT-EXEC (error 3915), so its own HC.ErrorLog row is lost and the outer CATCH (line 80) logs the 3915 message rather than the original error."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

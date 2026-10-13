@@ -1,0 +1,207 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_setNotificationPrefs",
+  "version": "1.0.0",
+  "description": "The bell and the envelope on the web (E9.F7.S14): a web member's push-notification and email-alert preference for one kennel (HasherKennelMap) or one run (HasherEventMap), through the app's own hcapp_setEmailAndNotificationPrefs. The wrapper resolves the public ids, takes the hasher from the device row (always the caller — never a parameter) and range-checks the values; auth (token signed for 'hcapp_setEmailAndNotificationPrefs') and the write are the inner SP's. Values are the app's: notification 0 auto · 1 on · 2 ignore · 3 mute · 4 on before the run; email 0 · 1 on · 2 off; -1 = leave unchanged. When both public ids resolve the inner SP uses event scope. Reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "The calling browser's HC.Device id (the browser is a registered device). No SQL default."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Device-bound token signed for 'hcapp_setEmailAndNotificationPrefs' (the inner SP validates it under its own name via HC6.ValidateAppAuth). No SQL default."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "Kennel scope (HasherKennelMap). One of the two public ids must resolve."
+    },
+    {
+      "name": "publicEventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.PublicEventId",
+      "description": "Run scope (HasherEventMap)."
+    },
+    {
+      "name": "notificationPreference",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.KennelNotificationPreference",
+      "description": "-1 (default, unchanged), 0 auto, 1 on, 2 ignore, 3 mute, 4 on before the run. Event scope writes HasherEventMap.EventNotificationPreference.",
+      "typeMismatch": "Column is SMALLINT; the parameter (and the inner SP's) is INT — values are range-checked first, so nothing is lost."
+    },
+    {
+      "name": "emailPreference",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.KennelEmailAlertPreference",
+      "description": "-1 (default, unchanged), 0, 1 on, 2 off. Event scope writes HasherEventMap.EventEmailAlertPreference.",
+      "typeMismatch": "Column is SMALLINT; the parameter is INT — range-checked first."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "WrapperRefusal",
+      "description": "Wrapper refusal before the EXEC: no live device row for @deviceId (removed = 0), neither public id resolves to a live kennel/run, or a preference outside its range → { success 0, errorCode 1230, errorType 12 }, logged to HC.ErrorLog.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 success, 0 failure"
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success"
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Follows WrapperRefusal: errorTitle 'Not found', errorUserMessage 'That kennel or run could not be found.'"
+    },
+    {
+      "index": 0,
+      "name": "WriteEnvelope",
+      "description": "From hcapp_setEmailAndNotificationPrefs: Always the first rowset.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 on any failure."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success. ValidateAppAuth code; 1214 missing scope; 1914 unhandled (CATCH)."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success. 1 bad token / 3 device not found / 7 signed out (ValidateAppAuth); 12 validation; 19 unhandled."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "From hcapp_setEmailAndNotificationPrefs: Rowset 1 on failure only (success = 0). Every path writes HC.ErrorLog.",
+      "columns": [
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "UUID of the HC.ErrorLog entry."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Same as the envelope."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Same as the envelope."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Short human-readable error title."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "OBJECT_NAME(@@PROCID)."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "PrefsResult",
+      "description": "From hcapp_setEmailAndNotificationPrefs: Rowset 1 on success: the effective preferences after the write, read back for the UI.",
+      "columns": [
+        {
+          "name": "adHocDataId",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
+        },
+        {
+          "name": "notificationPreference",
+          "type": "INT",
+          "nullable": true,
+          "description": "Event scope: COALESCE(HEM.EventNotificationPreference, HKM.KennelNotificationPreference) via an INNER JOIN on the HKM row — NULL when the hasher has no HKM row for the kennel. Kennel scope: HKM.KennelNotificationPreference."
+        },
+        {
+          "name": "emailAlertPreference",
+          "type": "INT",
+          "nullable": true,
+          "description": "Event scope: COALESCE(HEM.EventEmailAlertPreference, HKM.KennelEmailAlertPreference), same join caveat. Kennel scope: HKM.KennelEmailAlertPreference."
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "SyncUserDataRowsets",
+      "description": "From hcapp_setEmailAndNotificationPrefs: Rowsets 2+ on success: HC6.hcapp_syncUserData with the HEM/HKM watermarks passed through, hashers and narrow events 'ignore', @usePaging 0. See that contract. The wrapper passes '2050-01-01' for both watermarks, so these sync rowsets come back empty (shape only); the web re-reads its own screens."
+    }
+  ],
+  "sideEffects": [
+    "EXEC HC6.hcapp_setEmailAndNotificationPrefs — everything it does:",
+    "  INSERT HC.HasherKennelMap (prefs COALESCEd to 0) when kennel scope and no row for (@hasherId, @kennelId) (lines 129-136) — this also creates a follow-like row for a kennel the hasher had no relationship with.",
+    "  UPDATE HC.HasherKennelMap Kennel*Preference, updatedAt when kennel scope and the row exists (lines 140-144).",
+    "  INSERT HC.HasherEventMap with KennelId, Event*Preference (0 stored as NULL), updatedAt when event scope and no row (lines 161-168) — RsvpState/AttendenceState take the table defaults (0).",
+    "  UPDATE HC.HasherEventMap Event*Preference, updatedAt when event scope and the row exists (lines 172-176).",
+    "  INSERT HC.ErrorLog on the missing-scope refusal (line 96) and in the CATCH (line 214).",
+    "  EXEC HC6.hcapp_syncUserData after the TRY (line 230).",
+    "INSERT HC.ErrorLog on the wrapper refusal (1230).",
+    "On an error that escapes the inner SP the CATCH rolls back, logs 'Unhandled error in publicWeb_setNotificationPrefs' to HC.ErrorLog (HcVersion '<web>', deviceId) and returns { success 0, errorCode 1500, errorType 5 } alone (no detail rowset)."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken (line 16-17) have no SQL default. A caller that omits one fails with 'expects parameter' before the SP runs: PublicWebAdminApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

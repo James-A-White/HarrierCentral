@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_addEditReceipt",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Creates or updates an HC.Receipt (event expense). Mode is whether @receiptId already exists in HC.Receipt: found → UPDATE (COALESCE partial), else INSERT with a server NEWID() when @receiptId is NULL / zero UUID. Sentinels normalised before auth (lines 68-76): @removed -1 → NULL (keep), negative amounts → NULL, zero-UUID @reimbursedBy → NULL, blank strings → NULL, @imageUrl shorter than 20 → NULL. @reimbursedBy = FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF clears all four reimbursement fields; any other non-NULL @reimbursedBy sets ReimbursedOn = GETDATE() and copies the receipt's stored ReceiptAmount into ReimbursedAmount. Auth: HC6.ValidateAppAuth (spNumber 43, standard token). @eventId required → 1243. Gate: HC6.CheckKennelPermission 'manageReceipts' for the event's kennel, the designated hare of THIS event allowed → else 1343 (errorType 13). After COMMIT delegates to HC6.hcapp_syncEventAdminData for @eventId with only the receipts watermark live. Every parameter is positional-required: none has a SQL default (see codeSmells).",
   "parameters": [
     {
@@ -21,43 +21,43 @@
     {
       "name": "receiptId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Receipt.id",
       "description": "Receipt to update. NULL or the zero UUID → insert mode with a server NEWID(); a UUID not found in HC.Receipt also inserts (with that id). NO SQL DEFAULT: the client must pass it, NULL or not."
     },
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Receipt.EventId",
-      "description": "Required. NULL or null-UUID triggers a validation error (errorCode=1243, errorType=12)."
+      "description": "Required. NULL or null-UUID triggers a validation error (errorCode=1243, errorType=12). Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "receiptShortDesc",
       "type": "NVARCHAR(500)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Receipt.ReceiptShortDesc",
-      "description": "Short description of the expense. Empty string normalised to NULL. On UPDATE, NULL keeps existing value (COALESCE pattern).",
+      "description": "Short description of the expense. Empty string normalised to NULL. On UPDATE, NULL keeps existing value (COALESCE pattern). Defaults to NULL when omitted (2026-10-13).",
       "typeMismatch": "Parameter is NVARCHAR(500); table column is NVARCHAR(255). Values between 256 and 500 chars will be silently truncated by SQL Server on insert/update."
     },
     {
       "name": "receiptAmount",
       "type": "DECIMAL(12,4)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Receipt.ReceiptAmount",
-      "description": "Amount of the expense. Negative values normalised to NULL before auth. On UPDATE, NULL keeps existing value (COALESCE pattern)."
+      "description": "Amount of the expense. Negative values normalised to NULL before auth. On UPDATE, NULL keeps existing value (COALESCE pattern). Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "notes",
       "type": "NVARCHAR(1000)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Receipt.Notes",
-      "description": "Optional free-text notes on the expense. Empty string normalised to NULL. On UPDATE, NULL keeps existing value."
+      "description": "Optional free-text notes on the expense. Empty string normalised to NULL. On UPDATE, NULL keeps existing value. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "reimbursedBy",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Receipt.ReimbursedBy",
       "description": "Hasher who reimbursed. Zero UUID → NULL (keep existing). FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF = clear-reimbursement sentinel (nulls ReimbursedBy/On/Amount/Notes). Any other UUID auto-sets ReimbursedOn = GETDATE() and ReimbursedAmount = the stored ReceiptAmount. No SQL default."
     },
@@ -71,21 +71,21 @@
     {
       "name": "reimbursedAmount",
       "type": "DECIMAL(12,4)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Receipt.ReimbursedAmount",
       "description": "Amount reimbursed. Negative → NULL. Overridden from Receipt.ReceiptAmount when @reimbursedBy is a real hasher. On UPDATE NULL keeps the existing value. No SQL default."
     },
     {
       "name": "reimbursedNotes",
       "type": "NVARCHAR(1000)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Receipt.ReimbursedNotes",
       "description": "Notes on the reimbursement. Blank → NULL (keep on UPDATE). No SQL default."
     },
     {
       "name": "imageUrl",
       "type": "NVARCHAR(1000)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Receipt.ImageUrl",
       "description": "URL of the receipt image. LEN < 20 → NULL (keep on UPDATE). No SQL default.",
       "typeMismatch": "Parameter is NVARCHAR(1000); table column is NVARCHAR(500). URLs between 501 and 1000 chars will be silently truncated by SQL Server on insert/update."
@@ -93,14 +93,14 @@
     {
       "name": "receiptsUpdatedAfter",
       "type": "NVARCHAR(50)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
       "description": "Sync watermark forwarded to HC6.hcapp_syncEventAdminData; NULL → 'ignore'. All other watermarks are hardcoded 'ignore'. No SQL default."
     },
     {
       "name": "removed",
       "type": "SMALLINT",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Receipt.removed",
       "description": "Soft-delete flag. -1 → NULL (keep existing); 1 = removed; on INSERT written as given (NULL if -1 — see codeSmells). No SQL default."
     }
@@ -192,7 +192,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "@receiptId, @reimbursedBy, @reimbursedOn, @reimbursedAmount, @reimbursedNotes, @imageUrl, @receiptsUpdatedAfter, @removed, @deviceId, @accessToken, @eventId, @receiptShortDesc, @receiptAmount, @notes (lines 3-16, all fourteen) have no SQL default. A client that omits any of them is refused by SQL BEFORE the procedure runs: no HC.ErrorLog row, an empty 500 in the app, and the SP's own graceful checks are unreachable (CLAUDE.md, Rack of Lamb 2026-09-29). The NULL-tolerant body (COALESCE everywhere) gives the impression they are optional; they are not."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken, @reimbursedOn. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "high",

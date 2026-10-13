@@ -1,0 +1,182 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getAllSongs",
+  "version": "1.0.0",
+  "description": "The app's Songs tab for a web member (E9.F7.S11): the whole global songbook (HC.Song, Removed = 0), ungrouped and ordered by name — what the app reads from common_songs. Same columns as publicWeb_getSongs so the web renders both with one component. Behind HC6.ValidateAppAuth (spNumber 117, @param NULL) rather than the anonymous shim because the per-kennel songbook is public one kennel at a time and this is the whole catalogue in one call. No permission gate beyond a signed-in device. Read-only.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "The browser's HC.Device id (the web member session). No SQL default."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token signed for this SP (ValidateAppAuth spNumber 117, @param NULL). No SQL default."
+    },
+    {
+      "name": "songId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Song.id",
+      "description": "Optional: when given, only that song (still filtered by Removed = 0)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "AuthErrorEnvelope",
+      "description": "On a ValidateAppAuth failure: { success = 0, errorCode, errorType } then the detail at index 1; the SP RETURNs.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "ValidateAppAuth's error code."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "ValidateAppAuth's error type."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Error detail after the AuthErrorEnvelope (errorId, errorType, errorCode, errorTitle, errorUserMessage, errorProc)."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "On success: { success = 1, errorCode = NULL, errorType = NULL }.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "Always NULL."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "Always NULL."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Songs",
+      "description": "On success: one row per live song, ORDER BY SongName. Empty when @songId matches nothing.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Song.id"
+        },
+        {
+          "name": "SongName",
+          "type": "NVARCHAR(120)",
+          "nullable": false,
+          "description": "Song.SongName"
+        },
+        {
+          "name": "TuneOf",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Song.TuneOf"
+        },
+        {
+          "name": "BawdyRating",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Song.BawdyRating"
+        },
+        {
+          "name": "Lyrics",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Song.Lyrics"
+        },
+        {
+          "name": "Notes",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Song.Notes"
+        },
+        {
+          "name": "Actions",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Song.Actions"
+        },
+        {
+          "name": "Variants",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Song.Variants"
+        },
+        {
+          "name": "ImageUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Song.ImageUrl"
+        },
+        {
+          "name": "AudioUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Song.AudioUrl"
+        },
+        {
+          "name": "Rank",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Song.Rank"
+        },
+        {
+          "name": "Tags",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Song.Tags"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.ErrorLog ('<web>', userId, deviceId) then THROW in the CATCH. ValidateAppAuth logs its own failures."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId and @accessToken have no SQL default (line 17). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

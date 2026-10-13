@@ -1,0 +1,91 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_authorizeRosterImport",
+  "version": "1.0.0",
+  "description": "The permission gate for the portal's 'Import from file' roster import (E2.F2.S6). The API endpoint api/Endpoints/RosterImport.cs calls it before it reads the uploaded file or spends anything on the AI mapping. Auth: HC6.ValidatePortalAuth with @publicKennelId as callerParamString. Gate: the caller's HC.HasherKennelMap.AppAccessFlags on the kennel must include any of 0x40000081 (super admin / admin bits) — the same test hcportal_bulkAddHashers applies when the grid is saved afterwards. Read-only apart from logging a refusal to HC.ErrorLog. Returns one row in every case, with the same five columns.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: portal device id, validated via HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived portal token; param string UPPER(deviceSecret):UPPER(publicKennelId)."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "The kennel the import is for. Also the token's callerParamString. Unknown or NULL gives 'No kennel with that id.' (a NULL normally fails auth first)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "AuthorizeResult",
+      "description": "Exactly one row on every path (auth failure, unknown kennel, not authorised, success, CATCH). On refusal the three data columns are NULL.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 allowed, 0 refused"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(255)",
+          "nullable": true,
+          "description": "NULL on success; otherwise the auth error, 'No kennel with that id.', 'You are not authorised to add members to this kennel.', or 'Please try again.' (CATCH)"
+        },
+        {
+          "name": "kennelId",
+          "type": "NVARCHAR(40)",
+          "nullable": true,
+          "description": "Lower-cased HC.Kennel.id as text; NULL on refusal"
+        },
+        {
+          "name": "kennelShortName",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "HC.Kennel.KennelShortName (column is NVARCHAR(25)); NULL on refusal"
+        },
+        {
+          "name": "adminId",
+          "type": "NVARCHAR(40)",
+          "nullable": true,
+          "description": "Lower-cased HC.Hasher.id of the caller as text; NULL on refusal"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "On a permission refusal: INSERT HC.ErrorLog ('Not authorised', HcVersion '<portal>', with userId and kennelId)",
+    "On a runtime error: INSERT HC.ErrorLog ('Unhandled error in hcportal_authorizeRosterImport')"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Permission read straight from AppAccessFlags",
+      "detail": "Line 37 tests HasherKennelMap.AppAccessFlags & 0x40000081 instead of HC6.CheckKennelPermission, so a Mismanagement role that may manage members (the other independent grantor on HasherKennelMap) is not honoured. It deliberately mirrors hcportal_bulkAddHashers, so both must change together."
+    },
+    {
+      "severity": "low",
+      "issue": "Ids returned as text",
+      "detail": "kennelId and adminId are returned as LOWER(CAST(... AS NVARCHAR(40))) (lines 44-45) rather than UNIQUEIDENTIFIER; harmless for the C# caller but inconsistent with other portal SPs."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

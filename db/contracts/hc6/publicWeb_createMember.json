@@ -1,81 +1,183 @@
 {
   "schema": "HC6",
   "name": "publicWeb_createMember",
-  "version": "1.0.0",
-  "description": "Web self-signup: resolves the kennel slug and EXECs hcapp_addEditUser in new-user mode, following the kennel. Email is proven afterwards by the invite code. Behind HC_INTERNAL_SECRET.",
+  "version": "1.2.0",
+  "description": "Web self-signup (E9.F7.S3): a hasher whose email the kennel never recorded becomes a member by answering the run notice. Validates the request, refuses an address that already has a live account (10005, the app signup's contractual duplicate code), resolves @kennelSlug to a kennel, then EXECs HC6.hcapp_addEditUser in new-user mode (@deviceId NULL — creation only, no token) with @followKennelOnAddNewUser = 1 so the new hasher follows that kennel; hcapp_addEditUser's rowsets are returned as they come. The email is NOT proven here: the web next sends the invite code and the browser becomes a device only when the code comes back (hcapp_authorizeDevice), exactly as the app's flow. No SP-level auth: reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET.",
   "parameters": [
     {
       "name": "email",
       "type": "NVARCHAR(250)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Hasher.Email",
-      "description": ""
+      "description": "Required (LEN >= 5). No SQL default."
     },
     {
       "name": "hashName",
       "type": "NVARCHAR(250)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Hasher.HashName",
-      "description": ""
+      "description": "Required (non-empty). No SQL default."
     },
     {
       "name": "firstName",
       "type": "NVARCHAR(250)",
       "nullable": true,
       "mapsToColumn": "Hasher.FirstName",
-      "description": ""
+      "description": "Optional."
     },
     {
       "name": "lastName",
       "type": "NVARCHAR(250)",
       "nullable": true,
       "mapsToColumn": "Hasher.LastName",
-      "description": ""
+      "description": "Optional."
     },
     {
       "name": "kennelSlug",
       "type": "NVARCHAR(100)",
       "nullable": true,
       "mapsToColumn": "Kennel.KennelUniqueShortName",
-      "description": ""
+      "description": "The kennel whose link was tapped (case-insensitive match on KennelUniqueShortName, deleted = 0). NULL or unknown → the empty GUID, i.e. no kennel is followed."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "Envelope",
-      "description": "success 1/0, errorCode, errorType",
+      "description": "Always first. This SP's own refusals and hcapp_addEditUser's SuccessEnvelope share the shape.",
       "columns": [
         {
           "name": "success",
           "type": "INT",
           "nullable": false,
-          "description": ""
+          "description": "1 created; 0 refused or failed."
         },
         {
           "name": "errorCode",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "1220 missing email / hash name; 10005 email already registered; 1500 unhandled (CATCH); otherwise hcapp_addEditUser's code (NULL on success)."
         },
         {
           "name": "errorType",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "2 for 1220 / 10005; 5 for 1500; otherwise hcapp_addEditUser's."
         }
       ]
     },
     {
       "index": 1,
       "ref": "StandardErrorResult",
-      "description": "10005 duplicate email (contractual), 1220 missing details; on success hcapp_addEditUser's profile rowset"
+      "description": "After a 1220 or 10005 envelope (errorId is a fresh NEWID() with no HC.ErrorLog row; no debugMessage column), or hcapp_addEditUser's ErrorDetail. The 1500 CATCH envelope has NO detail rowset."
+    },
+    {
+      "index": 1,
+      "name": "NewUserProfile",
+      "description": "On success, as returned by HC6.hcapp_addEditUser in new-user mode: Only returned when success=1 AND new-user mode (@deviceId IS NULL, or @userId resolved to null-UUID). Returns the newly created Hasher record directly instead of delegating to a sync SP.",
+      "columns": [
+        {
+          "name": "hasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The new user's Hasher.id."
+        },
+        {
+          "name": "firstName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Coalesced to empty string."
+        },
+        {
+          "name": "lastName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Coalesced to empty string."
+        },
+        {
+          "name": "dispName",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Hasher.DisplayName computed column, coalesced to empty string."
+        },
+        {
+          "name": "hashName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Coalesced to empty string."
+        },
+        {
+          "name": "photo",
+          "type": "NVARCHAR(1000)",
+          "nullable": false,
+          "description": "Coalesced to empty string."
+        },
+        {
+          "name": "dispPref",
+          "type": "INT",
+          "nullable": false,
+          "description": "Hasher.NameDisplayPreference, coalesced to 0."
+        },
+        {
+          "name": "supportCode",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Hasher.SupportCode."
+        },
+        {
+          "name": "resetCode",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Hasher.ResetCode."
+        },
+        {
+          "name": "qrCode",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "Hasher.QR_code, coalesced to empty string."
+        },
+        {
+          "name": "preferences",
+          "type": "NVARCHAR(20)",
+          "nullable": false,
+          "description": "Hasher.Preferences cast to NVARCHAR — string representation of the INT bitfield."
+        },
+        {
+          "name": "updatedAt",
+          "type": "DATETIMEOFFSET",
+          "nullable": false,
+          "description": "Hasher.updatedAt."
+        },
+        {
+          "name": "removed",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Hasher.Removed, coalesced to 0."
+        }
+      ]
     }
   ],
   "sideEffects": [
-    "Inserts HC.Hasher and HC.HasherKennelMap via hcapp_addEditUser"
+    "EXEC HC6.hcapp_addEditUser in new-user mode — its side effects: INSERT HC.Hasher, INSERT HC.LaunchAndLogin, INSERT HC.HasherKennelMap for the resolved kennel (followKennelOnAddNewUser = 1), INSERT HC.ErrorLog on its error paths.",
+    "INSERT HC.ErrorLog in this SP's CATCH (no re-throw; returns the 1500 envelope)."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Unknown kennel slug signs up silently without a kennel",
+      "detail": "Lines 53-57: a slug that matches no kennel (or a removed one — only deleted is checked) leaves @kennelId as the empty GUID, so the hasher is created following nothing and the page reports success."
+    },
+    {
+      "severity": "low",
+      "issue": "Refusal errorId has no ErrorLog row",
+      "detail": "Lines 35 and 46 return errorId = NEWID() for 1220 / 10005 without logging it."
+    },
+    {
+      "severity": "low",
+      "issue": "Error code 1220 reused",
+      "detail": "1220 (missing details) is also the ValidateAppAuth failure code for spNumber 120 (hcapp_deletePasskey). Different SPs, so not ambiguous in practice, but it breaks the one-code-one-meaning convention."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

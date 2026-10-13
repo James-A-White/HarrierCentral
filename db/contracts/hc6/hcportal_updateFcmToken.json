@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_updateFcmToken",
-  "version": "1.0.0",
-  "description": "Updates the FCM (Firebase Cloud Messaging) push notification token for a device after the browser has refreshed its token. Also updates device version, build number, and last login timestamp.",
+  "version": "1.1.0",
+  "description": "Stores the browser's refreshed FCM push token on the calling portal device row and stamps LastLogin; Version and BuildNumber are written only on a browser row (IsMobile = 0) — a phone row keeps the app's own values (2026-09-29). The same token string is then retired (FcmToken NULL, FcmTokenDeleted stamped) from every OTHER device row, as hcapp_setFcmTokens does, so one browser never holds two live rows. Auth: HC6.ValidatePortalAuth with @fcmToken as the token param string; acts only on the caller's own device.",
   "parameters": [
     {
       "name": "deviceId",
@@ -30,24 +30,34 @@
       "type": "NVARCHAR(25)",
       "nullable": true,
       "mapsToColumn": "Device.BuildNumber",
-      "description": "Build number of the portal application to be stored with the device record."
+      "description": "Portal build number; written only when the device row is a browser (IsMobile = 0)."
     },
     {
       "name": "version",
       "type": "NVARCHAR(25)",
       "nullable": true,
       "mapsToColumn": "Device.Version",
-      "description": "Version number of the portal application to be stored with the device record."
+      "description": "Portal version; written only when the device row is a browser (IsMobile = 0)."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "description": "Returned on auth failure, NULL deviceId (unreachable in practice — auth fails first), or from the CATCH block (ERROR_MESSAGE()).",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Human-readable error message"
+        }
       ]
     },
     {
@@ -57,7 +67,7 @@
       "columns": [
         {
           "name": "result",
-          "type": "NVARCHAR",
+          "type": "VARCHAR(7)",
           "nullable": false,
           "description": "Literal string 'Success' to indicate completion"
         }
@@ -65,12 +75,21 @@
     }
   ],
   "sideEffects": [
-    "UPDATE HC.Device (FcmToken, Version, BuildNumber, LastLogin) for the matching deviceId. Wrapped in a transaction."
+    "UPDATE HC.Device for @deviceId: FcmToken, LastLogin, and Version/BuildNumber when IsMobile = 0",
+    "UPDATE HC.Device SET FcmToken = NULL, FcmTokenDeleted = SYSUTCDATETIME() on every other row holding the same token (when @fcmToken is not NULL)",
+    "Both inside one transaction"
   ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",
     "Never change a parameter type",
     "Never change a sentinel value meaning"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 110-113: CATCH rolls back and returns the envelope with no HC.ErrorLog row, so a failed token refresh (which silently stops portal pushes) leaves no server record."
+    }
   ]
 }

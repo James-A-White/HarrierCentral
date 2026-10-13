@@ -1,22 +1,22 @@
 {
   "schema": "HC6",
   "name": "hcapp_startDirectMessage",
-  "version": "1.1.0",
-  "description": "The door to a DM from 'Message <name>'. Outcome open (thread ready), requested (friends-only target, or blocked/declined — silent), refused (target accepts nobody), blocked (caller blocked the target). E9.F1.S19.",
+  "version": "1.3.0",
+  "description": "The door to a direct message (E9.F1.S19) from 'Message <name>' in any chat, or the chat bubble on a hasher list (E9.F1.S32). Auth: HC6.ValidateAppAuth (spNumber 129, @param NULL); no permission gate — the target's DM preference (HC6.DirectMessagePreference over Hasher.Preferences bits 0x4000|0x8000) and the pair's HC.HasherFriendMap rows decide. Outcome: open (already friends, target accepts anyone, or the target had already asked the caller — both rows get FriendSince and a shared ThreadId, minted if new), requested (target is friends-only and a request is now or already on file; ALSO returned when the target has blocked the caller or declined, with nothing written, so neither is revealed), refused (target accepts nobody), blocked (the caller has blocked the target). A new request returns push rowsets 2-3, which the API sends and strips. Since 2026-10-13 both HasherFriendMap rows are read inside the transaction WITH (UPDLOCK, HOLDLOCK), so a double tap waits for the first call and returns the same outcome (idempotent) instead of hitting IX_HasherFriendMap.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Registered device"
+      "description": "Registered device. Default NULL (ValidateAppAuth then refuses)."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Short-lived token (standard, device secret)"
+      "description": "Short-lived token (standard, device secret). Default NULL."
     },
     {
       "name": "targetPublicHasherId",
@@ -37,7 +37,32 @@
     {
       "index": 0,
       "ref": "StandardErrorResult",
-      "description": "Auth failure returns the detail alone; other refusals return {success:0, errorCode, errorType} then the detail: 2002 no target / self (2), 2003 unhandled (5)"
+      "description": "Auth failure (ValidateAppAuth) returns this detail rowset ALONE, with no envelope. The SP's own refusals return {success:0, errorCode, errorType} at index 0 then this detail at index 1: 2002 target not found / removed / self (errorType 2), 2003 unhandled (5). No debugMessage column."
+    },
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Index 0 on 2002 and 2003, followed by the detail at index 1.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "2002 or 2003."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "2 or 5."
+        }
+      ]
     },
     {
       "index": 0,
@@ -55,7 +80,8 @@
           "nullable": true,
           "description": "NULL on success"
         }
-      ]
+      ],
+      "description": "On success: {success = 1, errorMessage = NULL}."
     },
     {
       "index": 1,
@@ -65,102 +91,117 @@
           "name": "Outcome",
           "type": "NVARCHAR(10)",
           "nullable": false,
-          "description": "open | requested | refused | blocked"
+          "description": "'open' | 'requested' | 'refused' | 'blocked'."
         },
         {
           "name": "ThreadId",
-          "type": "NVARCHAR(36)",
+          "type": "NVARCHAR(40)",
           "nullable": true,
-          "description": "UPPER; only when open"
+          "description": "UPPER-case thread id when Outcome = 'open', else NULL. Clients lowercase on arrival."
         },
         {
           "name": "OtherPublicHasherId",
-          "type": "NVARCHAR(36)",
+          "type": "NVARCHAR(40)",
           "nullable": false,
-          "description": "UPPER"
+          "description": "UPPER(CAST(Hasher.PublicHasherId AS NVARCHAR(40))) of the target."
         },
         {
           "name": "OtherDisplayName",
           "type": "NVARCHAR(250)",
           "nullable": false,
-          "description": ""
+          "description": "Hasher.DisplayName (computed, persisted)."
         },
         {
           "name": "OtherPhoto",
-          "type": "NVARCHAR(500)",
+          "type": "NVARCHAR(1000)",
           "nullable": true,
-          "description": ""
+          "description": "Hasher.Photo."
         }
-      ]
+      ],
+      "description": "On success: the outcome and the other party."
     },
     {
       "index": 2,
       "name": "PushDetail",
-      "description": "API-only, stripped: present only when a push is due.",
+      "description": "API-only, stripped: present only when this call created a NEW request (@newRequest = 1).",
       "columns": [
         {
           "name": "Kind",
-          "type": "NVARCHAR(20)",
+          "type": "VARCHAR(9)",
           "nullable": false,
-          "description": "'dmRequest'"
+          "description": "Always 'dmRequest'."
         },
         {
           "name": "ThreadId",
-          "type": "NVARCHAR(36)",
+          "type": "NVARCHAR(40)",
           "nullable": true,
-          "description": ""
+          "description": "Always NULL (no thread until accepted)."
         },
         {
           "name": "FromPublicHasherId",
-          "type": "NVARCHAR(36)",
+          "type": "NVARCHAR(40)",
           "nullable": false,
-          "description": ""
+          "description": "Caller's PublicHasherId, UPPER-case."
         },
         {
           "name": "FromDisplayName",
           "type": "NVARCHAR(250)",
           "nullable": false,
-          "description": ""
+          "description": "Caller's DisplayName."
         },
         {
           "name": "FromPhoto",
-          "type": "NVARCHAR(500)",
+          "type": "NVARCHAR(1000)",
           "nullable": true,
-          "description": ""
+          "description": "Caller's Photo."
         }
       ]
     },
     {
       "index": 3,
       "name": "Recipients",
-      "description": "API-only, stripped: the other party's devices on builds >= HC6.MinBuildForDmPush().",
+      "description": "API-only, stripped, new request only: the target's devices with removed = 0, an FcmToken, LastLogin within 180 days and BuildNumber >= HC6.MinBuildForDmPush().",
       "columns": [
         {
           "name": "UserId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": ""
+          "description": "The target hasher."
         },
         {
           "name": "FcmToken",
           "type": "NVARCHAR(500)",
           "nullable": false,
-          "description": ""
+          "description": "Device.FcmToken."
         },
         {
           "name": "BadgeTotal",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "HC6.UserUnreadChatTotal for the icon badge; NULL on builds below HC6.MinBuildForIconBadge()."
         }
       ]
     }
   ],
   "sideEffects": [
-    "HasherFriendMap rows (request, or both friend rows with a shared ThreadId)",
-    "request push via API"
+    "New request (no row either way, target friends-only): INSERT HC.HasherFriendMap (UserId = caller, Friend_UserId = target, FriendSince NULL).",
+    "Outcome 'open': MERGE WITH (HOLDLOCK) both direction rows of HC.HasherFriendMap — FriendSince = COALESCE(existing, now), ThreadId = existing thread or NEWID(), Removed = 0, updatedAt = now; inserts a missing direction row. HasherFriendMap.ThreadId / Removed come from db/hc6/app/archive/2026-09-29_direct_messages.sql and updatedAt from 2026-09-29_hasher_block.sql (not in the stale table file).",
+    "Nothing is written for 'blocked', 'refused', or a silent 'requested' (pending, declined, unfriended, or blocked by the target).",
+    "Rowsets 2-3 drive a 'dmRequest' push sent by the API.",
+    "INSERT HC.ErrorLog on 2002 and in the CATCH (after ROLLBACK)."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Uppercase ids in client rowsets",
+      "detail": "Lines 131-132 and 139 return UPPER(...) ids. The app lowercases at the door, but the SP is doing deliberate work in the wrong direction (CLAUDE.md 'Ids are lowercase')."
+    },
+    {
+      "severity": "low",
+      "issue": "Auth-failure rowset shape differs from the other error paths",
+      "detail": "Lines 54-59 return the detail rowset alone; lines 76-78 and 158-160 return envelope + detail."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

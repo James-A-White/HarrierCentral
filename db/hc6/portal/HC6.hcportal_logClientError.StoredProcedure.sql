@@ -1,7 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_logClientError]
     @deviceId         UNIQUEIDENTIFIER = NULL,
     @accessToken      NVARCHAR(1000)   = NULL,
-    @errorName        NVARCHAR(500),
+    @errorName        NVARCHAR(500) = NULL,
     @errorDescription NVARCHAR(MAX)    = NULL,
     @source           NVARCHAR(250)    = 'portal-client',
     @appVersion       NVARCHAR(50)     = NULL,

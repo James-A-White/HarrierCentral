@@ -1,7 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_setHasherNotesSuppression]
     @deviceId    UNIQUEIDENTIFIER = NULL,
     @accessToken NVARCHAR(1000)   = NULL,
-    @hasherId    UNIQUEIDENTIFIER,
+    @hasherId    UNIQUEIDENTIFIER = NULL,
     @suppressed  SMALLINT
 AS
 -- =====================================================================

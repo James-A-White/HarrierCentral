@@ -1,47 +1,208 @@
 {
   "schema": "HC6",
   "name": "hcportal_getPermissionMatrix",
-  "version": "1.0.0",
-  "description": "Loads the data-driven permission matrix (Permissions V2) for the super-admin editor: the function catalog, the grantor catalog (mismanagement roles + app-access flags; SuperAdmin bypass excluded), and the current GLOBAL grants. Auth via ValidatePortalAuth; caller must hold SuperAdmin (0x40000000) in some kennel.",
+  "version": "1.1.0",
+  "description": "Loads the data-driven permission matrix (Permissions V2) for the super-admin editor: the function catalog, the grantor catalog (mismanagement roles + app-access flags; the SuperAdmin bypass grantor is excluded), the current GLOBAL grants, and — when @publicKennelId is given — that kennel's override rows. Auth: HC6.ValidatePortalAuth; service accounts (callerType != 0) refused; the caller must hold an active HC.PlatformAdmin row with CanManagePermissions = 1.",
   "parameters": [
-    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "Device.id", "description": "Auth: device ID used to resolve the hasher and validate the token." },
-    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": true, "mapsToColumn": null, "description": "Auth: short-lived portal token validated via ValidatePortalAuth." },
-    { "name": "publicKennelId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "Kennel.PublicKennelId", "description": "When set, rowset 4 returns that kennel's override rows (else empty)." }
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to resolve the hasher and validate the token."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived portal token validated via ValidatePortalAuth."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "When set, rowset 4 returns that kennel's override rows (else empty)."
+    }
   ],
   "rowsets": [
-    { "index": 0, "name": "Envelope", "description": "{ Success, ErrorMessage }. Success=0 on auth failure or when caller is not a super admin.", "columns": [
-      { "name": "Success", "type": "INT", "nullable": false, "description": "1 = ok, 0 = error" },
-      { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Error text when Success=0" }
-    ]},
-    { "index": 1, "name": "Functions", "description": "Function catalog (matrix columns). Present only when Success=1.", "columns": [
-      { "name": "id", "type": "INT", "nullable": false, "description": "PermissionFunction.id" },
-      { "name": "FunctionKey", "type": "NVARCHAR(80)", "nullable": false, "description": "Stable function key" },
-      { "name": "DisplayName", "type": "NVARCHAR(120)", "nullable": false, "description": "Human label" },
-      { "name": "FeatureArea", "type": "NVARCHAR(60)", "nullable": false, "description": "Grouping heading" },
-      { "name": "HareScoped", "type": "SMALLINT", "nullable": false, "description": "1 if a run's hare also gets it" },
-      { "name": "SortOrder", "type": "INT", "nullable": false, "description": "Display order" }
-    ]},
-    { "index": 2, "name": "Grantors", "description": "Grantor catalog (matrix rows: mismanagement roles + app-access flags). Present only when Success=1.", "columns": [
-      { "name": "id", "type": "INT", "nullable": false, "description": "PermissionRole.id" },
-      { "name": "GrantorKey", "type": "NVARCHAR(80)", "nullable": false, "description": "Stable grantor key" },
-      { "name": "DisplayName", "type": "NVARCHAR(120)", "nullable": false, "description": "Human label" },
-      { "name": "GrantorType", "type": "NVARCHAR(20)", "nullable": false, "description": "mmRole | appFlag" },
-      { "name": "SortOrder", "type": "INT", "nullable": false, "description": "Display order" }
-    ]},
-    { "index": 3, "name": "GlobalGrants", "description": "Current global grants (KennelId NULL, granted). Present only when Success=1.", "columns": [
-      { "name": "GrantorId", "type": "INT", "nullable": false, "description": "PermissionRole.id" },
-      { "name": "FunctionId", "type": "INT", "nullable": false, "description": "PermissionFunction.id" }
-    ]},
-    { "index": 4, "name": "KennelOverrides", "description": "The selected kennel's override rows (empty if publicKennelId not supplied). Present only when Success=1.", "columns": [
-      { "name": "GrantorId", "type": "INT", "nullable": false, "description": "PermissionRole.id" },
-      { "name": "FunctionId", "type": "INT", "nullable": false, "description": "PermissionFunction.id" },
-      { "name": "Allowed", "type": "SMALLINT", "nullable": false, "description": "1 = grant, -1 = revoke" }
-    ]}
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "Always first. Success=0 (and nothing else) on auth failure, service-account caller, or missing CanManagePermissions privilege. Success=1 with ErrorMessage NULL precedes rowsets 1-4. A runtime error after the envelope is logged to HC.ErrorLog and re-thrown (THROW), so the client sees Success=1 followed by an exception.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 = ok, 0 = error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(255)",
+          "nullable": true,
+          "description": "Error text when Success=0"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Functions",
+      "description": "Function catalog (matrix columns) ordered by SortOrder. Still includes the legacy enterRunAdmin/enterKennelAdmin gate rows; the derived-entry editor filters them out.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INT",
+          "nullable": false,
+          "description": "PermissionFunction.id"
+        },
+        {
+          "name": "FunctionKey",
+          "type": "NVARCHAR(80)",
+          "nullable": false,
+          "description": "Stable function key"
+        },
+        {
+          "name": "DisplayName",
+          "type": "NVARCHAR(120)",
+          "nullable": false,
+          "description": "Human label"
+        },
+        {
+          "name": "FeatureArea",
+          "type": "NVARCHAR(60)",
+          "nullable": false,
+          "description": "Grouping heading"
+        },
+        {
+          "name": "AreaKey",
+          "type": "NVARCHAR(40)",
+          "nullable": true,
+          "description": "Stable area slug the editor groups by and derives entry from. Added by db/hc6/app/archive/migration_permissions_v4_01_surfaces_areakey.sql."
+        },
+        {
+          "name": "Surfaces",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Bitmask of the surfaces (app / portal) the function applies to. Added by migration_permissions_v4_01_surfaces_areakey.sql."
+        },
+        {
+          "name": "HareScoped",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 if a run's hare also gets it"
+        },
+        {
+          "name": "SortOrder",
+          "type": "INT",
+          "nullable": false,
+          "description": "Display order"
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "Grantors",
+      "description": "Grantor catalog (matrix rows), GrantorType <> 'bypass', ordered by GrantorType, SortOrder.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INT",
+          "nullable": false,
+          "description": "PermissionRole.id"
+        },
+        {
+          "name": "GrantorKey",
+          "type": "NVARCHAR(80)",
+          "nullable": false,
+          "description": "Stable grantor key"
+        },
+        {
+          "name": "DisplayName",
+          "type": "NVARCHAR(120)",
+          "nullable": false,
+          "description": "Human label"
+        },
+        {
+          "name": "GrantorType",
+          "type": "NVARCHAR(20)",
+          "nullable": false,
+          "description": "mmRole | appFlag (bypass rows excluded)"
+        },
+        {
+          "name": "SortOrder",
+          "type": "INT",
+          "nullable": false,
+          "description": "Display order"
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "name": "GlobalGrants",
+      "description": "Current global grants (KennelId NULL, granted). Present only when Success=1.",
+      "columns": [
+        {
+          "name": "GrantorId",
+          "type": "INT",
+          "nullable": false,
+          "description": "PermissionRole.id"
+        },
+        {
+          "name": "FunctionId",
+          "type": "INT",
+          "nullable": false,
+          "description": "PermissionFunction.id"
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "name": "KennelOverrides",
+      "description": "Override rows for the kennel resolved from @publicKennelId. Empty when @publicKennelId is NULL or does not match a kennel (no error is raised for an unknown kennel).",
+      "columns": [
+        {
+          "name": "GrantorId",
+          "type": "INT",
+          "nullable": false,
+          "description": "PermissionRole.id"
+        },
+        {
+          "name": "FunctionId",
+          "type": "INT",
+          "nullable": false,
+          "description": "PermissionFunction.id"
+        },
+        {
+          "name": "Allowed",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Tri-state override: 1 = grant, -1 = revoke, 0 = inherit the global default"
+        }
+      ]
+    }
   ],
-  "sideEffects": [],
-  "codeSmells": [],
+  "sideEffects": [
+    "On a runtime error: INSERT HC.ErrorLog, then THROW"
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Success envelope sent before the data queries",
+      "detail": "Line 57 selects Success=1 first; a failure in lines 63-81 is then thrown after the client has already read Success=1."
+    },
+    {
+      "severity": "low",
+      "issue": "Unknown @publicKennelId is silent",
+      "detail": "Lines 52-54: a @publicKennelId that matches no kennel leaves @kennelScopeId NULL and rowset 4 empty, indistinguishable from a kennel with no overrides."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
-    "Never change the rowset order (0=envelope, 1=functions, 2=grantors, 3=grants)"
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change the rowset order (0=envelope, 1=functions, 2=grantors, 3=global grants, 4=kennel overrides)"
   ]
 }

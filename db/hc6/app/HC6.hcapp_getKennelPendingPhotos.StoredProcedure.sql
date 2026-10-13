@@ -2,7 +2,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_getKennelPendingPhotos]
 
     @deviceId   UNIQUEIDENTIFIER,
     @accessToken NVARCHAR(1000),
-    @kennelId   UNIQUEIDENTIFIER,
+    @kennelId   UNIQUEIDENTIFIER = NULL,
     @eventId    UNIQUEIDENTIFIER = NULL  -- optional: restrict to a single event
 
 AS

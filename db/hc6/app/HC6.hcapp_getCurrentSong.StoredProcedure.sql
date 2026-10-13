@@ -2,7 +2,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_getCurrentSong]
 
     @deviceId    UNIQUEIDENTIFIER,
     @accessToken NVARCHAR(1000),
-    @eventId     UNIQUEIDENTIFIER
+    @eventId     UNIQUEIDENTIFIER = NULL
 
 AS
 -- =====================================================================
@@ -65,6 +65,10 @@ BEGIN TRY
 IF (@eventId IS NULL OR @eventId = '00000000-0000-0000-0000-000000000000')
 BEGIN
     SET @errorCode = 1291; SET @errorType = 2; SET @errorId = NEWID();
+    -- The errorId returned below pointed at no row until 2026-10-13.
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Missing event',
+            '@eventId is required for hcapp_getCurrentSong', @procName_self, @userId);
     SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
            'Missing event' AS errorTitle, 'An event must be specified.' AS errorUserMessage, @procName_self AS errorProc;
     RETURN;

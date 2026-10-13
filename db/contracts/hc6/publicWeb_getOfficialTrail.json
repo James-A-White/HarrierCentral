@@ -1,0 +1,72 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getOfficialTrail",
+  "version": "1.0.0",
+  "description": "A run's official (hare's) trail for the public run page (E5.F6.S6, James 2026-10-03): one lane per trail type, drawn as THE trail, its length shown as the run's distance, downloadable as GPX. Hidden until the run has ENDED — EventStartDatetimeGmt + 4 hours — so a trail is never public while it is being run (the same rule as hcapp_getOfficialTrail's 'everyone else'). The public OfficialTrailInfo is rebuilt from the stored JSON with only type, distanceM, points and source per lane: setBy (an internal user id) and sourceRef (a runner's or file name) stay off the web. No authentication — anonymous PublicWebApi GET. Read-only.",
+  "parameters": [
+    {
+      "name": "publicEventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.PublicEventId",
+      "description": "The run. Default NULL → EventFound 0."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "TrailStatus",
+      "description": "Always one row.",
+      "columns": [
+        {
+          "name": "EventFound",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when a live, visible run matches (deleted = 0, removed = 0, IsVisible = 1)."
+        },
+        {
+          "name": "Available",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when the run has an OfficialTrailGzip AND start + 4 h has passed; 0 = none set, not yet public, or not found."
+        },
+        {
+          "name": "OfficialTrailInfo",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "When Available = 1 and the stored OfficialTrailInfo is valid JSON: {\"lanes\":[{type, distanceM, points, source}]} (FOR JSON PATH, ROOT('lanes')). NULL otherwise."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "OfficialTrail",
+      "description": "Only when Available = 1.",
+      "columns": [
+        {
+          "name": "OfficialTrail",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "CAST(DECOMPRESS(Event.OfficialTrailGzip) AS NVARCHAR(MAX)) — {\"lanes\":[{\"type\":3,\"points\":[[lat,lon],...]}]}; points may carry a third element t (ms after the first point)."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.ErrorLog then THROW in the CATCH."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Wrong SP name in log",
+      "detail": "Line 56 logs ErrorName 'Unhandled error in getOfficialTrail' (no publicWeb_ prefix) and HcVersion '<unknown>' where the other public-web SPs write '<web>'. ProcName is correct, so it is still findable."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

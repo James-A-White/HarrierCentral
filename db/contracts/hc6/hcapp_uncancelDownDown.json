@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_uncancelDownDown",
-  "version": "1.0.0",
-  "description": "Clears the cancelled flag on a DownDown charge (IsCancelled = 0), restoring it to pending state. The operation is idempotent — calling it on an already-pending charge succeeds without error. Auth: GM (MismanagementRoles bit 0x02) or RA (0x08). New feature — no HC5 equivalent.",
+  "version": "1.2.0",
+  "description": "Clears the cancelled flag on a DownDown charge (IsCancelled = 0), restoring it to pending. Does not touch IsDone. Idempotent — an already-pending charge succeeds. Auth: HC6.ValidateAppAuth (spNumber 61, standard token). @kennelId, @eventId and @downDownId all required (NULL or all-zero → 1234 / errorType 2). Gate: HC6.CheckKennelPermission 'manageDownDowns' for @kennelId (GM / RA by the data-driven matrix) → else 1337 (errorType 3). The UPDATE is keyed on id + EventId + KennelId; no row → 4041 (3). No transaction (single statement). New feature — no HC5 equivalent.",
   "parameters": [
     {
       "name": "deviceId",
@@ -21,34 +21,49 @@
     {
       "name": "kennelId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "DownDowns.KennelId",
-      "description": "Kennel that owns the event. Used as auth scope and as part of the UPDATE WHERE clause. Required — null or zero-UUID triggers validation error."
+      "description": "Kennel that owns the event. Used as auth scope and as part of the UPDATE WHERE clause. Required — null or zero-UUID triggers validation error. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "DownDowns.EventId",
-      "description": "Event the DownDown belongs to. Used as part of the UPDATE WHERE clause. Required — null or zero-UUID triggers validation error."
+      "description": "Event the DownDown belongs to. Used as part of the UPDATE WHERE clause. Required — null or zero-UUID triggers validation error. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "downDownId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "DownDowns.id",
-      "description": "DownDown to restore to pending. Required — null or zero-UUID triggers validation error. If no DownDown matches downDownId + eventId + kennelId, returns errorCode 4041, errorType 3."
+      "description": "DownDown to restore to pending. Required — null or zero-UUID triggers validation error. If no DownDown matches downDownId + eventId + kennelId, returns errorCode 4041, errorType 3. Defaults to NULL when omitted (2026-10-13)."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Compact error envelope returned on auth, validation, not-found, or unhandled errors: { success=0, errorCode, errorType }. Mutually exclusive with SuccessEnvelope rowset.",
+      "description": "On any failure: { success = 0, errorCode, errorType } then the error detail at index 1. ValidateAppAuth codes; 1234 missing parameter (2); 1337 not authorised (3); 4041 DownDown not found (3); 1933 unhandled (5).",
       "columns": [
-        { "name": "success", "type": "SMALLINT", "nullable": false, "description": "Always 0 on error." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Numeric error code."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification code."
+        }
       ]
     },
     {
@@ -56,9 +71,24 @@
       "name": "SuccessEnvelope",
       "description": "Returned on successful uncancel: { success=1, errorCode=NULL, errorType=NULL }. Mutually exclusive with ErrorEnvelope rowset.",
       "columns": [
-        { "name": "success", "type": "SMALLINT", "nullable": false, "description": "Always 1 on success." },
-        { "name": "errorCode", "type": "INT", "nullable": true, "description": "Always NULL on success." },
-        { "name": "errorType", "type": "INT", "nullable": true, "description": "Always NULL on success." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1 on success."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "Always NULL on success."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "Always NULL on success."
+        }
       ]
     },
     {
@@ -68,10 +98,16 @@
     }
   ],
   "sideEffects": [
-    "Updates HC.DownDowns: sets IsCancelled = 0, UpdatedAt = GETUTCDATE() where id + eventId + kennelId match.",
+    "UPDATE HC.DownDowns SET IsCancelled = 0, UpdatedAt = GETUTCDATE() WHERE id = @downDownId AND EventId = @eventId AND KennelId = @kennelId (no explicit transaction; single statement).",
+    "EXEC HC6.CheckKennelPermission 'manageDownDowns' — pre-flight.",
     "Writes to HC.ErrorLog on auth, validation, not-found, or unhandled errors."
   ],
   "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
+    },
     {
       "severity": "medium",
       "issue": "IsCancelled column is BIT in the table, not SMALLINT",
@@ -79,8 +115,8 @@
     },
     {
       "severity": "low",
-      "issue": "No TRY/CATCH wrapping the UPDATE statement",
-      "detail": "The main UPDATE is not inside a BEGIN TRY block. An unexpected DB error will propagate as a raw SQL error. XACT_ABORT ON ensures rollback, but the caller receives an unstructured error."
+      "issue": "Not-authorised uses errorType 3 and the CATCH code 1933 is shared",
+      "detail": "Line 90 reports a permission refusal as errorType 3, the same family as 'DownDown not found' (4041); other SPs use 13. Line 132's 1933 is shared with hcapp_cancelDownDown, hcapp_addDownDown and others, so a log row cannot name the SP by code alone (ProcName does)."
     }
   ],
   "breakingChanges": []

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_deleteNewsflash",
-  "version": "1.0.0",
-  "description": "Soft-deletes a portal newsflash by setting IsDeleted=1 and UpdatedAt=GETUTCDATE(). The newsflash immediately stops being returned by hcportal_getPendingNewsflashes. Associated HC.PortalNewsflashRead records are retained for audit; hcportal_getNewsflashReaders continues to work on soft-deleted newsflashes.",
+  "version": "1.2.0",
+  "description": "Soft-deletes a portal newsflash by setting IsDeleted=1 and UpdatedAt=GETUTCDATE(). The newsflash immediately stops being returned by hcportal_getPendingNewsflashes. Associated HC.PortalNewsflashRead records are retained for audit; hcportal_getNewsflashReaders continues to work on soft-deleted newsflashes. Auth: HC6.ValidatePortalAuth with a NULL callerParamString; any authenticated portal user may call it — there is no permission gate in the SP (the portal restricts the screen). HC.PortalNewsflash has no file in db/schema/tables; its definition is in db/hc6/portal/archive/create_portal_newsflash_tables.sql. Permission (2026-10-13): platform admins with CanManageNewsflash only; otherwise {Success 0, 'Not authorised to manage newsflashes'}.",
   "parameters": [
     {
       "name": "deviceId",
@@ -23,7 +23,7 @@
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "PortalNewsflash.NewsflashId",
-      "description": "Required: the newsflash to soft-delete. Validated for NULL before auth. Must exist and not already be soft-deleted."
+      "description": "Required: the newsflash to soft-delete. Validated for NULL BEFORE auth. Must exist and not already be soft-deleted ('Newsflash not found')."
     }
   ],
   "rowsets": [
@@ -32,15 +32,37 @@
       "name": "SuccessEnvelope",
       "description": "Returned on any outcome — success, validation failure, auth failure, or runtime error.",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "1 on success, 0 on any error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "NULL on success, error message on failure" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 on any error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success, error message on failure"
+        }
       ]
     }
   ],
   "sideEffects": [
-    "UPDATE HC.PortalNewsflash SET IsDeleted=1, UpdatedAt=GETUTCDATE() WHERE NewsflashId=@newsflashId"
+    "UPDATE HC.PortalNewsflash SET IsDeleted=1, UpdatedAt=GETUTCDATE() WHERE NewsflashId=@newsflashId",
+    "Calls HC6.nonApi_portalKennelAccess (read-only) for its permission check."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH does not log to HC.ErrorLog",
+      "detail": "Lines 70-73: the CATCH rolls back and returns ERROR_MESSAGE() but writes no HC.ErrorLog row, so a runtime failure leaves no server record."
+    },
+    {
+      "severity": "low",
+      "issue": "Raw database error returned to the user",
+      "detail": "Line 72 returns ERROR_MESSAGE() as the user-facing ErrorMessage."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

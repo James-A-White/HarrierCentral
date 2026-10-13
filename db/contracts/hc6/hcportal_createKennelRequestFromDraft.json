@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_createKennelRequestFromDraft",
-  "version": "1.0.0",
-  "description": "New kennel from a website (E12.F1.S10): turns the platform admin's finished draft into a kennel request (status 1, confirmed, RequestSource 'website'), reviewed and approved on the request page like any other. Called by the KennelFromWebsite API after it has copied the logo into blob storage.",
+  "version": "1.1.0",
+  "description": "New kennel from a website (E12.F1.S10): turns the platform admin's finished AI draft into an ordinary kennel request in EXT.OfficeForms_KennelImport (RequestStatus 1 — new and already confirmed, ConfirmedAt set, RequestSource 'website', SubmitterEmail = the caller's email), which is then reviewed and approved on the request page like any other (hcportal_approveKennelRequest). Nothing outside the request table is written. Called by the KennelFromWebsite API after it has copied the logo into blob storage. Auth: HC6.ValidatePortalAuth with a NULL callerParamString. Gate: an HC.PlatformAdmin row (removed = 0) with CanEditKennel = 1. User text arrives NVARCHAR(MAX), is trimmed (blank becomes NULL) and checked with LEN against the column widths before anything is written. EXT.OfficeForms_KennelImport has no file in db/schema/tables; its newer columns (LogoUrl, FoundedOn, RunDayOfWeek, RunStartTime, RunsPageUrl, SocialLinksJson, SourceJson, RequestSource) come from db/hc6/portal/archive/2026-10-10_kennel_from_website_columns.sql.",
   "parameters": [
     {
       "name": "deviceId",
@@ -16,7 +16,7 @@
       "type": "NVARCHAR(1000)",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Portal token; standard param string (device secret). Caller must be an HC.PlatformAdmin with CanEditKennel."
+      "description": "Portal token, validated with a NULL callerParamString. Caller must be an HC.PlatformAdmin with CanEditKennel."
     },
     {
       "name": "kennelName",
@@ -198,7 +198,7 @@
     {
       "index": 0,
       "name": "Envelope",
-      "description": "Success = 0 with ErrorMessage on auth or validation failure (then no further rowsets).",
+      "description": "Always returned. Success = 0 with ErrorMessage on auth failure, missing platform-admin rights, a validation refusal, or the CATCH ('The request could not be saved. Please try again.'); no further rowset then. Success = 1, ErrorMessage NULL on insert.",
       "columns": [
         {
           "name": "Success",
@@ -217,7 +217,7 @@
     {
       "index": 1,
       "name": "Created",
-      "description": "Success only.",
+      "description": "Success only: the new request's id, lowercase.",
       "columns": [
         {
           "name": "KennelImportId",
@@ -229,9 +229,21 @@
     }
   ],
   "sideEffects": [
-    "INSERT EXT.OfficeForms_KennelImport (one row, status 1)"
+    "INSERT EXT.OfficeForms_KennelImport (one row, RequestStatus 1, ConfirmAttempts 0, IsKennelAdmin 'Yes', NameToUse 'My Hash Name', HowDidYouLearnAboutHc 'Platform admin: New kennel from a website')",
+    "INSERT HC.ErrorLog on an unhandled error"
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Place names truncated silently",
+      "detail": "Lines 165-166 store LEFT(@countryText/@regionText/@cityText, 50) without a LEN check in the validation block (lines 102-131), so a long free-text place name is cut rather than refused."
+    },
+    {
+      "severity": "low",
+      "issue": "Validation runs outside TRY",
+      "detail": "HC6.SocialLinksProblem (line 131), the TRY_CASTs and the place lookups (lines 140-146) run before BEGIN TRY; a runtime error there would be an unlogged 500. They are written not to throw, so this is exposure, not a known fault."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

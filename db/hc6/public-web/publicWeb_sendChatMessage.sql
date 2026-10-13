@@ -12,16 +12,16 @@
 CREATE OR ALTER PROCEDURE [HC6].[publicWeb_sendChatMessage]
     @deviceId       UNIQUEIDENTIFIER,
     @accessToken    NVARCHAR(1000),
-    @kind           NVARCHAR(10),
+    @kind           NVARCHAR(10) = NULL,
     @publicEventId  UNIQUEIDENTIFIER = NULL,
     @publicKennelId UNIQUEIDENTIFIER = NULL,
     @roomType       INT              = NULL,
     -- 'dm' (E9.F1.S7, 2026-09-29).
     @threadId       UNIQUEIDENTIFIER = NULL,
-    @messageId      UNIQUEIDENTIFIER,
+    @messageId      UNIQUEIDENTIFIER = NULL,
     -- MAX, not a width: an NVARCHAR(n) parameter truncates silently. The app
     -- SP this delegates to refuses anything over 4,000 (2026-09-23).
-    @messageContent NVARCHAR(MAX),
+    @messageContent NVARCHAR(MAX) = NULL,
     -- 0 text, 1 photo, 2 location (E9.F1.S11/S12, 2026-09-29). The app SP
     -- checks it, so this wrapper only passes it on.
     @messageKind    SMALLINT = 0,

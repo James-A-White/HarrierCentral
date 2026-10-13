@@ -83,6 +83,22 @@ BEGIN TRY
 		RETURN;
 	END
 
+	-- Permission (2026-10-13): the full kennel record carries bank details,
+	-- the external API key, the card merchant code and the admin email list.
+	-- It is for the kennel's managers -- Admin/SuperAdmin, Manage kennel (0x2)
+	-- or Manage hash cash (0x8), the bits the portal's Edit Kennel button
+	-- tests -- or manageKennelSettings, or a platform admin who edits
+	-- kennels. Until now any signed-in portal user could read any kennel's.
+	DECLARE @mayReadKennel SMALLINT = 0;
+	EXEC HC6.nonApi_portalKennelAccess @hasherId = @hasherId, @callerType = @callerType,
+	     @kennelId = @kennelId, @flagMask = 0x0000008B, @functionKey = 'manageKennelSettings',
+	     @platformCap = 'CanEditKennel', @allowed = @mayReadKennel OUTPUT;
+	IF (@mayReadKennel = 0)
+	BEGIN
+		SELECT 0 AS Success, 'Not authorised to manage this kennel' AS ErrorMessage;
+		RETURN;
+	END
+
 	-- Main query (read-only, no transaction needed)
 	SELECT
 		  k.PublicKennelId as kennelPublicId

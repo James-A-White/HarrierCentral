@@ -218,8 +218,21 @@ END
 -- ---------------------------------------------------------------
 DECLARE @messageSequenceCount INT;
 
+-- A resend of a message this sender already stored (2026-10-13). The phone
+-- mints @messageId before sending and resends it when a reply is lost on a
+-- weak connection; the second INSERT hit the primary key and the sender was
+-- told "could not be sent" about a message that had arrived. A resend now
+-- writes nothing, returns the stored message as rowset 0 and empty push
+-- rowsets, so nobody is notified twice.
+DECLARE @isResend SMALLINT = CASE WHEN EXISTS (
+        SELECT 1 FROM HC.EventMessage
+        WHERE id = @messageId AND UserId = @userId AND EventId = @eventId) THEN 1 ELSE 0 END;
+
 BEGIN TRY
     BEGIN TRANSACTION;
+
+    IF (@isResend = 0)
+    BEGIN
 
     -- A reply quotes a message of THIS thread (E9.F1.S21). Anything else —
     -- a stale id, another chat's message — sends as a plain message rather
@@ -238,7 +251,7 @@ BEGIN TRY
     SELECT @messageSequenceCount = em.MessageSequenceCount FROM HC.EventMessage em WHERE em.id = @messageId;
 
     -- Update sender's own badge count (sender never sees their own message as unread)
-    MERGE INTO HC.EventMessageBadgeCounts AS Target
+    MERGE INTO HC.EventMessageBadgeCounts WITH (HOLDLOCK) AS Target
     USING (VALUES (@userId, @eventId, @messageSequenceCount)) AS Source (UserId, EventId, LastSequenceCount)
     ON (Target.UserId = Source.UserId AND Target.EventId = Source.EventId)
     WHEN MATCHED THEN
@@ -246,8 +259,27 @@ BEGIN TRY
     WHEN NOT MATCHED BY TARGET THEN
         INSERT (UserId, EventId, LastSequenceCount)
         VALUES (Source.UserId, Source.EventId, Source.LastSequenceCount);
+    END
 
     COMMIT TRANSACTION;
+END TRY
+BEGIN CATCH
+    -- Only the WRITE can fail the send: nothing is stored if this runs.
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    SET @errorId = NEWID(); SET @errorType = 5; SET @errorCode = 9999;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Runtime error in hcapp_sendEventMessage', ERROR_MESSAGE(), @procName, @userId);
+    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+           'Message send failed' AS errorTitle,
+           'Your message could not be sent. Please try again.' AS errorUserMessage,
+           @procName AS errorProc;
+    RETURN;
+END CATCH
+
+-- The message is COMMITTED by this point (2026-10-13, as sendRoomMessage).
+-- Everything below is the reply and push plumbing, so a failure here must
+-- not report a stored message as unsent: it is logged and swallowed.
+BEGIN TRY
 
 -- ---------------------------------------------------------------
 -- Rowset 0: message detail
@@ -356,6 +388,9 @@ WHERE hkm.KennelId = @kennelId
 --   muted (3) and before-run (4) outside the window: silent, same proviso.
 -- (computed in #pushAudience above)
 
+-- A resend notifies nobody: its first send already did.
+IF (@isResend = 1) DELETE FROM #pushAudience;
+
 -- ---------------------------------------------------------------
 -- Rowset 1: visible push notification recipients
 -- ---------------------------------------------------------------
@@ -389,12 +424,8 @@ DROP TABLE #pushAudience;
 
 END TRY
 BEGIN CATCH
-    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
-    SET @errorId = NEWID(); SET @errorType = 5; SET @errorCode = 9999;
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Runtime error in hcapp_sendEventMessage', ERROR_MESSAGE(), @procName, @userId);
-    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
-           'Message send failed' AS errorTitle,
-           'Your message could not be sent. Please try again.' AS errorUserMessage,
-           @procName AS errorProc;
+    VALUES (NEWID(), HC6.DeviceHcVersion(@deviceId),
+            'Push audience failed in sendEventMessage', ERROR_MESSAGE(), @procName, @userId);
+    -- Swallowed on purpose: the message is stored. See the note above the TRY.
 END CATCH

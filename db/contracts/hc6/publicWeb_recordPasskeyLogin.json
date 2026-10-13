@@ -1,56 +1,68 @@
 {
   "schema": "HC6",
   "name": "publicWeb_recordPasskeyLogin",
-  "version": "1.0.0",
-  "description": "After a verified assertion: stores the new counter, stamps Device.LastLogin and writes a LaunchAndLogin row. Behind HC_INTERNAL_SECRET.",
+  "version": "1.2.0",
+  "description": "After a passkey assertion has been verified by the Next.js route: stores the new signature counter (a counter that does not advance is the clone signal, and the ROUTE refuses it — this SP does not compare), stamps Device.LastLogin, and writes an HC.LaunchAndLogin row so the Usage Data dashboard sees web sign-ins like any other. No device token: reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET. The unknown-device refusal (1211) is logged to HC.ErrorLog since 2026-10-13.",
   "parameters": [
     {
       "name": "credentialId",
       "type": "NVARCHAR(500)",
       "nullable": false,
       "mapsToColumn": "Device.PasskeyCredentialId",
-      "description": ""
+      "description": "The verified credential id (base64url). No SQL default."
     },
     {
       "name": "counter",
       "type": "BIGINT",
       "nullable": false,
       "mapsToColumn": "Device.PasskeyCounter",
-      "description": ""
+      "description": "The authenticator's new signature counter. No SQL default."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "Envelope",
-      "description": "success 1/0, errorCode, errorType",
+      "description": "The only rowset. success 1 after the commit; 0 with 1211/12 when no device (removed or not) holds the credential — returned WITHOUT an HC.ErrorLog row or detail rowset; 0 with 1500/5 from the CATCH (logged).",
       "columns": [
         {
           "name": "success",
           "type": "INT",
           "nullable": false,
-          "description": ""
+          "description": "1 success, 0 failure"
         },
         {
           "name": "errorCode",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "NULL on success"
         },
         {
           "name": "errorType",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "NULL on success"
         }
       ]
     }
   ],
   "sideEffects": [
-    "Updates HC.Device",
-    "Inserts HC.LaunchAndLogin"
+    "UPDATE HC.Device SET PasskeyCounter = @counter, LastLogin = SYSDATETIMEOFFSET() WHERE PasskeyCredentialId = @credentialId (in a transaction).",
+    "INSERT HC.LaunchAndLogin (HcVersion '<web>', UserId, UserName '~<display name>~') in the same transaction.",
+    "INSERT HC.ErrorLog in the CATCH (after ROLLBACK)."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@credentialId, @counter (line 2-3) have no SQL default. A caller that omits one fails with 'expects parameter' before the SP runs: PublicWebAdminApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
+    },
+    {
+      "severity": "low",
+      "issue": "Device lookup ignores removed",
+      "detail": "Lines 25-27 match PasskeyCredentialId without d.removed = 0, whereas publicWeb_issuePasskeyInviteCode requires removed = 0. A signed-out device that still holds its passkey records a login here but cannot be issued an invite code there."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

@@ -1,29 +1,61 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getEventTrailTypes",
-  "version": "1.0.0",
-  "description": "Returns the owning kennel's PackTrack trail-type config JSON for an event, so the GetPositions function can bundle it into the position payload (full fetch only). Unauthenticated; no PII.",
+  "version": "1.2.0",
+  "description": "Returns the owning kennel's PackTrack trail-type config JSON (HC.Kennel.TrailTypesConfigJson) for a run, by the run's INTERNAL id. Called server-side by the GetPositions function, which bundles it into the position payload on the full fetch only, so trail-type labels resolve on app and web even when the viewer does not follow the kennel. Unauthenticated read; no PII (labels / emoji a kennel chose).",
   "parameters": [
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Event.id",
-      "description": "Internal HC.Event.id (the id PackTrack keys positions by), not PublicEventId."
+      "description": "Internal HC.Event.id (the id PackTrack keys positions by), not PublicEventId. Defaults to NULL when omitted (2026-10-13)."
     }
   ],
   "rowsets": [
     {
       "index": 0,
-      "name": "TrailTypesConfig",
-      "description": "Single row with the kennel's trail-type config JSON; the value is NULL when the kennel has no customisation (clients fall back to built-in defaults). 0 rows when the event is not found. A { Success = 0, ErrorMessage } envelope is returned only when @eventId is null/empty.",
+      "name": "ValidationError",
+      "description": "Only when the guard at line 30 fails (@eventId NULL or the empty GUID); outside the TRY, NOT logged to HC.ErrorLog; the SP returns.",
       "columns": [
-        { "name": "trailTypesConfigJson", "type": "NVARCHAR(4000)", "nullable": true, "description": "Per-kennel merge-by-value trail-type config JSON (HC.Kennel.TrailTypesConfigJson), or NULL." }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "0."
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "VARCHAR(30)",
+          "nullable": false,
+          "description": "Fixed text naming the missing parameter."
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "TrailTypesConfig",
+      "description": "Single row; the value is NULL when the kennel has no customisation (clients fall back to built-in defaults). 0 rows when no HC.Event has this id (deleted / removed are not checked).",
+      "columns": [
+        {
+          "name": "trailTypesConfigJson",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Per-kennel merge-by-value trail-type config JSON (HC.Kennel.TrailTypesConfigJson), or NULL."
+        }
       ]
     }
   ],
-  "sideEffects": [],
-  "codeSmells": [],
+  "sideEffects": [
+    "INSERT HC.ErrorLog then THROW in the CATCH."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Wrong SP name in log",
+      "detail": "The CATCH (line 50) logs ErrorName 'Unhandled error in getEventTrailTypes' and HcVersion '<unknown>'; the validation refusal (lines 30-34) is not logged."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_syncUserData",
-  "version": "1.1.0",
-  "description": "Incremental pull-sync SP for the mobile app. Each entity type is gated by a watermark parameter ('ignore' skips that table). Returns one result set per non-ignored watermark, in parameter order. Also used by write SPs after mutations to push changed rows back in the same response (delegation mode via @procName/@param). isMember in the HasherKennelMap rowset is computed dynamically from MembershipExpirationDate rather than from the stored IsMember column.",
+  "version": "1.2.0",
+  "description": "Incremental pull-sync for the mobile app (ValidateAppAuth, spNumber 70; no permission gate — every rowset is either global reference data or scoped to the authenticated user). Each entity type is gated by a watermark parameter: 'ignore' (default), NULL or <= 2000-01-01 skips that table. Returns one result set per non-ignored watermark in this fixed order: Hashers, Cities, Regions, Countries, Songs, Products, Kennels, HasherKennelMap, HasherEventMap, NarrowEvents, Payments, then ForceReplicateKennelEvents. Also used by write SPs after mutations to push changed rows back in the same response (delegation mode: the write SP passes its own name and token suffix as @procName/@param). isMember in the HasherKennelMap rowset is computed from MembershipExpirationDate rather than the stored IsMember column. @includeUnboundPayments and @productsUpdatedAfter are defaulted so pre-3.1 clients that omit them see neither event-less payments nor products. Read SP: no success envelope; the body is wrapped in TRY/CATCH that logs to HC.ErrorLog and re-throws (the client treats a failure as 'fall back to offline').",
   "parameters": [
     {
       "name": "deviceId",
@@ -89,18 +89,25 @@
       "description": "Watermark for HC.Song (all songs globally). 'ignore' or NULL or <= '2000-01-01' skips the Songs rowset. Default 'ignore'."
     },
     {
+      "name": "productsUpdatedAfter",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Watermark for HC.Product (the kennel catalogue, 3.1; global — every kennel's products). 'ignore' (default), NULL or <= '2000-01-01' skips the Products rowset, so a client that does not know about products never receives it."
+    },
+    {
       "name": "forceReplicateAllRunsForKennel",
       "type": "NVARCHAR(50)",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "UUID string for a specific kennel. When not NULL and not 'ignore', disables the NarrowEvents path and instead returns all events for that kennel (subject to the same recent/followed/attended filter). Default 'ignore'."
+      "description": "Kennel id as a string. When not NULL and not 'ignore', the NarrowEvents rowset is suppressed and ForceReplicateKennelEvents is returned instead — every event of that kennel that is recent (EventStartLocal within 10 days back or later), at a kennel the caller follows, or one the caller has a HasherEventMap row for with AttendenceState >= 3. No updatedAt watermark applies. A string that is not a GUID makes the CAST at line 148 throw (logged, then re-raised)."
     },
     {
       "name": "usePaging",
       "type": "INT",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "When 0 (default) or NULL: unlimited rows. When 1: enforces page limits (1000 for Hashers, 250 for Cities/Regions/Countries/Songs/Kennels/HasherKennelMap/HasherEventMap/Payments/ForceReplicateEvents, 50 for NarrowEvents)."
+      "description": "When 0 (default) or NULL: unlimited rows (write-SP delegation). When 1: 2500 rows for Hashers, 250 for every other rowset."
     },
     {
       "name": "initialLoad",
@@ -108,6 +115,13 @@
       "nullable": true,
       "mapsToColumn": null,
       "description": "Accepted but never used in the SP body. Kept for caller compatibility. Reserved for future initial-load optimisation."
+    },
+    {
+      "name": "includeUnboundPayments",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Default 0. 0 = omit payments with a NULL EventId or HasherEventMapId (run packages, hare rewards), which pre-3.1 clients cannot parse (payments_model_ns.dart declares eventId/hemId required); 1 = return every payment. 3.1+ sends 1. Chosen over a forked SP (James, 2026-09-13)."
     },
     {
       "name": "procName",
@@ -171,7 +185,7 @@
     {
       "index": "conditional",
       "name": "Hashers",
-      "description": "All HC.Hasher rows updated after @hashersUpdatedAfter watermark. Not user-scoped — returns all hashers. Page size: 1000 (when paging enabled). Emitted only when @hashersUpdatedAfter != 'ignore'.",
+      "description": "All HC.Hasher rows updated after @hashersUpdatedAfter watermark. Not user-scoped — returns all hashers. Page size: 2500 (when paging enabled). Emitted only when @hashersUpdatedAfter != 'ignore'.",
       "columns": [
         {
           "name": "hasherId",
@@ -228,6 +242,20 @@
           "description": "Hasher.IncludeInGlobalHashDirectory. Coalesced to 0."
         },
         {
+          "name": "unpinnedMismanagementRooms",
+          "type": "INT",
+          "nullable": false,
+          "mapsToColumn": "Hasher.UnpinnedMismanagementRooms",
+          "description": "Chat-room pin preferences (E9.F1.S8), bit per mismanagement room the caller unpinned. Masked to the CALLER: 0 for every other hasher in this global rowset. Type from db/hc6/app/archive/2026-09-15_chat_pinning.sql."
+        },
+        {
+          "name": "unpinnedAppAccessRooms",
+          "type": "INT",
+          "nullable": false,
+          "mapsToColumn": "Hasher.UnpinnedAppAccessRooms",
+          "description": "As unpinnedMismanagementRooms, for app-access rooms. Masked to the caller. Type from db/hc6/app/archive/2026-09-15_chat_pinning.sql."
+        },
+        {
           "name": "updatedAt",
           "type": "NVARCHAR(50)",
           "nullable": false,
@@ -254,50 +282,50 @@
         },
         {
           "name": "cityName",
-          "type": "NVARCHAR(150)",
-          "nullable": true,
+          "type": "NVARCHAR(100)",
+          "nullable": false,
           "description": "City.CityName."
         },
         {
           "name": "citySearchTags",
-          "type": "NVARCHAR(MAX)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
           "description": "City.CitySearchTags."
         },
         {
           "name": "regionId",
           "type": "UNIQUEIDENTIFIER",
-          "nullable": true,
+          "nullable": false,
           "description": "City.RegionId."
         },
         {
           "name": "latitude",
-          "type": "DECIMAL",
-          "nullable": true,
+          "type": "NUMERIC(12,9)",
+          "nullable": false,
           "description": "City.Latitude."
         },
         {
           "name": "longitude",
-          "type": "DECIMAL",
-          "nullable": true,
+          "type": "NUMERIC(13,9)",
+          "nullable": false,
           "description": "City.Longitude."
         },
         {
           "name": "cityAscii",
-          "type": "NVARCHAR(150)",
+          "type": "NVARCHAR(100)",
           "nullable": true,
           "description": "City.City_ASCII."
         },
         {
           "name": "flagFile",
-          "type": "NVARCHAR(250)",
+          "type": "NVARCHAR(100)",
           "nullable": true,
           "description": "City.FlagFile."
         },
         {
           "name": "removed",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "City.Removed."
         },
         {
@@ -327,38 +355,38 @@
         },
         {
           "name": "regionName",
-          "type": "NVARCHAR(150)",
-          "nullable": true,
+          "type": "NVARCHAR(100)",
+          "nullable": false,
           "description": "Region.RegionName."
         },
         {
           "name": "regionAbbreviation",
-          "type": "NVARCHAR(10)",
+          "type": "NVARCHAR(20)",
           "nullable": true,
           "description": "Region.RegionAbbreviation."
         },
         {
           "name": "countryId",
           "type": "UNIQUEIDENTIFIER",
-          "nullable": true,
+          "nullable": false,
           "description": "Region.CountryId."
         },
         {
           "name": "flagFile",
-          "type": "NVARCHAR(250)",
+          "type": "NVARCHAR(100)",
           "nullable": true,
           "description": "Region.FlagFile."
         },
         {
           "name": "regionSearchTags",
-          "type": "NVARCHAR(MAX)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
           "description": "Region.RegionSearchTags."
         },
         {
           "name": "removed",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Region.Removed."
         },
         {
@@ -382,86 +410,86 @@
         },
         {
           "name": "countryCode",
-          "type": "NVARCHAR(10)",
-          "nullable": true,
+          "type": "NVARCHAR(5)",
+          "nullable": false,
           "description": "Country.CountryCode."
         },
         {
           "name": "latitude",
-          "type": "DECIMAL",
-          "nullable": true,
+          "type": "FLOAT",
+          "nullable": false,
           "description": "Country.Latitude."
         },
         {
           "name": "longitude",
-          "type": "DECIMAL",
-          "nullable": true,
+          "type": "FLOAT",
+          "nullable": false,
           "description": "Country.Longitude."
         },
         {
           "name": "countryName",
-          "type": "NVARCHAR(150)",
-          "nullable": true,
+          "type": "NVARCHAR(250)",
+          "nullable": false,
           "description": "Country.CountryName."
         },
         {
           "name": "continentCode",
-          "type": "NVARCHAR(10)",
-          "nullable": true,
+          "type": "NVARCHAR(5)",
+          "nullable": false,
           "description": "Country.ContinentCode."
         },
         {
           "name": "flagFile",
-          "type": "NVARCHAR(250)",
+          "type": "NVARCHAR(100)",
           "nullable": true,
           "description": "Country.FlagFile."
         },
         {
           "name": "currencyCode",
-          "type": "NVARCHAR(10)",
-          "nullable": true,
+          "type": "NVARCHAR(5)",
+          "nullable": false,
           "description": "Country.CurrencyCode."
         },
         {
           "name": "primaryCultureCode",
-          "type": "NVARCHAR(20)",
-          "nullable": true,
+          "type": "NVARCHAR(10)",
+          "nullable": false,
           "description": "Country.PrimaryCultureCode."
         },
         {
           "name": "showRegion",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Country.ShowRegion."
         },
         {
           "name": "currencySymbol",
-          "type": "NVARCHAR(10)",
-          "nullable": true,
+          "type": "NVARCHAR(5)",
+          "nullable": false,
           "description": "Country.CurrencySymbol."
         },
         {
           "name": "digitsAfterDecimal",
-          "type": "INT",
-          "nullable": true,
+          "type": "SMALLINT",
+          "nullable": false,
           "description": "Country.DigitsAfterDecimal."
         },
         {
           "name": "distancePreference",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Country.DistancePreference."
         },
         {
           "name": "countrySearchTags",
-          "type": "NVARCHAR(MAX)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
           "description": "Country.CountrySearchTags."
         },
         {
           "name": "removed",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Country.Removed."
         },
         {
@@ -485,20 +513,20 @@
         },
         {
           "name": "songName",
-          "type": "NVARCHAR(250)",
-          "nullable": true,
+          "type": "NVARCHAR(120)",
+          "nullable": false,
           "description": "Song.SongName."
         },
         {
           "name": "tuneOf",
-          "type": "NVARCHAR(250)",
+          "type": "NVARCHAR(500)",
           "nullable": true,
           "description": "Song.TuneOf."
         },
         {
           "name": "bawdyRating",
-          "type": "INT",
-          "nullable": true,
+          "type": "SMALLINT",
+          "nullable": false,
           "description": "Song.BawdyRating."
         },
         {
@@ -534,13 +562,13 @@
         {
           "name": "autoAddToKennel",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Song.AutoAddToKennel."
         },
         {
           "name": "rank",
-          "type": "INT",
-          "nullable": true,
+          "type": "SMALLINT",
+          "nullable": false,
           "description": "Song.Rank."
         },
         {
@@ -558,7 +586,7 @@
         {
           "name": "lyrics",
           "type": "NVARCHAR(MAX)",
-          "nullable": true,
+          "nullable": false,
           "description": "Song.Lyrics."
         },
         {
@@ -583,6 +611,89 @@
     },
     {
       "index": "conditional",
+      "name": "Products",
+      "description": "Emitted only when @productsUpdatedAfter != 'ignore'. HC.Product rows (the kennel catalogue, 3.1) updated after the watermark — GLOBAL, every kennel's products, so a hasher's past payment always resolves its product. SourceJson (supplier name/phone, kennel-admin data) is deliberately NOT returned. A sold product is never removed, only IsActive = 0. Ordered by updatedAt, id. Page size: 250. Column types from db/hc6/app/archive/2026-09-13_create_Product.sql and 2026-09-13_product_json_rework.sql (no table file in db/schema/tables).",
+      "columns": [
+        {
+          "name": "productId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "mapsToColumn": "Product.id",
+          "description": "Product id."
+        },
+        {
+          "name": "kennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "mapsToColumn": "Product.KennelId",
+          "description": "Owning kennel."
+        },
+        {
+          "name": "productType",
+          "type": "SMALLINT",
+          "nullable": false,
+          "mapsToColumn": "Product.ProductType",
+          "description": "Product type code."
+        },
+        {
+          "name": "name",
+          "type": "NVARCHAR(200)",
+          "nullable": false,
+          "mapsToColumn": "Product.Name",
+          "description": "Product name."
+        },
+        {
+          "name": "description",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "mapsToColumn": "Product.Description",
+          "description": "Product description."
+        },
+        {
+          "name": "pricingJson",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "mapsToColumn": "Product.PricingJson",
+          "description": "All pricing in one JSON field (single price, member/non-member, choice of amounts, per size, deposit + balance)."
+        },
+        {
+          "name": "productDetailsJson",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "mapsToColumn": "Product.ProductDetailsJson",
+          "description": "Product details JSON safe for every phone."
+        },
+        {
+          "name": "isActive",
+          "type": "SMALLINT",
+          "nullable": false,
+          "mapsToColumn": "Product.IsActive",
+          "description": "1 = on sale; 0 = taken off sale (kept so old payments resolve)."
+        },
+        {
+          "name": "sortOrder",
+          "type": "INT",
+          "nullable": false,
+          "mapsToColumn": "Product.SortOrder",
+          "description": "Display order."
+        },
+        {
+          "name": "removed",
+          "type": "SMALLINT",
+          "nullable": false,
+          "mapsToColumn": "Product.Removed",
+          "description": "Soft-delete flag."
+        },
+        {
+          "name": "updatedAt",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "CONVERT(NVARCHAR(50), CAST(updatedAt AS DATETIME2)). Next watermark."
+        }
+      ]
+    },
+    {
+      "index": "conditional",
       "name": "Kennels",
       "description": "HC.Kennel rows updated after @kennelsUpdatedAfter watermark. All kennels (no user scope). INNER JOINs HC.City to derive fallback lat/lon. OPTION (RECOMPILE) hint. DefaultRunStartTime converted via CONVERT(DATETIME,'1900-01-01') + CONVERT(DATETIME, time). Page size: 250. Emitted only when @kennelsUpdatedAfter != 'ignore'.",
       "columns": [
@@ -601,55 +712,55 @@
         {
           "name": "cityId",
           "type": "UNIQUEIDENTIFIER",
-          "nullable": true,
+          "nullable": false,
           "description": "Kennel.CityId."
         },
         {
           "name": "regionId",
           "type": "UNIQUEIDENTIFIER",
-          "nullable": true,
+          "nullable": false,
           "description": "Kennel.ProvinceStateId."
         },
         {
           "name": "countryId",
           "type": "UNIQUEIDENTIFIER",
-          "nullable": true,
+          "nullable": false,
           "description": "Kennel.CountryId."
         },
         {
           "name": "kennelName",
           "type": "NVARCHAR(250)",
-          "nullable": true,
+          "nullable": false,
           "description": "Kennel.KennelName."
         },
         {
           "name": "kennelShortName",
-          "type": "NVARCHAR(50)",
-          "nullable": true,
+          "type": "NVARCHAR(25)",
+          "nullable": false,
           "description": "Kennel.KennelShortName."
         },
         {
           "name": "kennelUniqueShortName",
           "type": "NVARCHAR(50)",
-          "nullable": true,
+          "nullable": false,
           "description": "Kennel.KennelUniqueShortName."
         },
         {
           "name": "kennelDescription",
-          "type": "NVARCHAR(MAX)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
           "description": "Kennel.KennelDescription."
         },
         {
           "name": "kennelSearchTags",
-          "type": "NVARCHAR(MAX)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
           "description": "Kennel.KennelSearchTags."
         },
         {
           "name": "kennelLogo",
           "type": "NVARCHAR(500)",
-          "nullable": true,
+          "nullable": false,
           "description": "Kennel.KennelLogo."
         },
         {
@@ -665,21 +776,49 @@
           "description": "Kennel.KennelWebsiteUrl."
         },
         {
+          "name": "defaultMessagingPlatform",
+          "type": "SMALLINT",
+          "nullable": false,
+          "mapsToColumn": "Kennel.DefaultMessagingPlatform",
+          "description": "Which messaging app 'Post this run' opens (E9.F6). COALESCE to 1 = WhatsApp. Type from db/hc6/app/archive/2026-09-15_kennel_messaging.sql."
+        },
+        {
+          "name": "messagingGroupInviteUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "mapsToColumn": "Kennel.MessagingGroupInviteUrl",
+          "description": "Invite link to the kennel's messaging group. Type from db/hc6/app/archive/2026-09-15_kennel_messaging.sql."
+        },
+        {
+          "name": "cardPaymentProvider",
+          "type": "NVARCHAR(30)",
+          "nullable": true,
+          "mapsToColumn": "Kennel.CardPaymentProvider",
+          "description": "Card app the Hash Cash hands off to (e.g. 'sumup'), E8.F7.S1. Type from db/hc6/app/archive/2026-09-22_kennel_payment_provider.sql."
+        },
+        {
+          "name": "cardPaymentMerchantCode",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "mapsToColumn": "Kennel.CardPaymentMerchantCode",
+          "description": "Merchant code shown before handing off to the card app (E8.F7.S2). Type from db/hc6/app/archive/2026-09-22_kennel_payment_provider.sql."
+        },
+        {
           "name": "kennelMismanagementTeam",
-          "type": "NVARCHAR(MAX)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
           "description": "Kennel.KennelMismanagementTeam."
         },
         {
           "name": "defaultEventCurrencyType",
-          "type": "SMALLINT",
+          "type": "NVARCHAR(10)",
           "nullable": true,
           "description": "Kennel.DefaultEventCurrencyType."
         },
         {
           "name": "integrationType",
-          "type": "INT",
-          "nullable": true,
+          "type": "NVARCHAR(50)",
+          "nullable": false,
           "description": "Kennel.IntegrationType."
         },
         {
@@ -691,31 +830,38 @@
         {
           "name": "kennelStatus",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Kennel.KennelStatus."
         },
         {
           "name": "allowNegativeCredit",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Kennel.AllowNegativeCredit."
         },
         {
           "name": "allowCredit",
           "type": "SMALLINT",
           "nullable": false,
-          "description": "Kennel.AllowCredit — master flag: whether credit payments are allowed for this kennel (1=on, default 1)."
+          "description": "Kennel.AllowCredit — master flag: whether credit payments are allowed for this kennel (1=on, default 1). Type from db/hc6/app/archive/migration_add_AllowCredit_to_Kennel.sql."
+        },
+        {
+          "name": "permissionOverrideJson",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "mapsToColumn": "Kennel.PermissionOverrideJson",
+          "description": "The kennel's compiled permission overrides (permissions v2). Type from db/hc6/app/archive/migration_permissions_v2_03_projection_columns.sql."
         },
         {
           "name": "allowSelfPayment",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Kennel.AllowSelfPayment."
         },
         {
           "name": "membershipDurationInMonths",
           "type": "INT",
-          "nullable": true,
+          "nullable": false,
           "description": "Kennel.MembershipDurationInMonths."
         },
         {
@@ -750,50 +896,26 @@
         },
         {
           "name": "kennelPinColor",
-          "type": "NVARCHAR(50)",
-          "nullable": true,
+          "type": "SMALLINT",
+          "nullable": false,
           "description": "Kennel.KennelPinColor."
         },
         {
           "name": "disseminateAllowWebLinks",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Kennel.DisseminateAllowWebLinks."
         },
         {
           "name": "canEditRunAttendence",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Kennel.CanEditRunAttendence."
-        },
-        {
-          "name": "trackRunnerCount",
-          "type": "SMALLINT",
-          "nullable": false,
-          "description": "Attendance rows on this run with a PackTrack track. Kept by HC.trgHasherEventMapActivityCount via HC6.nonApi_refreshEventActivity; synced so the run card never asks the server (E5.F7.S1, 2026-09-12)."
-        },
-        {
-          "name": "photoCount",
-          "type": "SMALLINT",
-          "nullable": false,
-          "description": "Approved, undeleted run photos (Status >= 2). Kept by HC.trgKennelPhotosActivityCount."
-        },
-        {
-          "name": "messageCount",
-          "type": "SMALLINT",
-          "nullable": false,
-          "description": "Trail-chat messages not removed. Kept by HC.trgEventMessageActivityCount."
-        },
-        {
-          "name": "downDownCount",
-          "type": "SMALLINT",
-          "nullable": false,
-          "description": "Down-down charges not cancelled. Kept by HC.trgDownDownsActivityCount."
         },
         {
           "name": "kennelInboundIntegrationId",
           "type": "INT",
-          "nullable": true,
+          "nullable": false,
           "description": "Kennel.InboundIntegrationId."
         },
         {
@@ -810,14 +932,14 @@
         },
         {
           "name": "defaultPriceForMembers",
-          "type": "SMALLMONEY",
-          "nullable": true,
+          "type": "DECIMAL(10,4)",
+          "nullable": false,
           "description": "Kennel.DefaultEventPriceForMembers."
         },
         {
           "name": "defaultPriceForNonMembers",
-          "type": "SMALLMONEY",
-          "nullable": true,
+          "type": "DECIMAL(10,4)",
+          "nullable": false,
           "description": "Kennel.DefaultEventPriceForNonMembers."
         },
         {
@@ -828,43 +950,43 @@
         },
         {
           "name": "runCountStartDate",
-          "type": "DATETIMEOFFSET",
+          "type": "DATETIMEOFFSET(7)",
           "nullable": true,
           "description": "Kennel.RunCountStartDate."
         },
         {
           "name": "currencyCode",
-          "type": "NVARCHAR(10)",
+          "type": "NVARCHAR(5)",
           "nullable": true,
           "description": "Kennel.CurrencyCode."
         },
         {
           "name": "primaryCultureCode",
-          "type": "NVARCHAR(20)",
+          "type": "NVARCHAR(10)",
           "nullable": true,
           "description": "Kennel.PrimaryCultureCode."
         },
         {
           "name": "currencySymbol",
-          "type": "NVARCHAR(10)",
+          "type": "NVARCHAR(5)",
           "nullable": true,
           "description": "Kennel.CurrencySymbol."
         },
         {
           "name": "digitsAfterDecimal",
-          "type": "INT",
+          "type": "SMALLINT",
           "nullable": true,
           "description": "Kennel.DigitsAfterDecimal."
         },
         {
           "name": "bankScheme",
-          "type": "NVARCHAR(50)",
+          "type": "NVARCHAR(10)",
           "nullable": true,
           "description": "Kennel.BankScheme."
         },
         {
           "name": "bankAccountNumber",
-          "type": "NVARCHAR(100)",
+          "type": "NVARCHAR(50)",
           "nullable": true,
           "description": "Kennel.BankAccountNumber."
         },
@@ -876,7 +998,7 @@
         },
         {
           "name": "bankBeneficiary",
-          "type": "NVARCHAR(100)",
+          "type": "NVARCHAR(150)",
           "nullable": true,
           "description": "Kennel.BankBeneficiary."
         },
@@ -888,25 +1010,25 @@
         },
         {
           "name": "kennelPaymentUrl",
-          "type": "NVARCHAR(500)",
+          "type": "NVARCHAR(2000)",
           "nullable": true,
           "description": "Kennel.KennelPaymentUrl."
         },
         {
           "name": "kennelPaymentUrlExpires",
-          "type": "DATETIMEOFFSET",
+          "type": "DATETIMEOFFSET(7)",
           "nullable": true,
           "description": "Kennel.KennelPaymentUrlExpires."
         },
         {
           "name": "kennelPaymentMemberSurcharge",
-          "type": "SMALLMONEY",
+          "type": "DECIMAL(10,4)",
           "nullable": true,
           "description": "Kennel.KennelPaymentMemberSurcharge."
         },
         {
           "name": "kennelPaymentNonMemberSurcharge",
-          "type": "SMALLMONEY",
+          "type": "DECIMAL(10,4)",
           "nullable": true,
           "description": "Kennel.KennelPaymentNonMemberSurcharge."
         },
@@ -918,25 +1040,25 @@
         },
         {
           "name": "kennelPaymentUrl2",
-          "type": "NVARCHAR(500)",
+          "type": "NVARCHAR(2000)",
           "nullable": true,
           "description": "Kennel.KennelPaymentUrl2."
         },
         {
           "name": "kennelPaymentUrlExpires2",
-          "type": "DATETIMEOFFSET",
+          "type": "DATETIMEOFFSET(7)",
           "nullable": true,
           "description": "Kennel.KennelPaymentUrlExpires2."
         },
         {
           "name": "kennelPaymentMemberSurcharge2",
-          "type": "SMALLMONEY",
+          "type": "DECIMAL(10,4)",
           "nullable": true,
           "description": "Kennel.KennelPaymentMemberSurcharge2."
         },
         {
           "name": "kennelPaymentNonMemberSurcharge2",
-          "type": "SMALLMONEY",
+          "type": "DECIMAL(10,4)",
           "nullable": true,
           "description": "Kennel.KennelPaymentNonMemberSurcharge2."
         },
@@ -948,32 +1070,46 @@
         },
         {
           "name": "kennelPaymentUrl3",
-          "type": "NVARCHAR(500)",
+          "type": "NVARCHAR(2000)",
           "nullable": true,
           "description": "Kennel.KennelPaymentUrl3."
         },
         {
           "name": "kennelPaymentUrlExpires3",
-          "type": "DATETIMEOFFSET",
+          "type": "DATETIMEOFFSET(7)",
           "nullable": true,
           "description": "Kennel.KennelPaymentUrlExpires3."
         },
         {
           "name": "kennelPaymentMemberSurcharge3",
-          "type": "SMALLMONEY",
+          "type": "DECIMAL(10,4)",
           "nullable": true,
           "description": "Kennel.KennelPaymentMemberSurcharge3."
         },
         {
           "name": "kennelPaymentNonMemberSurcharge3",
-          "type": "SMALLMONEY",
+          "type": "DECIMAL(10,4)",
           "nullable": true,
           "description": "Kennel.KennelPaymentNonMemberSurcharge3."
         },
         {
+          "name": "trailSymbolsConfigJson",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "mapsToColumn": "Kennel.TrailSymbolsConfigJson",
+          "description": "Per-kennel trail symbol configuration JSON, or NULL."
+        },
+        {
+          "name": "trailTypesConfigJson",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "mapsToColumn": "Kennel.TrailTypesConfigJson",
+          "description": "Per-kennel trail-type config JSON, or NULL. Type from db/hc6/archive/add_TrailTypesConfigJson_to_Kennel.sql."
+        },
+        {
           "name": "removed",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Kennel.removed."
         },
         {
@@ -1158,6 +1294,13 @@
           "description": "HasherKennelMap.KennelHashName."
         },
         {
+          "name": "pinned",
+          "type": "SMALLINT",
+          "nullable": true,
+          "mapsToColumn": "HasherKennelMap.Pinned",
+          "description": "Chat pin for this kennel (E9.F1.S8). NULL = use the default (home kennel pinned), applied by the phone. Type from db/hc6/app/archive/2026-09-15_chat_pinning.sql."
+        },
+        {
           "name": "removed",
           "type": "SMALLINT",
           "nullable": false,
@@ -1174,7 +1317,7 @@
     {
       "index": "conditional",
       "name": "HasherEventMap",
-      "description": "HC.HasherEventMap rows for the authenticated user updated after @hasherEventMapUpdatedAfter watermark (WHERE UserId = @userId). INNER JOINs HC.Event for denormalised event fields. LEFT JOINs HC.HasherKennelMap for kennel-specific user photo and hash name. Page size: 250. Emitted only when @hasherEventMapUpdatedAfter != 'ignore'.",
+      "description": "HC.HasherEventMap rows for the authenticated user updated after @hasherEventMapUpdatedAfter watermark (WHERE UserId = @userId). INNER JOINs HC.Event for denormalised event fields. LEFT JOINs HC.HasherKennelMap for kennel-specific user photo and hash name. Page size: 250. Emitted only when @hasherEventMapUpdatedAfter != 'ignore'. notes is the caller's OWN note, returned unmasked (user-scoped rowset); notesShared applies the kennel (KennelStanding & 0x1000) and platform (Preferences & 0x2000) overrides.",
       "columns": [
         {
           "name": "hemId",
@@ -1297,6 +1440,12 @@
           "description": "HasherEventMap.PhoneNumber."
         },
         {
+          "name": "notes",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "The hasher's own private notes on the run (E3.F4.S5, 2026-09-11). User sync only — not in the kennel or event admin rowsets."
+        },
+        {
           "name": "notesVisibility",
           "type": "SMALLINT",
           "nullable": false,
@@ -1309,39 +1458,9 @@
           "description": "1 when shared and neither admin override is set."
         },
         {
-          "name": "trackGzip",
-          "type": "VARBINARY(MAX)",
-          "nullable": true,
-          "description": "The hasher\u2019s own archived PackTrack trail (TrackArchiveCodec v1, gzipped; base64 on the wire). Null until the nightly archive has run. This rowset only \u2014 the admin domains never carry it (E5.F7.S1, 2026-09-12)."
-        },
-        {
-          "name": "trackPointCount",
-          "type": "INT",
-          "nullable": true,
-          "description": "Points in the hasher\u2019s trail on this run; > 0 with a null trackGzip means tracked, archive not yet delivered."
-        },
-        {
-          "name": "trackFirstPointAt",
-          "type": "NVARCHAR(50)",
-          "nullable": true,
-          "description": "Capture time (UTC) of the first point."
-        },
-        {
-          "name": "trackLastPointAt",
-          "type": "NVARCHAR(50)",
-          "nullable": true,
-          "description": "Capture time (UTC) of the last point."
-        },
-        {
-          "name": "notes",
-          "type": "NVARCHAR(4000)",
-          "nullable": true,
-          "description": "The hasher's own private notes on the run (E3.F4.S5, 2026-09-11). User sync only — not in the kennel or event admin rowsets."
-        },
-        {
           "name": "hemEventNumber",
-          "type": "INT",
-          "nullable": true,
+          "type": "SMALLINT",
+          "nullable": false,
           "description": "Event.EventNumber (denormalised for display)."
         },
         {
@@ -1359,20 +1478,44 @@
         {
           "name": "hemEventStartDatetime",
           "type": "DATETIME2",
-          "nullable": true,
-          "description": "FB/non-FB local event start datetime from joined Event row."
+          "nullable": false,
+          "description": "CONVERT(DATETIME2, Event.EventStartDatetime) — local wall-clock value with the offset dropped."
         },
         {
           "name": "hemEventStartDatetimeGmt",
-          "type": "DATETIMEOFFSET",
-          "nullable": true,
-          "description": "COALESCE(Event.EventStartDatetimeGmt, Event.EventStartDatetime)."
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "COALESCE(Event.EventStartDatetimeGmt, Event.EventStartDatetime) — the UTC instant."
         },
         {
           "name": "hemCanEditRunAttendence",
           "type": "SMALLINT",
           "nullable": true,
           "description": "Event.CanEditRunAttendence (denormalised)."
+        },
+        {
+          "name": "trackGzip",
+          "type": "VARBINARY(MAX)",
+          "nullable": true,
+          "description": "The hasher’s own archived PackTrack trail (TrackArchiveCodec v1, gzipped; base64 on the wire). Null until the nightly archive has run. This rowset only — the admin domains never carry it (E5.F7.S1, 2026-09-12)."
+        },
+        {
+          "name": "trackPointCount",
+          "type": "INT",
+          "nullable": true,
+          "description": "Points in the hasher’s trail on this run; > 0 with a null trackGzip means tracked, archive not yet delivered."
+        },
+        {
+          "name": "trackFirstPointAt",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "CONVERT(NVARCHAR(50), HasherEventMap.TrackFirstPointAt) — DATETIME2(3) as text. NULL when the hasher has no track."
+        },
+        {
+          "name": "trackLastPointAt",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Capture time (UTC) of the last point."
         },
         {
           "name": "hemEventIsCountedAndVisible",
@@ -1397,6 +1540,13 @@
           "type": "NVARCHAR(150)",
           "nullable": true,
           "description": "HasherKennelMap.KennelHashName for user+kennel combo. NULL if no HKM row."
+        },
+        {
+          "name": "pinned",
+          "type": "SMALLINT",
+          "nullable": false,
+          "mapsToColumn": "HasherEventMap.Pinned",
+          "description": "Chat pin for this run (E9.F1.S8): COALESCE(Pinned, 0). A run never auto-pins. Type from db/hc6/app/archive/2026-09-15_chat_pinning.sql."
         },
         {
           "name": "removed",
@@ -1438,54 +1588,54 @@
         {
           "name": "isVisible",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.IsVisible."
         },
         {
           "name": "isCountedRun",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.IsCountedRun."
         },
         {
           "name": "eventGeographicScope",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.EventGeographicScope."
         },
         {
           "name": "eventInboundIntegrationId",
           "type": "INT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.InboundIntegrationId."
         },
         {
           "name": "isPromotedEvent",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.IsPromotedEvent."
         },
         {
           "name": "eventNumber",
-          "type": "INT",
-          "nullable": true,
+          "type": "SMALLINT",
+          "nullable": false,
           "description": "Event.EventNumber."
         },
         {
           "name": "eventPriceForMembers",
-          "type": "SMALLMONEY",
+          "type": "DECIMAL(10,4)",
           "nullable": true,
           "description": "Event.EventPriceForMembers."
         },
         {
           "name": "eventPriceForNonMembers",
-          "type": "SMALLMONEY",
+          "type": "DECIMAL(10,4)",
           "nullable": true,
           "description": "Event.EventPriceForNonMembers."
         },
         {
           "name": "eventPriceForExtras",
-          "type": "SMALLMONEY",
+          "type": "DECIMAL(10,4)",
           "nullable": true,
           "description": "Event.EventPriceForExtras."
         },
@@ -1498,7 +1648,7 @@
         {
           "name": "doTrackHashCash",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.DoTrackHashCash."
         },
         {
@@ -1545,32 +1695,32 @@
         },
         {
           "name": "hares",
-          "type": "NVARCHAR(MAX)",
+          "type": "NVARCHAR(2500)",
           "nullable": true,
           "description": "Event.Hares."
         },
         {
           "name": "eventPaymentScheme",
-          "type": "NVARCHAR(50)",
+          "type": "NVARCHAR(10)",
           "nullable": true,
           "description": "Event.EventPaymentScheme."
         },
         {
           "name": "eventPaymentUrl",
-          "type": "NVARCHAR(500)",
+          "type": "NVARCHAR(2000)",
           "nullable": true,
           "description": "Event.EventPaymentUrl."
         },
         {
           "name": "eventPaymentUrlExpires",
-          "type": "DATETIMEOFFSET",
+          "type": "DATETIMEOFFSET(7)",
           "nullable": true,
           "description": "Event.EventPaymentUrlExpires."
         },
         {
           "name": "unconfirmedBankXferCount",
           "type": "INT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.UnconfirmedBankXferCount."
         },
         {
@@ -1581,20 +1731,20 @@
         },
         {
           "name": "tags1",
-          "type": "NVARCHAR(MAX)",
-          "nullable": true,
+          "type": "INT",
+          "nullable": false,
           "description": "Event.Tags1."
         },
         {
           "name": "tags2",
-          "type": "NVARCHAR(MAX)",
-          "nullable": true,
+          "type": "INT",
+          "nullable": false,
           "description": "Event.Tags2."
         },
         {
           "name": "tags3",
-          "type": "NVARCHAR(MAX)",
-          "nullable": true,
+          "type": "INT",
+          "nullable": false,
           "description": "Event.Tags3."
         },
         {
@@ -1602,6 +1752,13 @@
           "type": "NVARCHAR(500)",
           "nullable": true,
           "description": "FB/non-FB image URL based on UseFbImage flag."
+        },
+        {
+          "name": "eventCoverPhotoUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "mapsToColumn": "Event.EventCoverPhotoUrl",
+          "description": "The run's cover photo URL — a copy of the chosen HC.KennelPhotos BlobUrl/EditedBlobUrl, kept by photo-status SPs. No DDL for this column was found in the repo; type assumed from HC.KennelPhotos.BlobUrl NVARCHAR(500)."
         },
         {
           "name": "eventName",
@@ -1612,24 +1769,24 @@
         {
           "name": "eventStartDatetime",
           "type": "DATETIME2",
-          "nullable": true,
-          "description": "FB/non-FB local start datetime (DATETIME2, timezone stripped)."
+          "nullable": false,
+          "description": "CONVERT(DATETIME2, Event.EventStartDatetime) — local wall-clock value; the stored offset (spurious +00:00 on most rows) is dropped. See /hc-event-datetimes."
         },
         {
           "name": "eventStartDatetimeGmt",
-          "type": "DATETIMEOFFSET",
-          "nullable": true,
-          "description": "COALESCE(Event.EventStartDatetimeGmt, Event.EventStartDatetime). Uses stored GMT column, not FB datetime."
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "COALESCE(Event.EventStartDatetimeGmt, Event.EventStartDatetime) — the UTC instant."
         },
         {
           "name": "eventDescription",
-          "type": "NVARCHAR(MAX)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
           "description": "Event.SyncDescription (NOT Event.EventDescription — this differs from the force-replicate path which uses FB/non-FB EventDescription)."
         },
         {
           "name": "locationOneLineDesc",
-          "type": "NVARCHAR(500)",
+          "type": "NVARCHAR(250)",
           "nullable": true,
           "description": "FB/non-FB location one-line description."
         },
@@ -1690,36 +1847,36 @@
         {
           "name": "useFbLocation",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.UseFbLocation."
         },
         {
           "name": "useFbLatLon",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.UseFbLatLon."
         },
         {
           "name": "useFbRunDetails",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.UseFbRunDetails."
         },
         {
           "name": "useFbImage",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.UseFbImage."
         },
         {
           "name": "hcLatitude",
-          "type": "DECIMAL",
+          "type": "DECIMAL(18,15)",
           "nullable": true,
           "description": "Event.Latitude (HC-entered)."
         },
         {
           "name": "hcLongitude",
-          "type": "DECIMAL",
+          "type": "DECIMAL(19,15)",
           "nullable": true,
           "description": "Event.Longitude (HC-entered)."
         },
@@ -1731,13 +1888,13 @@
         },
         {
           "name": "fbLatitude",
-          "type": "DECIMAL",
+          "type": "DECIMAL(18,15)",
           "nullable": true,
           "description": "COALESCE(Event.w3wLatitude, Event.FbLatitude)."
         },
         {
           "name": "fbLongitude",
-          "type": "DECIMAL",
+          "type": "DECIMAL(19,15)",
           "nullable": true,
           "description": "COALESCE(Event.w3wLongitude, Event.FbLongitude)."
         }
@@ -1746,7 +1903,7 @@
     {
       "index": "conditional",
       "name": "Payments",
-      "description": "HC.Payment rows for the authenticated user updated after @paymentsUpdatedAfter watermark (WHERE UserId = @userId). PaidDate and CancelledDate and ConfirmedDate cast to DATETIME (loses sub-second precision and timezone). Page size: 250. Emitted only when @paymentsUpdatedAfter != 'ignore'.",
+      "description": "HC.Payment rows for the authenticated user (WHERE UserId = @userId) updated after the watermark. When @includeUnboundPayments = 0 (default) rows with a NULL EventId or HasherEventMapId are excluded. PaidDate, CancelledDate and ConfirmedDate are CAST to DATETIME (offset and sub-millisecond precision lost). Ordered by updatedAt, id. Page size: 250. Emitted only when @paymentsUpdatedAfter != 'ignore'.",
       "columns": [
         {
           "name": "paymentId",
@@ -1769,14 +1926,14 @@
         {
           "name": "hemId",
           "type": "UNIQUEIDENTIFIER",
-          "nullable": false,
-          "description": "Payment.HasherEventMapId."
+          "nullable": true,
+          "description": "Payment.HasherEventMapId. NULL only for event-less payments (run packages, hare rewards), returned only when @includeUnboundPayments = 1. db/schema/tables/HC.Payment.Table.sql still says NOT NULL; it is stale."
         },
         {
           "name": "eventId",
           "type": "UNIQUEIDENTIFIER",
-          "nullable": false,
-          "description": "Payment.EventId."
+          "nullable": true,
+          "description": "Payment.EventId. NULL only for event-less payments (run packages, hare rewards), returned only when @includeUnboundPayments = 1. db/schema/tables/HC.Payment.Table.sql still says NOT NULL; it is stale."
         },
         {
           "name": "paidTo",
@@ -1915,7 +2072,7 @@
     {
       "index": "conditional",
       "name": "ForceReplicateKennelEvents",
-      "description": "Emitted only when @forceReplicateAllRunsForKennel is not NULL and not 'ignore'. Returns all events for the specified kennel subject to the same recent/followed/attended filter as NarrowEvents. Identical column set to NarrowEvents with one difference: eventStartDatetimeGmt uses FbEventStartDatetime (not EventStartDatetimeGmt) when UseFbRunDetails=1. Also uses FbEventDescription (not SyncDescription) for eventDescription. OPTION (RECOMPILE). Page size: 250.",
+      "description": "Emitted only when @forceReplicateAllRunsForKennel is not NULL and not 'ignore' (and then NarrowEvents is suppressed). Events of that kennel that are recent (EventStartLocal > now - 10 days), or at a kennel the caller follows, or that the caller has an HEM row for with AttendenceState >= 3 — so for a followed kennel this is every run. No updatedAt watermark is applied. Same columns as NarrowEvents with two differences: eventStartDatetimeGmt is CONVERT(DATETIME2, EventStartDatetimeGmt) (offset dropped, no fallback) rather than COALESCE(...) as DATETIMEOFFSET, and eventDescription is the inline FB/non-FB CASE rather than the persisted SyncDescription (same value). Ordered by updatedAt, id; page size 250 when @usePaging = 1.",
       "columns": [
         {
           "name": "eventId",
@@ -1938,54 +2095,54 @@
         {
           "name": "isVisible",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.IsVisible."
         },
         {
           "name": "isCountedRun",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.IsCountedRun."
         },
         {
           "name": "eventGeographicScope",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.EventGeographicScope."
         },
         {
           "name": "eventInboundIntegrationId",
           "type": "INT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.InboundIntegrationId."
         },
         {
           "name": "isPromotedEvent",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.IsPromotedEvent."
         },
         {
           "name": "eventNumber",
-          "type": "INT",
-          "nullable": true,
+          "type": "SMALLINT",
+          "nullable": false,
           "description": "Event.EventNumber."
         },
         {
           "name": "eventPriceForMembers",
-          "type": "SMALLMONEY",
+          "type": "DECIMAL(10,4)",
           "nullable": true,
           "description": "Event.EventPriceForMembers."
         },
         {
           "name": "eventPriceForNonMembers",
-          "type": "SMALLMONEY",
+          "type": "DECIMAL(10,4)",
           "nullable": true,
           "description": "Event.EventPriceForNonMembers."
         },
         {
           "name": "eventPriceForExtras",
-          "type": "SMALLMONEY",
+          "type": "DECIMAL(10,4)",
           "nullable": true,
           "description": "Event.EventPriceForExtras."
         },
@@ -1998,7 +2155,7 @@
         {
           "name": "doTrackHashCash",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.DoTrackHashCash."
         },
         {
@@ -2045,32 +2202,32 @@
         },
         {
           "name": "hares",
-          "type": "NVARCHAR(MAX)",
+          "type": "NVARCHAR(2500)",
           "nullable": true,
           "description": "Event.Hares."
         },
         {
           "name": "eventPaymentScheme",
-          "type": "NVARCHAR(50)",
+          "type": "NVARCHAR(10)",
           "nullable": true,
           "description": "Event.EventPaymentScheme."
         },
         {
           "name": "eventPaymentUrl",
-          "type": "NVARCHAR(500)",
+          "type": "NVARCHAR(2000)",
           "nullable": true,
           "description": "Event.EventPaymentUrl."
         },
         {
           "name": "eventPaymentUrlExpires",
-          "type": "DATETIMEOFFSET",
+          "type": "DATETIMEOFFSET(7)",
           "nullable": true,
           "description": "Event.EventPaymentUrlExpires."
         },
         {
           "name": "unconfirmedBankXferCount",
           "type": "INT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.UnconfirmedBankXferCount."
         },
         {
@@ -2081,20 +2238,20 @@
         },
         {
           "name": "tags1",
-          "type": "NVARCHAR(MAX)",
-          "nullable": true,
+          "type": "INT",
+          "nullable": false,
           "description": "Event.Tags1."
         },
         {
           "name": "tags2",
-          "type": "NVARCHAR(MAX)",
-          "nullable": true,
+          "type": "INT",
+          "nullable": false,
           "description": "Event.Tags2."
         },
         {
           "name": "tags3",
-          "type": "NVARCHAR(MAX)",
-          "nullable": true,
+          "type": "INT",
+          "nullable": false,
           "description": "Event.Tags3."
         },
         {
@@ -2102,6 +2259,13 @@
           "type": "NVARCHAR(500)",
           "nullable": true,
           "description": "FB/non-FB image URL based on UseFbImage flag."
+        },
+        {
+          "name": "eventCoverPhotoUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "mapsToColumn": "Event.EventCoverPhotoUrl",
+          "description": "The run's cover photo URL — a copy of the chosen HC.KennelPhotos BlobUrl/EditedBlobUrl, kept by photo-status SPs. No DDL for this column was found in the repo; type assumed from HC.KennelPhotos.BlobUrl NVARCHAR(500)."
         },
         {
           "name": "eventName",
@@ -2112,24 +2276,24 @@
         {
           "name": "eventStartDatetime",
           "type": "DATETIME2",
-          "nullable": true,
-          "description": "FB/non-FB local start datetime (DATETIME2, timezone stripped)."
+          "nullable": false,
+          "description": "CONVERT(DATETIME2, Event.EventStartDatetime) — local wall-clock value; the stored offset (spurious +00:00 on most rows) is dropped. See /hc-event-datetimes."
         },
         {
           "name": "eventStartDatetimeGmt",
           "type": "DATETIME2",
-          "nullable": true,
-          "description": "When UseFbRunDetails=1: FbEventStartDatetime (DATETIME2 cast). When 0: EventStartDatetimeGmt (DATETIME2 cast). Note: differs from NarrowEvents which always uses EventStartDatetimeGmt."
+          "nullable": false,
+          "description": "CONVERT(DATETIME2, Event.EventStartDatetimeGmt) — UTC instant with the offset dropped."
         },
         {
           "name": "eventDescription",
-          "type": "NVARCHAR(MAX)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
           "description": "FB/non-FB EventDescription (NOT SyncDescription — this differs from NarrowEvents which uses SyncDescription)."
         },
         {
           "name": "locationOneLineDesc",
-          "type": "NVARCHAR(500)",
+          "type": "NVARCHAR(250)",
           "nullable": true,
           "description": "FB/non-FB location one-line description."
         },
@@ -2190,36 +2354,36 @@
         {
           "name": "useFbLocation",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.UseFbLocation."
         },
         {
           "name": "useFbLatLon",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.UseFbLatLon."
         },
         {
           "name": "useFbRunDetails",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.UseFbRunDetails."
         },
         {
           "name": "useFbImage",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.UseFbImage."
         },
         {
           "name": "hcLatitude",
-          "type": "DECIMAL",
+          "type": "DECIMAL(18,15)",
           "nullable": true,
           "description": "Event.Latitude (HC-entered)."
         },
         {
           "name": "hcLongitude",
-          "type": "DECIMAL",
+          "type": "DECIMAL(19,15)",
           "nullable": true,
           "description": "Event.Longitude (HC-entered)."
         },
@@ -2231,20 +2395,22 @@
         },
         {
           "name": "fbLatitude",
-          "type": "DECIMAL",
+          "type": "DECIMAL(18,15)",
           "nullable": true,
           "description": "COALESCE(Event.w3wLatitude, Event.FbLatitude)."
         },
         {
           "name": "fbLongitude",
-          "type": "DECIMAL",
+          "type": "DECIMAL(19,15)",
           "nullable": true,
           "description": "COALESCE(Event.w3wLongitude, Event.FbLongitude)."
         }
       ]
     }
   ],
-  "sideEffects": [],
+  "sideEffects": [
+    "Read-only. Inserts an HC.ErrorLog row on any unhandled error (CATCH at lines 738-746 logs, then re-throws)."
+  ],
   "codeSmells": [
     {
       "severity": "high",
@@ -2252,19 +2418,19 @@
       "detail": "All updatedAt columns are serialised via CONVERT(NVARCHAR(50), CAST(updatedAt AS DATETIME2)), which strips the timezone offset. Sync cursors sent by clients in different timezones can silently drift or replay rows. Should use DATETIMEOFFSET formatted string instead."
     },
     {
-      "severity": "high",
+      "severity": "low",
       "issue": "eventDescription inconsistency between NarrowEvents and ForceReplicateKennelEvents",
-      "detail": "NarrowEvents returns evt.SyncDescription as eventDescription. ForceReplicateKennelEvents returns FB/non-FB EventDescription. The same event returns different description content depending on which sync path was used. Callers that switch between paths may see unexplained description changes."
+      "detail": "NarrowEvents (line 575) returns the persisted computed column evt.SyncDescription; ForceReplicateKennelEvents (line 705) repeats the same CASE inline. HC.Event.SyncDescription is defined as exactly that CASE, so the values agree today, but the two paths can drift if either is edited alone."
     },
     {
       "severity": "high",
       "issue": "eventStartDatetimeGmt inconsistency between NarrowEvents and ForceReplicateKennelEvents",
-      "detail": "NarrowEvents returns COALESCE(EventStartDatetimeGmt, EventStartDatetime) as eventStartDatetimeGmt (a DATETIMEOFFSET). ForceReplicateKennelEvents returns CASE WHEN UseFbRunDetails=1 THEN FbEventStartDatetime ELSE EventStartDatetimeGmt END cast to DATETIME2 (timezone lost). Clients that fall back from force-replicate to narrow sync for the same event will see different GMT values."
+      "detail": "NarrowEvents (line 574) returns COALESCE(EventStartDatetimeGmt, EventStartDatetime) as DATETIMEOFFSET; ForceReplicateKennelEvents (line 704) returns CONVERT(DATETIME2, EventStartDatetimeGmt) — a different type with the offset dropped and no fallback. The same run reaches the phone in two shapes depending on which path synced it."
     },
     {
       "severity": "medium",
       "issue": "Watermark strings cast directly without TRY_CAST — invalid values throw unhandled exceptions",
-      "detail": "Lines such as SET @ua = CAST(@hashersUpdatedAfter AS DATETIMEOFFSET(7)) will throw if the caller passes a malformed string. There is no TRY_CAST or validation guard. A bad watermark value from a misbehaving client causes an unhandled SQL exception."
+      "detail": "SET @ua = CAST(@xUpdatedAfter AS DATETIMEOFFSET(7)) (lines 157, 189, 215, 237, 266, 305, 338, 427, 474, 538, 612) and CAST(@forceReplicateAllRunsForKennel AS UNIQUEIDENTIFIER) (line 148) throw on a malformed string. Since the 2026-07 TRY/CATCH retrofit the error is logged to HC.ErrorLog and re-thrown, so the client sees a raw 500 and falls back to offline rather than an error rowset."
     },
     {
       "severity": "medium",
@@ -2290,10 +2456,28 @@
       "severity": "low",
       "issue": "authorizedDeviceList and authorizedDeviceCount returned as fixed stubs",
       "detail": "HasherKennelMap rowset always returns '' and 0 for these columns. If the Flutter app still reads them, it will silently receive empty data. These columns should be removed from the contract once the app no longer references them."
+    },
+    {
+      "severity": "low",
+      "issue": "Force-replicate path cannot page past its first 250 rows",
+      "detail": "The force-replicate rowset (@forceReplicateAllRunsForKennel) has no updatedAt watermark but shares @paging250: 1,000,000 rows with @usePaging = 0, 250 with @usePaging = 1. With paging on, every call would return the same first 250 rows, so a kennel with more than 250 runs would never finish loading. Not live: all three app callers (kennel_list_controller follow, kennel_admin_controller, kennel_history deep link) pass usePaging = false. James chose on 2026-10-13 to document rather than guard; the SQL carries a warning comment above the query."
+    },
+    {
+      "severity": "low",
+      "issue": "Correlated subquery per HEM row",
+      "detail": "Line 499 runs SELECT h.Preferences FROM HC.Hasher per HasherEventMap row to compute notesShared. Every row is the caller's, so one lookup into a variable before the SELECT would do."
+    },
+    {
+      "severity": "low",
+      "issue": "Naked literal AttendenceState >= 3",
+      "detail": "Lines 600 and 730 use AttendenceState >= 3 to mean 'has any row for this run' (widens what syncs so a declined run still reaches history), not 'attended' (>= 20). Deliberate per CLAUDE.md, but uncommented here."
     }
   ],
   "breakingChanges": [
     "isMember in HasherKennelMap rowset is now computed dynamically from MembershipExpirationDate > GETDATE() — HC5 read the stored IsMember column. Members whose stored IsMember flag was stale will now see accurate membership state, which may change behaviour for kennels where the column was not kept in sync.",
-    "@procName parameter widened from NVARCHAR(100) in HC5 to NVARCHAR(128) in HC6 to match OBJECT_NAME() return type."
+    "@procName parameter widened from NVARCHAR(100) in HC5 to NVARCHAR(128) in HC6 to match OBJECT_NAME() return type.",
+    "@productsUpdatedAfter NVARCHAR(50) = 'ignore' added after @songsUpdatedAfter (3.1); the Products rowset is emitted between Songs and Kennels when requested.",
+    "@includeUnboundPayments SMALLINT = 0 added after @initialLoad (2026-09-13). Callers passing parameters by position must account for both additions.",
+    "Kennels rowset gained defaultMessagingPlatform, messagingGroupInviteUrl, cardPaymentProvider, cardPaymentMerchantCode, permissionOverrideJson, trailSymbolsConfigJson, trailTypesConfigJson; Hashers gained unpinnedMismanagementRooms/unpinnedAppAccessRooms; HasherKennelMap and HasherEventMap gained pinned; both event rowsets gained eventCoverPhotoUrl. All additive."
   ]
 }

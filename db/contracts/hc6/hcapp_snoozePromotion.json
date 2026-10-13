@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_snoozePromotion",
-  "version": "1.0.0",
-  "description": "Records that the calling user has snoozed a promotion until the given date, suppressing the promotion from appearing in the app until that date has passed. Auth is now fully enforced via HC6.ValidateAppAuth (HC5 had the auth check commented out). Returns a write SP success envelope on all paths.",
+  "version": "1.1.0",
+  "description": "Records that the calling user has snoozed a promotion until the given date, suppressing it in the app until then. Auth: HC6.ValidateAppAuth (spNumber 52, @param NULL); no permission gate — the row is always written for the caller. Every call INSERTs a new HC.HasherPromotionMap row (no upsert). Returns the write envelope on every path.",
   "parameters": [
     {
       "name": "deviceId",
@@ -37,11 +37,11 @@
     {
       "index": 0,
       "name": "SuccessEnvelope",
-      "description": "Always returned (auth failure, db error, or success). success=1 means the snooze was recorded; success=0 means an error occurred.",
+      "description": "Always returned. success=1 (errorCode/errorType NULL) means the snooze was recorded; success=0 on auth failure (ValidateAppAuth codes) or unhandled error (1952 / errorType 19).",
       "columns": [
         {
           "name": "success",
-          "type": "BIT",
+          "type": "INT",
           "nullable": false,
           "description": "1 on success, 0 on any failure."
         },
@@ -109,13 +109,23 @@
   "codeSmells": [
     {
       "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "All four parameters (@deviceId, @accessToken, @promotionId, @snoozeUntilDate) (lines 3-6) have no SQL default. A client that omits one is refused by SQL before the procedure runs: no HC.ErrorLog row, an empty 500 in the app, and any graceful check inside is unreachable (CLAUDE.md, Rack of Lamb 2026-09-29)."
+    },
+    {
+      "severity": "medium",
       "issue": "No duplicate guard — multiple snooze rows possible for same user+promotion",
-      "detail": "There is no INSERT...WHERE NOT EXISTS or MERGE to prevent duplicate rows in HC.HasherPromotionMap for the same (UserId, PromotionId) combination. Repeated calls from the app accumulate redundant records. Inherited from HC5."
+      "detail": "Lines 73-74 INSERT unconditionally; there is no MERGE / NOT EXISTS and no unique index on (UserId, PromotionId), so repeated snoozes accumulate rows. Inherited from HC5."
     },
     {
       "severity": "low",
-      "issue": "HcVersion hardcoded as '<unknown>' in ErrorLog INSERT",
-      "detail": "The CATCH block inserts HcVersion = '<unknown>' into HC.ErrorLog. Other SPs pass the actual version string. This makes it harder to correlate errors to a specific deployment."
+      "issue": "@promotionId not validated",
+      "detail": "No check that the promotion exists; a NULL @promotionId reaches the INSERT and fails on the NOT NULL column, surfacing as the generic 1952 unhandled error rather than a validation error."
+    },
+    {
+      "severity": "low",
+      "issue": "Unhandled errorType 19 is non-standard",
+      "detail": "Line 84 uses errorType 19 rather than 5 for an unhandled error."
     }
   ],
   "breakingChanges": [

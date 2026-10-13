@@ -1,29 +1,30 @@
 {
   "schema": "HC6",
   "name": "publicWeb_savePageLayout",
-  "version": "1.0.0",
-  "description": "Saves (inserts or updates) the Puck page layout JSON blob for a kennel. Validates that the JSON is well-formed via ISJSON(). If no KennelWebsite row exists yet, inserts a minimal one with Enabled=0 so saving a layout does not auto-publish the website. Called by the Next.js admin layout editor via the PublicWebAdminApi POST endpoint.",
+  "version": "1.1.0",
+  "description": "Saves (updates, or inserts a minimal row for) the Puck page-layout JSON of a kennel's public website. Called by the Next.js admin layout editor through PublicWebAdminApi, which requires HC_INTERNAL_SECRET; the editor route itself checks the HMAC admin session (from the portal's one-time token) for the same kennel slug. The SP has no auth of its own — it trusts that chain. Rejects JSON that fails ISJSON(). A first save inserts KennelWebsite with Enabled left at its default 0, so saving a layout never publishes a website.",
   "parameters": [
     {
       "name": "KennelSlug",
       "type": "NVARCHAR(100)",
       "nullable": false,
       "mapsToColumn": "Kennel.KennelUniqueShortName",
-      "description": "URL slug of the kennel whose layout to save"
+      "description": "URL slug of the kennel (HC.Kennel.KennelUniqueShortName, deleted = 0, removed = 0). No SQL default.",
+      "typeMismatch": "Kennel.KennelUniqueShortName is NVARCHAR(50); the parameter is NVARCHAR(100). A longer slug simply matches nothing ('Kennel not found.')."
     },
     {
       "name": "PageLayoutJson",
       "type": "NVARCHAR(MAX)",
       "nullable": false,
       "mapsToColumn": "KennelWebsite.PageLayoutJson",
-      "description": "JSON blob of shape PageLayoutBlob = Partial<Record<PageType, Data>>. Must pass SQL Server ISJSON() validation."
+      "description": "JSON blob of shape PageLayoutBlob = Partial<Record<PageType, Data>>. Must pass SQL Server ISJSON() validation. No SQL default."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "SaveResult",
-      "description": "Standard success/error envelope.",
+      "description": "Always one row: Success 1 after the commit; Success 0 with 'Kennel not found.', 'PageLayoutJson is not valid JSON.' or ERROR_MESSAGE() from the CATCH. PublicWebAdminApi logs any Success = 0 envelope and returns 400.",
       "columns": [
         {
           "name": "Success",
@@ -41,14 +42,29 @@
     }
   ],
   "sideEffects": [
-    "Updates HC.KennelWebsite.PageLayoutJson and updatedAt for the resolved kennel",
-    "Inserts a minimal HC.KennelWebsite row (KennelId, PageLayoutJson, Enabled=0) if none exists"
+    "UPDATE HC.KennelWebsite SET PageLayoutJson, updatedAt = SYSDATETIMEOFFSET() when the kennel has a row.",
+    "Otherwise INSERT HC.KennelWebsite (KennelId, PageLayoutJson) — every other column, including Enabled (0), takes its default."
   ],
   "codeSmells": [
     {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@KennelSlug, @PageLayoutJson (line 2-3) have no SQL default. A caller that omits one fails with 'expects parameter' before the SP runs: PublicWebAdminApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
+    },
+    {
       "severity": "low",
-      "issue": "Auto-insert of KennelWebsite row on save",
-      "detail": "If no KennelWebsite row exists, the SP inserts a minimal one with Enabled=0. This is intentional and documented in the SP comment. However, two concurrent first-time saves could produce a primary key violation on the second INSERT. Same race as hcportal_getKennelWebsite — low probability but worth noting."
+      "issue": "Check-then-INSERT without UPDLOCK, HOLDLOCK",
+      "detail": "Line 43's IF EXISTS is not locked, so two concurrent first saves for a kennel can both reach the INSERT (line 55) and the second fails on the KennelWebsite primary key — returned as Success = 0 with the PK message. Add WITH (UPDLOCK, HOLDLOCK) to the existence check."
+    },
+    {
+      "severity": "low",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 63-66 return { Success = 0, ErrorMessage } without an HC.ErrorLog row. PublicWebAdminApi logs the envelope as 'HC6 Public Web Admin Error: savePageLayout', so it is visible, but without the slug."
+    },
+    {
+      "severity": "low",
+      "issue": "No authorisation in the SP",
+      "detail": "Any caller holding HC_INTERNAL_SECRET can overwrite any kennel's layout by slug; the per-kennel admin check lives only in the Next.js route. Acceptable while the secret is server-only, but nothing in SQL backs it up."
     }
   ],
   "breakingChangeRules": [

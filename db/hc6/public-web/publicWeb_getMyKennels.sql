@@ -73,7 +73,9 @@ BEGIN TRY
         CASE WHEN hkm.id IS NULL THEN 0 ELSE 1 END              AS HasHkm,
         COALESCE(hkm.Following, 0)                              AS Following,
         COALESCE(hkm.IsHomeKennel, 0)                           AS IsHomeKennel,
-        COALESCE(hkm.IsMember, 0)                               AS IsMember,
+        -- Membership is the expiry date (2026-10-13). The name and shape are
+        -- kept for the web's types; the stored IsMember column is deprecated.
+        CASE WHEN hkm.MembershipExpirationDate > SYSDATETIMEOFFSET() THEN 1 ELSE 0 END AS IsMember,
         COALESCE(hkm.KennelNotificationPreference, 0)           AS KennelNotificationPref,
         COALESCE(hkm.KennelEmailAlertPreference, 0)             AS KennelEmailAlertPref,
         hkm.MembershipExpirationDate,

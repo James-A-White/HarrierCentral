@@ -1,14 +1,14 @@
 {
   "schema": "HC6",
   "name": "hcportal_getCities",
-  "version": "1.0.0",
-  "description": "Returns the cities for a given region from HC.City, ordered alphabetically by CityName. Used to populate the cascading Country -> Region -> City selector in the run editor. Requires standard portal authentication.",
+  "version": "1.1.0",
+  "description": "Returns the cities for a given region from HC.City, ordered alphabetically by CityName. Used to populate the cascading Country -> Region -> City selector in the run editor. Auth: HC6.ValidatePortalAuth (device-bound token, NULL callerParamString); no kennel permission gate — any authenticated portal user may call it.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": "Device.id",
+      "mapsToColumn": null,
       "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
@@ -23,23 +23,33 @@
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "City.RegionId",
-      "description": "Filter: only cities whose RegionId matches are returned."
+      "description": "Filter: only non-removed cities whose RegionId matches are returned. NULL returns an empty list (no error)."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "description": "Returned instead of the result rowset on auth failure or a runtime error from the CATCH block.",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Auth error text (NVARCHAR(255) from ValidatePortalAuth), validation message, or ERROR_MESSAGE() from the CATCH block"
+        }
       ]
     },
     {
       "index": 0,
       "name": "CitiesResult",
-      "description": "List of cities for the given region, ordered alphabetically by CityName. Only returned on successful authentication.",
+      "description": "Cities for the given region where City.Removed = 0, ordered by CityName. Empty when @regionId is NULL (RegionId = NULL matches nothing).",
       "columns": [
         {
           "name": "id",
@@ -57,6 +67,13 @@
     }
   ],
   "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH does not log to HC.ErrorLog",
+      "detail": "The CATCH block (line 49) returns the Success=0 envelope with ERROR_MESSAGE() but writes no HC.ErrorLog row, so a runtime failure (timeout, deadlock) is invisible server-side unless the API shim logs it. CLAUDE.md: every CATCH must log to HC.ErrorLog."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

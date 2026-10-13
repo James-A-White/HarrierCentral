@@ -72,8 +72,11 @@ BEGIN TRY
         ELSE CAST(DATEADD(day, 1, GETUTCDATE()) AS DATE)
     END;
 
+    -- Locked (2026-10-13): a double tap on the newsflash ran this check
+    -- twice before either insert and hit UQ_PortalNewsflashRead_Newsflash_Hasher.
+    -- Now the second waits, finds the row and updates it.
     IF EXISTS (
-        SELECT 1 FROM HC.PortalNewsflashRead
+        SELECT 1 FROM HC.PortalNewsflashRead WITH (UPDLOCK, HOLDLOCK)
         WHERE NewsflashId = @newsflashId AND HasherId = @hasherId
     )
     BEGIN

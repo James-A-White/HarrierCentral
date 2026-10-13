@@ -2,7 +2,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_addEditEvent]
 
     @deviceId                  UNIQUEIDENTIFIER,
     @accessToken               NVARCHAR(1000),
-    @narrowEventsUpdatedAfter  NVARCHAR(50),
+    @narrowEventsUpdatedAfter  NVARCHAR(50) = 'ignore',
     @eventId                   UNIQUEIDENTIFIER    = NULL,
     -- NULL default since 2026-09-30: without one SQL refused any call that
     -- omitted it BEFORE the procedure ran, so the graceful check below never

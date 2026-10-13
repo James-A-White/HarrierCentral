@@ -2,13 +2,13 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_setEmailAndNotificationPrefs]
 
     @deviceId                      UNIQUEIDENTIFIER,
     @accessToken                   NVARCHAR(1000),
-    @hasherId                      UNIQUEIDENTIFIER,
+    @hasherId                      UNIQUEIDENTIFIER = NULL,
     @emailPreference               INT             = -1,
     @notificationPreference        INT             = -1,
     @kennelId                      UNIQUEIDENTIFIER = NULL,
     @eventId                       UNIQUEIDENTIFIER = NULL,
-    @hasherEventMapUpdatedAfter    NVARCHAR(50),
-    @hasherKennelMapUpdatedAfter   NVARCHAR(50)
+    @hasherEventMapUpdatedAfter    NVARCHAR(50) = 'ignore',
+    @hasherKennelMapUpdatedAfter   NVARCHAR(50) = 'ignore'
 
 AS
 -- =====================================================================
@@ -85,6 +85,23 @@ END
 -- ---------------------------------------------------------------
 IF (@hasherId IS NULL OR @hasherId = '00000000-0000-0000-0000-000000000000')
     SET @hasherId = @userId;
+
+-- A hasher's email and notification choices are their own (2026-10-13).
+-- Every caller -- app and web -- sends the caller's own id; until now any
+-- signed-in device could change any hasher's preferences.
+IF (@hasherId <> @userId)
+BEGIN
+    SET @errorCode = 1314; SET @errorType = 13; SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not authorised to set preferences for other user',
+            '@hasherId is not the caller', @procName, @userId);
+    SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+           'Not authorised' AS errorTitle,
+           'You can only change your own email and notification settings.' AS errorUserMessage,
+           @procName AS errorProc;
+    RETURN;
+END
 
 IF (@emailPreference          = -1) SET @emailPreference          = NULL;
 IF (@notificationPreference   = -1) SET @notificationPreference   = NULL;

@@ -1,74 +1,207 @@
 {
   "schema": "HC6",
   "name": "publicWeb_setKennelFollowing",
-  "version": "1.0.0",
-  "description": "Follow/unfollow from the web: maps PublicKennelId, finds the caller from the device row, EXECs hcapp_joinKennel self-mode with only @isFollowing. Token for 'hcapp_joinKennel'.",
+  "version": "1.2.0",
+  "description": "A web member's follow / home-kennel choice for one kennel — the app's kennel-card popup (Always show runs = 1, Never show runs = 2, Show runs within N km = 0, Set / Clear home kennel) — through the app's own hcapp_joinKennel in self mode. The wrapper resolves @publicKennelId, takes the hasher from the device row (always the caller), validates the values and passes only @isFollowing / @isHomeKennel; auth (token signed for 'hcapp_joinKennel') and every rule are the inner SP's. Reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET. v2 2026-09-17: follow type 0/1/2 and home kennel.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": "Device.id",
-      "description": "The browser's device id"
+      "description": "The calling browser's HC.Device id (the browser is a registered device). No SQL default."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Token for this SP's name (or the inner SP's), paramString = deviceSecret"
+      "description": "Device-bound token signed for 'hcapp_joinKennel' (the inner SP validates it under its own name via HC6.ValidateAppAuth). No SQL default."
     },
     {
       "name": "publicKennelId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": "Kennel.PublicKennelId",
-      "description": ""
+      "description": "The kennel (deleted = 0, removed = 0). No SQL default."
     },
     {
       "name": "following",
       "type": "SMALLINT",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "HasherKennelMap.Following",
-      "description": "0 or 1"
+      "description": "0 within N km, 1 always show runs, 2 never show; NULL (default) = keep."
+    },
+    {
+      "name": "isHomeKennel",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.IsHomeKennel",
+      "description": "1 set as home kennel, 0 clear; NULL (default) = keep. At least one of @following / @isHomeKennel is required."
     }
   ],
   "rowsets": [
     {
       "index": 0,
-      "name": "Envelope",
-      "description": "success 1/0, errorCode, errorType",
+      "name": "WrapperRefusal",
+      "description": "Wrapper refusal before the EXEC: kennel unknown/deleted/removed, no live device row, @following not in 0/1/2, @isHomeKennel not in 0/1, or both NULL → { success 0, errorCode 1230, errorType 12 }, logged to HC.ErrorLog.",
       "columns": [
         {
           "name": "success",
           "type": "INT",
           "nullable": false,
-          "description": ""
+          "description": "1 success, 0 failure"
         },
         {
           "name": "errorCode",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "NULL on success"
         },
         {
           "name": "errorType",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "NULL on success"
         }
       ]
     },
     {
       "index": 1,
       "ref": "StandardErrorResult",
-      "description": "1230 kennel not found; otherwise hcapp_joinKennel's rowsets"
+      "description": "Follows WrapperRefusal: errorTitle 'Kennel not found', errorUserMessage 'That kennel could not be found.'"
+    },
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "From hcapp_joinKennel: Always the first rowset. success=1 after the write committed; success=0 on auth failure, missing kennelId (1250/12), not authorised (1337/3) or unhandled CATCH (1950/19).",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 on any error."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success. 1250 missing kennelId, 1337 not authorised, 1950 unhandled; auth codes from ValidateAppAuth."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success. 12 validation, 3 not authorised, 19 unhandled; auth types from ValidateAppAuth."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "From hcapp_joinKennel: Rowset 1 on error only (success=0): standard HC6 app error detail.",
+      "columns": [
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.ErrorLog GUID for this occurrence."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "12 validation, 3 not authorised, 19 unhandled, or the ValidateAppAuth type."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "1250, 1337, 1950, or the ValidateAppAuth code."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Short error title for display."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name via OBJECT_NAME(@@PROCID)."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "HkmState",
+      "description": "From hcapp_joinKennel: Rowset 1 on success only: the HasherKennelMap row immediately after the write (lines 320-328).",
+      "columns": [
+        {
+          "name": "adHocDataId",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1 — the adHocData discriminator."
+        },
+        {
+          "name": "following",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherKennelMap.Following after the upsert."
+        },
+        {
+          "name": "kennelNotificationPreference",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherKennelMap.KennelNotificationPreference after the upsert."
+        },
+        {
+          "name": "kennelEmailAlertPreference",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherKennelMap.KennelEmailAlertPreference after the upsert."
+        },
+        {
+          "name": "isHomeKennel",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 if this kennel equals Hasher.HomeKennelId, else 0 — derived from the joined Hasher row, not from HasherKennelMap.IsHomeKennel."
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "SyncData",
+      "description": "From hcapp_joinKennel: Rowsets 2+ are the pass-through output of hcapp_syncUserData (self) or hcapp_syncKennelAdminData (another user), executed after COMMIT and outside the TRY/CATCH (lines 351-376). Shapes are defined by those contracts. Self mode, so this is hcapp_syncUserData; the wrapper passes '2050-01-01' for kennels and HKM and 'ignore' for hashers, so these rowsets come back empty.",
+      "columns": []
     }
   ],
   "sideEffects": [
-    "Everything hcapp_joinKennel does in self-mode"
+    "EXEC HC6.hcapp_joinKennel — everything it does:",
+    "  INSERT HC.HasherKennelMap when no row exists for (targetUserId, kennelId) — lines 238-253; KennelStanding is NOT set on this path",
+    "  UPDATE HC.HasherKennelMap — Following, IsMember, IsHomeKennel, AppAccessFlags, HcWebPermissionFlags, MismanagementRoles, KennelStanding (set/clear bits), KennelNotificationPreference, KennelEmailAlertPreference, MembershipExpirationDate, MemberSince, updatedAt — lines 257-291",
+    "  UPDATE HC.Hasher SET HomeKennelId = @kennelId (isHomeKennel=1) or NULL (unfollow / isHomeKennel=0 when this was the home kennel)",
+    "  UPDATE HC.HasherKennelMap SET IsHomeKennel=0 on the user's other kennels when isHomeKennel=1",
+    "  UPDATE HC.Kennel SET KennelMismanagementTeam when @mismanagementRoles is set — rebuilt inline from HC.HasherKennelMap, HC.Hasher and DomainValues.MismanagementRoles (lines 299-314)",
+    "  INSERT HC.ErrorLog on missing kennelId, not authorised, and unhandled CATCH",
+    "  EXEC HC6.hcapp_syncUserData (self) or HC6.hcapp_syncKennelAdminData (another user) after COMMIT",
+    "INSERT HC.ErrorLog on the wrapper refusal (1230).",
+    "On an error that escapes the inner SP the CATCH rolls back, logs 'Unhandled error in publicWeb_setKennelFollowing' to HC.ErrorLog (HcVersion '<web>', deviceId) and returns { success 0, errorCode 1500, errorType 5 } alone (no detail rowset)."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken, @publicKennelId (line 15-17) have no SQL default. A caller that omits one fails with 'expects parameter' before the SP runs: PublicWebAdminApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

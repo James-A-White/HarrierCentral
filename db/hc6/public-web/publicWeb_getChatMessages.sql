@@ -15,7 +15,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[publicWeb_getChatMessages]
     @deviceId           UNIQUEIDENTIFIER,
     @accessToken        NVARCHAR(1000),
-    @kind               NVARCHAR(10),
+    @kind               NVARCHAR(10) = NULL,
     @publicEventId      UNIQUEIDENTIFIER = NULL,
     @publicKennelId     UNIQUEIDENTIFIER = NULL,
     @roomType           INT              = NULL,
@@ -49,6 +49,27 @@ BEGIN TRY
         SELECT 0 AS success, 1230 AS errorCode, 12 AS errorType, @me AS Me;
         SELECT @errorId AS errorId, 12 AS errorType, 1230 AS errorCode,
                'Not found' AS errorTitle, 'That chat could not be found.' AS errorUserMessage, @procName AS errorProc;
+        RETURN;
+    END
+
+    -- Check the token BEFORE saying success (2026-10-13). The inner app SP
+    -- checks it too, but by then rowset 0 already said success = 1, so a
+    -- refused token (a drifted clock, a signed-out device) reached the
+    -- browser as an empty list instead of an error. Same name and number
+    -- as the inner SP, so the token and the error codes are the same.
+    DECLARE @gUserId UNIQUEIDENTIFIER, @gSecret NVARCHAR(150), @gWindow INT,
+            @gCode INT, @gType INT, @gErrorId UNIQUEIDENTIFIER, @gTitle NVARCHAR(500), @gMsg NVARCHAR(MAX);
+    DECLARE @gProc NVARCHAR(128) = CASE @kind WHEN 'run' THEN N'hcapp_getEventMessages' WHEN 'kennel' THEN N'hcapp_getKennelMessages' WHEN 'dm' THEN N'hcapp_getDirectMessages' ELSE N'hcapp_getRoomMessages' END;
+    DECLARE @gSp INT = CASE @kind WHEN 'run' THEN 60 WHEN 'kennel' THEN 65 WHEN 'dm' THEN 135 ELSE 105 END;
+    EXEC HC6.ValidateAppAuth @deviceId = @deviceId, @accessToken = @accessToken, @procName = @gProc,
+         @spNumber = @gSp, @param = NULL, @userId = @gUserId OUTPUT, @deviceSecret = @gSecret OUTPUT,
+         @timeWindow = @gWindow OUTPUT, @errorCode = @gCode OUTPUT, @errorType = @gType OUTPUT,
+         @errorId = @gErrorId OUTPUT, @errorTitle = @gTitle OUTPUT, @errorMsg = @gMsg OUTPUT;
+    IF (@gCode IS NOT NULL)
+    BEGIN
+        SELECT 0 AS success, @gCode AS errorCode, @gType AS errorType, @me AS Me;
+        SELECT @gErrorId AS errorId, @gType AS errorType, @gCode AS errorCode,
+               @gTitle AS errorTitle, @gMsg AS errorUserMessage, @gProc AS errorProc;
         RETURN;
     END
 

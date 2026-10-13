@@ -1,0 +1,81 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_endDirectMessage",
+  "version": "1.0.0",
+  "description": "Web member's door to HC6.hcapp_endDirectMessage (direct messages, E9.F1.S7/S18/S19): unfriend — marks the caller's HC.HasherFriendMap row for the thread Removed = 1. A thin wrapper that EXECs the app SP with the same arguments and returns its rowsets unchanged; it adds nothing that could drift from the app. Auth: the wrapped SP's HC6.ValidateAppAuth — token signed for hcapp_endDirectMessage.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "The browser's HC.Device id (the web member session). No SQL default."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token signed for hcapp_endDirectMessage (the SP that validates it). No SQL default."
+    },
+    {
+      "name": "threadId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "HasherFriendMap.ThreadId",
+      "description": "The direct-message thread to end. Passed straight through."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "As returned by HC6.hcapp_endDirectMessage: Auth failure (ValidateAppAuth 1232 / 1332 / 1232 signed out) returns the error detail ALONE."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "As returned by HC6.hcapp_endDirectMessage: On success { success = 1, errorMessage = NULL }; on a refusal after auth { success = 0, errorCode, errorType } then the detail at index 1.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 ok; 0 refused."
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success; absent on failure, where the row carries errorCode / errorType instead: 2006 no such conversation (2), 2007 unhandled (5)."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "As returned by HC6.hcapp_endDirectMessage: After a { success = 0 } envelope: 2006 or 2007."
+    }
+  ],
+  "sideEffects": [
+    "EXEC HC6.hcapp_endDirectMessage with the same arguments — every side effect is the wrapped SP's:",
+    "  UPDATE HC.HasherFriendMap SET Removed = 1, updatedAt = SYSDATETIMEOFFSET() WHERE UserId = @userId AND ThreadId = @threadId (autocommit — no explicit transaction).",
+    "  INSERT LOG.GeneralLog ('HC6.hcapp_endDirectMessage', 'Direct message ended', userId, thread) — a separate autocommit statement.",
+    "  INSERT HC.ErrorLog on 2006 and in the CATCH (2007).",
+    "INSERT HC.ErrorLog ('<web>', userId NULL, deviceId) then THROW in the wrapper's CATCH, for an error the wrapped SP does not handle itself."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId and @accessToken have no SQL default (line 16). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

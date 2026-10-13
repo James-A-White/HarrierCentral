@@ -1,22 +1,41 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getLandingPageData",
-  "version": "1.3.0",
-  "description": "Returns kennel identity and website configuration needed to render a public-web landing page. Looked up by KennelUniqueShortName (URL slug). No authentication required. Style columns return NULL when the kennel has no KennelWebsite row — the frontend applies its own platform defaults. The FILTH-kennel fallback that existed in v1.0.0 has been removed; style defaults are now hardcoded in the SP so FILTH kennel changes cannot affect other kennels.",
+  "version": "1.5.0",
+  "description": "Returns kennel identity and website configuration needed to render a public-web landing page, looked up by URL slug (KennelUniqueShortName), for a live kennel (deleted = 0, removed = 0). Theming comes from HC.KennelWebsite where configured: ThemeMode, ScrollBlur, WebsiteTitleText, Tagline and WelcomeText fall back to hardcoded platform defaults; every other style column is NULL without a KennelWebsite row and the frontend applies its own default. KennelStatus lets hashruns.org show the logo-only holding page for Defunct (3) and Inactive - Hidden (4) kennels; DistancePreference (2026-09-27) picks m/km or yd/mi on PackTrack pages. No authentication. Read-only.",
   "parameters": [
     {
       "name": "kennelUniqueShortName",
       "type": "NVARCHAR(50)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Kennel.KennelUniqueShortName",
-      "description": "The kennel's URL slug — must match exactly (case-insensitive collation applies at DB level)"
+      "description": "The kennel's URL slug — must match exactly (case-insensitive collation applies at DB level) Defaults to NULL when omitted (2026-10-13)."
     }
   ],
   "rowsets": [
     {
       "index": 0,
+      "name": "ValidationError",
+      "description": "Instead of the normal rowsets when a guard fails (slug blank, or longer than 50 characters; lines 52-62). Not logged to HC.ErrorLog. The SP returns.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "0."
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "VARCHAR(70)",
+          "nullable": false,
+          "description": "Fixed text describing the bad input."
+        }
+      ]
+    },
+    {
+      "index": 0,
       "name": "KennelLandingPage",
-      "description": "Single row when the kennel is found and publicly visible. Empty rowset (0 rows) when not found or inactive — the caller must treat this as a 404.",
+      "description": "Single row when a live kennel has this slug; empty when not found, deleted or removed — the caller treats it as a 404. Defunct / hidden kennels still return a row (see KennelStatus).",
       "columns": [
         {
           "name": "PublicKennelId",
@@ -148,7 +167,13 @@
           "name": "WebsiteEnabled",
           "type": "BIT",
           "nullable": true,
-          "description": "Whether the HC6 public website is enabled for this kennel. NULL when no KennelWebsite row exists."
+          "description": "KennelWebsite.Enabled (a BIT column — serialised as JSON true/false by the shim). NULL when no KennelWebsite row exists."
+        },
+        {
+          "name": "KennelStatus",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.KennelStatus (DomainValues.KennelStatusEnum) — 3 Defunct and 4 Inactive - Hidden render the logo-only holding page."
         },
         {
           "name": "TitleTextColor",
@@ -217,16 +242,52 @@
           "description": "Sticky nav text colour. NULL = frontend uses theme default (white on dark, near-black on light)."
         },
         {
+          "name": "PageFeaturesJson",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "KennelWebsite.PageFeaturesJson — per-kennel page feature toggles (JSON). NULL when not set."
+        },
+        {
           "name": "DistancePreference",
           "type": "SMALLINT",
           "nullable": false,
           "description": "Since 1.3.0 (2026-09-27): COALESCE(Kennel.DistancePreference, Country.DistancePreference, 0). Bit 0: 0 = km, 1 = miles. Used by public PackTrack pages to show m/km or yd/mi."
         }
       ]
+    },
+    {
+      "index": 0,
+      "name": "CatchEnvelope",
+      "description": "On a runtime error (CATCH, line 134): { Success = 0, ErrorMessage = ERROR_MESSAGE() }, possibly after rowsets already sent. NOT logged to HC.ErrorLog and not re-raised.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "0."
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "ERROR_MESSAGE()."
+        }
+      ]
     }
   ],
   "sideEffects": [],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH does not log to HC.ErrorLog",
+      "detail": "The CATCH (lines 133-135) returns { Success = 0, ErrorMessage } without writing HC.ErrorLog and without THROW, so a timeout or bad input surfaces to the shim as a data rowset and leaves no server-side record (CLAUDE.md 'Every CATCH must log')."
+    },
+    {
+      "severity": "low",
+      "issue": "Unreachable length check",
+      "detail": "Lines 58-62 reject a slug longer than 50 characters, but @kennelUniqueShortName is NVARCHAR(50): a longer value is silently truncated to 50 when bound, so the check can never fire and a long slug is looked up by its first 50 characters."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

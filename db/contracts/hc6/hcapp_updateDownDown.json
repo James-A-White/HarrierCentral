@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_updateDownDown",
-  "version": "1.1.0",
-  "description": "Updates the charge text, song choice/ID, and optionally the charge photo URL on an existing DownDown. Only the original creator or a GM/RA for the kennel may edit. chargePhotoUrl is merged with COALESCE — pass NULL to leave the existing photo unchanged (there is no way to clear it via this SP). Scoped to eventId + kennelId for safety. New feature — no HC5 equivalent.",
+  "version": "1.3.0",
+  "description": "Updates an existing DownDown: charge text, song choice/id, optionally the charge photo, and (since 2026-09-26) who is charged — app hashers (HC.DownDownHashers) and typed names (DownDowns.ExternalNames). Auth: HC6.ValidateAppAuth (spNumber 58). Gate: the charge's creator may always edit; anyone else needs HC6.CheckKennelPermission 'manageDownDowns' for @kennelId (else 1337). Scoped to id + EventId + KennelId (no row → 4041). chargePhotoUrl is merged with COALESCE — NULL leaves the photo, and there is no way to clear it. The text/song UPDATE and the people change run in one transaction. New feature — no HC5 equivalent.",
   "parameters": [
     {
       "name": "deviceId",
@@ -21,44 +21,44 @@
     {
       "name": "kennelId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "DownDowns.KennelId",
-      "description": "Kennel that owns the event. Used as auth scope and as part of the UPDATE WHERE clause. Required — null or zero-UUID triggers validation error."
+      "description": "Kennel that owns the event. Used as auth scope and as part of the UPDATE WHERE clause. Required — null or zero-UUID triggers validation error. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "DownDowns.EventId",
-      "description": "Event the DownDown belongs to. Used as part of the UPDATE WHERE clause. Required — null or zero-UUID triggers validation error."
+      "description": "Event the DownDown belongs to. Used as part of the UPDATE WHERE clause. Required — null or zero-UUID triggers validation error. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "downDownId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "DownDowns.id",
-      "description": "DownDown to update. Required — null or zero-UUID triggers validation error. If no DownDown matches downDownId + eventId + kennelId, returns errorCode 4041, errorType 3."
+      "description": "DownDown to update. Required — null or zero-UUID triggers validation error. If no DownDown matches downDownId + eventId + kennelId, returns errorCode 4041, errorType 3. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "chargeText",
       "type": "NVARCHAR(MAX)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "DownDowns.ChargeText",
-      "description": "New charge text. Required — empty or whitespace-only triggers validation error."
+      "description": "New charge text. Required — empty or whitespace-only triggers validation error. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "songChoice",
       "type": "NVARCHAR(500)",
       "nullable": true,
       "mapsToColumn": "DownDowns.SongChoice",
-      "description": "Updated suggested song name (free text). Stored as NULL if blank or not supplied."
+      "description": "Updated suggested song name (free text). Always written: stored trimmed, or NULL if blank/omitted. NVARCHAR(500) matches DownDowns.SongChoice."
     },
     {
       "name": "songId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "DownDowns.SongId",
-      "description": "Updated FK to HC.Song. NULL to clear the song association."
+      "description": "Updated FK to HC.Song. Always written: NULL (or omitting it) CLEARS the song association."
     },
     {
       "name": "chargePhotoUrl",
@@ -86,11 +86,11 @@
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Compact error envelope returned on auth, validation, not-found, or unhandled errors: { success=0, errorCode, errorType }. Mutually exclusive with SuccessEnvelope rowset.",
+      "description": "On any failure: { success = 0, errorCode, errorType } then the detail at index 1. ValidateAppAuth codes; 1234 missing parameter or blank @chargeText (2); 4041 not found (3); 1337 not creator and not authorised (3); 1236 the edit would leave nobody charged (2); 1933 unhandled (5).",
       "columns": [
         {
           "name": "success",
-          "type": "SMALLINT",
+          "type": "INT",
           "nullable": false,
           "description": "Always 0 on error."
         },
@@ -115,7 +115,7 @@
       "columns": [
         {
           "name": "success",
-          "type": "SMALLINT",
+          "type": "INT",
           "nullable": false,
           "description": "Always 1 on success."
         },
@@ -147,13 +147,33 @@
   "codeSmells": [
     {
       "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
+    },
+    {
+      "severity": "medium",
       "issue": "No way to clear ChargePhotoUrl via this SP",
       "detail": "ChargePhotoUrl is updated with COALESCE(@chargePhotoUrl, ChargePhotoUrl). If the caller wants to remove a charge photo, there is no way to do it through this SP — passing NULL leaves the existing URL. A sentinel empty-string or a separate @clearPhoto flag would be needed to support photo removal."
     },
     {
       "severity": "low",
-      "issue": "No TRY/CATCH wrapping the UPDATE statement",
-      "detail": "The main UPDATE is not inside a BEGIN TRY block. An unexpected DB error will propagate as a raw SQL error. XACT_ABORT ON ensures rollback, but the caller receives an unstructured error."
+      "issue": "@songChoice NVARCHAR(500) truncates silently",
+      "detail": "Line 9. Free text from the user; a longer value is cut to 500 with no error (CLAUDE.md 'NVARCHAR(n) parameter that receives user text'). It matches the column, so the fix is NVARCHAR(MAX) + a LEN() check."
+    },
+    {
+      "severity": "low",
+      "issue": "Song fields are overwrite-always while people fields are NULL-means-unchanged",
+      "detail": "Lines 211-212 write SongChoice and SongId unconditionally, so a caller that omits them wipes the song, whereas @chargePhotoUrl, @hasherIds and @externalNames treat NULL as 'leave it'. Inconsistent semantics within one SP."
+    },
+    {
+      "severity": "low",
+      "issue": "BIT local variable",
+      "detail": "Line 152 declares @changePeople BIT; the project bans BIT (SMALLINT)."
+    },
+    {
+      "severity": "low",
+      "issue": "Not-authorised uses errorType 3",
+      "detail": "Line 138: a permission refusal is errorType 3 (the 'not found' family, same as 4041); other SPs use 13."
     }
   ],
   "breakingChanges": []

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Compare every HC6 / TSA stored procedure with its contract JSON.
+"""Compare every HC6 stored procedure with its contract JSON.
+
+TSA Eats is defunct and deliberately not scanned (CLAUDE.md, 2026-10-13).
 
     python3 tools/contract_check.py            # whole repo; exit 1 if anything is off
     python3 tools/contract_check.py hcapp_x    # one object (name or substring)
@@ -25,9 +27,8 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SP_DIRS = {
     'HC6': ['db/hc6/app', 'db/hc6/portal', 'db/hc6/public-web', 'db/hc6/internal'],
-    'TSA': ['db/hc6/tsa'],
 }
-CONTRACT_DIR = {'HC6': 'db/contracts/hc6', 'TSA': 'db/contracts/tsa'}
+CONTRACT_DIR = {'HC6': 'db/contracts/hc6'}
 
 CREATE_RE = re.compile(
     r'CREATE\s+OR\s+ALTER\s+(PROCEDURE|PROC|FUNCTION|VIEW)\s+'

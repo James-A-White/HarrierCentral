@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "nonApi_getRunsPageKennels",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Internal (no auth). The worklist for the API's RunsPageImport (api/Endpoints/RunsPageImport.cs; E3.F6.S3): the kennels whose runs page the AI reader should fetch now, with what the reader needs — the last page fingerprint (RunsPageHash, so the model runs only when the text changed), the kennel's local 'today' (a page that leaves the year off is read against it), its latest run number and date, default start time (hh:mm only — DefaultRunStartTime smuggles a day-of-week in its fractional seconds), time zone, city and country names (the AI writes a full search address when the page leaves them out) and the anchor point a geocoded start must be near (the kennel's own point, else its city's). With @kennelId: that one live kennel whether or not it has a runs page or is due (the portal's Test / 'import now'). Without: every live kennel on Inbound Integration 6 with a RunsPageUrl longer than 10 characters that is DUE — never checked, checked more than 350 minutes ago, or checked more than 13 minutes ago on a day with a run (EventStartLocalDate = the kennel's local today). HC.Integration 6's Enabled flag is NOT consulted; the kennel's drop-down is the switch.",
   "parameters": [
     {
@@ -28,25 +28,25 @@
           "name": "KennelName",
           "type": "NVARCHAR(250)",
           "nullable": false,
-          "description": ""
+          "description": "HC.Kennel.KennelName."
         },
         {
           "name": "KennelShortName",
           "type": "NVARCHAR(25)",
           "nullable": false,
-          "description": ""
+          "description": "HC.Kennel.KennelShortName."
         },
         {
           "name": "RunsPageUrl",
           "type": "NVARCHAR(500)",
           "nullable": true,
-          "description": "The page to fetch; may be NULL for the single-kennel call."
+          "description": "HC.Kennel.RunsPageUrl — the page to fetch; may be NULL for the single-kennel call. Column not in db/schema/tables/HC.Kennel.Table.sql (stale); type from db/hc6/app/archive/2026-10-04_kennel_runs_page.sql."
         },
         {
           "name": "RunsPageHash",
-          "type": "NVARCHAR",
+          "type": "CHAR(64)",
           "nullable": true,
-          "description": "Fingerprint of the page text at the last read; the reader skips the model when it matches."
+          "description": "HC.Kennel.RunsPageHash — fingerprint of the page text at the last read; the reader skips the model when it matches. Column not in the stale table file; CHAR(64) from db/hc6/app/archive/2026-10-04_kennel_runs_page.sql."
         },
         {
           "name": "LocalToday",
@@ -82,13 +82,13 @@
           "name": "CityName",
           "type": "NVARCHAR(100)",
           "nullable": true,
-          "description": ""
+          "description": "HC.City.CityName of the kennel's city (LEFT JOIN, so NULL when the kennel has no city)."
         },
         {
           "name": "CountryName",
           "type": "NVARCHAR(250)",
           "nullable": true,
-          "description": ""
+          "description": "HC.Country.CountryName (LEFT JOIN)."
         },
         {
           "name": "AnchorLat",

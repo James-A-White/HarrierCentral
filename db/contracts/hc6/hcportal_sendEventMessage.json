@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_sendEventMessage",
-  "version": "1.3.0",
-  "description": "Sends a message to event participants based on releasability bit flags (admins, members, followers, RSVPs, hares, everyone). Inserts a record into HC.EventMessage, then returns three rowsets: the created message details, FCM tokens for users who qualify for full push notifications, and FCM tokens for users who qualify for in-app-only notifications. Notification preferences and a 6-hour event proximity window gate full push delivery. Service accounts are rejected unconditionally.",
+  "version": "1.5.0",
+  "description": "Posts a message to a run's chat from the portal and returns the push audience. Inserts into HC.EventMessage (optionally a photo/location kind, optionally quoting a message of the same run), then returns the message details and two FCM token lists — visible push and silent (badge-only) push — built with the same rules as hcapp_sendEventMessage: the effective preference (run bell when non-zero, else kennel bell), the 6-hour window for preference 4, HC6.RunChatTie for which runs buzz, one push per device token, retired / 180-day-idle devices and removed hashers skipped, and senders blocked by the recipient left out. Auth: HC6.ValidatePortalAuth with the compound param string '<publicEventId>:<messageId>'; service accounts refused. There is NO check that the caller belongs to the kennel or may post in that run's chat. Who may post (2026-10-13): the sender must have a HasherKennelMap row for the run's kennel (removed = 0) or a HasherEventMap row on the run, as hcapp_sendEventMessage; otherwise {Success 0, 'Not authorised to post in this run''s chat'}.",
   "parameters": [
     {
       "name": "deviceId",
@@ -16,7 +16,7 @@
       "type": "NVARCHAR(1000)",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Auth: short-lived cryptographic token, validated via HC6.ValidatePortalAuth with @publicEventId as the context identifier."
+      "description": "Auth: portal token whose param string is '<deviceSecret>:<publicEventId>:<messageId>', so a captured token cannot be replayed for another message."
     },
     {
       "name": "publicEventId",
@@ -37,42 +37,43 @@
       "type": "NVARCHAR(250)",
       "nullable": true,
       "mapsToColumn": "EventMessage.MessageTitle",
-      "description": "Optional: message title. If NULL, defaults to the event's EventName via COALESCE in the event lookup SELECT. Prepended with sender's display name before being returned in MessageDetails rowset."
+      "description": "Optional title; defaults to the run's EventName."
     },
     {
       "name": "messageContent",
       "type": "NVARCHAR(MAX)",
       "nullable": true,
       "mapsToColumn": "EventMessage.MessageContent",
-      "description": "Required: message body text. Validation error if NULL or LEN = 0, or longer than 4,000 characters (the column width since 2026-09-23); the parameter is MAX so that an over-long message is refused rather than silently truncated."
+      "description": "Message text, or the photo URL / map link for kinds 1 and 2. Required; at most 4000 characters (longer is refused, never truncated).",
+      "typeMismatch": "NVARCHAR(MAX) parameter vs EventMessage.MessageContent NVARCHAR(4000) (widened by db/hc6/app/archive/2026-09-23_event_message_4000.sql; the table script still says 500). Deliberate: the SP refuses > 4000 with LEN() instead of truncating."
     },
     {
       "name": "messageReleasabilityFlags",
       "type": "INT",
       "nullable": true,
       "mapsToColumn": "EventMessage.MessageReleasabilityFlags",
-      "description": "Required: bit flags controlling who receives the message. 0x0001=Mismanagement/admins, 0x0002=Members, 0x0004=Followers, 0x0008=RSVPs, 0x0010=Hares, 0x0020=Everyone. Validation error if NULL or if (value & 0x0000003f) = 0."
+      "description": "Audience bits: 0x01 mismanagement, 0x02 members, 0x04 followers, 0x08 RSVPs, 0x10 hares, 0x20 everyone. At least one of 0x3F is required."
     },
     {
       "name": "messageKind",
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": "EventMessage.MessageKind",
-      "description": "Optional, default 0. 0 text, 1 photo (MessageContent = blob URL in chat-photos), 2 location (MessageContent = Google Maps search URL). Validated by HC6.ChatMessageKindError; invalid → validation error. Added 2026-09-29 (E9.F1.S11/S12)."
+      "description": "0 text (default; NULL treated as 0), 1 photo, 2 location. Validated by HC6.ChatMessageKindError. Column added by db/hc6/app/archive/2026-09-29_chat_kind_and_moderation.sql."
     },
     {
       "name": "replyToMessageId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "EventMessage.ReplyToMessageId",
-      "description": "The message this one quotes (E9.F1.S21). Kept only when it is in the same thread; otherwise the message sends without a quote."
+      "description": "The message this one quotes; kept only when it belongs to the same run, otherwise silently dropped (the message is sent plain). Column added by db/hc6/app/archive/2026-09-30_chat_replies_reactions.sql."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "description": "Returned instead of the data rowsets on auth failure, service-account caller, NULL publicEventId / messageId, empty content or no audience bit, content over 4000 characters, a bad photo/location (HC6.ChatMessageKindError), 'Event not found', or from the CATCH block (ROLLBACK, then HC.ErrorLog row, ERROR_MESSAGE()). A CATCH after rowsets were sent appends this envelope.",
       "columns": [
         {
           "name": "Success",
@@ -82,7 +83,7 @@
         },
         {
           "name": "ErrorMessage",
-          "type": "NVARCHAR(255)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
           "description": "Human-readable error message"
         }
@@ -91,7 +92,7 @@
     {
       "index": 0,
       "name": "MessageDetails",
-      "description": "Returned on success. Always a single row. Contains the created message with sender info. The MessageRelesabilityFlags column name has a typo (missing 'a' in 'Releasability') — do not correct it, callers depend on it.",
+      "description": "Returned on success: one row, the created message with sender info (empty if the sender's account is removed). The MessageRelesabilityFlags column name has a typo — do not correct it, callers depend on it.",
       "columns": [
         {
           "name": "MessageId",
@@ -115,12 +116,12 @@
           "name": "UserId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": "Hasher.PublicHasherId of the message sender"
+          "description": "The SENDER's HC.Hasher.PublicHasherId (not the internal id, despite the name)."
         },
         {
           "name": "UserDisplayName",
-          "type": "NVARCHAR(MAX)",
-          "nullable": true,
+          "type": "NVARCHAR(250)",
+          "nullable": false,
           "description": "Hasher.DisplayName of the message sender (computed column)"
         },
         {
@@ -133,13 +134,19 @@
           "name": "MessageTitle",
           "type": "NVARCHAR(MAX)",
           "nullable": true,
-          "description": "Hasher.DisplayName + ' - ' + EventMessage.MessageTitle — sender name prepended to the title"
+          "description": "'<sender DisplayName> - <MessageTitle>'"
         },
         {
           "name": "MessageContent",
-          "type": "NVARCHAR(500)",
+          "type": "NVARCHAR(4000)",
           "nullable": false,
-          "description": "HC6.ChatMessagePreview: the text, or '📷 Photo' / '📍 Location'. The API shim uses it as the push body."
+          "description": "HC6.ChatMessagePreview(MessageKind, MessageContent) — the push body, not the raw photo URL / map link."
+        },
+        {
+          "name": "MessageKind",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 text, 1 photo, 2 location"
         },
         {
           "name": "MessageRelesabilityFlags",
@@ -150,27 +157,27 @@
         {
           "name": "MessageType",
           "type": "INT",
-          "nullable": true,
-          "description": "EventMessage.MessageType"
-        },
-        {
-          "name": "MessageKind",
-          "type": "SMALLINT",
           "nullable": false,
-          "description": "0 text, 1 photo, 2 location"
+          "description": "EventMessage.MessageType"
         }
       ]
     },
     {
       "index": 1,
       "name": "FullPushNotificationRecipients",
-      "description": "Users who should receive a full push notification (sound + popup). Filtered by notification preference = 1 (Always On) or = 4 (On 6 hours before run, only when event is within 6 hours), kennel membership, device FcmToken present, and releasability flags. Zero or more rows.",
+      "description": "Visible push: kennel members/followers in the audience whose effective preference is 1, or 4 inside the 6-hour window, AND whose tie to the run is personal, GM/On-Sec, or a run-level bell. The sender is never included. DISTINCT per token.",
       "columns": [
         {
           "name": "UserId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
           "description": "HasherKennelMap.UserId — internal hasher ID"
+        },
+        {
+          "name": "DisplayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Recipient's HC.Hasher.DisplayName"
         },
         {
           "name": "FcmToken",
@@ -182,14 +189,14 @@
           "name": "BadgeTotal",
           "type": "INT",
           "nullable": true,
-          "description": "The recipient's unread chat total for the app icon (HC6.UserUnreadChatTotal); the API puts it in aps.badge / notification_count / data.BadgeTotal. Added 2026-09-28. NULL for a device below HC6.MinBuildForIconBadge() (older apps never lower the icon)."
+          "description": "HC6.UserUnreadChatTotal for the recipient (aps.badge), only when a device with that token is on build >= HC6.MinBuildForIconBadge(); NULL otherwise."
         }
       ]
     },
     {
       "index": 2,
       "name": "InAppOnlyNotificationRecipients",
-      "description": "Kennel followers and members who did NOT qualify for a full push notification. They receive a silent in-app notification for real-time chat updates. Zero or more rows.",
+      "description": "Silent push (badge moves): audience members who do not buzz but have a run bell or a personal / kennel / GM-On-Sec tie, plus the sender's own devices (delivery echo). A token already in rowset 2 is not repeated.",
       "columns": [
         {
           "name": "UserId",
@@ -198,24 +205,44 @@
           "description": "HasherKennelMap.UserId — internal hasher ID"
         },
         {
+          "name": "DisplayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Recipient's HC.Hasher.DisplayName"
+        },
+        {
           "name": "FcmToken",
           "type": "NVARCHAR(500)",
-          "nullable": true,
+          "nullable": false,
           "description": "Device.FcmToken — Firebase Cloud Messaging token"
         },
         {
           "name": "BadgeTotal",
           "type": "INT",
           "nullable": true,
-          "description": "The recipient's unread chat total for the app icon (HC6.UserUnreadChatTotal); the API puts it in aps.badge / notification_count / data.BadgeTotal. Added 2026-09-28. NULL for a device below HC6.MinBuildForIconBadge() (older apps never lower the icon)."
+          "description": "HC6.UserUnreadChatTotal for the recipient (aps.badge), only when a device with that token is on build >= HC6.MinBuildForIconBadge(); NULL otherwise."
         }
       ]
     }
   ],
   "sideEffects": [
-    "INSERT into HC.EventMessage with the new message record (inside transaction)"
+    "INSERT HC.EventMessage (inside a transaction)",
+    "The API shim sends a visible push to rowset 2 tokens and a silent data push to rowset 3 tokens",
+    "Reads HC6.RunChatTie, HC6.UserUnreadChatTotal, HC6.ChatMessagePreview, HC6.ChatMessageKindError, HC6.MinBuildForIconBadge",
+    "On a runtime error: INSERT HC.ErrorLog after the ROLLBACK",
+    "Membership check reads HC.HasherKennelMap / HC.HasherEventMap before the insert."
   ],
   "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Run start instant derived from raw EventStartDatetime",
+      "detail": "Line 167 casts EventStartDatetime to DATETIME and applies the kennel city's timezone to get UTC for the 6-hour window; HC.Event.EventStartDateTimeGmt already holds the instant (see /hc-event-datetimes). A run whose own timezone differs from its kennel city's gets the window wrong."
+    },
+    {
+      "severity": "low",
+      "issue": "Deleted/removed runs are not refused",
+      "detail": "Lines 163-172 resolve the event by PublicEventId without filtering deleted/removed, so a message can be posted to a run that no longer exists."
+    },
     {
       "severity": "medium",
       "issue": "Resolved 2026-09-25: push fan-out drift from hcapp_sendEventMessage",
@@ -234,6 +261,7 @@
   ],
   "changes": [
     "1.2.0 (2026-09-25): rowsets 1 and 2 keep their columns (UserId, DisplayName, FcmToken); the audience rules now match hcapp_sendEventMessage (pref IN (1,3,4), one push per token, retired/180-day-idle devices, deleted hashers and removed links skipped). The sender still gets the silent echo when following/member and not switched off.",
-    "2026-09-29 (E9.F1.S11-S14): additive — see docs/chat_photos_location_delete_plan.md"
+    "2026-09-29 (E9.F1.S11-S14): additive — see docs/chat_photos_location_delete_plan.md",
+    "2026-10-13 (contract sweep): MessageContent widened to NVARCHAR(4000); MessageKind moved to its real position (after MessageContent); DisplayName added to the two recipient rowsets; description now covers RunChatTie, blocking and the missing post gate."
   ]
 }

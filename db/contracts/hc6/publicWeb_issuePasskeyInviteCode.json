@@ -1,0 +1,84 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_issuePasskeyInviteCode",
+  "version": "1.0.0",
+  "description": "The app's first-install sign-in with a web passkey (E9.F7.S13). After the web has verified the passkey assertion, finds the live device holding @credentialId, makes sure that hasher has a compliant invite code (HC6.nonApi_ensureUserInviteCode, rotating one older than a week — 10080 minutes, James 2026-10-04), and returns it; the app feeds it to its own hcapp_authorizeDevice URC path. No device token: guarded by HC_INTERNAL_SECRET on PublicWebAdminApi, and called only after the signature has been checked.",
+  "parameters": [
+    {
+      "name": "credentialId",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": "Device.PasskeyCredentialId",
+      "description": "The verified passkey's credential id (base64url). No SQL default.",
+      "typeMismatch": "Device.PasskeyCredentialId is NVARCHAR(500); the parameter is wider, so an over-long value simply matches nothing."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "Always first. success 1 on the happy path; 0 with 1230/12 when no live device (removed = 0) holds the credential; 0 with 1500/5 from the CATCH.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 success, 0 failure"
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success"
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Only on 1230 (passkey not found): errorTitle 'Passkey not found', logged to HC.ErrorLog first. The CATCH (1500/5) returns the envelope alone, with no detail rowset."
+    },
+    {
+      "index": 1,
+      "name": "InviteCode",
+      "description": "On success: the hasher's current invite code after nonApi_ensureUserInviteCode.",
+      "columns": [
+        {
+          "name": "inviteCode",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "HC.Hasher.ResetCode ('URC:' + six A-Z). NULL when the device's hasher is removed (Removed = 1) — success is still 1."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "EXEC HC6.nonApi_ensureUserInviteCode @userId, @rotateIfOlderThanMinutes = 10080 — may UPDATE HC.Hasher.ResetCode / ResetCodeLastUpdated (fires HC.Hasher's code-uniqueness trigger).",
+    "INSERT HC.ErrorLog on passkey-not-found (credential id cut to 60 chars) and in the CATCH."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@credentialId (line 16) has no SQL default. A caller that omits it fails with 'expects parameter' before the SP runs: PublicWebAdminApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
+    },
+    {
+      "severity": "low",
+      "issue": "Success with a NULL code",
+      "detail": "Line 42 reads ResetCode with Removed = 0 while the device lookup (lines 23-25) does not check the hasher, so a live device belonging to a removed hasher returns success = 1 with inviteCode NULL instead of a refusal."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

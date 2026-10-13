@@ -2,14 +2,14 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_joinEventAsVisitor]
 
     @deviceId                   UNIQUEIDENTIFIER,
     @accessToken                NVARCHAR(1000),
-    @eventId                    UNIQUEIDENTIFIER,
+    @eventId                    UNIQUEIDENTIFIER = NULL,
     @displayName                NVARCHAR(250),
     @virginVisitorType          SMALLINT,
     @attendenceState            SMALLINT,
     @email                      NVARCHAR(250),
     @phoneNumber                NVARCHAR(250),
-    @hasherEventMapUpdatedAfter NVARCHAR(50),
-    @paymentsUpdatedAfter       NVARCHAR(50)
+    @hasherEventMapUpdatedAfter NVARCHAR(50) = 'ignore',
+    @paymentsUpdatedAfter       NVARCHAR(50) = 'ignore'
 
 AS
 -- =====================================================================

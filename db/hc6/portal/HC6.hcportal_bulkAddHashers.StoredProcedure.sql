@@ -315,9 +315,6 @@ BEGIN TRY
                         END
                 END
 
-            -- Keep the automated MEMBER standing bit (0x0001) in sync
-            EXEC HC6.nonApi_syncMemberStandingBit @userId = @newHasherId, @kennelId = @kennelId;
-
             DECLARE @runCountsUpdated int = 0
 
             IF (@historicTotalRuns IS NOT NULL)

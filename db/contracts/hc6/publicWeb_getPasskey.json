@@ -1,98 +1,105 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getPasskey",
-  "version": "1.0.0",
-  "description": "Public key, counter and the bound device's credentials for a credential id. No token \u2014 the assertion is verified in code by the caller; reachable only behind HC_INTERNAL_SECRET.",
+  "version": "1.1.0",
+  "description": "Returns the stored public key, signature counter and transports for a passkey credential, plus the HC.Device credentials it is bound to and the hasher's display identity (E9.F7.S6). Called by the Next.js login route BEFORE it verifies the authenticator's signature with the public key; only if that passes does the route turn the device credentials into a member cookie. No token — the passkey assertion is the proof and can only be checked in code — so the SP is reachable solely through PublicWebAdminApi behind HC_INTERNAL_SECRET. Read-only; no rows for an unknown credential, a removed device or a removed / deleted hasher.",
   "parameters": [
     {
       "name": "credentialId",
       "type": "NVARCHAR(500)",
       "nullable": false,
       "mapsToColumn": "Device.PasskeyCredentialId",
-      "description": ""
+      "description": "base64url credential id from the WebAuthn assertion. No SQL default."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "Passkey",
-      "description": "No rows = unknown",
+      "description": "No rows = unknown credential (or its device / hasher removed). One row otherwise.",
       "columns": [
         {
           "name": "deviceId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": ""
+          "description": "HC.Device.id the passkey is bound to."
         },
         {
           "name": "deviceSecret",
           "type": "NVARCHAR(150)",
           "nullable": false,
-          "description": ""
+          "description": "Device.DeviceSecret — becomes the member cookie's signing secret."
         },
         {
           "name": "timeWindow",
           "type": "INT",
           "nullable": false,
-          "description": ""
+          "description": "Device.TimeWindow (token window, seconds)."
         },
         {
           "name": "publicKey",
           "type": "NVARCHAR(2000)",
           "nullable": false,
-          "description": ""
+          "description": "Device.PasskeyPublicKey."
         },
         {
           "name": "counter",
           "type": "BIGINT",
           "nullable": false,
-          "description": ""
+          "description": "COALESCE(Device.PasskeyCounter, 0) — signature counter for clone detection."
         },
         {
           "name": "transports",
           "type": "NVARCHAR(100)",
           "nullable": false,
-          "description": ""
+          "description": "COALESCE(Device.PasskeyTransports, '')."
         },
         {
           "name": "hasherId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": ""
+          "description": "Hasher.id (Device.UserId)."
         },
         {
           "name": "publicHasherId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": ""
+          "description": "Hasher.PublicHasherId."
         },
         {
           "name": "hashName",
           "type": "NVARCHAR(250)",
           "nullable": false,
-          "description": ""
+          "description": "COALESCE(Hasher.HashName, '')."
         },
         {
           "name": "displayName",
-          "type": "NVARCHAR(250)",
+          "type": "NVARCHAR(501)",
           "nullable": false,
-          "description": ""
+          "description": "COALESCE(Hasher.DisplayName, '') — persisted computed column."
         },
         {
           "name": "photo",
           "type": "NVARCHAR(1000)",
           "nullable": false,
-          "description": ""
+          "description": "COALESCE(Hasher.Photo, '')."
         }
       ]
     }
   ],
-  "sideEffects": [],
+  "sideEffects": [
+    "INSERT HC.ErrorLog then THROW in the CATCH."
+  ],
   "codeSmells": [
     {
       "severity": "low",
       "issue": "Shim secret is the only gate",
       "detail": "Returns a device secret with no SP-level auth; the WebAuthn assertion cannot be verified in SQL. Only PublicWebAdminApi with HC_INTERNAL_SECRET can reach it."
+    },
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@credentialId have no SQL default (line 2). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
     }
   ],
   "breakingChangeRules": [

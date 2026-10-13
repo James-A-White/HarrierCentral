@@ -1,18 +1,51 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getStats",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Returns run statistics for a kennel's public stats page. All hashers with a non-removed relationship to the kennel (removed = 0) are included regardless of IsMember flag — both registered members and followers/visitors appear. Display name uses the kennel-specific hash name when set, falling back to the hasher's global hash name, then the computed DisplayName. Returns two rowsets: Rowset 0 is a HasherCount sentinel that prevents a false 404 when the kennel exists but has no hashers yet; Rowset 1 contains the hasher stat rows. No authentication required.",
   "parameters": [
     {
       "name": "PublicKennelId",
       "type": "NVARCHAR(50)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Kennel.PublicKennelId",
-      "description": "The kennel's public UUID, cast to UNIQUEIDENTIFIER internally. Passed as a string to allow the unauthenticated HTTP shim to forward query-string parameters without type conversion."
+      "description": "The kennel's public UUID as a string, CONVERTed to UNIQUEIDENTIFIER. Blank/NULL returns 'PublicKennelId is required.'. No SQL default.",
+      "typeMismatch": "Kennel.PublicKennelId is UNIQUEIDENTIFIER; the SP takes NVARCHAR(50) and CONVERTs it (line 55). A non-GUID string raises a conversion error, caught and returned as { Success = 0, ErrorMessage }."
     }
   ],
   "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Instead of the normal rowsets when @PublicKennelId is NULL/blank ('PublicKennelId is required.') or on any runtime error, including a non-GUID string (CATCH, ERROR_MESSAGE()).",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": false,
+          "description": "Validation text or ERROR_MESSAGE()"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "KennelNotFound",
+      "description": "When no non-deleted, non-removed kennel has this PublicKennelId: an empty rowset (SELECT TOP 0, line 62) whose single column is named MemberCount, not HasherCount. 0 rows → the shim returns 404. No rowset 1 follows.",
+      "columns": [
+        {
+          "name": "MemberCount",
+          "type": "INT",
+          "nullable": true,
+          "description": "Never populated (TOP 0)"
+        }
+      ]
+    },
     {
       "index": 0,
       "name": "HasherCountSentinel",
@@ -39,9 +72,9 @@
         },
         {
           "name": "DisplayName",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(250)",
           "nullable": false,
-          "description": "COALESCE(KennelHashName, HashName, DisplayName) — kennel-specific hash name first, global hash name second, computed full name third."
+          "description": "COALESCE of trimmed HasherKennelMap.KennelHashName (NVARCHAR(150)), trimmed Hasher.HashName (NVARCHAR(250)), then Hasher.DisplayName (persisted computed, never NULL). Blank values are skipped with a LEN() test so emoji-only names survive the SQL_Latin1 collation."
         },
         {
           "name": "TotalRuns",
@@ -83,7 +116,23 @@
     }
   ],
   "sideEffects": [],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 114-117 roll back and return { Success = 0, ErrorMessage } without an HC.ErrorLog row. PublicWebApi logs the envelope as 'HC6 Public Web Error: getStats' with the message, so the failure is visible, but without the SP name or the offending id (e.g. a malformed GUID string hitting CONVERT at line 55)."
+    },
+    {
+      "severity": "low",
+      "issue": "Parameter type differs from the column",
+      "detail": "@PublicKennelId is NVARCHAR(50) against a UNIQUEIDENTIFIER column, so bad input surfaces as a conversion error rather than a clean validation message."
+    },
+    {
+      "severity": "low",
+      "issue": "Not-found rowset column name differs from the found rowset",
+      "detail": "Line 62 names the empty rowset's column MemberCount while the found path returns HasherCount (line 70). Harmless because the rowset is empty, but a typed reader sees two shapes."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

@@ -1,0 +1,198 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getInviteEmailList",
+  "version": "1.0.0",
+  "description": "Builds the recipient list for the portal's 'Email invite codes' action (E2.F2.S6, 2026-10-10) and makes sure each recipient holds an invite code. Called by the API's InviteEmails endpoint with the portal admin's own token, so the codes reach the API and never the browser; the API sends the mail and decides who to skip. Auth: HC6.ValidatePortalAuth with @publicKennelId as the context identifier. Gate: the caller's HC.HasherKennelMap.AppAccessFlags for the kennel must have a bit of 0x40000081 (the same gate as hcportal_bulkAddHashers). Scope 'imported' = the hashers named in @publicHasherIds who still hold a live HKM row in this kennel; scope 'neverLoggedIn' = every hasher with a live HKM row in this kennel whose LastLoginDateTime is NULL. Both exclude removed, deleted and EmailBlocked accounts. Deliverability (isPlaceholder) and the 7-day re-invite window (inviteEmailedAt) are reported, not filtered.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: portal device id, validated by HC6.ValidatePortalAuth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: short-lived token; @publicKennelId is the context identifier."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "The kennel whose hashers are invited. Unknown or NULL -> 'No kennel with that id.'"
+    },
+    {
+      "name": "scope",
+      "type": "NVARCHAR(20)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "'imported' or 'neverLoggedIn'. Anything else, or NULL -> 'Choose who to send the invite codes to.'"
+    },
+    {
+      "name": "publicHasherIds",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.PublicHasherId",
+      "description": "'|'-separated PublicHasherIds, used only with scope 'imported' (the hashers the last 'Import from file' added). Entries that are not GUIDs are dropped (TRY_CAST)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned alone on: auth failure (ValidatePortalAuth message); 'No kennel with that id.'; 'You are not authorised to invite members of this kennel.' (logged to HC.ErrorLog as 'Not authorised'); 'Choose who to send the invite codes to.'; and from the CATCH 'The invite list could not be built. Please try again.' (logged).",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(255)",
+          "nullable": false,
+          "description": "Auth error or one of the literals above"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "KennelHeader",
+      "description": "On success: one row with the success envelope and the kennel and admin the API needs to compose the email.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(255)",
+          "nullable": true,
+          "description": "NULL"
+        },
+        {
+          "name": "kennelId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "Kennel.id, lowercase text"
+        },
+        {
+          "name": "kennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Kennel.KennelName"
+        },
+        {
+          "name": "kennelShortName",
+          "type": "NVARCHAR(25)",
+          "nullable": false,
+          "description": "Kennel.KennelShortName"
+        },
+        {
+          "name": "kennelSlug",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "Kennel.KennelUniqueShortName"
+        },
+        {
+          "name": "kennelLogo",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Kennel.KennelLogo"
+        },
+        {
+          "name": "adminId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "The caller's Hasher.id, lowercase text"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Recipients",
+      "description": "On success: one row per selected hasher, ordered by lower(HashName, else FirstName). May be empty.",
+      "columns": [
+        {
+          "name": "hasherId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "Hasher.id, lowercase text"
+        },
+        {
+          "name": "publicHasherId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "Hasher.PublicHasherId, lowercase text"
+        },
+        {
+          "name": "firstName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Hasher.FirstName"
+        },
+        {
+          "name": "hashName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Hasher.HashName"
+        },
+        {
+          "name": "email",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Hasher.Email (may be a generated address — see isPlaceholder)"
+        },
+        {
+          "name": "inviteCode",
+          "type": "NVARCHAR(6)",
+          "nullable": true,
+          "description": "The six letters after 'URC:' in Hasher.ResetCode; NULL if ResetCode is not a URC: code (should not happen after nonApi_ensureUserInviteCode)"
+        },
+        {
+          "name": "inviteEmailedAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "Hasher.InviteEmailedAt — when an invite was last emailed (column from db/hc6/app/archive/2026-10-10_hasher_invite_emailed_at.sql; not yet in db/schema/tables)"
+        },
+        {
+          "name": "isPlaceholder",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "HC6.IsGeneratedEmail(Hasher.Email): 1 when the address is generated and must not be sent to"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "EXEC HC6.nonApi_ensureUserInviteCode for every selected hasher (cursor, no transaction): mints a compliant HC.Hasher.ResetCode 'URC:XXXXXX' where the hasher lacks one",
+    "INSERT HC.ErrorLog on the not-authorised path and in the CATCH",
+    "Reads HC.Hasher.EmailBlocked (column from db/hc6/app/archive/2026-10-09_hasher_email_status_columns.sql; not yet in db/schema/tables)"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Permission gate ignores HasherKennelMap.removed",
+      "detail": "Line 52 reads AppAccessFlags from the caller's HKM row without `removed = 0`, so an admin whose kennel row was removed but whose flags were not cleared still passes. Same pattern as hcportal_bulkAddHashers."
+    },
+    {
+      "severity": "low",
+      "issue": "'neverLoggedIn' selects on a bare HKM row",
+      "detail": "Lines 79-83 take every live HasherKennelMap row, which includes followers and lapsed members, not only members (membership is MembershipExpirationDate in the future). May be intended — 'everyone in this kennel' per the header — but it is not 'members'."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

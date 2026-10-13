@@ -1,0 +1,220 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_setHasherBlock",
+  "version": "1.0.0",
+  "description": "The public web's door to HC6.hcapp_setHasherBlock (E9.F1.S16/S17, block or unblock another hasher). A thin 'wrap for writes' wrapper: it EXECs hcapp_setHasherBlock with the browser's own device credentials and adds no checks of its own, so the web and the app cannot drift. Auth, permission gate and every rule live in hcapp_setHasherBlock (the token must be signed for 'hcapp_setHasherBlock', because the inner SP validates under its own name). Reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET. Returns hcapp_setHasherBlock's rowsets unchanged.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "The calling browser's HC.Device id (the browser is a registered device). No SQL default."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Device-bound token signed for 'hcapp_setHasherBlock' (the inner SP validates it under its own name via HC6.ValidateAppAuth). No SQL default."
+    },
+    {
+      "name": "targetPublicHasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Hasher.PublicHasherId",
+      "description": "The other hasher's PUBLIC id (chat authorId). Resolved to HC.Hasher.id with Removed = 0. Default NULL → 1985 'That hasher could not be found.' Passed straight to hcapp_setHasherBlock."
+    },
+    {
+      "name": "blocked",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "HasherFriendMap.Ignore",
+      "description": "1 block, 0 unblock (default 1). Any other value → 1985 / errorType 2. Default 1 (block); 0 unblocks. Passed straight to hcapp_setHasherBlock."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "AuthErrorDetail",
+      "description": "From hcapp_setHasherBlock: Auth failure ONLY (ValidateAppAuth): a single rowset with the error detail — NO success/errorCode/errorType envelope precedes it.",
+      "columns": [
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.ErrorLog id."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification (ValidateAppAuth value, 2 validation, 5 unhandled)."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error code."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Short title."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "User-facing message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "OBJECT_NAME(@@PROCID)."
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "From hcapp_setHasherBlock: Bad request (1985/2: target not found or removed, target = caller, @blocked not 0/1) or unhandled (1986/5). Followed by ErrorDetail at index 1.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "1985 (bad request) or 1986 (unhandled)."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "2 (bad request) or 5 (unhandled)."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "From hcapp_setHasherBlock: Follows ErrorEnvelope. Same columns as AuthErrorDetail.",
+      "columns": [
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.ErrorLog id."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification (ValidateAppAuth value, 2 validation, 5 unhandled)."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error code."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Short title."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "User-facing message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "OBJECT_NAME(@@PROCID)."
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "From hcapp_setHasherBlock: Success: { success = 1, errorMessage = NULL }.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Always NULL."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "BlockedHashers",
+      "description": "From hcapp_setHasherBlock: Success only, after the envelope: the caller's blocked hashers (Ignore = 1), newest block first.",
+      "columns": [
+        {
+          "name": "PublicHasherId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "UPPER(CAST(Hasher.PublicHasherId AS NVARCHAR(40))) — UPPERCASE text; clients must lowercase on arrival (HcId)."
+        },
+        {
+          "name": "DisplayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Blocked hasher's display name"
+        },
+        {
+          "name": "Photo",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Profile photo URL"
+        },
+        {
+          "name": "BlockedAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "HasherFriendMap.updatedAt (DATETIMEOFFSET(7) NOT NULL, added by db/hc6/app/archive/2026-09-29_hasher_block.sql; missing from the stale table file). Ordered newest first."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "EXEC HC6.hcapp_setHasherBlock — everything it does:",
+    "  MERGE HC.HasherFriendMap WITH (HOLDLOCK) on (UserId, Friend_UserId): matched → SET Ignore = @blocked, updatedAt = SYSDATETIMEOFFSET(); not matched → INSERT (UserId, Friend_UserId, Ignore). One transaction.",
+    "  INSERT LOG.GeneralLog ('Hasher blocked' / 'Hasher unblocked', StrParam1 = caller, Data = 'target=<id>').",
+    "  INSERT HC.ErrorLog on auth failure (ValidateAppAuth), bad request (line 58) and in the CATCH (after ROLLBACK).",
+    "On an error that escapes the inner SP (or the EXEC itself) the CATCH rolls back, logs 'Unhandled error in publicWeb_setHasherBlock' to HC.ErrorLog (HcVersion '<web>', deviceId) and re-THROWs, so the API returns 500."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken (line 13-14) have no SQL default. A caller that omits one fails with 'expects parameter' before the SP runs: PublicWebAdminApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

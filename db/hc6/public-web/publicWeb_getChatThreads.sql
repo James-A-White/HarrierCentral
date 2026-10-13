@@ -23,6 +23,27 @@ BEGIN TRY
     FROM HC.Device d JOIN HC.Hasher h ON h.id = d.UserId
     WHERE d.id = @deviceId AND d.removed = 0;
 
+    -- Check the token BEFORE saying success (2026-10-13). The inner app SP
+    -- checks it too, but by then rowset 0 already said success = 1, so a
+    -- refused token (a drifted clock, a signed-out device) reached the
+    -- browser as an empty list instead of an error. Same name and number
+    -- as the inner SP, so the token and the error codes are the same.
+    DECLARE @gUserId UNIQUEIDENTIFIER, @gSecret NVARCHAR(150), @gWindow INT,
+            @gCode INT, @gType INT, @gErrorId UNIQUEIDENTIFIER, @gTitle NVARCHAR(500), @gMsg NVARCHAR(MAX);
+    DECLARE @gProc NVARCHAR(128) = N'hcapp_getEventBadgeCount';
+    DECLARE @gSp INT = 63;
+    EXEC HC6.ValidateAppAuth @deviceId = @deviceId, @accessToken = @accessToken, @procName = @gProc,
+         @spNumber = @gSp, @param = NULL, @userId = @gUserId OUTPUT, @deviceSecret = @gSecret OUTPUT,
+         @timeWindow = @gWindow OUTPUT, @errorCode = @gCode OUTPUT, @errorType = @gType OUTPUT,
+         @errorId = @gErrorId OUTPUT, @errorTitle = @gTitle OUTPUT, @errorMsg = @gMsg OUTPUT;
+    IF (@gCode IS NOT NULL)
+    BEGIN
+        SELECT 0 AS success, @gCode AS errorCode, @gType AS errorType, @me AS Me;
+        SELECT @gErrorId AS errorId, @gType AS errorType, @gCode AS errorCode,
+               @gTitle AS errorTitle, @gMsg AS errorUserMessage, @gProc AS errorProc;
+        RETURN;
+    END
+
     SELECT 1 AS success, NULL AS errorCode, NULL AS errorType, @me AS Me;
 
     EXEC HC6.hcapp_getEventBadgeCount

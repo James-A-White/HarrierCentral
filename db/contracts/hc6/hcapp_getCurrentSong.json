@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_getCurrentSong",
-  "version": "1.1.0",
-  "description": "Pull-on-open endpoint for the interactive songbook. Returns the most recently selected song for the given event if it was selected within the last 2 minutes AND the calling user has an RSVP of Maybe or Yes on the event (HasherEventMap.RsvpState >= 2, removed = 0). Returns an empty rowset (zero rows with typed NULL columns) when the user is not RSVP'd or no song has been selected recently — this is not an error. Read-only SP — the error detail is returned alone at index 0 (no compact envelope). Auth: HC6.ValidateAppAuth (spNumber 77, @param NULL). New feature — no HC5 equivalent.",
+  "version": "1.3.0",
+  "description": "Pull-on-open endpoint for the interactive songbook. Returns the most recently selected song for the given event if it was selected within the last 2 minutes AND the calling user has an RSVP of Maybe or Yes on the event (HasherEventMap.RsvpState >= 2, removed = 0). Returns an empty rowset (zero rows with typed NULL columns) when the user is not RSVP'd or no song has been selected recently — this is not an error. Read-only SP — the error detail is returned alone at index 0 (no compact envelope). Auth: HC6.ValidateAppAuth (spNumber 77, @param NULL). New feature — no HC5 equivalent. The missing-event refusal (1291) now writes the HC.ErrorLog row its errorId names (2026-10-13).",
   "parameters": [
     {
       "name": "deviceId",
@@ -21,9 +21,9 @@
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "SongSession.EventId",
-      "description": "Event to check for an active song. Required — null or zero-UUID triggers validation error (errorCode 1291, errorType 2). Note: error is returned as a direct StandardErrorResult rowset (no compact envelope) to match the read-only SP error pattern used by this SP."
+      "description": "Event to check for an active song. Required — null or zero-UUID triggers validation error (errorCode 1291, errorType 2). Note: error is returned as a direct StandardErrorResult rowset (no compact envelope) to match the read-only SP error pattern used by this SP. Defaults to NULL when omitted (2026-10-13)."
     }
   ],
   "rowsets": [
@@ -107,12 +107,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "@deviceId, @accessToken, @eventId (lines 3-5) have no SQL default. A client that omits one is refused by SQL before the procedure runs — no HC.ErrorLog row, an empty 500 in the app (CLAUDE.md 'SP parameter with NO default'). The graceful 1291 check at line 65 is unreachable for an omitted parameter."
-    },
-    {
-      "severity": "medium",
-      "issue": "errorId returned for an HC.ErrorLog row that was never written",
-      "detail": "The missing-eventId branch (lines 65-71) sets @errorId = NEWID() and returns it with errorCode 1291 but never INSERTs HC.ErrorLog, so the client shows an id that resolves to nothing. Same defect hcapp_findHashersByHashName had until 2026-09-20."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "medium",

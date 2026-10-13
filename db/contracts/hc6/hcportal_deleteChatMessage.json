@@ -1,55 +1,54 @@
 {
   "schema": "HC6",
   "name": "hcportal_deleteChatMessage",
-  "version": "1.0.0",
-  "description": "Portal twin of hcapp_deleteChatMessage — same rule (HC6.nonApi_deleteChatMessage), portal auth. Token param string is the messageId. E9.F1.S13/S14.",
+  "version": "1.1.0",
+  "description": "Portal twin of hcapp_deleteChatMessage (E9.F1.S13/S14): soft-deletes one chat message — the caller's own, or anyone's in a thread the caller moderates. The rule lives in HC6.nonApi_deleteChatMessage (moderation via HC6.nonApi_mayModerateChat: moderateChat in the kennel, SuperAdmin for global rooms); this SP only authenticates and shapes the reply. Auth: HC6.ValidatePortalAuth with the token bound to the messageId (callerParamString = CAST(@messageId AS NVARCHAR(40))). Deleting an already-removed message succeeds.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Registered device"
+      "description": "Auth: registered portal device. Validated via HC6.ValidatePortalAuth."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Short-lived token"
+      "description": "Auth: short-lived portal token; its callerParamString is the messageId."
     },
     {
       "name": "messageId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "EventMessage.id",
-      "description": "The message to delete; also the token's callerParamString"
+      "description": "The message to delete; also the token's callerParamString. NULL returns 'messageId is required' (checked after auth)."
     }
   ],
   "rowsets": [
     {
       "index": 0,
-      "name": "Envelope",
+      "name": "SuccessEnvelope",
+      "description": "Returned on every path: auth failure, missing messageId, the outcome of nonApi_deleteChatMessage, or the CATCH block.",
       "columns": [
-        {
-          "name": "Success",
-          "type": "INT",
-          "nullable": false,
-          "description": "1 deleted (or already was)"
-        },
-        {
-          "name": "ErrorMessage",
-          "type": "NVARCHAR(255)",
-          "nullable": true,
-          "description": "NULL on success"
-        }
+        { "name": "Success", "type": "INT", "nullable": false, "description": "1 when the message is removed (or already was); 0 otherwise" },
+        { "name": "ErrorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "NULL on success. Outcome 3: 'You can delete your own messages. Only a chat administrator can delete someone else''s.' Outcome 2 (not found): 'That message is no longer in the chat.' Auth error text, or ERROR_MESSAGE() from CATCH." }
       ]
     }
   ],
   "sideEffects": [
-    "As hcapp_deleteChatMessage"
+    "EXEC HC6.nonApi_deleteChatMessage: UPDATE HC.EventMessage SET Removed = 1, updatedAt = SYSDATETIMEOFFSET() WHERE id = @messageId AND Removed = 0 (readers return it in their removedId rowset; trgEventMessageActivityCount updates the run card's chat count)",
+    "INSERT LOG.GeneralLog with the removed text when a moderator removes someone else's message",
+    "INSERT HC.ErrorLog on not found, not allowed, and unhandled errors"
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Raw database error returned to the user",
+      "detail": "Line 59: the CATCH returns ERROR_MESSAGE() as the user-facing ErrorMessage."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

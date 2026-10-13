@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_getPhotoUploadToken",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Validates auth, then returns the userId, kennelId, and kennelSlug so the calling Azure Function can construct a scoped SAS write token for the trail-photos blob container. Any authenticated HC user may call this — no kennel membership or following check is required. No side effects and no DB writes — pure auth check plus a single Kennel lookup. Auth: HC6.ValidateAppAuth (spNumber 30, @param NULL). Parameter checks run before the TRY; the final SELECTs are wrapped, with runtime errors logged and re-thrown.",
   "parameters": [
     {
@@ -21,16 +21,16 @@
     {
       "name": "kennelId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Kennel.id",
-      "description": "Kennel the photo will be uploaded under. Null or zero-UUID triggers a validation error (errorCode 1230, errorType 12)."
+      "description": "Kennel the photo will be uploaded under. Null or zero-UUID triggers a validation error (errorCode 1230, errorType 12). Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "photoGuid",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Client-generated GUID for the photo. Validated to be non-null and non-zero-UUID (errorCode 1230, errorType 12). Not stored in the DB by this SP — used by the Azure Function when constructing the SAS blob path."
+      "description": "Client-generated GUID for the photo. Validated to be non-null and non-zero-UUID (errorCode 1230, errorType 12). Not stored in the DB by this SP — used by the Azure Function when constructing the SAS blob path. Defaults to NULL when omitted (2026-10-13)."
     }
   ],
   "rowsets": [
@@ -135,7 +135,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "All four parameters (lines 3-6) have no SQL default. A client that omits @kennelId or @photoGuid gets 'expects parameter' — an unlogged empty 500 before the SP runs, so the graceful 1230 checks at lines 66 and 80 are unreachable for an omitted parameter."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "medium",

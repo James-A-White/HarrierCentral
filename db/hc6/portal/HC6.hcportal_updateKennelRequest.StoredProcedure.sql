@@ -1,7 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_updateKennelRequest]
     @deviceId          UNIQUEIDENTIFIER = NULL,
     @accessToken       NVARCHAR(1000)   = NULL,
-    @kennelImportId    UNIQUEIDENTIFIER,
+    @kennelImportId    UNIQUEIDENTIFIER = NULL,
     @firstName         NVARCHAR(MAX)    = NULL,
     @lastName          NVARCHAR(MAX)    = NULL,
     @hashName          NVARCHAR(MAX)    = NULL,

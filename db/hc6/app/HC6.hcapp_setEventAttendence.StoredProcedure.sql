@@ -3,13 +3,13 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_setEventAttendence]
     @deviceId                    UNIQUEIDENTIFIER,
     @accessToken                 NVARCHAR(1000),
     @eventId                     UNIQUEIDENTIFIER,
-    @hasherId                    UNIQUEIDENTIFIER,
-    @attendenceState             SMALLINT,
+    @hasherId                    UNIQUEIDENTIFIER = NULL,
+    @attendenceState             SMALLINT = NULL,
     @isHare                      SMALLINT         = NULL,
-    @hasherEventMapUpdatedAfter  NVARCHAR(50),
-    @hasherKennelMapUpdatedAfter NVARCHAR(50),
+    @hasherEventMapUpdatedAfter  NVARCHAR(50) = 'ignore',
+    @hasherKennelMapUpdatedAfter NVARCHAR(50) = 'ignore',
     @returnUserRecords           SMALLINT         = 0,
-    @qrScanText                  NVARCHAR(250),
+    @qrScanText                  NVARCHAR(250) = NULL,
     @hemId                       UNIQUEIDENTIFIER = NULL
 
 AS
@@ -307,9 +307,12 @@ BEGIN TRY
             INSERT INTO HC.HasherEventMap
                 ([id], [EventId], [KennelId], [UserId],
                  [AttendenceState], [RsvpState], [IsHare], [VirginVisitorType], [updatedAt])
+            -- IsHare honours @isHare on a new row too (2026-10-13); it was
+            -- written 0 regardless, so the Event.Hares rebuild below missed
+            -- the new hare. NULL (keep existing) means not a hare here.
             VALUES
                 (@hemId, @eventId, @kennelId, @hasherId,
-                 @attendenceState, 3, 0, 0, GETDATE());
+                 @attendenceState, 3, COALESCE(@isHare, 0), 0, GETDATE());
 
             SET @recalculateRunNumbers = 1;
         END

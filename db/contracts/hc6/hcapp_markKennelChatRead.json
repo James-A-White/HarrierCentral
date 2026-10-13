@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_markKennelChatRead",
-  "version": "1.0.0",
-  "description": "Marks a KENNEL-level chat thread as read for the calling user: upserts the (UserId, KennelId) row in HC.EventMessageBadgeCounts with the thread's current MAX(MessageSequenceCount) (0 when the thread is empty), LastReadAt and LastReadMessageId. Mirrors hcapp_markEventChatRead, but returns a bare {success} and no FCM fan-out rowset — other devices learn of the read on their next badge poll, not by silent push. Auth: HC6.ValidateAppAuth (spNumber 66, @param NULL); no permission gate — any authenticated user may mark any kennel thread read for themselves.",
+  "version": "1.1.0",
+  "description": "Marks a KENNEL-level chat thread as read for the calling user: upserts the (UserId, KennelId) row in HC.EventMessageBadgeCounts with the thread's current MAX(MessageSequenceCount) (0 when the thread is empty), LastReadAt and LastReadMessageId. Mirrors hcapp_markEventChatRead, but returns a bare {success} and no FCM fan-out rowset — other devices learn of the read on their next badge poll, not by silent push. Auth: HC6.ValidateAppAuth (spNumber 66, @param NULL); no permission gate — any authenticated user may mark any kennel thread read for themselves. Since 2026-10-13 its MERGE into HC.EventMessageBadgeCounts holds HOLDLOCK: the table has no unique key on (UserId, EventId, KennelId, ThreadId, MessageType), and two concurrent MERGEs could each insert a row.",
   "parameters": [
     {
       "name": "deviceId",
@@ -37,7 +37,12 @@
       "name": "Envelope",
       "description": "After the TRY block: success=1 when the MERGE committed; success=0 from the CATCH block (logged to HC.ErrorLog, but no errorId or detail is returned).",
       "columns": [
-        { "name": "success", "type": "INT", "nullable": false, "description": "1 written, 0 unhandled error." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 written, 0 unhandled error."
+        }
       ]
     }
   ],

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_sendEventMessage",
-  "version": "1.2.0",
-  "description": "Sends a run (event) chat message. Inserts the HC.EventMessage row (HC.trgCreateSeqNum assigns MessageSequenceCount), upserts HC.EventMessageBadgeCounts so the sender never sees their own message as unread, then returns the inserted message (rowset 0) and two API-only push audiences: visible (rowset 1) and silent/data-only (rowset 2). Auth: HC6.ValidateAppAuth (spNumber 61, @param NULL — a STANDARD device-secret token; the HC5 compound DeviceSecret+eventId token is gone). Permission gate: the sender must hold a live HasherKennelMap row for the run's kennel OR any HasherEventMap row for the run (errorCode 1263, errorType 3 otherwise). @messageReleasabilityFlags bitmask: 0x0001 mismanagement, 0x0002 members, 0x0004 followers, 0x0008 RSVPs (RsvpState >= 2), 0x0010 hares, 0x0020 everyone; at least one bit required. Push audience (rewritten 2026-09-17 and 2026-10-02, E9.F1.S27): hashers of the kennel with an effective bell (event override, else kennel) of 1/3/4 on live devices signed in within 180 days who have not blocked the sender and match the releasability bits; HC6.RunChatTie decides whether a kennel-bell-only hasher BUZZES (run is personally theirs — RSVP Yes / attended / posted — or they are GM/On-Sec) or gets a SILENT push (any run of a kennel they belong to or follow); a bell set on the run itself always wins; 4 'on before the run' buzzes only inside ±6 h of the start. Rowset 0's MessageContent is HC6.ChatMessagePreview (the push body).",
+  "version": "1.4.0",
+  "description": "Sends a run (event) chat message. Inserts the HC.EventMessage row (HC.trgCreateSeqNum assigns MessageSequenceCount), upserts HC.EventMessageBadgeCounts so the sender never sees their own message as unread, then returns the inserted message (rowset 0) and two API-only push audiences: visible (rowset 1) and silent/data-only (rowset 2). Auth: HC6.ValidateAppAuth (spNumber 61, @param NULL — a STANDARD device-secret token; the HC5 compound DeviceSecret+eventId token is gone). Permission gate: the sender must hold a live HasherKennelMap row for the run's kennel OR any HasherEventMap row for the run (errorCode 1263, errorType 3 otherwise). @messageReleasabilityFlags bitmask: 0x0001 mismanagement, 0x0002 members, 0x0004 followers, 0x0008 RSVPs (RsvpState >= 2), 0x0010 hares, 0x0020 everyone; at least one bit required. Push audience (rewritten 2026-09-17 and 2026-10-02, E9.F1.S27): hashers of the kennel with an effective bell (event override, else kennel) of 1/3/4 on live devices signed in within 180 days who have not blocked the sender and match the releasability bits; HC6.RunChatTie decides whether a kennel-bell-only hasher BUZZES (run is personally theirs — RSVP Yes / attended / posted — or they are GM/On-Sec) or gets a SILENT push (any run of a kennel they belong to or follow); a bell set on the run itself always wins; 4 'on before the run' buzzes only inside ±6 h of the start. Rowset 0's MessageContent is HC6.ChatMessagePreview (the push body). Since 2026-10-13 a resend of an already-stored @messageId by the same sender in the same thread is idempotent: nothing is written, rowset 0 returns the stored message and the push rowsets are empty, so nobody is notified twice (a resend after a lost reply used to hit PK_EventMessage and report a delivered message as unsent). The post-commit part (rowset 0 and the push rowsets) is in its own TRY whose CATCH logs 'Push audience failed in sendEventMessage' and swallows, as sendRoomMessage; only a failure of the write returns the 9999 error. Since 2026-10-13 its MERGE into HC.EventMessageBadgeCounts holds HOLDLOCK: the table has no unique key on (UserId, EventId, KennelId, ThreadId, MessageType), and two concurrent MERGEs could each insert a row.",
   "parameters": [
     {
       "name": "deviceId",
@@ -74,12 +74,42 @@
       "name": "ErrorResult",
       "description": "Returned alone, then RETURN, on: auth failure (codes/types from ValidateAppAuth); 1261 messageId NULL / eventId NULL / content empty / releasability missing or zero (errorType 12 — not the HC6 standard 2); 1264 content over 4,000 (2); 1265 bad message kind (2); 1263 sender not a kennel member/follower nor on the run (3); 9999 unhandled error from the CATCH (5). Because the TRY spans past the COMMIT (see code smells), 9999 can also follow an already-committed insert.",
       "columns": [
-        { "name": "errorId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Unique ID of the HC.ErrorLog entry." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "From ValidateAppAuth on auth failure; 12 for 1261; 2 for 1264/1265; 3 for 1263; 5 for 9999." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "1261, 1263, 1264, 1265, 9999, or an auth code." },
-        { "name": "errorTitle", "type": "NVARCHAR(500)", "nullable": true, "description": "Short error title for display." },
-        { "name": "errorUserMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "User-facing error message." },
-        { "name": "errorProc", "type": "NVARCHAR(128)", "nullable": false, "description": "SP name via OBJECT_NAME(@@PROCID)." }
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Unique ID of the HC.ErrorLog entry."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "From ValidateAppAuth on auth failure; 12 for 1261; 2 for 1264/1265; 3 for 1263; 5 for 9999."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "1261, 1263, 1264, 1265, 9999, or an auth code."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Short error title for display."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "User-facing error message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "SP name via OBJECT_NAME(@@PROCID)."
+        }
       ]
     },
     {
@@ -87,18 +117,78 @@
       "name": "InsertedMessage",
       "description": "On success: the just-inserted message, one row, for the sender's optimistic UI and the API's push body.",
       "columns": [
-        { "name": "MessageId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "EventMessage.id — the client-supplied messageId." },
-        { "name": "EventId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "EventMessage.EventId. UNIQUEIDENTIFIER (was NVARCHAR in HC5) — breaking change." },
-        { "name": "PublicEventId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "EventMessage.PublicEventId — public-facing event UUID." },
-        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Hasher.PublicHasherId of the sender (not the internal Hasher.id)." },
-        { "name": "UserDisplayName", "type": "NVARCHAR(250)", "nullable": false, "description": "Hasher.DisplayName — persisted computed column (hash name or real name per preference)." },
-        { "name": "UserPhoto", "type": "NVARCHAR(1000)", "nullable": true, "description": "Hasher.Photo — URL of the sender's profile photo." },
-        { "name": "MessageTitle", "type": "NVARCHAR(MAX)", "nullable": false, "description": "DisplayName + ' - ' + EventMessage.MessageTitle (the EventName default when the caller passed NULL)." },
-        { "name": "MessageContent", "type": "NVARCHAR(MAX)", "nullable": false, "description": "HC6.ChatMessagePreview(MessageKind, MessageContent): the text, or a photo/location placeholder. The API uses it as the push body — NOT the raw URL for a photo or location." },
-        { "name": "MessageKind", "type": "SMALLINT", "nullable": false, "description": "0 text, 1 photo, 2 location." },
-        { "name": "MessageReleasabilityFlags", "type": "INT", "nullable": false, "description": "EventMessage.MessageReleasabilityFlags. Column name corrected from the HC5 typo 'MessageRelesabilityFlags' — breaking change for any caller reading it by name." },
-        { "name": "EventChatMessageCount", "type": "INT", "nullable": false, "description": "Always 0 — hardcoded. Obsolete field retained for client compatibility." },
-        { "name": "MessageType", "type": "INT", "nullable": false, "description": "EventMessage.MessageType — 0 for a run thread (INT in the table, not NVARCHAR as the HC5 contract said)." }
+        {
+          "name": "MessageId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "EventMessage.id — the client-supplied messageId."
+        },
+        {
+          "name": "EventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "EventMessage.EventId. UNIQUEIDENTIFIER (was NVARCHAR in HC5) — breaking change."
+        },
+        {
+          "name": "PublicEventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "EventMessage.PublicEventId — public-facing event UUID."
+        },
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Hasher.PublicHasherId of the sender (not the internal Hasher.id)."
+        },
+        {
+          "name": "UserDisplayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Hasher.DisplayName — persisted computed column (hash name or real name per preference)."
+        },
+        {
+          "name": "UserPhoto",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Hasher.Photo — URL of the sender's profile photo."
+        },
+        {
+          "name": "MessageTitle",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "DisplayName + ' - ' + EventMessage.MessageTitle (the EventName default when the caller passed NULL)."
+        },
+        {
+          "name": "MessageContent",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "HC6.ChatMessagePreview(MessageKind, MessageContent): the text, or a photo/location placeholder. The API uses it as the push body — NOT the raw URL for a photo or location."
+        },
+        {
+          "name": "MessageKind",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 text, 1 photo, 2 location."
+        },
+        {
+          "name": "MessageReleasabilityFlags",
+          "type": "INT",
+          "nullable": false,
+          "description": "EventMessage.MessageReleasabilityFlags. Column name corrected from the HC5 typo 'MessageRelesabilityFlags' — breaking change for any caller reading it by name."
+        },
+        {
+          "name": "EventChatMessageCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 — hardcoded. Obsolete field retained for client compatibility."
+        },
+        {
+          "name": "MessageType",
+          "type": "INT",
+          "nullable": false,
+          "description": "EventMessage.MessageType — 0 for a run thread (INT in the table, not NVARCHAR as the HC5 contract said)."
+        }
       ]
     },
     {
@@ -106,9 +196,24 @@
       "name": "VisiblePushRecipients",
       "description": "On success, API-only: one row per distinct FCM token with Buzz = 1 — effective bell 1, or 4 inside ±6 h of the run start, AND (the bell is set on the run itself, or HC6.RunChatTie says the run is personally theirs, or they are the kennel's GM/On-Sec). Audience base: HasherKennelMap rows for the run's kennel (not removed, hasher not removed), device live with a token and LastLogin within 180 days, not blocking the sender (HasherFriendMap.Ignore), effective bell in (1,3,4), and matching the releasability bits. The sender's own devices are included on purpose (the echo drives the delivered tick). May be empty.",
       "columns": [
-        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HasherKennelMap.UserId — internal Hasher.id (not PublicHasherId)." },
-        { "name": "FcmToken", "type": "NVARCHAR(500)", "nullable": false, "description": "Device.FcmToken — only non-null tokens are returned." },
-        { "name": "BadgeTotal", "type": "INT", "nullable": true, "description": "The recipient's unread chat total for the app icon (HC6.UserUnreadChatTotal); the API puts it in aps.badge / notification_count / data.BadgeTotal. Added 2026-09-28. NULL when no device with that token is on a build >= HC6.MinBuildForIconBadge() (older apps never lower the icon)." }
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HasherKennelMap.UserId — internal Hasher.id (not PublicHasherId)."
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Device.FcmToken — only non-null tokens are returned."
+        },
+        {
+          "name": "BadgeTotal",
+          "type": "INT",
+          "nullable": true,
+          "description": "The recipient's unread chat total for the app icon (HC6.UserUnreadChatTotal); the API puts it in aps.badge / notification_count / data.BadgeTotal. Added 2026-09-28. NULL when no device with that token is on a build >= HC6.MinBuildForIconBadge() (older apps never lower the icon)."
+        }
       ]
     },
     {
@@ -116,9 +221,24 @@
       "name": "SilentPushRecipients",
       "description": "On success, API-only: tokens with Buzz = 0 and Silent = 1 — a data-only push so the badge moves without a notification: bell 3 (muted), bell 4 outside the window, or a kennel-bell-only hasher whose tie to the run is just the kennel (member or follower). A token that already appears in rowset 1 (another account on the same phone) is excluded via NOT EXISTS. May be empty.",
       "columns": [
-        { "name": "UserId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HasherKennelMap.UserId." },
-        { "name": "FcmToken", "type": "NVARCHAR(500)", "nullable": false, "description": "Device.FcmToken — only non-null tokens are returned." },
-        { "name": "BadgeTotal", "type": "INT", "nullable": true, "description": "As rowset 1." }
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HasherKennelMap.UserId."
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Device.FcmToken — only non-null tokens are returned."
+        },
+        {
+          "name": "BadgeTotal",
+          "type": "INT",
+          "nullable": true,
+          "description": "As rowset 1."
+        }
       ]
     }
   ],
@@ -129,16 +249,6 @@
     "Reads HC.HasherFriendMap (block check), HC6.RunChatTie, HC6.UserUnreadChatTotal, HC6.MinBuildForIconBadge for the audience; the API shim fans out FCM pushes from rowsets 1 and 2 — nothing is queued in the database."
   ],
   "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "TRY block spans the committed write AND the read-back/audience queries",
-      "detail": "BEGIN TRY at line 221 encloses the INSERT/MERGE/COMMIT (to line 250) and then rowsets 0–2 (lines 262–388) up to END TRY at line 390. A failure in the audience queries after the COMMIT lands in the CATCH, which returns errorCode 9999 'Message send failed' — for a message that is in the chat. hcapp_sendRoomMessage and hcapp_sendDirectMessage separate the two with a second log-and-swallow TRY so a push-side failure never fails the send; this SP should do the same."
-    },
-    {
-      "severity": "medium",
-      "issue": "Duplicate messageId is not idempotent",
-      "detail": "Line 231 INSERTs the client-supplied @messageId with no existence check. A retried send after a timeout hits PK_EventMessage, lands in the CATCH and returns 9999 with an ErrorLog row for a message that already arrived."
-    },
     {
       "severity": "medium",
       "issue": "6-hour notification window hardcoded",

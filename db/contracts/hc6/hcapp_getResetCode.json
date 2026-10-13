@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_getResetCode",
-  "version": "1.1.0",
-  "description": "Returns the ResetCode (URC:-prefixed invite/QR code) for the Hasher identified by the given SupportCode. The SupportCode is a short USC:-prefixed code visible on the user's profile, used for admin-assisted device re-authorisation. Any authenticated user may call this endpoint. Removed users are excluded. Returns a standard HC6 error rowset if not found or auth fails. Auth: HC6.ValidateAppAuth (spNumber 13, @param NULL). Runtime errors are logged to HC.ErrorLog and re-thrown.",
+  "version": "1.3.0",
+  "description": "Returns the ResetCode (URC:-prefixed invite/QR code) for the Hasher identified by the given SupportCode. The SupportCode is a short USC:-prefixed code visible on the user's profile, used for admin-assisted device re-authorisation. Any authenticated user may call this endpoint. Removed users are excluded. Returns a standard HC6 error rowset if not found or auth fails. Auth: HC6.ValidateAppAuth (spNumber 13, @param NULL). Runtime errors are logged to HC.ErrorLog and re-thrown. Platform admins only (HC.PlatformAdmin, removed = 0): any other caller gets the error detail rowset with errorCode 1312 / errorType 13 'Not authorised', logged to HC.ErrorLog (2026-10-13).",
   "parameters": [
     {
       "name": "deviceId",
@@ -21,9 +21,9 @@
     {
       "name": "supportCode",
       "type": "NVARCHAR(250)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Hasher.SupportCode",
-      "description": "The USC:-prefixed support code to look up. Matched against HC.Hasher.SupportCode.",
+      "description": "The USC:-prefixed support code to look up. Matched against HC.Hasher.SupportCode. Defaults to NULL when omitted (2026-10-13).",
       "typeMismatch": "NVARCHAR(250) vs Hasher.SupportCode NVARCHAR(50) — parameter is 5× wider than the column. Should be NVARCHAR(50)."
     }
   ],
@@ -126,6 +126,12 @@
           "description": "The URC:-prefixed invite/reset code from HC.Hasher.ResetCode. Column declared NVARCHAR(250) in SP but column is NVARCHAR(50) in table."
         }
       ]
+    },
+    {
+      "index": 0,
+      "name": "NotAuthorisedError",
+      "description": "Caller is not a platform admin: single error detail rowset {errorId, errorType 13, errorCode 1312, errorTitle, errorUserMessage, errorProc}. Logged before return; no transaction is open.",
+      "ref": "StandardErrorResult"
     }
   ],
   "sideEffects": [
@@ -135,12 +141,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "All three parameters (lines 3-5) have no SQL default. A client that omits @supportCode gets 'expects parameter' — an unlogged empty 500 before the SP runs — rather than the logged 1313 'not found'."
-    },
-    {
-      "severity": "high",
-      "issue": "Any authenticated user can obtain any active account's ResetCode",
-      "detail": "Lines 74-77 return HC.Hasher.ResetCode for whichever active hasher holds @supportCode, with no relationship, kennel-admin or 'has not signed in' check. The ResetCode is the invite/QR code that lets a device authorise as that account — hcapp_getInviteCode refuses to show the very same value for an account that has ever signed in because 'an invite code for a signed-in account is a takeover' (2026-09-23). Here the only secret is the support code shown on the user's own profile; a guessed or screenshotted support code yields the account."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "medium",

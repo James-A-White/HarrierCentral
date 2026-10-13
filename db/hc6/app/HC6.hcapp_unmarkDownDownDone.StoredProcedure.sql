@@ -2,9 +2,9 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_unmarkDownDownDone]
 
     @deviceId    UNIQUEIDENTIFIER,
     @accessToken NVARCHAR(1000),
-    @kennelId    UNIQUEIDENTIFIER,
-    @eventId     UNIQUEIDENTIFIER,
-    @downDownId  UNIQUEIDENTIFIER
+    @kennelId    UNIQUEIDENTIFIER = NULL,
+    @eventId     UNIQUEIDENTIFIER = NULL,
+    @downDownId  UNIQUEIDENTIFIER = NULL
 
 AS
 -- =====================================================================

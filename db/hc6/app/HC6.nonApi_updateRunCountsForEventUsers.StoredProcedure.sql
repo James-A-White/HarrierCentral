@@ -255,7 +255,14 @@ BEGIN
            );
 
     -- ----------------------------------------------------------------
-    -- Stage 5: Update rolling-year (≈182-day) counts on HKM.
+    -- Stage 5: Update rolling-year counts on HKM -- the last 365 days,
+    --          counted BACK from today, as nonApi_updateRunCountsByUser and
+    --          ...ForAllUsers do (Flash Princess fix, 2026-09).
+    --          This copy kept the old 182-day bucket anchored six months in
+    --          the past until 2026-10-13, so every run save recounted its
+    --          attendees' rolling figures the broken way (newest runs dropped)
+    --          and the 03:10 sweep put them back: wrong all day, and two HKM
+    --          re-syncs per attendee per edit. See ByUser for the full story.
     --          (Inline of HC5.fn_GetRunCountsRolling)
     -- ----------------------------------------------------------------
     ;WITH rollingCounted AS (
@@ -263,15 +270,15 @@ BEGIN
             hem.UserId,
             evt.KennelId,
             hem.isHare,
-            ((DATEDIFF(day, DATEADD(month, -6, GETDATE()), evt.EventStartLocal)) / 182) AS bucket,
+            ((DATEDIFF(day, evt.EventStartLocal, GETDATE())) / 365) AS bucket,
             ROW_NUMBER() OVER (
                 PARTITION BY hem.userId, evt.KennelId,
-                             ((DATEDIFF(day, DATEADD(month, -6, GETDATE()), evt.EventStartLocal)) / 182)
+                             ((DATEDIFF(day, evt.EventStartLocal, GETDATE())) / 365)
                 ORDER BY     evt.EventStartLocal, evt.KennelId
             ) AS rollingTotal,
             ROW_NUMBER() OVER (
                 PARTITION BY hem.userId, evt.KennelId, hem.isHare,
-                             ((DATEDIFF(day, DATEADD(month, -6, GETDATE()), evt.EventStartLocal)) / 182)
+                             ((DATEDIFF(day, evt.EventStartLocal, GETDATE())) / 365)
                 ORDER BY     evt.EventStartLocal, evt.KennelId
             ) AS rollingHaring
         FROM   #affected af
@@ -300,9 +307,12 @@ BEGIN
            hkm.RollingYearHaringCount   = ISNULL(ra.rollingYearHaring, 0),
            hkm.updatedAt                = SYSDATETIMEOFFSET()
     FROM   HC.HasherKennelMap hkm
-    JOIN   rollingAgg ra ON ra.UserId   = hkm.UserId
-                        AND ra.KennelId = hkm.KennelId
-    WHERE  (
+    -- LEFT JOIN, as ByUser: an INNER JOIN could only correct a count, never
+    -- clear one when a user's last qualifying run in the window goes away.
+    LEFT   JOIN rollingAgg ra ON ra.UserId   = hkm.UserId
+                             AND ra.KennelId = hkm.KennelId
+    WHERE  hkm.UserId IN (SELECT af.UserId FROM #affected af)
+      AND  (
                ISNULL(hkm.RollingYearTotalRunCount, -1) != ISNULL(ra.rollingYearTotal,  0) OR
                ISNULL(hkm.RollingYearHaringCount,   -1) != ISNULL(ra.rollingYearHaring, 0)
            );

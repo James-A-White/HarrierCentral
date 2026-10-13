@@ -1,44 +1,157 @@
 {
   "schema": "HC6",
   "name": "hcportal_getKennelProducts",
-  "version": "1.0.0",
-  "description": "One kennel's product catalogue for the portal Products view. Includes inactive items by default, and unlike the app's rowset it returns SourceJson (supplier detail), which is deliberately kept off hashers' phones.",
+  "version": "1.1.0",
+  "description": "One kennel's product catalogue for the portal Products view (run packages, memberships, haberdashery, away weekends). Includes items taken off sale unless @activeOnly = 1, and unlike the app's rowset returns SourceJson (supplier detail), which is deliberately kept off hashers' phones. Pricing lives in one PricingJson field (fixed, member/non-member, choice, per size, deposit + balance); the client derives margin. Order of checks: @publicKennelId NULL (before auth), HC6.ValidatePortalAuth (@publicKennelId as context), kennel exists, then HC6.CheckKennelPermission 'manageProducts' (GM, VGM, Hash Cash, Haberdasher or the ManageHashCash flag). Read-only. HC.Product has no file in db/schema/tables; column types are from db/hc6/app/archive/2026-09-13_create_Product.sql and 2026-09-13_product_json_rework.sql.",
   "parameters": [
-    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": null, "description": "Portal device-bound auth" },
-    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": true, "mapsToColumn": null, "description": "Short-lived portal access token" },
-    { "name": "publicKennelId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "Kennel.PublicKennelId", "description": "Routing: which kennel's catalogue" },
-    { "name": "activeOnly", "type": "SMALLINT", "nullable": false, "mapsToColumn": null, "description": "0 returns everything the kennel has listed, 1 only what is on sale" }
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal device-bound auth"
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived portal access token"
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "Routing: which kennel's catalogue"
+    },
+    {
+      "name": "activeOnly",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "0 (default) returns everything the kennel has listed and not removed, 1 only what is on sale. NULL behaves as 1 (`@activeOnly = 0` is unknown, so only IsActive = 1 rows pass)."
+    }
   ],
   "rowsets": [
     {
       "index": 0,
-      "name": "Products",
-      "description": "The kennel's catalogue, on-sale items first, then SortOrder, then Name.",
+      "name": "ErrorEnvelope",
+      "description": "Returned alone on 'Null or invalid publicKennelId', auth failure, 'Kennel not found', a manageProducts denial ('You are not authorised to manage this kennel''s products.', not logged), or from the CATCH (ERROR_MESSAGE(), logged to HC.ErrorLog).",
       "columns": [
-        { "name": "productId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "HC.Product.id" },
-        { "name": "publicKennelId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Echoed for client routing" },
-        { "name": "productType", "type": "SMALLINT", "nullable": false, "description": "2 membership, 3 haberdashery, 4 run package, 5 away weekend" },
-        { "name": "name", "type": "NVARCHAR(200)", "nullable": false, "description": "Product name" },
-        { "name": "description", "type": "NVARCHAR(4000)", "nullable": true, "description": "Free text shown to the hasher" },
-        { "name": "priceCharged", "type": "SMALLMONEY", "nullable": false, "description": "What the hasher pays" },
-        { "name": "promotionalCredit", "type": "SMALLMONEY", "nullable": false, "description": "Credit granted on top of the cash" },
-        { "name": "unitCost", "type": "SMALLMONEY", "nullable": false, "description": "What it costs the kennel to supply" },
-        { "name": "margin", "type": "SMALLMONEY", "nullable": false, "description": "priceCharged minus unitCost, computed server-side so every surface agrees" },
-        { "name": "runCount", "type": "SMALLINT", "nullable": true, "description": "Runs a package is worth; NULL otherwise" },
-        { "name": "productDetailsJson", "type": "NVARCHAR(4000)", "nullable": true, "description": "Per-type display detail, e.g. {\"sizes\":[\"S\",\"M\"]}" },
-        { "name": "photoUrls", "type": "NVARCHAR(2000)", "nullable": true, "description": "Pipe-delimited product photo URLs" },
-        { "name": "sourceJson", "type": "NVARCHAR(4000)", "nullable": true, "description": "Supplier detail. PORTAL ONLY — never in the app sync rowset" },
-        { "name": "isActive", "type": "SMALLINT", "nullable": false, "description": "On sale. Not the same as Removed" },
-        { "name": "sortOrder", "type": "INT", "nullable": false, "description": "Display order within the kennel" },
-        { "name": "unitsSold", "type": "INT", "nullable": false, "description": "Non-removed payments against this product. Drives the take-off-sale-instead-of-delete warning" },
-        { "name": "createdAt", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "When the product was created" },
-        { "name": "updatedAt", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "Sync watermark" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Error text"
+        }
       ]
     },
-    { "index": 0, "ref": "StandardErrorResult", "description": "Portal envelope shape (Success, ErrorMessage), returned on bad publicKennelId, auth failure, kennel not found, or a manageProducts denial." }
+    {
+      "index": 0,
+      "name": "Products",
+      "description": "On success: the kennel's live (Removed = 0) products, ORDER BY IsActive DESC, SortOrder, Name. May be empty.",
+      "columns": [
+        {
+          "name": "productId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Product.id"
+        },
+        {
+          "name": "publicKennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Echo of @publicKennelId"
+        },
+        {
+          "name": "productType",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Product.ProductType: 2 membership, 3 haberdashery, 4 run package, 5 away weekend"
+        },
+        {
+          "name": "name",
+          "type": "NVARCHAR(200)",
+          "nullable": false,
+          "description": "Product.Name"
+        },
+        {
+          "name": "description",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Product.Description"
+        },
+        {
+          "name": "pricingJson",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Product.PricingJson, e.g. {\"mode\":\"fixed\",\"price\":10.00,\"unitCost\":4.00}"
+        },
+        {
+          "name": "productDetailsJson",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Product.ProductDetailsJson — per-type detail, photos (PhotoUrls moved here)"
+        },
+        {
+          "name": "sourceJson",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Product.SourceJson — supplier detail. PORTAL ONLY"
+        },
+        {
+          "name": "isActive",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Product.IsActive — on sale; not the same as Removed"
+        },
+        {
+          "name": "sortOrder",
+          "type": "INT",
+          "nullable": false,
+          "description": "Product.SortOrder"
+        },
+        {
+          "name": "unitsSold",
+          "type": "INT",
+          "nullable": false,
+          "description": "COUNT of HC.Payment rows with this ProductId and removed = 0; drives the take-off-sale-instead-of-delete warning"
+        },
+        {
+          "name": "createdAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "Product.createdAt"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "Product.updatedAt"
+        }
+      ]
+    }
   ],
   "sideEffects": [],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Denial is not logged",
+      "detail": "Lines 89-93: a manageProducts refusal returns the envelope with no HC.ErrorLog row, so repeated refusals are invisible."
+    },
+    {
+      "severity": "low",
+      "issue": "@activeOnly NULL silently means 'active only'",
+      "detail": "Line 122: `@activeOnly = 0 OR p.IsActive = 1` with NULL drops inactive rows; the documented default is 0 (everything)."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

@@ -65,7 +65,7 @@ BEGIN TRY
 
     BEGIN TRANSACTION;
 
-    MERGE HC.EventMessageBadgeCounts AS target
+    MERGE HC.EventMessageBadgeCounts WITH (HOLDLOCK) AS target
     USING (SELECT @kennelId AS KennelId, @userId AS UserId) AS source
     ON (    target.KennelId = source.KennelId
         AND target.UserId   = source.UserId

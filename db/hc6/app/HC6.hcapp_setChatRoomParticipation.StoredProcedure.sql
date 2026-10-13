@@ -83,7 +83,7 @@ BEGIN TRY
     -- ThreadId all NULL, MessageType naming the room. ThreadId is in the
     -- match because it is reserved for DMs — without it this would one day
     -- overwrite a conversation's row.
-    MERGE INTO HC.EventMessageBadgeCounts AS Target
+    MERGE INTO HC.EventMessageBadgeCounts WITH (HOLDLOCK) AS Target
     USING (VALUES (@userId, @participationState)) AS Source (UserId, ParticipationState)
     ON (Target.UserId = Source.UserId
         AND Target.EventId IS NULL

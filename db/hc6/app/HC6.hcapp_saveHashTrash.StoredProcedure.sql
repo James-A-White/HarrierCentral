@@ -2,9 +2,9 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_saveHashTrash]
 
     @deviceId    UNIQUEIDENTIFIER,
     @accessToken NVARCHAR(1000),
-    @kennelId    UNIQUEIDENTIFIER,
-    @eventId     UNIQUEIDENTIFIER,
-    @headline    NVARCHAR(500),
+    @kennelId    UNIQUEIDENTIFIER = NULL,
+    @eventId     UNIQUEIDENTIFIER = NULL,
+    @headline    NVARCHAR(500) = NULL,
     @content     NVARCHAR(MAX),
     @status      SMALLINT
 

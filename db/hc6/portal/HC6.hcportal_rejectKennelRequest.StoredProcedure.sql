@@ -1,7 +1,7 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcportal_rejectKennelRequest]
     @deviceId        UNIQUEIDENTIFIER = NULL,
     @accessToken     NVARCHAR(1000)   = NULL,
-    @kennelImportIds NVARCHAR(MAX),
+    @kennelImportIds NVARCHAR(MAX) = NULL,
     @newStatus       SMALLINT,
     @reviewNote      NVARCHAR(MAX)    = NULL
 AS

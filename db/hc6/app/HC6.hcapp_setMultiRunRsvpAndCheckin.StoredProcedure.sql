@@ -4,9 +4,9 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_setMultiRunRsvpAndCheckin]
     @accessToken                 NVARCHAR(1000),
     @checkInEventIds             NVARCHAR(MAX),    -- pipe-delimited event UUIDs to check in to
     @rsvpNoEventIds              NVARCHAR(MAX),    -- pipe-delimited event UUIDs to RSVP No
-    @hasherId                    UNIQUEIDENTIFIER,
-    @hasherEventMapUpdatedAfter  NVARCHAR(50),
-    @hasherKennelMapUpdatedAfter NVARCHAR(50)
+    @hasherId                    UNIQUEIDENTIFIER = NULL,
+    @hasherEventMapUpdatedAfter  NVARCHAR(50) = 'ignore',
+    @hasherKennelMapUpdatedAfter NVARCHAR(50) = 'ignore'
 
 AS
 -- =====================================================================
@@ -71,6 +71,23 @@ BEGIN
 END
 
 IF (@hasherId IS NULL) SET @hasherId = @userId;
+
+-- The multi-run dialog checks in the person holding the phone (2026-10-13).
+-- Until now any signed-in device could check any hasher in to any run,
+-- which also raised their run count.
+IF (@hasherId <> @userId)
+BEGIN
+    SET @errorCode = 1393; SET @errorType = 13; SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not authorised to check in other user',
+            '@hasherId is not the caller', @procName, @userId);
+    SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+           'Not authorised' AS errorTitle,
+           'You can only check yourself in.' AS errorUserMessage,
+           @procName AS errorProc;
+    RETURN;
+END
 
 BEGIN TRY
     BEGIN TRANSACTION;

@@ -105,7 +105,8 @@ BEGIN TRY
         (SELECT COUNT(*) FROM HC.HasherKennelMap m
           WHERE m.UserId = h.id AND m.removed = 0 AND m.Following = 1)            AS KennelsFollowed,
         (SELECT COUNT(*) FROM HC.HasherKennelMap m
-          WHERE m.UserId = h.id AND m.removed = 0 AND m.IsMember = 1)             AS KennelsMember,
+          WHERE m.UserId = h.id AND m.removed = 0
+            AND m.MembershipExpirationDate > SYSDATETIMEOFFSET())               AS KennelsMember,  -- by date, not the deprecated IsMember (2026-10-13)
         (SELECT COUNT(*) FROM HC.HasherKennelMap m
           WHERE m.UserId = h.id AND m.removed = 0 AND (m.AppAccessFlags & 1) <> 0) AS KennelsAdmin,
         -- AttendenceState >= 20 means attended (at the hash).

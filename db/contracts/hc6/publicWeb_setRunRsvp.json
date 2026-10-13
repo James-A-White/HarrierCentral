@@ -1,74 +1,223 @@
 {
   "schema": "HC6",
   "name": "publicWeb_setRunRsvp",
-  "version": "1.0.0",
-  "description": "Maps PublicEventId to EventId and EXECs hcapp_setEventRsvp for the calling browser-device. Token is generated for 'hcapp_setEventRsvp'.",
+  "version": "1.1.0",
+  "description": "RSVP from the public web (E9.F7.S1). The browser is a registered HC.Device, so this is the app's own hcapp_setEventRsvp; the wrapper maps PublicEventId to the run and checks the state. The inner SP validates the token (signed for 'hcapp_setEventRsvp'), defaults the hasher to the caller (@hasherId NULL), leaves the hare flag alone (@isHare -1), auto-sets notifications, and does everything the app's RSVP does: run counts, sequence numbers, notification defaults. Reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": "Device.id",
-      "description": "The browser's device id"
+      "description": "The calling browser's HC.Device id (the browser is a registered device). No SQL default."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Token for this SP's name, paramString = deviceSecret"
+      "description": "Device-bound token signed for 'hcapp_setEventRsvp' (the inner SP validates it under its own name via HC6.ValidateAppAuth). No SQL default."
     },
     {
       "name": "publicEventId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
       "mapsToColumn": "Event.PublicEventId",
-      "description": ""
+      "description": "The run (deleted = 0, removed = 0). No SQL default."
     },
     {
       "name": "rsvpState",
       "type": "INT",
       "nullable": false,
       "mapsToColumn": "HasherEventMap.RsvpState",
-      "description": "1 No, 2 Maybe, 3 Yes"
+      "description": "1 No, 2 Maybe, 3 Yes. No SQL default.",
+      "typeMismatch": "Column is SMALLINT; the parameter is INT — checked IN (1,2,3) first, so nothing is lost."
     }
   ],
   "rowsets": [
     {
       "index": 0,
-      "name": "Envelope",
-      "description": "success 1/0, errorCode, errorType",
+      "name": "WrapperRefusal",
+      "description": "Wrapper refusal before the EXEC: run unknown/deleted/removed or @rsvpState not 1/2/3 → { success 0, errorCode 1200, errorType 12 }, logged to HC.ErrorLog.",
       "columns": [
         {
           "name": "success",
           "type": "INT",
           "nullable": false,
-          "description": ""
+          "description": "1 success, 0 failure"
         },
         {
           "name": "errorCode",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "NULL on success"
         },
         {
           "name": "errorType",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "NULL on success"
         }
       ]
     },
     {
       "index": 1,
       "ref": "StandardErrorResult",
-      "description": "Run not found (1200) or hcapp_setEventRsvp's own rowsets on success"
+      "description": "Follows WrapperRefusal: errorTitle 'Run not found', errorUserMessage 'That run could not be found.'"
+    },
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "From hcapp_setEventRsvp: Always the first rowset, on every path including auth failure.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success (including the 'already checked in' and 'nothing changed' outcomes), 0 on any error."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success. ValidateAppAuth code; 1226 hemId/eventId mismatch; 1926 unhandled."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL on success. 1 bad token / 3 device not found / 7 signed out (ValidateAppAuth); 12 validation; 19 unhandled (CATCH)."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "From hcapp_setEventRsvp: Rowset 1 on failure only. Every path writes HC.ErrorLog.",
+      "columns": [
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.ErrorLog id."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "As the envelope."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "As the envelope."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Short title."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "User-facing message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "OBJECT_NAME(@@PROCID)."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "AdHocRsvpResult",
+      "description": "From hcapp_setEventRsvp: Rowset 1 on success (lines 325-334), including the two no-change outcomes. Row values are re-read by EventId + UserId after the write.",
+      "columns": [
+        {
+          "name": "adHocDataId",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
+        },
+        {
+          "name": "serverMessage",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "'' on a write. '<name> is already checked in at the Hash. The RSVP can no longer be changed.~~To change the RSVP, you must first mark <name> as being not at the Hash.' when attended and the RSVP differs; 'The RSVP status has not changed for <name>' when nothing changed. '~~' separates sentences."
+        },
+        {
+          "name": "hasherEventMapId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HasherEventMap.id (new or existing). Not lowercased — the app's lowerGuidsInPlace handles it."
+        },
+        {
+          "name": "hasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The target hasher."
+        },
+        {
+          "name": "rsvpState",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "HEM.RsvpState after the write."
+        },
+        {
+          "name": "willHareState",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "HEM.IsHare after the write."
+        },
+        {
+          "name": "hares",
+          "type": "NVARCHAR(2500)",
+          "nullable": true,
+          "description": "The rebuilt Event.Hares text — only when the hare flag changed AND the text was this SP's own to rebuild. NULL when the flag did not change and NULL when a name was appended to admin-typed text (the client must not treat NULL as 'no hares')."
+        },
+        {
+          "name": "eventNotificationPreference",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "HEM.EventNotificationPreference after the write."
+        },
+        {
+          "name": "emailAlertPreference",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "HEM.EventEmailAlertPreference after the write."
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "SyncEventAdminData",
+      "description": "From hcapp_setEventRsvp: Rowsets 2+ on success: HC6.hcapp_syncEventAdminData for @eventId with the HEM/HKM watermarks passed through and hashers, narrow events, payments, kennel credits and receipts 'ignore'. See that contract. The wrapper passes '2050-01-01' for both watermarks, so these rowsets come back empty."
     }
   ],
   "sideEffects": [
-    "Everything hcapp_setEventRsvp does"
+    "EXEC HC6.hcapp_setEventRsvp — everything it does:",
+    "  UPDATE HC.HasherEventMap SET RsvpState, IsHare, EventNotificationPreference, EventEmailAlertPreference (each COALESCEd), updatedAt WHERE id = @hemId — when the RSVP or hare flag changes before attendance, or only the hare flag changes after it (lines 207-231).",
+    "  INSERT HC.HasherEventMap (RsvpState = @rsvpState, IsHare, VirginVisitorType 0, EventNotificationPreference, KennelId from HC.Event) when the hasher has no row on the event (lines 232-247).",
+    "  UPDATE HC.Event SET Hares, updatedAt when the hare flag changed (lines 265-291): rebuilt from flagged hares (IsHare = 1 AND RsvpState = 3) only when the current text is empty or equals that aggregate as it stood before the change; admin-typed text is never replaced and gains a newly flagged hare's DisplayName if absent (1.1.0, 2026-09-28 — before, a flagged hare RSVPing No replaced typed co-hares wholesale).",
+    "  EXEC HC6.nonApi_updateRunCountsByUser @userId = @hasherId after COMMIT, outside the TRY, on every successful call (line 311).",
+    "  INSERT HC.ErrorLog on the hemId/eventId mismatch (line 102) and in the CATCH (line 300); HcVersion from HC6.DeviceHcVersion(@deviceId).",
+    "  EXEC HC6.hcapp_syncEventAdminData after the adHocData rowset (line 342).",
+    "INSERT HC.ErrorLog on the wrapper refusal (1200).",
+    "On an error that escapes the inner SP the CATCH rolls back, logs 'Unhandled error in publicWeb_setRunRsvp' to HC.ErrorLog (HcVersion '<web>', deviceId) and returns { success 0, errorCode 1500, errorType 5 } alone (no detail rowset)."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken, @publicEventId, @rsvpState (line 2-5) have no SQL default. A caller that omits one fails with 'expects parameter' before the SP runs: PublicWebAdminApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

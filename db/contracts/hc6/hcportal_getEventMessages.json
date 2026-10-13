@@ -1,14 +1,14 @@
 {
   "schema": "HC6",
   "name": "hcportal_getEventMessages",
-  "version": "1.1.0",
-  "description": "Retrieves all non-deleted event messages for a specific event, returning message content with author information formatted for a chat-like interface. Auth is validated first (consistent with all HC6 SPs). Returns an error if the event is not found. Messages are ordered by creation time descending (newest first). 2026-09-30: every message row also carries replyToMessageId, replyToText (NULL when deleted), replyToKind, replyToAuthor, replyToRemoved and reactions (E9.F1.S21/S22).",
+  "version": "1.2.0",
+  "description": "Returns one run's chat for the portal: every live message (Removed = 0) by a hasher who is not removed and whom the caller has not blocked (HC.HasherFriendMap.Ignore = 1, E9.F1.S16), newest first, with author JSON, kind, reply quote, reactions and a per-row canDelete; then the ids of removed messages; then reaction changes since @reactionsSince and the server time to pass back. Auth: HC6.ValidatePortalAuth with @publicEventId as the context identifier; any authenticated portal user may read any event's chat (no kennel permission gate). canDelete = author or HC6.nonApi_mayModerateChat. Delta: @sinceSequenceCount limits rowset 0 to newer messages; @reactionsSince drives rowset 2.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": "Device.id",
+      "mapsToColumn": null,
       "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
@@ -44,113 +44,155 @@
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error. Possible ErrorMessage values: auth errors from ValidatePortalAuth, 'publicEventId is required', 'Event not found'.",
+      "description": "Returned alone on auth failure ('ValidatePortalAuth' message), 'publicEventId is required' or 'Event not found'. The CATCH returns the same shape (ErrorMessage = ERROR_MESSAGE()) AFTER logging to HC.ErrorLog, possibly following rowsets already sent.",
       "columns": [
         {
           "name": "Success",
           "type": "INT",
           "nullable": false,
-          "description": "Always 0 on error"
+          "description": "Always 0"
         },
         {
           "name": "ErrorMessage",
-          "type": "NVARCHAR(255)",
+          "type": "NVARCHAR(MAX)",
           "nullable": true,
-          "description": "Human-readable error message"
+          "description": "Auth error (NVARCHAR(255)), validation literal, or ERROR_MESSAGE() from the CATCH"
         }
       ]
     },
     {
       "index": 0,
       "name": "EventMessages",
-      "description": "All non-deleted messages for the event (msg.removed = 0, h.Removed = 0), ordered by createdAt DESC (newest first). Empty rowset if no messages exist. One row per message.",
+      "description": "On success. Live messages (msg.Removed = 0, author not removed, author not blocked by the caller), newer than @sinceSequenceCount when given, ORDER BY createdAt DESC.",
       "columns": [
         {
           "name": "id",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": "EventMessage.id — message identifier"
+          "description": "EventMessage.id"
         },
         {
           "name": "type",
-          "type": "NVARCHAR(4)",
+          "type": "VARCHAR(4)",
           "nullable": false,
-          "description": "Always the literal string 'text' for all messages"
+          "description": "Always the literal 'text' (kept for the chat widget; use messageKind for the real kind)"
         },
         {
           "name": "text",
-          "type": "NVARCHAR(500)",
-          "nullable": true,
-          "description": "EventMessage.MessageContent"
+          "type": "NVARCHAR(4000)",
+          "nullable": false,
+          "description": "EventMessage.MessageContent (widened from 500 to 4000 by db/hc6/app/archive/2026-09-23_event_message_4000.sql; the table file still says 500)"
         },
         {
           "name": "roomId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": "The @publicEventId parameter value — same for all rows in a given call"
+          "description": "The @publicEventId parameter, same on every row"
         },
         {
           "name": "createdAt",
           "type": "BIGINT",
           "nullable": false,
-          "description": "Unix timestamp in milliseconds: DATEDIFF_BIG(MILLISECOND, '1970-01-01 00:00:00', EventMessage.createdAt)"
+          "description": "Unix milliseconds: DATEDIFF_BIG(MILLISECOND, '1970-01-01', EventMessage.createdAt)"
         },
         {
-          "name": "author",
-          "type": "NVARCHAR(MAX)",
+          "name": "sequenceCount",
+          "type": "INT",
           "nullable": true,
-          "description": "JSON object with author info (via JSON_QUERY FOR JSON PATH WITHOUT_ARRAY_WRAPPER): { id: Hasher.PublicHasherId, firstName: Hasher.DisplayName, imageUrl: Hasher.Photo }. NULL if hasher not found (defensive CASE, though INNER JOIN prevents this in practice)."
+          "description": "EventMessage.MessageSequenceCount; the client passes the highest back as @sinceSequenceCount"
         },
         {
           "name": "messageKind",
           "type": "SMALLINT",
           "nullable": false,
-          "description": "0 text, 1 photo, 2 location"
+          "description": "EventMessage.MessageKind: 0 text, 1 photo, 2 location (column from db/hc6/app/archive/2026-09-29_chat_kind_and_moderation.sql)"
         },
         {
           "name": "canDelete",
           "type": "SMALLINT",
           "nullable": false,
-          "description": "1 when the caller wrote it or may moderate this thread (HC6.nonApi_mayModerateChat)"
+          "description": "1 when the caller wrote the message or HC6.nonApi_mayModerateChat allows them to moderate this run's chat"
+        },
+        {
+          "name": "replyToMessageId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "EventMessage.ReplyToMessageId, the quoted message (column from db/hc6/app/archive/2026-09-30_chat_replies_reactions.sql)"
+        },
+        {
+          "name": "replyToText",
+          "type": "NVARCHAR(200)",
+          "nullable": true,
+          "description": "First 200 characters of the quoted message; NULL when there is no quote or the quoted message was removed"
+        },
+        {
+          "name": "replyToKind",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "MessageKind of the quoted message"
+        },
+        {
+          "name": "replyToAuthor",
+          "type": "NVARCHAR(501)",
+          "nullable": true,
+          "description": "Hasher.DisplayName of the quoted message's author"
+        },
+        {
+          "name": "replyToRemoved",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 when the quoted message exists and has been removed"
+        },
+        {
+          "name": "reactions",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "EventMessage.ReactionsJson: {\"beer\":[\"<PublicHasherId>\",...],...}"
+        },
+        {
+          "name": "author",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "JSON object { id: Hasher.PublicHasherId, firstName: Hasher.DisplayName, imageUrl: Hasher.Photo } (JSON_QUERY ... FOR JSON PATH, WITHOUT_ARRAY_WRAPPER); the INNER JOIN means it is never NULL in practice"
         }
       ]
     },
     {
       "index": 1,
       "name": "RemovedMessageIds",
-      "description": "LAST rowset (added 2026-09-29, E9.F1.S13/S14): every removed message in this thread, so a client drops any it already drew. Find it by column name, not position.",
+      "description": "Every removed message in this run's chat (no delta filter), so an open chat drops any it already drew (E9.F1.S13/S14).",
       "columns": [
         {
           "name": "removedId",
-          "type": "NVARCHAR(36)",
+          "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": "Id of a removed message (same case as the message ids)"
+          "description": "EventMessage.id of a removed message"
         }
       ]
     },
     {
-      "index": "last-1",
+      "index": 2,
       "name": "ReactionUpdates",
-      "description": "Added 2026-09-30 (E9.F1.S22), ALWAYS present, after every older rowset: { id, reactions } for messages the client already holds whose reactions changed after @reactionsSince. Find by column.",
+      "description": "Always present, empty when @reactionsSince is NULL: live messages at or below @sinceSequenceCount whose ReactionsUpdatedAt > @reactionsSince (E9.F1.S22). Find by column name.",
       "columns": [
         {
           "name": "id",
-          "type": "NVARCHAR(36)",
+          "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": "Message id"
+          "description": "EventMessage.id"
         },
         {
           "name": "reactions",
           "type": "NVARCHAR(MAX)",
           "nullable": true,
-          "description": "ReactionsJson"
+          "description": "EventMessage.ReactionsJson"
         }
       ]
     },
     {
-      "index": "last",
+      "index": 3,
       "name": "ReactionsAsOf",
-      "description": "One row { reactionsAsOf } — server time; pass back as @reactionsSince.",
+      "description": "One row: the server time to pass back as @reactionsSince.",
       "columns": [
         {
           "name": "reactionsAsOf",
@@ -161,8 +203,22 @@
       ]
     }
   ],
-  "sideEffects": [],
-  "codeSmells": [],
+  "sideEffects": [
+    "EXEC HC6.nonApi_mayModerateChat (read-only permission check)",
+    "CATCH: INSERT HC.ErrorLog"
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "CATCH logs userId NULL and HcVersion '<portal>'",
+      "detail": "Lines 153-155: @hasherId is known once auth has passed but the ErrorLog row is written with userId NULL, so a failure cannot be tied to the caller."
+    },
+    {
+      "severity": "low",
+      "issue": "Read SP returns an error envelope from CATCH instead of re-raising",
+      "detail": "Lines 151-157: if the failure comes after rowset 0 has been sent, the client sees message rows followed by a {Success, ErrorMessage} rowset in the position it expects RemovedMessageIds. Logged, so diagnosable."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

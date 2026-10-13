@@ -1,14 +1,14 @@
 {
   "schema": "HC6",
   "name": "hcportal_getCategoryDetail2",
-  "version": "1.1.0",
-  "description": "Retrieves activity feed data for the admin portal dashboard. Returns raw typed data columns for one of 11 categories: 0=New Hashers, 1=Event RSVPs, 2=New Events, 3=New Kennels, 4=App Logins, 5=Payments, 6=Portal Access, 7=Errors, 8=Push Notification Log, 9=App Errors (client session logs), 100=Version Adoption. Each category returns typed columns specific to its data. Uses a time window of @days days (default 7; if 0, uses 60 minutes). HC6 removes the HC5 header metadata rowset entirely — portal is responsible for all presentation. Uses READ UNCOMMITTED isolation.",
+  "version": "1.3.0",
+  "description": "Drill-down feed for the HC admin portal dashboard tiles. Returns ONE rowset of raw typed columns for @categoryId: 0=New Hashers, 1=Event RSVPs, 2=New Events, 3=New Kennels, 4=App Logins, 5=Payments, 6=Portal Access, 7=Errors, 8=Push Notification Log, 9=App Errors (client session logs), 10=PackTrack tracks, 11=AI Tokens, 12=Azure Cost, 13=Run Email, 14=First Sign-in, 100=Version Adoption. An unknown categoryId returns no rowset at all. Window: @days days (0 or NULL = 60 minutes); category 12 uses its own day range. READ UNCOMMITTED with NOLOCK hints. Portal does all formatting; HC5's header metadata rowset is gone. Auth: HC6.ValidatePortalAuth (NULL callerParamString); no permission gate. Permission (2026-10-13): platform admins with CanViewMonitor only; otherwise {Success 0, 'Not authorised to view the monitor'}.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": "Device.id",
+      "mapsToColumn": null,
       "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
@@ -23,564 +23,916 @@
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Required. Category to retrieve: 0=New Hashers, 1=Event RSVPs, 2=New Events, 3=New Kennels, 4=App Logins, 5=Payments, 6=Portal Access, 7=Errors, 8=Push Notification Log, 9=App Errors (client session logs), 100=Version Adoption. NULL returns an error."
+      "description": "Required. Category to retrieve (0-14, 100 — see description). NULL returns 'Null categoryId'; any other unknown value returns no rowset."
     },
     {
       "name": "days",
       "type": "SMALLINT",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Number of days of history to retrieve. Default 7. Special case: if 0, uses 60 minutes instead. Converted to minutes for cutoff date calculation."
+      "description": "Lookback window in days, default 7. 0 or NULL means the last 60 minutes. The cutoff is GETDATE() (datetime2, UTC on Azure SQL) minus @days × 1440 minutes."
     },
     {
       "name": "hcVersion",
       "type": "NVARCHAR(100)",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Optional. Used only for category 100 (Version Adoption) to filter logins by app version string via LIKE."
+      "description": "Category 100 only: substring the login's HcVersion must contain (LIKE '%…%'). NULL makes the category return no rows."
     },
     {
       "name": "hcBuild",
       "type": "NVARCHAR(100)",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Optional. Used only for category 100 (Version Adoption) to filter logins by app build string via LIKE."
+      "description": "Category 100 only: second substring HcVersion must contain. NULL makes the category return no rows."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "description": "Returned instead of data on auth failure, NULL @categoryId ('Null categoryId') or a runtime error (the CATCH logs to HC.ErrorLog first).",
       "columns": [
         {
           "name": "Success",
           "type": "INT",
           "nullable": false,
-          "description": "Always 0 on error"
+          "description": "Always 0"
         },
         {
           "name": "ErrorMessage",
-          "type": "NVARCHAR(255)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
-          "description": "Human-readable error message"
+          "description": "Auth error text, 'Null categoryId', or ERROR_MESSAGE()"
         }
       ]
     },
     {
       "index": 0,
-      "name": "CategoryData",
-      "description": "Single rowset returned on success. Column shape varies by categoryId. All queries use OPTION(RECOMPILE) and NOLOCK hints. Note: HC5 returned a header metadata rowset (col1-col6 labels) before the data rowset — that rowset has been removed in HC6. Category-specific schemas follow.",
-      "categories": {
-        "0": {
-          "name": "New Hashers",
-          "columns": [
-            {
-              "name": "createdAt",
-              "type": "DATETIMEOFFSET(7)",
-              "nullable": false,
-              "description": "When the hasher account was created"
-            },
-            {
-              "name": "displayName",
-              "type": "NVARCHAR(250)",
-              "nullable": true,
-              "description": "Hasher's display name"
-            },
-            {
-              "name": "homeKennelName",
-              "type": "NVARCHAR(250)",
-              "nullable": true,
-              "description": "Home kennel name, or NULL if no home kennel"
-            },
-            {
-              "name": "cityFullName",
-              "type": "NVARCHAR(350)",
-              "nullable": true,
-              "description": "Nearest city name (from spatial lookup). NULL if HomeLatitude is 51.503300000 (default) or no city found."
-            }
-          ]
+      "name": "Category0_NewHashers",
+      "description": "categoryId = 0. Hashers created in the window (Hasher.createdAt), newest first. UNION ALL of hashers with no HomeKennelId and hashers joined to their home kennel.",
+      "columns": [
+        {
+          "name": "createdAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "Hasher.createdAt"
         },
-        "1": {
-          "name": "Event RSVPs",
-          "columns": [
-            {
-              "name": "updatedAt",
-              "type": "DATETIMEOFFSET(7)",
-              "nullable": false,
-              "description": "When the HasherEventMap record was last updated"
-            },
-            {
-              "name": "kennelName",
-              "type": "NVARCHAR(250)",
-              "nullable": false,
-              "description": "Name of the kennel for the event"
-            },
-            {
-              "name": "eventNumber",
-              "type": "INT",
-              "nullable": true,
-              "description": "Event number from HC.Event.EventNumber"
-            },
-            {
-              "name": "displayName",
-              "type": "NVARCHAR(120)",
-              "nullable": true,
-              "description": "Hasher's display name (h.DisplayName if VirginVisitorType=0, else hem.DisplayName)"
-            },
-            {
-              "name": "virginVisitorType",
-              "type": "SMALLINT",
-              "nullable": false,
-              "description": "Visitor type from HC.HasherEventMap.VirginVisitorType"
-            },
-            {
-              "name": "rsvpState",
-              "type": "SMALLINT",
-              "nullable": false,
-              "description": "RSVP state from HC.HasherEventMap.RsvpState"
-            },
-            {
-              "name": "attendenceState",
-              "type": "SMALLINT",
-              "nullable": false,
-              "description": "Attendance state from HC.HasherEventMap.AttendenceState"
-            },
-            {
-              "name": "totalRunsThisKennel",
-              "type": "INT",
-              "nullable": false,
-              "description": "Total runs at this kennel. COALESCE to 0 if NULL."
-            },
-            {
-              "name": "totalHaringThisKennel",
-              "type": "INT",
-              "nullable": false,
-              "description": "Total haring runs at this kennel. COALESCE to 0 if NULL."
-            }
-          ]
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Hasher.DisplayName (persisted computed column)"
         },
-        "2": {
-          "name": "New Events",
-          "columns": [
-            {
-              "name": "createdAt",
-              "type": "DATETIMEOFFSET(7)",
-              "nullable": false,
-              "description": "When the event was created"
-            },
-            {
-              "name": "inboundIntegrationId",
-              "type": "INT",
-              "nullable": true,
-              "description": "Inbound integration ID from HC.Event.InboundIntegrationId"
-            },
-            {
-              "name": "kennelName",
-              "type": "NVARCHAR(250)",
-              "nullable": false,
-              "description": "Name of the kennel hosting the event"
-            },
-            {
-              "name": "eventNumber",
-              "type": "INT",
-              "nullable": true,
-              "description": "Event number from HC.Event.EventNumber"
-            },
-            {
-              "name": "eventStartDatetime",
-              "type": "DATETIMEOFFSET(7)",
-              "nullable": false,
-              "description": "Event start datetime from HC.Event.EventStartDatetimeIndexed"
-            },
-            {
-              "name": "eventName",
-              "type": "NVARCHAR(250)",
-              "nullable": false,
-              "description": "Event name from HC.Event.EventName"
-            }
-          ]
+        {
+          "name": "homeKennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Home kennel's KennelName; NULL when the hasher has no HomeKennelId"
         },
-        "3": {
-          "name": "New Kennels",
-          "columns": [
-            {
-              "name": "createdAt",
-              "type": "DATETIMEOFFSET(7)",
-              "nullable": false,
-              "description": "When the kennel was created"
-            },
-            {
-              "name": "kennelName",
-              "type": "NVARCHAR(250)",
-              "nullable": false,
-              "description": "Kennel name"
-            },
-            {
-              "name": "cityFullName",
-              "type": "NVARCHAR(350)",
-              "nullable": true,
-              "description": "City name: COALESCE(CityFullName, cityCountryName, cityName) from HC.City"
-            }
-          ]
-        },
-        "4": {
-          "name": "App Logins",
-          "columns": [
-            {
-              "name": "loginDate",
-              "type": "DATETIMEOFFSET(7)",
-              "nullable": false,
-              "description": "Login timestamp from HC.LaunchAndLogin.LoginDate"
-            },
-            {
-              "name": "displayName",
-              "type": "NVARCHAR(250)",
-              "nullable": true,
-              "description": "Hasher's display name (LEFT JOIN, may be NULL for unknown users)"
-            },
-            {
-              "name": "deviceName",
-              "type": "NVARCHAR(100)",
-              "nullable": true,
-              "description": "Device name from HC.LaunchAndLogin.DeviceName"
-            },
-            {
-              "name": "manufacturer",
-              "type": "NVARCHAR(100)",
-              "nullable": true,
-              "description": "Device manufacturer from HC.LaunchAndLogin.Manufacturer"
-            },
-            {
-              "name": "deviceType",
-              "type": "NVARCHAR(100)",
-              "nullable": true,
-              "description": "Device type from HC.LaunchAndLogin.DeviceType"
-            },
-            {
-              "name": "systemName",
-              "type": "NVARCHAR(100)",
-              "nullable": true,
-              "description": "OS name from HC.LaunchAndLogin.SystemName"
-            },
-            {
-              "name": "systemVersion",
-              "type": "NVARCHAR(100)",
-              "nullable": true,
-              "description": "OS version from HC.LaunchAndLogin.SystemVersion"
-            },
-            {
-              "name": "cityFullName",
-              "type": "NVARCHAR(350)",
-              "nullable": true,
-              "description": "City name from HC.City (LEFT JOIN on CityId)"
-            }
-          ]
-        },
-        "5": {
-          "name": "Payments",
-          "columns": [
-            {
-              "name": "createdAt",
-              "type": "DATETIMEOFFSET(7)",
-              "nullable": false,
-              "description": "When the payment was created from HC.Payment.createdAt"
-            },
-            {
-              "name": "kennelName",
-              "type": "NVARCHAR(250)",
-              "nullable": false,
-              "description": "Kennel name for the event"
-            },
-            {
-              "name": "eventNumber",
-              "type": "INT",
-              "nullable": true,
-              "description": "Event number from HC.Event.EventNumber"
-            },
-            {
-              "name": "displayName",
-              "type": "NVARCHAR(120)",
-              "nullable": true,
-              "description": "Hasher's display name (h1.DisplayName if VirginVisitorType=0, else hem.DisplayName)"
-            },
-            {
-              "name": "virginVisitorType",
-              "type": "SMALLINT",
-              "nullable": false,
-              "description": "Visitor type from HC.HasherEventMap.VirginVisitorType"
-            },
-            {
-              "name": "processedByDisplayName",
-              "type": "NVARCHAR(250)",
-              "nullable": false,
-              "description": "Display name of the user who processed the payment (from HC.Hasher via PaymentProcessedBy_userId)"
-            },
-            {
-              "name": "cancelledByDisplayName",
-              "type": "NVARCHAR(250)",
-              "nullable": true,
-              "description": "Display name of the user who cancelled the payment (LEFT JOIN via CancelledBy_UserId). NULL if not cancelled."
-            },
-            {
-              "name": "creditAmount",
-              "type": "SMALLMONEY",
-              "nullable": false,
-              "description": "Credit amount from HC.Payment.CreditAmount"
-            },
-            {
-              "name": "debitAmount",
-              "type": "SMALLMONEY",
-              "nullable": false,
-              "description": "Debit amount from HC.Payment.DebitAmount"
-            },
-            {
-              "name": "paymentType",
-              "type": "SMALLINT",
-              "nullable": false,
-              "description": "Payment type code from HC.Payment.PaymentType"
-            },
-            {
-              "name": "paymentProvider",
-              "type": "NVARCHAR(50)",
-              "nullable": true,
-              "description": "Payment provider from HC.Payment.PaymentProvider"
-            },
-            {
-              "name": "creditAvailable",
-              "type": "SMALLMONEY",
-              "nullable": false,
-              "description": "Available credit from HC.Payment.CreditAvailable"
-            },
-            {
-              "name": "doPayForExtras",
-              "type": "SMALLINT",
-              "nullable": false,
-              "description": "Whether to pay for extras from HC.Payment.DoPayForExtras"
-            },
-            {
-              "name": "extrasDescription",
-              "type": "NVARCHAR(500)",
-              "nullable": true,
-              "description": "Extras description from HC.Event.ExtrasDescription"
-            },
-            {
-              "name": "currencySymbol",
-              "type": "NVARCHAR(5)",
-              "nullable": true,
-              "description": "Currency symbol: COALESCE(Kennel.CurrencySymbol, Country.CurrencySymbol)"
-            }
-          ]
-        },
-        "6": {
-          "name": "Portal Access",
-          "columns": [
-            {
-              "name": "accessDate",
-              "type": "DATETIMEOFFSET(7)",
-              "nullable": false,
-              "description": "Portal access timestamp from HC.PortalAccess.accessDate"
-            },
-            {
-              "name": "displayName",
-              "type": "NVARCHAR(250)",
-              "nullable": false,
-              "description": "Hasher's display name from HC.Hasher.DisplayName"
-            },
-            {
-              "name": "kennelName",
-              "type": "NVARCHAR(250)",
-              "nullable": true,
-              "description": "Home kennel name (LEFT JOIN). NULL if no home kennel."
-            }
-          ]
-        },
-        "7": {
-          "name": "Errors",
-          "columns": [
-            {
-              "name": "updatedAt",
-              "type": "DATETIMEOFFSET(7)",
-              "nullable": false,
-              "description": "When the error was last updated from HC.ErrorLog.updatedAt"
-            },
-            {
-              "name": "hcVersion",
-              "type": "NVARCHAR(250)",
-              "nullable": false,
-              "description": "App build that made the failing call, from HC.ErrorLog.HcVersion — 'X.Y.Z+build' where the SP stamped it via HC6.DeviceHcVersion (from 2026-09-09); older rows hold HC5 formats or a placeholder such as '<unknown>'"
-            },
-            {
-              "name": "errorDescription",
-              "type": "NVARCHAR(2500)",
-              "nullable": true,
-              "description": "Error description from HC.ErrorLog.ErrorDescription"
-            },
-            {
-              "name": "displayName",
-              "type": "NVARCHAR(250)",
-              "nullable": true,
-              "description": "Hasher's display name (LEFT JOIN on userId). NULL if no matching hasher."
-            },
-            {
-              "name": "userId",
-              "type": "UNIQUEIDENTIFIER",
-              "nullable": true,
-              "description": "User ID from HC.ErrorLog.userId"
-            },
-            {
-              "name": "procName",
-              "type": "NVARCHAR(250)",
-              "nullable": true,
-              "description": "Stored procedure name from HC.ErrorLog.ProcName"
-            }
-          ]
-        },
-        "8": {
-          "name": "HashRuns.Org Traffic",
-          "columns": [
-            {
-              "name": "timestamp",
-              "type": "DATETIMEOFFSET(7)",
-              "nullable": false,
-              "description": "Log entry timestamp from LOG.GeneralLog.Timestamp"
-            },
-            {
-              "name": "city",
-              "type": "NVARCHAR(4000)",
-              "nullable": true,
-              "description": "City extracted via JSON_VALUE(data, '$.city') from LOG.GeneralLog.Data"
-            },
-            {
-              "name": "region",
-              "type": "NVARCHAR(4000)",
-              "nullable": true,
-              "description": "Region extracted via JSON_VALUE(data, '$.region') from LOG.GeneralLog.Data"
-            },
-            {
-              "name": "country",
-              "type": "NVARCHAR(4000)",
-              "nullable": true,
-              "description": "Country extracted via JSON_VALUE(data, '$.country') from LOG.GeneralLog.Data"
-            },
-            {
-              "name": "logMessage",
-              "type": "NVARCHAR(255)",
-              "nullable": false,
-              "description": "Log message from LOG.GeneralLog.Message"
-            },
-            {
-              "name": "kennelName",
-              "type": "NVARCHAR(250)",
-              "nullable": true,
-              "description": "Kennel name (LEFT JOIN via Event.KennelId). NULL if no matching event or kennel."
-            },
-            {
-              "name": "eventName",
-              "type": "NVARCHAR(250)",
-              "nullable": true,
-              "description": "Event name from HC.Event (LEFT JOIN via PublicEventId = StrParam1). NULL if no matching event."
-            }
-          ]
-        },
-        "9": {
-          "name": "App Errors",
-          "description": "One row per uploaded client session that HC6.ClientLogAppError classes as an app error (uncaught Dart exception, non-transport Flutter framework error, or MetricKit crash/hang). Same definition as the 'App Error' row in hcportal_getUsageData.",
-          "columns": [
-            {
-              "name": "loggedAt",
-              "type": "DATETIMEOFFSET(7)",
-              "nullable": false,
-              "description": "When the session log was uploaded (one boot after the session), from HC.ClientErrorLog.LoggedAt"
-            },
-            {
-              "name": "hcVersion",
-              "type": "NVARCHAR(51)",
-              "nullable": false,
-              "description": "'X.Y.Z+build' that WROTE the log (AppVersion/BuildNumber); falls back to the device's current build for rows before 3.0.13, which can be one release too new; '' if neither is known"
-            },
-            {
-              "name": "displayName",
-              "type": "NVARCHAR(250)",
-              "nullable": false,
-              "description": "Hasher on the device (HC.Device.UserId → HC.Hasher), '' if unknown"
-            },
-            {
-              "name": "error",
-              "type": "NVARCHAR(300)",
-              "nullable": false,
-              "description": "The first qualifying error line of the session, e.g. [ERROR][ASYNC] type 'EnumFollowType' is not a subtype of type 'int', or 'MetricKit crash'"
-            },
-            {
-              "name": "errorLines",
-              "type": "INT",
-              "nullable": false,
-              "description": "How many [ERROR] lines of any kind the session log holds"
-            },
-            {
-              "name": "deviceId",
-              "type": "UNIQUEIDENTIFIER",
-              "nullable": false,
-              "description": "HC.ClientErrorLog.DeviceId, for pulling the full log"
-            }
-          ]
-        },
-        "100": {
-          "name": "Version Adoption",
-          "columns": [
-            {
-              "name": "updatedAt",
-              "type": "DATETIMEOFFSET(7)",
-              "nullable": false,
-              "description": "Most recent login date for this user in the time window (MAX of LoginDate)"
-            },
-            {
-              "name": "displayName",
-              "type": "NVARCHAR(250)",
-              "nullable": false,
-              "description": "Hasher's display name from HC.Hasher.DisplayName"
-            },
-            {
-              "name": "hcVersion",
-              "type": "NVARCHAR(200)",
-              "nullable": false,
-              "description": "HC app version string from HC.LaunchAndLogin.HcVersion"
-            },
-            {
-              "name": "systemName",
-              "type": "NVARCHAR(100)",
-              "nullable": true,
-              "description": "OS name from HC.LaunchAndLogin.SystemName"
-            },
-            {
-              "name": "twoWeekCount",
-              "type": "INT",
-              "nullable": false,
-              "description": "Number of logins by this user in the time window"
-            },
-            {
-              "name": "thisVersionCount",
-              "type": "INT",
-              "nullable": false,
-              "description": "Number of logins by this user on the specified @hcVersion + @hcBuild in the time window"
-            }
-          ]
+        {
+          "name": "cityFullName",
+          "type": "NVARCHAR(350)",
+          "nullable": true,
+          "description": "City.CityFullName of the HC.City nearest the hasher's HomeGeolocation; NULL when HomeLatitude is the 51.5033 default (London placeholder) or no geolocation"
         }
-      }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Category1_EventRsvps",
+      "description": "categoryId = 1. HasherEventMap rows updated in the window, newest first.",
+      "columns": [
+        {
+          "name": "updatedAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "HasherEventMap.updatedAt"
+        },
+        {
+          "name": "kennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Kennel.KennelName of HasherEventMap.KennelId"
+        },
+        {
+          "name": "eventNumber",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Event.EventNumber"
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Hasher.DisplayName when VirginVisitorType = 0, else HasherEventMap.DisplayName NVARCHAR(120)"
+        },
+        {
+          "name": "virginVisitorType",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherEventMap.VirginVisitorType"
+        },
+        {
+          "name": "rsvpState",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherEventMap.RsvpState (No=1/Maybe=2/Yes=3)"
+        },
+        {
+          "name": "attendenceState",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherEventMap.AttendenceState (No=10/AtHash=20)"
+        },
+        {
+          "name": "totalRunsThisKennel",
+          "type": "INT",
+          "nullable": false,
+          "description": "COALESCE(HasherEventMap.TotalRunsThisKennel, 0)"
+        },
+        {
+          "name": "totalHaringThisKennel",
+          "type": "INT",
+          "nullable": false,
+          "description": "COALESCE(HasherEventMap.TotalHaringThisKennel, 0)"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Category2_NewEvents",
+      "description": "categoryId = 2. Events created in the window (Event.createdAt), newest first, removed runs included.",
+      "columns": [
+        {
+          "name": "createdAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "Event.createdAt"
+        },
+        {
+          "name": "inboundIntegrationId",
+          "type": "INT",
+          "nullable": false,
+          "description": "Event.InboundIntegrationId (which import created it)"
+        },
+        {
+          "name": "kennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Kennel.KennelName"
+        },
+        {
+          "name": "eventNumber",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Event.EventNumber"
+        },
+        {
+          "name": "eventStartDatetime",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "CONVERT(datetimeoffset(7), Event.EventStartLocal): the local wall-clock start presented with a +00:00 offset — not an instant. EventStartLocal (persisted computed DATETIME2(7)) is not in db/schema/tables; its definition is in db/hc6/app/archive/deprecate_fb_datetime_in_hc6.sql."
+        },
+        {
+          "name": "eventName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Event.EventName"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Category3_NewKennels",
+      "description": "categoryId = 3. Kennels created in the window, newest first (INNER JOIN City: kennels without a CityId are omitted).",
+      "columns": [
+        {
+          "name": "createdAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "Kennel.createdAt"
+        },
+        {
+          "name": "kennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Kennel.KennelName"
+        },
+        {
+          "name": "cityFullName",
+          "type": "NVARCHAR(350)",
+          "nullable": false,
+          "description": "COALESCE(City.CityFullName, CityCountryName, CityName)"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Category4_AppLogins",
+      "description": "categoryId = 4. HC.LaunchAndLogin rows in the window, newest first, excluding two hard-coded hasher ids (0CDBB109-…, D0B7EF01-…). Rows with a NULL UserId are also excluded (the <> test is UNKNOWN for NULL).",
+      "columns": [
+        {
+          "name": "loginDate",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "LaunchAndLogin.LoginDate"
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Hasher.DisplayName (LEFT JOIN)"
+        },
+        {
+          "name": "deviceName",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "LaunchAndLogin.DeviceName"
+        },
+        {
+          "name": "manufacturer",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "LaunchAndLogin.Manufacturer"
+        },
+        {
+          "name": "deviceType",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "LaunchAndLogin.DeviceType"
+        },
+        {
+          "name": "systemName",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "LaunchAndLogin.SystemName"
+        },
+        {
+          "name": "systemVersion",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "LaunchAndLogin.SystemVersion"
+        },
+        {
+          "name": "cityFullName",
+          "type": "NVARCHAR(350)",
+          "nullable": true,
+          "description": "City.CityFullName of LaunchAndLogin.CityId"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Category5_Payments",
+      "description": "categoryId = 5. HC.Payment rows created in the window, newest first.",
+      "columns": [
+        {
+          "name": "createdAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "Payment.createdAt"
+        },
+        {
+          "name": "kennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Kennel.KennelName"
+        },
+        {
+          "name": "eventNumber",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Event.EventNumber"
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Payer Hasher.DisplayName when VirginVisitorType = 0, else HasherEventMap.DisplayName"
+        },
+        {
+          "name": "virginVisitorType",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherEventMap.VirginVisitorType"
+        },
+        {
+          "name": "processedByDisplayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "DisplayName of Payment.PaymentProcessedBy_userId"
+        },
+        {
+          "name": "cancelledByDisplayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "DisplayName of Payment.CancelledBy_UserId; NULL when not cancelled"
+        },
+        {
+          "name": "creditAmount",
+          "type": "SMALLMONEY",
+          "nullable": false,
+          "description": "Payment.CreditAmount"
+        },
+        {
+          "name": "debitAmount",
+          "type": "SMALLMONEY",
+          "nullable": false,
+          "description": "Payment.DebitAmount"
+        },
+        {
+          "name": "paymentType",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Payment.PaymentType"
+        },
+        {
+          "name": "paymentProvider",
+          "type": "NVARCHAR(50)",
+          "nullable": true,
+          "description": "Payment.PaymentProvider"
+        },
+        {
+          "name": "creditAvailable",
+          "type": "SMALLMONEY",
+          "nullable": false,
+          "description": "Payment.CreditAvailable"
+        },
+        {
+          "name": "doPayForExtras",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Payment.DoPayForExtras"
+        },
+        {
+          "name": "extrasDescription",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Event.ExtrasDescription"
+        },
+        {
+          "name": "currencySymbol",
+          "type": "NVARCHAR(5)",
+          "nullable": false,
+          "description": "COALESCE(Kennel.CurrencySymbol, Country.CurrencySymbol); '^' marks where the amount goes"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Category6_PortalAccess",
+      "description": "categoryId = 6. HC.PortalAccess rows in the window, newest first, excluding the two hard-coded hasher ids.",
+      "columns": [
+        {
+          "name": "accessDate",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "PortalAccess.accessDate"
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Hasher.DisplayName"
+        },
+        {
+          "name": "kennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "The hasher's home Kennel.KennelName (not the kennel accessed)"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Category7_Errors",
+      "description": "categoryId = 7. HC.ErrorLog rows in the window (updatedAt), newest first. ErrorLog.userId is resolved three ways because writers store different ids there: Hasher.id, Hasher.PublicHasherId, or (portal shim) a Device.id.",
+      "columns": [
+        {
+          "name": "updatedAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "ErrorLog.updatedAt"
+        },
+        {
+          "name": "hcVersion",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "ErrorLog.HcVersion"
+        },
+        {
+          "name": "errorDescription",
+          "type": "NVARCHAR(2500)",
+          "nullable": true,
+          "description": "ErrorLog.ErrorDescription"
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "COALESCE(by Hasher.id, by PublicHasherId, by Device.UserId, '')"
+        },
+        {
+          "name": "userId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "ErrorLog.userId as stored"
+        },
+        {
+          "name": "procName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "ErrorLog.ProcName"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Category8_PushNotificationLog",
+      "description": "categoryId = 8. Visible pushes only (PushLog.IsVisible = 1, matching the 'Push' tile in hcportal_getUsageData), newest first. HC.PushLog is not in db/schema/tables; types from db/hc6/app/archive/HC6.PushLog.migration.sql and HC6.PushLog.AddSenderAndResult.sql.",
+      "columns": [
+        {
+          "name": "SentAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "PushLog.SentAt"
+        },
+        {
+          "name": "ReceiverName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Recipient Hasher.DisplayName (PushLog.RecipientUserId = Hasher.id) or '[unknown]'"
+        },
+        {
+          "name": "SenderName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Sender DisplayName (PushLog.SenderUserId = Hasher.PublicHasherId) or ''"
+        },
+        {
+          "name": "MessageType",
+          "type": "NVARCHAR(112)",
+          "nullable": false,
+          "description": "'Full Push' or 'Data Only', then ' / ' and PushLog.QueryType NVARCHAR(100). Always 'Full Push / …' since only visible rows are selected"
+        },
+        {
+          "name": "FcmResult",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "COALESCE(PushLog.FcmResult, 'unknown')"
+        },
+        {
+          "name": "DeviceId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "HC.Device.id whose FcmToken matches PushLog.FcmToken now; NULL once the token was cleared"
+        },
+        {
+          "name": "Summary",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "COALESCE(PushLog.Summary, '')"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Category9_AppErrors",
+      "description": "categoryId = 9. HC.ClientErrorLog rows in the window that HC6.ClientLogAppError classes as an app error (same rule as the 'App Error' tile), newest first.",
+      "columns": [
+        {
+          "name": "loggedAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "ClientErrorLog.LoggedAt"
+        },
+        {
+          "name": "hcVersion",
+          "type": "NVARCHAR(51)",
+          "nullable": false,
+          "description": "Build that wrote the log (AppVersion+'+'+BuildNumber, clients ≥ 3.0.13), else the device's current Version+'+'+BuildNumber, else ''"
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Device owner's DisplayName or ''"
+        },
+        {
+          "name": "error",
+          "type": "NVARCHAR(300)",
+          "nullable": false,
+          "description": "HC6.ClientLogAppError(ErrorLog): the first qualifying error line"
+        },
+        {
+          "name": "errorLines",
+          "type": "INT",
+          "nullable": false,
+          "description": "Count of '[ERROR]' occurrences in the log"
+        },
+        {
+          "name": "deviceId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "ClientErrorLog.DeviceId"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Category10_PackTrack",
+      "description": "categoryId = 10. One row per captured track: non-removed HasherEventMap rows with TrackPointCount > 0 whose TrackFirstPointAt is in the window, newest first. Track* columns are not in db/schema/tables; types from db/hc6/app/archive/2026-09-10_alter_HasherEventMap_track_columns.sql and 2026-09-13_alter_HasherEventMap_track_stats.sql.",
+      "columns": [
+        {
+          "name": "updatedAt",
+          "type": "DATETIME2(3)",
+          "nullable": false,
+          "description": "HasherEventMap.TrackFirstPointAt"
+        },
+        {
+          "name": "hashName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "COALESCE(Hasher.HashName, DisplayName, '')"
+        },
+        {
+          "name": "kennel",
+          "type": "NVARCHAR(25)",
+          "nullable": false,
+          "description": "COALESCE(Kennel.KennelShortName, '')"
+        },
+        {
+          "name": "runNumber",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Event.EventNumber"
+        },
+        {
+          "name": "runName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "COALESCE(Event.EventName, '')"
+        },
+        {
+          "name": "points",
+          "type": "INT",
+          "nullable": false,
+          "description": "HasherEventMap.TrackPointCount"
+        },
+        {
+          "name": "distanceM",
+          "type": "INT",
+          "nullable": true,
+          "description": "HasherEventMap.TrackDistanceM"
+        },
+        {
+          "name": "movingSeconds",
+          "type": "INT",
+          "nullable": true,
+          "description": "HasherEventMap.TrackMovingSeconds"
+        },
+        {
+          "name": "paceSecPerKm",
+          "type": "INT",
+          "nullable": true,
+          "description": "HasherEventMap.TrackPaceSecPerKm (persisted computed)"
+        },
+        {
+          "name": "elevationGainM",
+          "type": "INT",
+          "nullable": true,
+          "description": "HasherEventMap.TrackElevationGainM"
+        },
+        {
+          "name": "gpsSettings",
+          "type": "NVARCHAR(400)",
+          "nullable": true,
+          "description": "HasherEventMap.TrackGpsSettings"
+        },
+        {
+          "name": "publicUrl",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "https://www.hashruns.org/<slug>/<EventNumber>/packtrack for a counted run whose kennel has a KennelUniqueShortName; NULL otherwise"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Category11_AiTokens",
+      "description": "categoryId = 11. One row per model call in LOG.AiUsage with CalledAt in the window, newest first.",
+      "columns": [
+        {
+          "name": "calledAt",
+          "type": "DATETIME2(0)",
+          "nullable": false,
+          "description": "AiUsage.CalledAt"
+        },
+        {
+          "name": "feature",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "AiUsage.Feature"
+        },
+        {
+          "name": "kennel",
+          "type": "NVARCHAR(25)",
+          "nullable": false,
+          "description": "COALESCE(Kennel.KennelShortName, '')"
+        },
+        {
+          "name": "model",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": "AiUsage.Model"
+        },
+        {
+          "name": "promptTokens",
+          "type": "INT",
+          "nullable": false,
+          "description": "AiUsage.PromptTokens"
+        },
+        {
+          "name": "completionTokens",
+          "type": "INT",
+          "nullable": false,
+          "description": "AiUsage.CompletionTokens"
+        },
+        {
+          "name": "totalTokens",
+          "type": "INT",
+          "nullable": false,
+          "description": "AiUsage.TotalTokens (persisted computed)"
+        },
+        {
+          "name": "costUsd",
+          "type": "DECIMAL(12,6)",
+          "nullable": true,
+          "description": "AiUsage.CostUsd DECIMAL(12,8) cast to DECIMAL(12,6)"
+        },
+        {
+          "name": "durationMs",
+          "type": "INT",
+          "nullable": true,
+          "description": "AiUsage.DurationMs"
+        },
+        {
+          "name": "outcome",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "AiUsage.Outcome"
+        },
+        {
+          "name": "session",
+          "type": "NVARCHAR(8)",
+          "nullable": true,
+          "description": "First 8 characters of AiUsage.SessionId (groups one timer run or portal Test)"
+        },
+        {
+          "name": "detail",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "COALESCE(AiUsage.Detail, '')"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Category12_AzureCost",
+      "description": "categoryId = 12. LOG.AzureDailyCost per day per service plus an '(all services)' total per day, with the previous day's figure. The window is NOT @cutoffDate: it is the last 14 days with data when @days >= 7, else the last 2 days, ending at MAX(CostDate). Newest day first, totals row first within a day, then cost descending; services under 0.005 omitted.",
+      "columns": [
+        {
+          "name": "costDate",
+          "type": "DATE",
+          "nullable": false,
+          "description": "AzureDailyCost.CostDate"
+        },
+        {
+          "name": "service",
+          "type": "NVARCHAR(100)",
+          "nullable": false,
+          "description": "ServiceName, or '(all services)'"
+        },
+        {
+          "name": "costIncVat",
+          "type": "DECIMAL(10,2)",
+          "nullable": false,
+          "description": "Cost × HC6.AzureVatMultiplier()"
+        },
+        {
+          "name": "dayBeforeIncVat",
+          "type": "DECIMAL(10,2)",
+          "nullable": false,
+          "description": "Previous day's cost for the same service × VAT; 0 when none"
+        },
+        {
+          "name": "change",
+          "type": "DECIMAL(10,2)",
+          "nullable": false,
+          "description": "(cost − day before) × VAT"
+        },
+        {
+          "name": "costExVat",
+          "type": "DECIMAL(10,2)",
+          "nullable": false,
+          "description": "Azure's pre-tax cost"
+        },
+        {
+          "name": "currency",
+          "type": "CHAR(3)",
+          "nullable": false,
+          "description": "AzureDailyCost.Currency"
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR(14)",
+          "nullable": false,
+          "description": "'complete' when RetrievedAt is at least 2 days after CostDate, else 'still settling'"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Category13_Email",
+      "description": "categoryId = 13. One row per LOG.GeneralLog entry with LogSource 'RunEmail' and valid JSON Data in the window (written by nonApi_recordRunEmailSent; previews and the launch announcement carry their own kind), newest first.",
+      "columns": [
+        {
+          "name": "SentAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "GeneralLog.Timestamp"
+        },
+        {
+          "name": "Kind",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "JSON_VALUE(Data, '$.kind')"
+        },
+        {
+          "name": "Run",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "KennelShortName + ' #' + EventNumber of the event in StrParam1, or ''"
+        },
+        {
+          "name": "SenderName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "DisplayName of JSON '$.sender', else 'Harrier Central'"
+        },
+        {
+          "name": "Subject",
+          "type": "NVARCHAR(4000)",
+          "nullable": false,
+          "description": "JSON '$.subject' or ''"
+        },
+        {
+          "name": "Recipients",
+          "type": "INT",
+          "nullable": true,
+          "description": "TRY_CAST JSON '$.recipients'"
+        },
+        {
+          "name": "MovedIn",
+          "type": "INT",
+          "nullable": true,
+          "description": "TRY_CAST JSON '$.movedIn'"
+        },
+        {
+          "name": "MovedOut",
+          "type": "INT",
+          "nullable": true,
+          "description": "TRY_CAST JSON '$.movedOut'"
+        },
+        {
+          "name": "AuditPath",
+          "type": "NVARCHAR(4000)",
+          "nullable": false,
+          "description": "JSON '$.audit' (blob path of the audit copy) or ''"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Category14_FirstSignIn",
+      "description": "categoryId = 14. Accounts whose first ever self sign-in (LaunchAndLogin with errorInfo NULL, UserId set, UserName not '+…+', HcVersion not '<portal>'/'probe') falls in the window, newest first; the two hard-coded hasher ids excluded.",
+      "columns": [
+        {
+          "name": "firstSignInAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "MIN(LaunchAndLogin.LoginDate) for the user"
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Hasher.DisplayName"
+        },
+        {
+          "name": "homeKennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Home Kennel.KennelName"
+        },
+        {
+          "name": "accountCreatedAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "Hasher.createdAt"
+        },
+        {
+          "name": "signedInWith",
+          "type": "VARCHAR(25)",
+          "nullable": false,
+          "description": "'Web (passkey)', 'iOS app', 'Android app' or 'Emailed code (app or web)' from the first row's HcVersion/SystemName"
+        },
+        {
+          "name": "hcVersion",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "First row's HcVersion with 'HC Ver: ' removed and ', Bld: ' replaced by '+'. NOTE: taken from the row with MIN(idx), which is assumed to be the row with MIN(LoginDate)"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Category100_VersionAdoption",
+      "description": "categoryId = 100. One row per user who logged in during the window and has at least one LaunchAndLogin row whose HcVersion contains both @hcVersion and @hcBuild; ordered by total logins in the window, descending. Empty when either filter is NULL.",
+      "columns": [
+        {
+          "name": "updatedAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "The user's latest LoginDate in the window (any version)"
+        },
+        {
+          "name": "displayName",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Hasher.DisplayName"
+        },
+        {
+          "name": "hcVersion",
+          "type": "NVARCHAR(200)",
+          "nullable": false,
+          "description": "LaunchAndLogin.HcVersion of the user's newest login matching the version filter"
+        },
+        {
+          "name": "systemName",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "LaunchAndLogin.SystemName of that row"
+        },
+        {
+          "name": "twoWeekCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "All the user's logins in the window (named for the default two-week tile, but follows @days)"
+        },
+        {
+          "name": "thisVersionCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "The user's logins in the window matching the version filter"
+        }
+      ]
     }
   ],
-  "sideEffects": [],
+  "sideEffects": [
+    "On a runtime error only: INSERT HC.ErrorLog (ProcName = OBJECT_NAME(@@PROCID), userId = caller)",
+    "Calls HC6.nonApi_portalKennelAccess (read-only) for its permission check."
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Hard-coded ids and sentinel coordinates",
+      "detail": "Two hasher GUIDs (0CDBB109-…, D0B7EF01-…) are excluded by literal in several categories (e.g. lines 204-205, 260-261, 518-519), and category 0 treats HomeLatitude 51.5033 as 'no home location'. Undocumented magic values."
+    },
+    {
+      "severity": "low",
+      "issue": "Stale header comment",
+      "detail": "The header (lines 16-22) lists categories 0-9, 14 and 100; categories 10-13 (PackTrack, AI Tokens, Azure Cost, Email) are undocumented there."
+    },
+    {
+      "severity": "low",
+      "issue": "First sign-in row picked by MIN(idx), time by MIN(LoginDate)",
+      "detail": "Category 14 (line 497) takes firstIdx and firstLoad as independent aggregates; if a later-idx row has an earlier LoginDate the signedInWith/hcVersion columns describe a different row from firstSignInAt."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",
     "Never change a parameter type",
     "Never change a sentinel value meaning",
-    "Never change the meaning of categoryId values (0-9, 100)",
+    "Never change the meaning of categoryId values (0-14, 100)",
     "Never change the column shape of any category without updating all portal callers",
     "Never restore the HC5 header metadata rowset (col1-col6) — callers have been updated to expect raw typed columns"
   ],
   "changes": [
     "2026-10-05: category 11 (AI Tokens: one row per model call from LOG.AiUsage) and 12 (Azure Cost per day per service with dayBefore/change, '(all services)' totals; Hour/Day = last 2 days, Week = 14). CATCH now logs to HC.ErrorLog.",
-    "2026-10-05 (later): category 12 columns are costIncVat, dayBeforeIncVat, change (inc VAT), costExVat — replacing cost/dayBefore the same day they shipped (generic drill-down table; no client reads them by name)."
+    "2026-10-05 (later): category 12 columns are costIncVat, dayBeforeIncVat, change (inc VAT), costExVat — replacing cost/dayBefore the same day they shipped (generic drill-down table; no client reads them by name).",
+    "2026-10-13 contract sweep: per-category rowset schemas written out for all 16 categories (10-14 were undocumented); @days marked nullable (it has a SQL default)."
   ]
 }

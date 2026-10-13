@@ -165,6 +165,34 @@ These are firm decisions that must not be revisited or worked around:
   87 kennels still have `InboundIntegrationId = 1`; resetting them is a data
   change for James to approve, not part of a code clean-up.
 
+- **Membership is `MembershipExpirationDate` in the future, nothing else
+  (James, 2026-10-13).** Never store, sweep or read a derived "is member"
+  flag. Bit 0x0001 of `HC.HasherKennelMap.KennelStanding` (the old automated
+  MEMBER bit) is RETIRED: nothing read it, and keeping it in step cost a
+  nightly re-sync of every lapsed row to every phone. Its values are frozen
+  and meaningless; do not reuse the bit. The manual standing bits (ALUMNI
+  0x0002, TRUSTED 0x0004, ADMIN 0x0100, notes suppressed 0x1000) stay.
+  A computed column was considered and rejected: the field mixes manual
+  bits, and a time-dependent value never bumps `updatedAt`, so synced
+  phones would never see it change.
+  **`HC.HasherKennelMap.IsMember` is DEPRECATED** for the same reason: a
+  stored copy of the date, set at join and never maintained. On 2026-10-13
+  it disagreed with the date on 1,839 rows, and hasher search read it.
+  Never read it; compute `MembershipExpirationDate > SYSDATETIMEOFFSET()`.
+  The old writers (join, approve kennel request, merge) still set it and
+  carry a DEPRECATED comment; dropping the column is James's call.
+
+- **TSA Eats is defunct — exclude it from all work (James, 2026-10-13).**
+  TSA Eats was a separate meal-ordering prototype that shares this repo and
+  database but is not Harrier Central. Leave it out of everything: reviews,
+  audits, contract sweeps, scans, backlog stories, refactors, deploys and
+  release plans. Do not read, fix, test or document it unless James names it.
+  It lives in `tsa-eats/`, `db/hc6/tsa/`, `db/schema/tables/TSA.*`, the
+  `TSA` database schema and `api/Endpoints/TsaApi.cs`. `deploy_hc6.sh` never
+  deploys it, and `tools/contract_check.py` does not scan it. Removing its
+  code, endpoint or tables is a separate decision for James, not a clean-up
+  to do in passing.
+
 **Never convert a `StatelessWidget` to `StatefulWidget` without consulting
   James first.** The preferred direction is the opposite — migrate
   `StatefulWidget` toward `StatelessWidget` + GetX controller wherever the
@@ -533,6 +561,13 @@ Rules for the wrapper:
   Use the proc-name variable the SP actually declares (`@procName` / `@effectiveProcName` /
   `@procName_self`, or `OBJECT_NAME(@@PROCID)` if none), and `@userId` or `NULL`.
 - **Every CATCH must log to `HC.ErrorLog`** so the failure is diagnosable server-side.
+- The API shims also log, so a CATCH that RE-THROWS, or returns the
+  `Success = 0` envelope with `ERROR_MESSAGE()`, is traced too (the shim
+  writes the row, without the SP's own context). Since 2026-10-13 every shim
+  writes a THROWN error to `HC.ErrorLog` as well. Check with:
+  ```bash
+  python3 tools/catch_log_scan.py     # MUST print nothing
+  ```
 
 ### Never roll back an error log — `ROLLBACK` comes BEFORE the `INSERT HC.ErrorLog`
 
@@ -1247,9 +1282,29 @@ script and must be archived after it has been run.
 
 ## Table Schemas
 
-Base table definitions are in `/db/schema/tables/`.
+Base table definitions are in `/db/schema/tables/`, ONE FILE PER TABLE,
+GENERATED from the live database (`db/schema/tables/INDEX.md` lists them).
 Always reference these when working on SPs — never assume column types
-from memory.
+from memory. Each file has every column, default, key, index, foreign key,
+check constraint and trigger; notes on a column (deprecated, meaning) sit
+above it.
+
+**Keep them current — this is Claude's job, without being asked (James,
+2026-10-13).** Never edit these files by hand. After ANY run-once script
+that changes a table — a column, index, constraint, trigger or column note
+— run:
+
+```bash
+python3 tools/schema_dump.py           # rewrite what changed
+python3 tools/schema_dump.py --check   # drift only, exit 1 (the SP deploy runs this too)
+```
+
+and commit the regenerated files WITH the run-once script. A note about a
+column goes into the database as `MS_Description`
+(`sp_addextendedproperty`), never into the file, so it survives the next
+regeneration. Until 2026-10-13 the files were a March SSMS script: 27 of
+65 lacked 293 live columns and 22 tables had none, and an SP review took
+widths from them and raised false alarms.
 
 The most important tables for portal SPs:
 - `HC.Event` — core event data

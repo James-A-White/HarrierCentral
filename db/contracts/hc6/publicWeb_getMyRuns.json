@@ -1,246 +1,427 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getMyRuns",
-  "version": "2.0.0",
-  "description": "The app's Runs tab, mirroring the phone's dataset after hcapp_syncUserData: followed kennels' runs (365 d ahead, 120 d back), every kennel's runs in the 10-day global window, and the member's own RSVP'd/attended runs anywhere. IsPast by the app's 6-hour rule. getGlobalRuns shape plus My* columns, bell/envelope preferences, Following, IsMember, activity counts, DistanceUnitsPref, EventGeographicScope, EventType. ValidateAppAuth sp 111.",
+  "version": "2.1.0",
+  "description": "The app's Runs tab for a signed-in web member (E9.F7.S8), mirroring what the phone holds after hcapp_syncUserData: every run of the kennels they follow (120 days back to 365 days ahead), every live kennel's runs in the ten-day global window either side of now, and their own RSVP'd (RsvpState >= 2), attended (AttendenceState >= 20) or hared runs within the same 120 / 365-day bounds. Only visible, live runs of live kennels. IsPast follows the app's 6-hour rule (query_runs.dart showAsPastEvent). Rows are the publicWeb_getGlobalRuns shape plus the My* columns the run card needs, the activity counts and the caller's preference bitfield. Auth: HC6.ValidateAppAuth (spNumber 111, @param NULL); scoped to the token's user. Read-only.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
-      "mapsToColumn": "Device.id",
-      "description": "The browser's device id"
+      "mapsToColumn": null,
+      "description": "The browser's HC.Device id. No SQL default."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Token for this SP's name (or the inner SP's), paramString = deviceSecret"
+      "description": "Short-lived token signed for this SP (ValidateAppAuth spNumber 111). No SQL default."
     }
   ],
   "rowsets": [
     {
       "index": 0,
-      "name": "Envelope",
-      "description": "success 1/0, errorCode, errorType",
+      "name": "AuthErrorEnvelope",
+      "description": "On a ValidateAppAuth failure: { success = 0, errorCode, errorType } then the detail at index 1; the SP RETURNs.",
       "columns": [
         {
           "name": "success",
           "type": "INT",
           "nullable": false,
-          "description": ""
+          "description": "Always 0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "ValidateAppAuth's error code."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "ValidateAppAuth's error type."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Error detail after the AuthErrorEnvelope (errorId, errorType, errorCode, errorTitle, errorUserMessage, errorProc)."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "On success, before the data rowsets: { success = 1, errorCode = NULL, errorType = NULL }.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
         },
         {
           "name": "errorCode",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "Always NULL."
         },
         {
           "name": "errorType",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "Always NULL."
         }
       ]
     },
     {
       "index": 1,
       "name": "Runs",
-      "description": "Chronological; the getGlobalRuns columns (fees, location, tags, kennel context) plus those listed",
+      "description": "On success: one row per run in the window, ORDER BY EventStartDatetimeGmt ASC.",
       "columns": [
         {
           "name": "PublicEventId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": ""
+          "description": "HC.Event.PublicEventId — public-facing event UUID for deep-links."
         },
         {
           "name": "EventNumber",
-          "type": "INT",
-          "nullable": true,
-          "description": ""
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HC.Event.EventNumber — kennel-scoped run number."
         },
         {
           "name": "EventName",
           "type": "NVARCHAR(250)",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "HC.Event.EventName — event name. Table column NOT NULL."
         },
         {
           "name": "EventStartDatetime",
           "type": "DATETIME2(7)",
+          "nullable": false,
+          "description": "CAST(Event.EventStartDatetime AS datetime2(7)) — timezone offset stripped. Client receives local time without UTC offset. Use KennelIANATimezone to reconstruct the offset if needed."
+        },
+        {
+          "name": "EventEndDatetime",
+          "type": "DATETIME2(7)",
           "nullable": true,
-          "description": "local wall-clock"
+          "description": "CAST(Event.EventEndDatetime AS datetime2(7)) — timezone offset stripped. NULL when no end time is set."
         },
         {
           "name": "EventStartDatetimeGmt",
           "type": "DATETIMEOFFSET(7)",
-          "nullable": true,
-          "description": "instant"
+          "nullable": false,
+          "description": "HC.Event.EventStartDatetimeGmt — the run's true UTC instant, maintained by trigger from Kennel → City → Timezone. The filter and sort key. Use it with KennelIANATimezone for display."
         },
         {
           "name": "KennelIANATimezone",
-          "type": "NVARCHAR(100)",
+          "type": "NVARCHAR(MAX)",
           "nullable": true,
-          "description": ""
+          "description": "IANA zone of the kennel's city (territory '001' mapping, else MIN). NULL when unmapped."
+        },
+        {
+          "name": "EventTypeName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "DomainValues.EventThemeType.EventEnumName — human-readable event theme type (e.g. 'Red Dress Run'). NULL when Event.ThemeRunType has no matching DomainValues row (ThemeRunType = 0 = normal run)."
+        },
+        {
+          "name": "EventPriceForMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": false,
+          "description": "COALESCE(Event.EventPriceForMembers, Kennel.DefaultEventPriceForMembers) — event-level price overrides kennel default. NULL when neither is set. Never NULL: the kennel defaults are NOT NULL."
+        },
+        {
+          "name": "EventPriceForNonMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": false,
+          "description": "COALESCE(Event.EventPriceForNonMembers, Kennel.DefaultEventPriceForNonMembers) — event-level price overrides kennel default. NULL when neither is set. Never NULL: the kennel defaults are NOT NULL."
+        },
+        {
+          "name": "EventCurrencyType",
+          "type": "NVARCHAR(10)",
+          "nullable": true,
+          "description": "COALESCE(Event.EventCurrencyType, Kennel.DefaultEventCurrencyType) — currency code (e.g. 'USD'). NULL when neither is set."
         },
         {
           "name": "Hares",
-          "type": "NVARCHAR(500)",
+          "type": "NVARCHAR(2500)",
           "nullable": true,
-          "description": ""
+          "description": "HC.Event.Hares — free-text hare names. Table column is NVARCHAR(2500) NULL."
         },
         {
           "name": "LocationOneLineDesc",
-          "type": "NVARCHAR(500)",
+          "type": "NVARCHAR(250)",
           "nullable": true,
-          "description": ""
+          "description": "HC.Event.LocationOneLineDesc — one-line human-readable location."
+        },
+        {
+          "name": "LocationStreet",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "HC.Event.SyncLocationStreet — computed column (LocationStreet or FbLocationStreet depending on UseFbLocation)."
+        },
+        {
+          "name": "LocationCity",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "HC.Event.SyncLocationCity — computed column."
+        },
+        {
+          "name": "LocationPostCode",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "HC.Event.SyncLocationPostCode — computed column."
+        },
+        {
+          "name": "LocationRegion",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "HC.Event.SyncLocationRegion — computed column."
+        },
+        {
+          "name": "LocationCountry",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "HC.Event.SyncLocationCountry — computed column."
         },
         {
           "name": "Latitude",
-          "type": "DECIMAL",
+          "type": "DECIMAL(18,15)",
           "nullable": true,
-          "description": ""
+          "description": "HC.Event.SyncLatitude — computed column (Latitude or FbLatitude depending on UseFbLatLon). Table column type DECIMAL(18,15) NULL."
         },
         {
           "name": "Longitude",
-          "type": "DECIMAL",
+          "type": "DECIMAL(19,15)",
           "nullable": true,
-          "description": ""
+          "description": "HC.Event.SyncLongitude — computed column. Table column type DECIMAL(19,15) NULL."
+        },
+        {
+          "name": "w3wJson",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "HC.Event.w3wJson — what3words JSON ('map' URL and/or 'words')."
+        },
+        {
+          "name": "EventDescription",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "HC.Event.SyncDescription — EventDescription or FbEventDescription depending on UseFbRunDetails (the generic import mirror)."
+        },
+        {
+          "name": "EventImage",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "HC.Event.EventImage — URL of the event image. NULL when not set."
+        },
+        {
+          "name": "EventUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "HC.Event.EventUrl — external event page URL."
+        },
+        {
+          "name": "Tags1",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC.Event.Tags1 — raw bitflag integer for event tags set 1. Decoded client-side."
+        },
+        {
+          "name": "Tags2",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC.Event.Tags2 — raw bitflag integer for event tags set 2. Decoded client-side."
+        },
+        {
+          "name": "Tags3",
+          "type": "INT",
+          "nullable": false,
+          "description": "HC.Event.Tags3 — raw bitflag integer for event tags set 3. Decoded client-side."
+        },
+        {
+          "name": "IsCountedRun",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HC.Event.IsCountedRun — whether this run counts toward run totals. SMALLINT NOT NULL."
         },
         {
           "name": "KennelSlug",
-          "type": "NVARCHAR(100)",
-          "nullable": true,
-          "description": ""
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "Kennel.KennelUniqueShortName."
         },
         {
           "name": "KennelShortName",
-          "type": "NVARCHAR(100)",
-          "nullable": true,
-          "description": ""
+          "type": "NVARCHAR(25)",
+          "nullable": false,
+          "description": "Kennel.KennelShortName."
         },
         {
           "name": "KennelName",
           "type": "NVARCHAR(250)",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "Kennel.KennelName."
         },
         {
           "name": "KennelLogo",
-          "type": "NVARCHAR(1000)",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Kennel.KennelLogo (may be a bundle:// ref)."
+        },
+        {
+          "name": "PrimaryColor",
+          "type": "NVARCHAR(25)",
           "nullable": true,
-          "description": ""
+          "description": "KennelWebsite.PrimaryColor."
+        },
+        {
+          "name": "AccentColor",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "KennelWebsite.AccentColor."
         },
         {
           "name": "PublicKennelId",
           "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Kennel.PublicKennelId."
+        },
+        {
+          "name": "KennelWebsiteDomain",
+          "type": "NVARCHAR(250)",
           "nullable": true,
-          "description": ""
+          "description": "KennelWebsite.CustomDomain."
+        },
+        {
+          "name": "KennelContinent",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "Country.ContinentName of the kennel's country."
         },
         {
           "name": "MyRsvpState",
-          "type": "INT",
-          "nullable": true,
-          "description": "0 none, 1 no, 2 maybe, 3 yes"
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "COALESCE(HasherEventMap.RsvpState, 0) — 0 none, 1 no, 2 maybe, 3 yes."
         },
         {
           "name": "MyAttendenceState",
-          "type": "INT",
-          "nullable": true,
-          "description": "20 = at hash"
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "COALESCE(HasherEventMap.AttendenceState, 0) — 10 no, 20 at hash (>= 20 = attended)."
         },
         {
           "name": "MyIsHare",
-          "type": "INT",
-          "nullable": true,
-          "description": ""
-        },
-        {
-          "name": "IsPast",
-          "type": "INT",
-          "nullable": true,
-          "description": ""
-        },
-        {
-          "name": "GoingCount",
-          "type": "INT",
-          "nullable": true,
-          "description": ""
-        },
-        {
-          "name": "TrackRunnerCount",
-          "type": "INT",
-          "nullable": true,
-          "description": ""
-        },
-        {
-          "name": "PhotoCount",
-          "type": "INT",
-          "nullable": true,
-          "description": ""
-        },
-        {
-          "name": "MessageCount",
-          "type": "INT",
-          "nullable": true,
-          "description": ""
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "COALESCE(HasherEventMap.IsHare, 0)."
         },
         {
           "name": "MyNotificationPref",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "HEM.EventNotificationPreference: 0 auto 1 on 2 ignore 3 mute 4 before run"
         },
         {
           "name": "MyEmailAlertPref",
           "type": "SMALLINT",
-          "nullable": true,
-          "description": "HEM.EventEmailAlertPreference"
+          "nullable": false,
+          "description": "COALESCE(HasherEventMap.EventEmailAlertPreference, 0)."
         },
         {
           "name": "Following",
           "type": "SMALLINT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "COALESCE(HasherKennelMap.Following, 0)."
         },
         {
           "name": "IsMember",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when the caller's HasherKennelMap.MembershipExpirationDate >= now — the membership rule."
+        },
+        {
+          "name": "IsPast",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when EventStartDatetimeGmt is more than 6 hours ago (the app's split)."
+        },
+        {
+          "name": "GoingCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "COUNT of HasherEventMap rows for the run with RsvpState = 3 OR AttendenceState >= 20."
+        },
+        {
+          "name": "TrackRunnerCount",
           "type": "SMALLINT",
-          "nullable": true,
-          "description": "membership not expired"
+          "nullable": false,
+          "description": "HC.Event.TrackRunnerCount (trigger-maintained activity count)."
+        },
+        {
+          "name": "PhotoCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HC.Event.PhotoCount."
+        },
+        {
+          "name": "MessageCount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HC.Event.MessageCount."
         },
         {
           "name": "DownDownCount",
-          "type": "INT",
-          "nullable": true,
-          "description": ""
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HC.Event.DownDownCount."
         },
         {
           "name": "DistanceUnitsPref",
           "type": "SMALLINT",
-          "nullable": true,
-          "description": "kennel else country; bit 0 set = miles"
+          "nullable": false,
+          "description": "COALESCE(Kennel.DistancePreference, Country.DistancePreference, 0) — the KENNEL's unit; bit 0 set = miles."
+        },
+        {
+          "name": "HasherPreferences",
+          "type": "INT",
+          "nullable": false,
+          "description": "COALESCE(HC.Hasher.Preferences, 0) of the caller — bits 0x03 pick the unit for 'runs within N', bits 0x3C >> 2 index the radius ladder 0/10/25/50/75/100/150/200. Same on every row."
         },
         {
           "name": "EventGeographicScope",
-          "type": "INT",
-          "nullable": true,
-          "description": "1 normal run \u2026 7 other special event"
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HC.Event.EventGeographicScope — 1 normal run … 7 other special event."
         },
         {
           "name": "EventType",
-          "type": "NVARCHAR(100)",
-          "nullable": true,
-          "description": "the scope's text"
+          "type": "VARCHAR(32)",
+          "nullable": false,
+          "description": "HC.Event.EventType — persisted computed text for the scope ('Normal run', …, 'Not specified')."
         }
       ]
     }
   ],
-  "sideEffects": [],
-  "codeSmells": [],
+  "sideEffects": [
+    "INSERT HC.ErrorLog then THROW in the CATCH."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId and @accessToken have no SQL default (lines 2-3). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
+    },
+    {
+      "severity": "low",
+      "issue": "Going-count rule as a naked literal",
+      "detail": "Line 103 counts going as RsvpState = 3 OR AttendenceState >= 20, a rule the app also holds; CLAUDE.md asks for a rule both sides need to live in one object (view / inline TVF). It is also a correlated COUNT per returned row."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

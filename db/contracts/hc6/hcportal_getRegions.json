@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_getRegions",
-  "version": "1.0.0",
-  "description": "Returns the regions for a given country from HC.Region, ordered alphabetically by RegionName. Used to populate the cascading Country -> Region -> City selector in the run editor. Requires standard portal authentication.",
+  "version": "1.1.0",
+  "description": "Returns the live (Removed = 0) regions of a given country from HC.Region, ordered by RegionName, for the cascading Country -> Region -> City selector in the run editor. Device-bound portal auth via HC6.ValidatePortalAuth; any signed-in portal user.",
   "parameters": [
     {
       "name": "deviceId",
@@ -23,17 +23,27 @@
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "Region.CountryId",
-      "description": "Filter: only regions whose CountryId matches are returned."
+      "description": "Filter: only regions whose CountryId matches are returned. NULL returns an empty rowset (no error)."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "description": "Returned on auth failure (HC6.ValidatePortalAuth message) or from the CATCH block (ERROR_MESSAGE()).",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Human-readable error message"
+        }
       ]
     },
     {
@@ -62,5 +72,12 @@
     "Never rename a parameter",
     "Never change a parameter type",
     "Never change a sentinel value meaning"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 49-52: CATCH returns the envelope without an HC.ErrorLog row."
+    }
   ]
 }

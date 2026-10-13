@@ -1,30 +1,98 @@
 {
   "schema": "HC6",
   "name": "hcportal_savePermissionMatrix",
-  "version": "1.0.0",
-  "description": "Saves the GLOBAL grants for one grantor (Permissions V2 editor): replaces the grantor's global RolePermission rows with the supplied granted function keys, then recompiles the JSON projections (nonApi_compilePermissionMatrix) in the same transaction. Auth via ValidatePortalAuth; caller must hold HC.PlatformAdmin.CanManagePermissions.",
+  "version": "1.1.0",
+  "description": "Saves one grantor's row of the Permissions V2 matrix. GLOBAL scope (@publicKennelId NULL): replaces the grantor's global HC.RolePermission rows (KennelId NULL) with Allowed = 1 rows for @functionKeys. KENNEL scope (@publicKennelId set): replaces the grantor's rows for that kennel with +1 rows for @grantedKeys and -1 rows for @revokedKeys; functions in neither list inherit the global default. Either way HC6.nonApi_compilePermissionMatrix recompiles the JSON projections in the same transaction (the compile-on-save invariant). Auth: HC6.ValidatePortalAuth; service accounts refused; caller must hold a live HC.PlatformAdmin row with CanManagePermissions = 1.",
   "parameters": [
-    { "name": "deviceId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "Device.id", "description": "Auth: device ID." },
-    { "name": "accessToken", "type": "NVARCHAR(1000)", "nullable": true, "mapsToColumn": null, "description": "Auth: portal token." },
-    { "name": "grantorKey", "type": "NVARCHAR(80)", "nullable": true, "mapsToColumn": "PermissionRole.GrantorKey", "description": "The grantor (role/flag) being edited." },
-    { "name": "functionKeys", "type": "NVARCHAR(MAX)", "nullable": true, "mapsToColumn": null, "description": "GLOBAL scope: '|'-delimited granted FunctionKey list. Empty = grantor grants nothing." },
-    { "name": "publicKennelId", "type": "UNIQUEIDENTIFIER", "nullable": true, "mapsToColumn": "Kennel.PublicKennelId", "description": "When set, edits that kennel's override (tri-state) instead of the global default." },
-    { "name": "grantedKeys", "type": "NVARCHAR(MAX)", "nullable": true, "mapsToColumn": null, "description": "KENNEL scope: '|'-delimited force-grant (+1) FunctionKey list." },
-    { "name": "revokedKeys", "type": "NVARCHAR(MAX)", "nullable": true, "mapsToColumn": null, "description": "KENNEL scope: '|'-delimited force-revoke (-1) FunctionKey list. Functions in neither list inherit global." }
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Auth: portal token."
+    },
+    {
+      "name": "grantorKey",
+      "type": "NVARCHAR(80)",
+      "nullable": true,
+      "mapsToColumn": "PermissionRole.GrantorKey",
+      "description": "The grantor (HC.PermissionRole.GrantorKey) being edited. Unknown or a 'bypass' grantor is refused."
+    },
+    {
+      "name": "functionKeys",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "GLOBAL scope: '|'-delimited granted FunctionKey list. Empty = grantor grants nothing."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "When set, edits that kennel's tri-state override instead of the global default. Unknown kennel is refused."
+    },
+    {
+      "name": "grantedKeys",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "KENNEL scope: '|'-delimited force-grant (+1) FunctionKey list."
+    },
+    {
+      "name": "revokedKeys",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "KENNEL scope: '|'-delimited force-revoke (-1) FunctionKey list. Functions in neither list inherit global."
+    }
   ],
   "rowsets": [
-    { "index": 0, "name": "Envelope", "description": "{ Success, ErrorMessage }.", "columns": [
-      { "name": "Success", "type": "INT", "nullable": false, "description": "1 = saved, 0 = error/not authorised" },
-      { "name": "ErrorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Error text when Success=0" }
-    ]}
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "Always one row. Success = 0 on auth failure, service-account caller, missing CanManagePermissions, unknown/non-editable grantor, unknown kennel, or from the CATCH block (ROLLBACK, HC.ErrorLog row, ERROR_MESSAGE()).",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 = saved, 0 = error/not authorised"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Error text when Success=0"
+        }
+      ]
+    }
   ],
   "sideEffects": [
-    "Replaces the grantor's global grant rows (KennelId NULL) in HC.RolePermission",
-    "Recompiles HC.ServerStatus.PermissionMatrixJson + per-kennel HC.Kennel.PermissionOverrideJson and bumps the watermark"
+    "DELETE + INSERT HC.RolePermission for the grantor in the chosen scope (global: Allowed 1 rows; kennel: +1 / -1 rows)",
+    "EXEC HC6.nonApi_compilePermissionMatrix @kennelId = scope — recompiles HC.ServerStatus.PermissionMatrixJson and the per-kennel HC.Kennel.PermissionOverrideJson, bumps the watermark",
+    "On a runtime error: INSERT HC.ErrorLog after the ROLLBACK"
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Unknown function keys dropped silently",
+      "detail": "Lines 84-86, 95-97, 100-102 JOIN the split keys to HC.PermissionFunction; a misspelt or retired key is ignored rather than reported, and a key listed in both @grantedKeys and @revokedKeys gets two rows (+1 and -1)."
+    }
+  ],
   "breakingChangeRules": [
-    "functionKeys delimiter is '|' (never comma)",
-    "Never change the Success/ErrorMessage envelope shape"
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers",
+    "functionKeys delimiter is '|' (never comma)"
   ]
 }

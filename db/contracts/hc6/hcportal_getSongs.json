@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_getSongs",
-  "version": "1.0.0",
-  "description": "Returns all non-removed songs from HC.Song with a membership flag (isInKennel) indicating whether each song is assigned to the specified kennel. @publicKennelId is resolved to the internal HC.Kennel.id (@kennelId), which is then used in the LEFT JOIN to HC.KennelSongMap — fixing the HC5 bug where the join used @publicKennelId directly and isInKennel always returned 0. AddedBy_KennelName is resolved via a LEFT JOIN to HC.Kennel on Song.AddedBy_KennelId. Read-only query; uses READ UNCOMMITTED isolation level. isInKennel is returned as SMALLINT (not BIT).",
+  "version": "1.1.0",
+  "description": "Returns all non-removed songs from HC.Song with a membership flag (isInKennel) indicating whether each song is assigned to the specified kennel. @publicKennelId is resolved to the internal HC.Kennel.id (@kennelId), which is then used in the LEFT JOIN to HC.KennelSongMap — fixing the HC5 bug where the join used @publicKennelId directly and isInKennel always returned 0. AddedBy_KennelName is resolved via a LEFT JOIN to HC.Kennel on Song.AddedBy_KennelId. Device-bound portal auth via HC6.ValidatePortalAuth with @publicKennelId baked into the token's parameter string; no kennel permission gate (the song catalogue is global). Read-only query; uses READ UNCOMMITTED isolation level. isInKennel is returned as SMALLINT (not BIT).",
   "parameters": [
     {
       "name": "deviceId",
@@ -30,10 +30,20 @@
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "description": "Returned on NULL @publicKennelId (checked BEFORE auth), auth failure, or from the CATCH block (ERROR_MESSAGE()).",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Human-readable error message"
+        }
       ]
     },
     {
@@ -111,11 +121,11 @@
           "name": "AddedBy_KennelId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": true,
-          "description": "Kennel that originally added this song (HC.Song.AddedBy_KennelId)"
+          "description": "PUBLIC id of the kennel that added the song: HC.Kennel.PublicKennelId resolved through Song.AddedBy_KennelId (LEFT JOIN; NULL when none). Not the internal Song.AddedBy_KennelId despite the name."
         },
         {
           "name": "AddedBy_KennelName",
-          "type": "NVARCHAR(200)",
+          "type": "NVARCHAR(250)",
           "nullable": true,
           "description": "Display name of the kennel that originally added this song. Resolved via LEFT JOIN HC.Kennel ON HC.Kennel.id = Song.AddedBy_KennelId. NULL if AddedBy_KennelId is NULL or the kennel no longer exists."
         },
@@ -158,5 +168,27 @@
     "Never rename a parameter",
     "Never change a parameter type",
     "Never change a sentinel value meaning"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 106-109: CATCH returns the envelope without an HC.ErrorLog row."
+    },
+    {
+      "severity": "low",
+      "issue": "Unknown kennel is silent",
+      "detail": "Lines 69-70: a @publicKennelId that matches no kennel leaves @kennelId NULL; the SP returns every song with isInKennel = 0 instead of an error."
+    },
+    {
+      "severity": "low",
+      "issue": "Column alias hides an id swap",
+      "detail": "Line 88 returns the PUBLIC kennel id under the name AddedBy_KennelId, the same name as the internal HC.Song column."
+    },
+    {
+      "severity": "low",
+      "issue": "Dirty reads",
+      "detail": "Line 45 READ UNCOMMITTED plus NOLOCK hints on lines 95-100."
+    }
   ]
 }

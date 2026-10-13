@@ -1,0 +1,88 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_setDirectMessagePreference",
+  "version": "1.0.0",
+  "description": "The public web's door to HC6.hcapp_setDirectMessagePreference (direct messages E9.F1.S18, who may send the caller a DM). A thin 'wrap for writes' wrapper: it EXECs hcapp_setDirectMessagePreference with the browser's own device credentials and adds no checks of its own, so the web and the app cannot drift. Auth, permission gate and every rule live in hcapp_setDirectMessagePreference (the token must be signed for 'hcapp_setDirectMessagePreference', because the inner SP validates under its own name). Reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET. Returns hcapp_setDirectMessagePreference's rowsets unchanged.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "The calling browser's HC.Device id (the browser is a registered device). No SQL default."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Device-bound token signed for 'hcapp_setDirectMessagePreference' (the inner SP validates it under its own name via HC6.ValidateAppAuth). No SQL default."
+    },
+    {
+      "name": "preference",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Hasher.Preferences",
+      "description": "0 friends only, 1 anyone, 2 nobody. Default NULL; NULL or any other value is refused with 2000. Written as (@preference * 16384) into bits 0x4000|0x8000 of the INT Preferences column. Passed straight to hcapp_setDirectMessagePreference."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "From hcapp_setDirectMessagePreference: Auth failure (ValidateAppAuth) returns the error detail ALONE at index 0 — no envelope. Other failures return {success:0, errorCode, errorType} at index 0 then this detail at index 1: 2000 'Bad preference' (errorType 2, logged), 2001 unhandled (errorType 5, CATCH, logged)."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "From hcapp_setDirectMessagePreference: On success.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1"
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Preference",
+      "description": "From hcapp_setDirectMessagePreference: On success: the value now stored, decoded from the row by HC6.DirectMessagePreference(Preferences).",
+      "columns": [
+        {
+          "name": "Preference",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 friends only, 1 anyone, 2 nobody."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "EXEC HC6.hcapp_setDirectMessagePreference — everything it does:",
+    "  UPDATE HC.Hasher SET Preferences = (Preferences & ~0xC000) | (@preference * 0x4000) WHERE id = @userId (line 56); the table trigger stamps updatedAt so the row re-syncs to the hasher's devices.",
+    "  INSERT HC.ErrorLog on refusal (line 45) and in the CATCH (line 65).",
+    "On an error that escapes the inner SP (or the EXEC itself) the CATCH rolls back, logs 'Unhandled error in publicWeb_setDirectMessagePreference' to HC.ErrorLog (HcVersion '<web>', deviceId) and re-THROWs, so the API returns 500."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken (line 14-15) have no SQL default. A caller that omits one fails with 'expects parameter' before the SP runs: PublicWebAdminApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

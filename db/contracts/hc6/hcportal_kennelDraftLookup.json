@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_kennelDraftLookup",
-  "version": "1.0.0",
-  "description": "New kennel from a website (E12.F1.S10): the KennelFromWebsite API's gate, plus possible duplicates (live kennels and open requests with the same website, name or short name) and our city rows matching the place the site names. Reads only.",
+  "version": "1.1.0",
+  "description": "New kennel from a website (E12.F1.S10): the KennelFromWebsite API's gate (checked before it fetches a page or calls the AI), plus possible duplicates (live kennels and open requests — EXT.OfficeForms_KennelImport RequestStatus 0/1 — with the same website, name or short name) and our city rows matching the place the site names. Reads only. Auth: HC6.ValidatePortalAuth; caller must hold a live HC.PlatformAdmin row with CanEditKennel = 1.",
   "parameters": [
     {
       "name": "deviceId",
@@ -16,28 +16,29 @@
       "type": "NVARCHAR(1000)",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Portal token; standard param string (device secret). Caller must be an HC.PlatformAdmin with CanEditKennel."
+      "description": "Portal token (standard param string), validated via HC6.ValidatePortalAuth."
     },
     {
       "name": "websiteUrl",
       "type": "NVARCHAR(MAX)",
       "nullable": true,
       "mapsToColumn": "Kennel.KennelWebsiteUrl",
-      "description": "Compared as host+path, ignoring http/https, www. and a trailing slash."
+      "description": "Compared as host+path, ignoring http/https, www. and trailing slashes; held in an NVARCHAR(500) local, and ignored when shorter than 4 characters after normalising.",
+      "typeMismatch": "NVARCHAR(MAX) parameter vs Kennel.KennelWebsiteUrl NVARCHAR(500); the normalised value is assigned to an NVARCHAR(500) local (line 71), so a longer URL is silently truncated before comparison."
     },
     {
       "name": "kennelName",
       "type": "NVARCHAR(MAX)",
       "nullable": true,
       "mapsToColumn": "Kennel.KennelName",
-      "description": ""
+      "description": "Exact-match candidate for Kennel.KennelName / request KennelName. Trimmed; blank = not given."
     },
     {
       "name": "kennelShortName",
       "type": "NVARCHAR(MAX)",
       "nullable": true,
       "mapsToColumn": "Kennel.KennelShortName",
-      "description": ""
+      "description": "Exact-match candidate for KennelShortName or KennelUniqueShortName (requests: KennelShortName). Trimmed; blank = not given."
     },
     {
       "name": "country",
@@ -65,7 +66,7 @@
     {
       "index": 0,
       "name": "Envelope",
-      "description": "Success = 0 with ErrorMessage on auth or validation failure (then no further rowsets).",
+      "description": "Success = 0 with ErrorMessage on auth failure or missing CanEditKennel (then no further rowsets). Success = 1, ErrorMessage NULL, is sent first on success and rowsets 1-3 follow. A runtime error is logged to HC.ErrorLog and re-thrown (THROW).",
       "columns": [
         {
           "name": "Success",
@@ -75,7 +76,7 @@
         },
         {
           "name": "ErrorMessage",
-          "type": "NVARCHAR(MAX)",
+          "type": "NVARCHAR(255)",
           "nullable": true,
           "description": ""
         }
@@ -84,19 +85,19 @@
     {
       "index": 1,
       "name": "Duplicates",
-      "description": "At most 10, website matches first.",
+      "description": "At most 10: kennels matching on website first (rank 0), then kennels matching on name/short name (rank 1), then open requests (rank 2); ties by name.",
       "columns": [
         {
           "name": "kind",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(10)",
           "nullable": false,
           "description": "'kennel' | 'request'"
         },
         {
           "name": "name",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(250)",
           "nullable": true,
-          "description": ""
+          "description": "Kennel.KennelName or the request's KennelName"
         },
         {
           "name": "slug",
@@ -108,11 +109,11 @@
           "name": "website",
           "type": "NVARCHAR",
           "nullable": true,
-          "description": ""
+          "description": "Kennel.KennelWebsiteUrl or the request's KennelUrl, as stored"
         },
         {
           "name": "reason",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(10)",
           "nullable": false,
           "description": "'website' | 'name' | 'short name'"
         }
@@ -121,7 +122,7 @@
     {
       "index": 2,
       "name": "CityCandidates",
-      "description": "At most 8, best first.",
+      "description": "At most 8 live cities (only when @city is given), score DESC then CityName. Matched on CityName or City_ASCII exactly, or by prefix from 3 letters.",
       "columns": [
         {
           "name": "cityId",
@@ -131,32 +132,32 @@
         },
         {
           "name": "cityName",
-          "type": "NVARCHAR",
-          "nullable": true,
+          "type": "NVARCHAR(100)",
+          "nullable": false,
           "description": ""
         },
         {
           "name": "regionId",
           "type": "NVARCHAR(40)",
-          "nullable": true,
+          "nullable": false,
           "description": ""
         },
         {
           "name": "regionName",
-          "type": "NVARCHAR",
-          "nullable": true,
+          "type": "NVARCHAR(100)",
+          "nullable": false,
           "description": ""
         },
         {
           "name": "countryId",
           "type": "NVARCHAR(40)",
-          "nullable": true,
+          "nullable": false,
           "description": ""
         },
         {
           "name": "countryName",
-          "type": "NVARCHAR",
-          "nullable": true,
+          "type": "NVARCHAR(250)",
+          "nullable": false,
           "description": ""
         },
         {
@@ -170,25 +171,38 @@
     {
       "index": 3,
       "name": "Country",
-      "description": "The country alone when it matched (0 or 1 row).",
+      "description": "0 or 1 row: the live country matched by CountryName (preferred) or CountryCode.",
       "columns": [
         {
           "name": "countryId",
           "type": "NVARCHAR(40)",
-          "nullable": true,
+          "nullable": false,
           "description": ""
         },
         {
           "name": "countryName",
-          "type": "NVARCHAR",
-          "nullable": true,
+          "type": "NVARCHAR(250)",
+          "nullable": false,
           "description": ""
         }
       ]
     }
   ],
-  "sideEffects": [],
-  "codeSmells": [],
+  "sideEffects": [
+    "On a runtime error: INSERT HC.ErrorLog, then THROW"
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Website normalised into NVARCHAR(500)",
+      "detail": "Line 71: @websiteUrl (NVARCHAR(MAX)) is LOWER/TRIMmed into DECLARE @site NVARCHAR(500); a longer URL is truncated silently and could then match a different site. Read-only, so the cost is a wrong duplicate hint."
+    },
+    {
+      "severity": "low",
+      "issue": "URL normalisation written three times",
+      "detail": "Lines 71-77, 85-88 and 93-96 repeat the http/https/www/trailing-slash normalisation; the variable version strips every trailing slash, the CTE versions only one, so 'a.org//' and 'a.org/' compare differently."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

@@ -49,6 +49,19 @@ BEGIN TRY
         FROM HC.Kennel k
         WHERE k.PublicKennelId = @publicKennelId AND k.deleted = 0 AND k.removed = 0;
 
+    -- A kennel was asked for and not found (2026-10-13): refuse, rather than
+    -- quietly emailing the all-kennels report the member did not ask for.
+    IF (@publicKennelId IS NOT NULL AND @kennelId = '00000000-0000-0000-0000-000000000000')
+    BEGIN
+        DECLARE @nfId UNIQUEIDENTIFIER = NEWID();
+        INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, deviceId)
+        VALUES (@nfId, '<web>', 'Report kennel not found', CAST(@publicKennelId AS NVARCHAR(40)), @procName, @userId, @deviceId);
+        SELECT 0 AS success, 1240 AS errorCode, 3 AS errorType;
+        SELECT @nfId AS errorId, 3 AS errorType, 1240 AS errorCode, 'Kennel not found' AS errorTitle,
+               'That kennel could not be found, so no report was sent.' AS errorUserMessage, @procName AS errorProc;
+        RETURN;
+    END
+
     SELECT 1 AS success, NULL AS errorCode, NULL AS errorType;
 
     SELECT

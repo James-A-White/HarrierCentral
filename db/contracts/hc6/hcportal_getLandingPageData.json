@@ -1,16 +1,9 @@
 {
   "schema": "HC6",
   "name": "hcportal_getLandingPageData",
-  "version": "1.1.0",
-  "description": "Returns landing page data for an authenticated portal user. Updates the FCM token on the device if changed (after validation), logs portal access, and returns the user's profile and list of kennels the user follows with membership status and kennel details.",
+  "version": "1.2.0",
+  "description": "Returns landing page data for an authenticated portal user (device-bound auth via HC6.ValidatePortalAuth; any signed-in portal user, no kennel permission gate). After validation it updates the device's FCM token when it has changed and logs a HC.PortalAccess row in one transaction, then returns the user's profile and the kennels the user follows with membership status, kennel details and portal-only derived permissions (edit/design website, manage products) computed with the Permissions V2 effective-grant logic and the SuperAdmin (0x40000000) bypass.",
   "parameters": [
-    {
-      "name": "deviceId",
-      "type": "UNIQUEIDENTIFIER",
-      "nullable": true,
-      "mapsToColumn": "Device.id",
-      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
-    },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
@@ -24,16 +17,33 @@
       "nullable": true,
       "mapsToColumn": "Device.FcmToken",
       "description": "Firebase Cloud Messaging token for push notifications. If the stored value differs from this, the Device record is updated."
+    },
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "description": "Returned on auth failure (from HC6.ValidatePortalAuth, ErrorMessage NVARCHAR(255)) or from the CATCH block (ERROR_MESSAGE()). Short-circuits; no data rowsets follow.",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Human-readable error message"
+        }
       ]
     },
     {
@@ -92,9 +102,9 @@
         },
         {
           "name": "kennelUniqueShortName",
-          "type": "NVARCHAR(25)",
-          "nullable": true,
-          "description": "Kennel unique short name (nullable)"
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "Kennel.KennelUniqueShortName (NOT NULL in HC.Kennel)"
         },
         {
           "name": "kennelLogo",
@@ -181,6 +191,12 @@
           "description": "Default run start time (CAST from Kennel.DefaultRunStartTime TIME to DATETIME)"
         },
         {
+          "name": "defaultRunDayOfWeek",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.DefaultRunDayOfWeek (1=Mon .. 7=Sun), COALESCE to 1 when NULL. Column added by db/hc6/portal/archive/add_DefaultRunDayOfWeek_to_Kennel.sql (not in the stale table script)."
+        },
+        {
           "name": "kennelLat",
           "type": "DECIMAL(18,14)",
           "nullable": true,
@@ -239,18 +255,53 @@
           "type": "INT",
           "nullable": true,
           "description": "App access flags for the user-kennel relationship from HC.HasherKennelMap"
+        },
+        {
+          "name": "canEditWebsite",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 if the user holds the SuperAdmin flag (AppAccessFlags & 0x40000000) on this kennel's map row, or any mmRole/appFlag grantor they hold is allowed FunctionKey 'editWebsite' (per-kennel HC.RolePermission override tri-state, else the global default). Mirrors HC6.CheckKennelPermission. Gates the Edit Website button."
+        },
+        {
+          "name": "canDesignWebsite",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 if the user holds the SuperAdmin flag (AppAccessFlags & 0x40000000) on this kennel's map row, or any mmRole/appFlag grantor they hold is allowed FunctionKey 'designWebsite' (per-kennel HC.RolePermission override tri-state, else the global default). Mirrors HC6.CheckKennelPermission. Gates the Design Website button."
+        },
+        {
+          "name": "canManageProducts",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 if the user holds the SuperAdmin flag (AppAccessFlags & 0x40000000) on this kennel's map row, or any mmRole/appFlag grantor they hold is allowed FunctionKey 'manageProducts' (per-kennel HC.RolePermission override tri-state, else the global default). Mirrors HC6.CheckKennelPermission. Gates the Products button; must agree with the HC6.CheckKennelPermission gate in hcportal_getKennelProducts."
         }
       ]
     }
   ],
   "sideEffects": [
-    "UPDATE HC.Device.FcmToken and updatedAt if @fcmToken differs from stored value (conditional, only when token has changed)",
-    "INSERT into HC.PortalAccess (hasherId) to log portal access"
+    "UPDATE HC.Device SET FcmToken = @fcmToken, updatedAt = GETDATE() WHERE id = @deviceId AND FcmToken != @fcmToken (inside the transaction)",
+    "INSERT HC.PortalAccess (hasherId) — one row per landing-page load (inside the same transaction)"
   ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",
     "Never change a parameter type",
     "Never change a sentinel value meaning"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 178-181: the CATCH rolls back and returns the envelope but writes no HC.ErrorLog row, so a runtime failure of the landing page leaves no server-side record."
+    },
+    {
+      "severity": "low",
+      "issue": "FCM token never set when the stored token is NULL",
+      "detail": "Line 73: `FcmToken != @fcmToken` is UNKNOWN when Device.FcmToken IS NULL, so a device with no token on file is never given one here. Also a NULL @fcmToken is silently a no-op (fine), but the NULL-stored case is a missed update."
+    },
+    {
+      "severity": "low",
+      "issue": "Effective-grant permission logic copied three times inline",
+      "detail": "Lines 122-166 repeat the HC6.CheckKennelPermission effective-grant EXISTS block for editWebsite, designWebsite and manageProducts. A change to the tri-state rules must be made in four places (here x3 plus the helper) or the UI gate and the SP gate disagree."
+    }
   ]
 }

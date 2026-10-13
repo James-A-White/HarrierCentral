@@ -1,47 +1,47 @@
 {
   "schema": "HC6",
   "name": "publicWeb_confirmKennelRequest",
-  "version": "1.1.0",
-  "description": "Second half of the add-kennel form: the emailed code moves the request 0 → 1 (review queue). 5 wrong codes → spam (4). Codes last 48 h. Idempotent. PublicWebAdminApi only, behind HC_INTERNAL_SECRET; the API emails the reviewers and strips their addresses.",
+  "version": "1.2.0",
+  "description": "Second half of the hashruns.org/add-kennel form (E12.F1.S8): the requester types back the six-digit code emailed to them and the EXT.OfficeForms_KennelImport request moves from awaiting email (0) to new (1) — only then does it enter the portal's review queue. The spam wall: five wrong codes mark the request spam (4) and clear the code; a code is good for 48 hours (SubmittedOn), after which re-sending the form issues a new one on the same row. Confirming an already new / approved request (status 1 or 2) succeeds again with alreadyConfirmed = 1. The row is read WITH (UPDLOCK, HOLDLOCK) inside the transaction. On a first confirmation the API emails the reviewers listed in rowset 2 and strips that rowset. No SP-level auth: reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET.",
   "parameters": [
     {
       "name": "requestId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "OfficeForms_KennelImport.KennelImportId",
-      "description": ""
+      "description": "EXT.OfficeForms_KennelImport.KennelImportId from the form's first step. Default NULL → 1730."
     },
     {
       "name": "code",
       "type": "NVARCHAR(MAX)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "OfficeForms_KennelImport.ConfirmCode",
-      "description": "six digits; spaces ignored"
+      "description": "The six-digit code; spaces are removed and the value trimmed before comparison. Default NULL → 1732 (counts as a wrong attempt)."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "Envelope",
-      "description": "{ success, errorCode, errorType } — lower-case, as publicWeb_createMember, so the shim passes a refusal through for the page to show.",
+      "description": "Always first: { success, errorCode, errorType } — lower-case, as publicWeb_createMember, so the shim passes a refusal through for the page to show. Success has errorCode = 0 and errorType = 0, not NULL.",
       "columns": [
         {
           "name": "success",
           "type": "INT",
           "nullable": false,
-          "description": ""
+          "description": "1 confirmed (or already was); 0 refused or failed."
         },
         {
           "name": "errorCode",
           "type": "INT",
           "nullable": false,
-          "description": "0 on success; 17xx on refusal"
+          "description": "0 on success; 1730 not confirmable (no such request, not awaiting email, or no code), 1731 expired (> 48 h), 1732 wrong code, 1739 unhandled."
         },
         {
           "name": "errorType",
           "type": "INT",
           "nullable": false,
-          "description": "2 validation, 5 unhandled"
+          "description": "0 on success; 2 for 1730-1732, 5 for 1739."
         }
       ]
     },
@@ -53,7 +53,7 @@
           "name": "errorId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": ""
+          "description": "1739: the HC.ErrorLog row id. 1730-1732: a fresh NEWID() with NO HC.ErrorLog row behind it."
         },
         {
           "name": "errorType",
@@ -69,7 +69,7 @@
         },
         {
           "name": "errorTitle",
-          "type": "NVARCHAR(100)",
+          "type": "NVARCHAR(20)",
           "nullable": false,
           "description": ""
         },
@@ -85,7 +85,8 @@
           "nullable": false,
           "description": ""
         }
-      ]
+      ],
+      "description": "On failure. errorTitle 'Code not accepted' (1730-1732) or 'Something went wrong' (1739). errorUserMessage is the text shown on the form; after the fifth wrong code it says to fill the form in again. No debugMessage column."
     },
     {
       "index": 1,
@@ -95,32 +96,33 @@
           "name": "requestId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": ""
+          "description": "@requestId echoed."
         },
         {
           "name": "kennelName",
           "type": "NVARCHAR(250)",
           "nullable": false,
-          "description": ""
+          "description": "EXT.OfficeForms_KennelImport.KennelName."
         },
         {
           "name": "alreadyConfirmed",
           "type": "INT",
           "nullable": false,
-          "description": ""
+          "description": "1 when the request was already status 1 or 2 (nothing changed); 0 on this confirmation."
         }
-      ]
+      ],
+      "description": "On success (including alreadyConfirmed)."
     },
     {
       "index": 2,
       "name": "Reviewers (first confirmation only)",
-      "description": "Platform admins with CanEditKennel plus harriercentral@gmail.com. Removed by the API after the notice is sent.",
+      "description": "First confirmation only (alreadyConfirmed = 0): HC.Hasher.Email of every live HC.PlatformAdmin with CanEditKennel = 1 and a non-empty address, UNION 'harriercentral@gmail.com'. The API sends the 'kennel request waiting' notice and removes this rowset from the reply.",
       "columns": [
         {
           "name": "reviewerEmail",
           "type": "NVARCHAR(250)",
           "nullable": false,
-          "description": ""
+          "description": "Reviewer address (de-duplicated by UNION)."
         }
       ]
     }
@@ -132,10 +134,18 @@
     "1739": "unhandled"
   },
   "sideEffects": [
-    "UPDATE EXT.OfficeForms_KennelImport RequestStatus, ConfirmedAt, ConfirmAttempts, ConfirmCode",
-    "API: 'kennel request waiting' email to reviewers"
+    "UPDATE EXT.OfficeForms_KennelImport on a wrong code (1732): ConfirmAttempts + 1; at the fifth, RequestStatus = 4 (spam), ConfirmCode = NULL, ReviewNote 'Marked as spam: five wrong confirmation codes'.",
+    "UPDATE EXT.OfficeForms_KennelImport on success: RequestStatus = 1, ConfirmedAt, ConfirmCode = NULL, updatedAt.",
+    "INSERT HC.ErrorLog in the CATCH (1739); the transaction is rolled back first.",
+    "API (PublicWebAdminApi): 'kennel request waiting' email to the rowset 2 reviewers on a first confirmation."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Refusal errorId has no ErrorLog row",
+      "detail": "Lines 92-94 return errorId = NEWID() for 1730-1732 without inserting HC.ErrorLog, so the id the page could show matches nothing server-side. Wrong codes are expected traffic, so not logging them is defensible — but then errorId should be NULL rather than a dangling id."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

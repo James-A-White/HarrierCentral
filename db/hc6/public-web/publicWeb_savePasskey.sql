@@ -1,8 +1,8 @@
 CREATE OR ALTER PROCEDURE [HC6].[publicWeb_savePasskey]
     @deviceId     UNIQUEIDENTIFIER,
     @accessToken  NVARCHAR(1000),
-    @credentialId NVARCHAR(500),
-    @publicKey    NVARCHAR(2000),
+    @credentialId NVARCHAR(500) = NULL,
+    @publicKey    NVARCHAR(2000) = NULL,
     @counter      BIGINT,
     @transports   NVARCHAR(100) = NULL
 AS

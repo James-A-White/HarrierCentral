@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_setChatRoomParticipation",
-  "version": "1.0.0",
-  "description": "Sets how the calling hasher participates in ONE global chat room, from their settings console (James, 2026-09-14): 0 participate with push notifications (the default — no row means 0), 1 participate with badges only (silent push), 2 do not participate (the room is not listed and nothing is pushed). Stored on HC.EventMessageBadgeCounts.ParticipationState, the existing per-hasher per-room row, keyed (UserId, EventId NULL, KennelId NULL, ThreadId NULL, MessageType = @roomType); MERGE so a room never opened can still be configured, with LastSequenceCount 0 so the unread count stays honest. Auth: HC6.ValidateAppAuth (spNumber 107, @param NULL). Permission gate: HC6.UserMayEnterChatRoom — the same gate as reading and sending, so this cannot be used to probe which rooms exist. hcapp_sendRoomMessage reads the state for its push audience (0 → visible, 1 → silent, 2 → none). Write SP: standard success envelope.",
+  "version": "1.1.0",
+  "description": "Sets how the calling hasher participates in ONE global chat room, from their settings console (James, 2026-09-14): 0 participate with push notifications (the default — no row means 0), 1 participate with badges only (silent push), 2 do not participate (the room is not listed and nothing is pushed). Stored on HC.EventMessageBadgeCounts.ParticipationState, the existing per-hasher per-room row, keyed (UserId, EventId NULL, KennelId NULL, ThreadId NULL, MessageType = @roomType); MERGE so a room never opened can still be configured, with LastSequenceCount 0 so the unread count stays honest. Auth: HC6.ValidateAppAuth (spNumber 107, @param NULL). Permission gate: HC6.UserMayEnterChatRoom — the same gate as reading and sending, so this cannot be used to probe which rooms exist. hcapp_sendRoomMessage reads the state for its push audience (0 → visible, 1 → silent, 2 → none). Write SP: standard success envelope. Since 2026-10-13 its MERGE into HC.EventMessageBadgeCounts holds HOLDLOCK: the table has no unique key on (UserId, EventId, KennelId, ThreadId, MessageType), and two concurrent MERGEs could each insert a row.",
   "parameters": [
     {
       "name": "deviceId",
@@ -44,8 +44,18 @@
       "name": "Envelope",
       "description": "Every other outcome. Success = 1 after the commit. Success = 0 with ErrorMessage (and an HC.ErrorLog row) when @roomType is NULL or @participationState not in (0,1,2) — 'That setting could not be saved.'; when the caller may not enter the room — 'That chat room is for the hashers who hold its role.'; or from the CATCH (ERROR_MESSAGE()).",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "1 saved, 0 refused or failed." },
-        { "name": "ErrorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "NULL on success; a user-facing sentence, or ERROR_MESSAGE() from the CATCH, otherwise." }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 saved, 0 refused or failed."
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "NULL on success; a user-facing sentence, or ERROR_MESSAGE() from the CATCH, otherwise."
+        }
       ]
     }
   ],

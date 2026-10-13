@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_markDownDownDone",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Marks a DownDown charge as done (IsDone = 1, IsCancelled = 0 — the two flags are mutually exclusive, so marking done also un-cancels). Idempotent. Auth: HC6.ValidateAppAuth (spNumber 57, @param NULL); permission gate HC6.CheckKennelPermission 'manageDownDowns' in @kennelId (feature 'Manage Down Downs', GM or RA by default — see /hc-authorizations). New feature — no HC5 equivalent.",
   "parameters": [
     {
@@ -21,23 +21,23 @@
     {
       "name": "kennelId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "DownDowns.KennelId",
-      "description": "Kennel that owns the event — permission scope and part of the UPDATE WHERE. NULL or zero-UUID: errorCode 1234, errorType 2."
+      "description": "Kennel that owns the event — permission scope and part of the UPDATE WHERE. NULL or zero-UUID: errorCode 1234, errorType 2. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "DownDowns.EventId",
-      "description": "Event the DownDown belongs to; part of the UPDATE WHERE. NULL or zero-UUID: 1234/2."
+      "description": "Event the DownDown belongs to; part of the UPDATE WHERE. NULL or zero-UUID: 1234/2. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "downDownId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "DownDowns.id",
-      "description": "DownDown to mark as done. NULL or zero-UUID: 1234/2. No row matching all three ids: 4041/3."
+      "description": "DownDown to mark as done. NULL or zero-UUID: 1234/2. No row matching all three ids: 4041/3. Defaults to NULL when omitted (2026-10-13)."
     }
   ],
   "rowsets": [
@@ -46,9 +46,24 @@
       "name": "ErrorEnvelope",
       "description": "On auth failure, missing parameter (1234/2), not authorised (1337/3), not found (4041/3) or unhandled error (1933/5): { success=0, errorCode, errorType }.",
       "columns": [
-        { "name": "success", "type": "INT", "nullable": false, "description": "Always 0 on error." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "Numeric error code." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "Error classification code." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Numeric error code."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error classification code."
+        }
       ]
     },
     {
@@ -56,9 +71,24 @@
       "name": "SuccessEnvelope",
       "description": "On success: { success=1, errorCode=NULL, errorType=NULL }. Mutually exclusive with ErrorEnvelope.",
       "columns": [
-        { "name": "success", "type": "INT", "nullable": false, "description": "Always 1 on success." },
-        { "name": "errorCode", "type": "INT", "nullable": true, "description": "Always NULL on success." },
-        { "name": "errorType", "type": "INT", "nullable": true, "description": "Always NULL on success." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1 on success."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "Always NULL on success."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "Always NULL on success."
+        }
       ]
     },
     {
@@ -75,7 +105,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "All five parameters (lines 3-7) have no SQL default. A client that omits @kennelId, @eventId or @downDownId gets an unlogged empty 500 before the SP runs, so the graceful 1234 'Missing parameter' check at line 66 is unreachable for an omitted parameter."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "medium",

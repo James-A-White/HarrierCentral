@@ -1,14 +1,14 @@
 {
   "schema": "HC6",
   "name": "hcportal_deleteEvent",
-  "version": "1.0.0",
-  "description": "Soft-deletes an event by setting Event.removed=1 and Event.updatedAt=GETDATE(), but only if no hashers have a checked-in attendance state (HasherEventMap.AttendenceState >= 20). Returns a plain Result string — callers must read the message text to distinguish success from blocked deletion. Does not throw an error rowset when deletion is blocked; only the ErrorEnvelope is returned on auth/validation failure.",
+  "version": "1.1.0",
+  "description": "Soft-deletes a run by setting HC.Event.removed = 1 and updatedAt = GETDATE(), but only if no hasher is checked in (HC.HasherEventMap.AttendenceState >= 20, counted under HOLDLOCK in the same transaction as the UPDATE). Auth: HC6.ValidatePortalAuth with @publicEventId as the callerParamString. Gate: the caller's HasherKennelMap row for the run's kennel must carry AppAccessFlags & 0x40000081 (superAdmin | authIsAdmin); otherwise it answers 'Event not found.' so the run's existence is not revealed. Returns a plain Result string after validation — callers must read its text to tell success from a blocked delete.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": "Device.id",
+      "mapsToColumn": null,
       "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
@@ -30,10 +30,20 @@
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on auth failure, NULL publicEventId, event not found, or runtime error. Short-circuits on first error.",
+      "description": "Returned on auth failure, NULL publicEventId, run not found, caller lacks admin flags ('Event not found.'), or runtime error (CATCH, ERROR_MESSAGE()). Short-circuits on the first error.",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(255)",
+          "nullable": true,
+          "description": "Human-readable error message"
+        }
       ]
     },
     {
@@ -41,7 +51,12 @@
       "name": "DeletionResult",
       "description": "Returned after validation passes (event found). Single row. Returned for both successful deletion and blocked deletion — callers must read the Result string to determine outcome.",
       "columns": [
-        { "name": "Result", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Outcome message. 'This run has been successfully removed' on success. 'Cannot delete this run because N Hasher(s) have been checked in to the run.' when AttendenceState >= 20 for one or more attendees. 'Event not found or already removed' if @@ROWCOUNT=0 after UPDATE (concurrent deletion edge case)." }
+        {
+          "name": "Result",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Outcome message. 'This run has been successfully removed' on success. 'Cannot delete this run because N Hasher(s) have been checked in to the run.' when AttendenceState >= 20 for one or more attendees. 'Event not found or already removed' if @@ROWCOUNT=0 after UPDATE (concurrent deletion edge case)."
+        }
       ]
     }
   ],
@@ -54,5 +69,32 @@
     "Never change a parameter type",
     "Never change the AttendenceState >= 20 threshold without coordinating with the portal client",
     "Never change the Result message strings without coordinating with callers that parse them"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH does not log to HC.ErrorLog",
+      "detail": "Lines 126-129: the CATCH rolls back and returns ERROR_MESSAGE() but writes no HC.ErrorLog row (the header says logging moved to the API shim), so a runtime failure has no server-side record."
+    },
+    {
+      "severity": "medium",
+      "issue": "Two rowset shapes for one call",
+      "detail": "Errors return {Success, ErrorMessage} (lines 45-80, 128); every post-validation outcome returns {Result} (lines 103-121), and success vs blocked is only distinguishable by parsing the text."
+    },
+    {
+      "severity": "low",
+      "issue": "Already-removed runs are not filtered",
+      "detail": "Line 60 resolves the run without removed = 0 / deleted = 0 and the UPDATE at line 95 has no removed = 0 predicate, so re-deleting a removed run reports success and bumps updatedAt; the @@ROWCOUNT = 0 branch (line 100) is effectively unreachable."
+    },
+    {
+      "severity": "low",
+      "issue": "Admin check bypasses CheckKennelPermission",
+      "detail": "Lines 72-81 test raw AppAccessFlags & 0x40000081 rather than HC6.CheckKennelPermission, so mismanagement-role grantors on HasherKennelMap cannot delete a run here even where they may edit it."
+    },
+    {
+      "severity": "low",
+      "issue": "GETDATE() into DATETIMEOFFSET",
+      "detail": "Line 96 writes GETDATE() (server-local, no offset) to HC.Event.updatedAt DATETIMEOFFSET(7); correct only while the server clock is UTC."
+    }
   ]
 }

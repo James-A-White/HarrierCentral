@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_setPlatformAdmin",
-  "version": "1.0.0",
-  "description": "Mint, change or de-mint a platform admin (E12.F7.S1): upsert on HC.PlatformAdmin.UserId; NULL capability = keep (0 for a new or revived row); @removed = 1 de-mints. Refuses: caller de-minting themselves or dropping their own CanManagePermissions; leaving nobody with CanManagePermissions; a disabled target. Logged to LOG.GeneralLog with before/after flags. Requires HC.PlatformAdmin.CanManagePermissions.",
+  "version": "1.1.0",
+  "description": "Mint, change or de-mint a platform admin (E12.F7.S1): upsert on HC.PlatformAdmin.UserId; NULL capability = keep (0 for a new or revived row); @removed = 1 de-mints. Refuses: caller de-minting themselves or dropping their own CanManagePermissions; leaving nobody with CanManagePermissions; a disabled target. Logged to LOG.GeneralLog with before/after flags. Requires HC.PlatformAdmin.CanManagePermissions. Auth: HC6.ValidatePortalAuth; the target row is locked WITH (UPDLOCK, HOLDLOCK) for the upsert.",
   "parameters": [
     {
       "name": "deviceId",
@@ -21,16 +21,16 @@
     {
       "name": "targetHasherId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "PlatformAdmin.UserId",
-      "description": "The person"
+      "description": "The person (HC.Hasher.id); must be a live account (Removed = 0). NULL returns 'A hasher is required'."
     },
     {
       "name": "removed",
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": "PlatformAdmin.removed",
-      "description": "1 de-mints; default 0"
+      "description": "1 de-mints; anything else is treated as 0 (default)."
     },
     {
       "name": "canViewMonitor",
@@ -65,7 +65,7 @@
     {
       "index": 0,
       "name": "Envelope",
-      "description": "{ Success, ErrorMessage }",
+      "description": "Always one row. Success = 0 on auth failure, missing CanManagePermissions, NULL target, disabled/unknown target, self de-mint or self drop of CanManagePermissions, de-minting someone who is not an admin, leaving nobody with CanManagePermissions (both after ROLLBACK), or from the CATCH block (ROLLBACK, HC.ErrorLog row, ERROR_MESSAGE()).",
       "columns": [
         {
           "name": "Success",
@@ -75,7 +75,7 @@
         },
         {
           "name": "ErrorMessage",
-          "type": "NVARCHAR(255)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
           "description": "Why, on 0"
         }
@@ -83,10 +83,17 @@
     }
   ],
   "sideEffects": [
-    "INSERT/UPDATE HC.PlatformAdmin",
-    "INSERT LOG.GeneralLog"
+    "INSERT or UPDATE HC.PlatformAdmin (upsert on UserId; a removed row is revived with unspecified flags reset to 0)",
+    "INSERT LOG.GeneralLog with before/after flags",
+    "On a runtime error: INSERT HC.ErrorLog after the ROLLBACK"
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Capability flags not range-checked",
+      "detail": "Lines 106-120 write @canViewMonitor … @canManagePermissions as given; a value such as 2 is stored, and readers test = 1, so it silently means 'no'."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

@@ -1,26 +1,27 @@
 {
   "schema": "HC6",
   "name": "publicWeb_resolveKennelsByUuid",
-  "version": "1.0.0",
-  "description": "Resolves one or more comma-separated PublicKennelId UUIDs to kennel slugs and optional custom domains. Used by the legacy URL shim to redirect old hashruns.org hash-based URLs (/#/RD?publicKennelIds=...) to the new path-based site. Malformed UUIDs are silently skipped via TRY_CAST. Requires SQL Server 2016+ for STRING_SPLIT. No authentication required.",
+  "version": "1.1.0",
+  "description": "Resolves one or more comma-separated PublicKennelId UUIDs to kennel slugs, names and optional custom domains, for the legacy URL shim that redirects old hashruns.org hash-based URLs (/#/RD?publicKennelIds=...) to the path-based site. Malformed UUIDs are skipped via TRY_CAST; deleted/removed kennels are omitted. Unauthenticated.",
   "parameters": [
     {
       "name": "PublicKennelIds",
       "type": "NVARCHAR(MAX)",
       "nullable": false,
       "mapsToColumn": "Kennel.PublicKennelId",
-      "description": "Comma-separated list of PublicKennelId UUIDs, e.g. '934306c8-035a-4af8-b4fa-a593bc28bf36' or '934306c8-...,7a1b2c3d-...'. Invalid UUID strings are silently ignored."
+      "description": "Comma-separated PublicKennelId UUIDs, as the legacy URLs carry them. Invalid entries are ignored. No SQL default.",
+      "typeMismatch": "Kennel.PublicKennelId is UNIQUEIDENTIFIER; the parameter is a delimited NVARCHAR(MAX) list split with STRING_SPLIT and TRY_CAST per item."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "ResolvedKennels",
-      "description": "One row per UUID that resolves to an active kennel. Zero rows when none of the UUIDs match. Order is not guaranteed.",
+      "description": "One row per list item that resolves to a live kennel (a UUID repeated in the list returns its kennel twice). Zero rows when none match. Order is not guaranteed.",
       "columns": [
         {
           "name": "KennelSlug",
-          "type": "NVARCHAR(100)",
+          "type": "NVARCHAR(50)",
           "nullable": false,
           "description": "HC.Kennel.KennelUniqueShortName — used to build the new path-based URL"
         },
@@ -37,10 +38,45 @@
           "description": "Custom domain (e.g. 'lh3.com') if the kennel is on tier 3; NULL otherwise. The redirect should use the custom domain when present."
         }
       ]
+    },
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Instead of ResolvedKennels on a runtime error (CATCH).",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": false,
+          "description": "ERROR_MESSAGE()"
+        }
+      ]
     }
   ],
   "sideEffects": [],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@PublicKennelIds (line 2) has no SQL default. A caller that omits it fails with 'expects parameter' before the SP runs: the API shim's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
+    },
+    {
+      "severity": "low",
+      "issue": "Comma delimiter",
+      "detail": "Line 38 splits on ',' where the project rule is '|'. Deliberate: the list is copied verbatim from legacy inbound URLs that used commas, and UUIDs cannot contain either character."
+    },
+    {
+      "severity": "low",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 44-47 return { Success = 0, ErrorMessage } without an HC.ErrorLog row; the shim's generic log of the envelope is the only record."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove KennelSlug, KennelName, or CustomDomain columns — all three are consumed by the Next.js shim",
     "Never change malformed-UUID behaviour to throw — silent skip is intentional for robustness with old inbound links"

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "nonApi_getUserInviteCode",
-  "version": "1.0.0",
-  "description": "Looks up or generates a 6-letter uppercase invite code for the hasher with the given email address and returns it. The code is stored in HC.Hasher.ResetCode with a 'URC:' prefix and reused if generated within the last 60 minutes to prevent spam. Called only from the EmailInviteCode Azure Function — never from the app or portal directly. Returns the raw 6-letter code (prefix stripped) on success, or a human-readable error message when the email is not found.",
+  "version": "1.1.0",
+  "description": "Internal, no auth. Called only by the EmailInviteCode Azure Function (api/Endpoints/EmailInviteCode.cs) — never by the app or portal. Resolves the live hasher (Removed = 0) for @email, calls HC6.nonApi_ensureUserInviteCode with @rotateIfOlderThanMinutes = 10080 so the hasher holds a compliant 'URC:' + six-letter code that lives a WEEK (2026-10-04: it was 60 minutes, and asking again an hour later killed the code already sent), then returns the code with the 'URC:' prefix stripped — or a human-readable not-found sentence. Asking again within the week returns the same code.",
   "parameters": [
     {
       "name": "email",
@@ -20,41 +20,46 @@
       "columns": [
         {
           "name": "inviteCode",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(50)",
           "nullable": false,
-          "description": "The 6-letter uppercase invite code with the 'URC:' prefix stripped, or the string 'The email address provided was not found in our database. Please try another email address.' if the email was not found or the hasher is removed (Removed != 0)."
+          "description": "The six-letter code ('URC:' stripped), or 'The email address provided was not found in our database. Please try another email address.' when no live hasher has that address. NVARCHAR(50) on success; the COALESCE widens to fit the sentence."
         }
       ]
     }
   ],
   "sideEffects": [
-    "When a new code is needed (no existing code, or existing code is older than 60 minutes): updates HC.Hasher.ResetCode = 'URC:' + generated_code and HC.Hasher.ResetCodeLastUpdated = GETDATE() for the matching email.",
-    "Code generation loops up to 10 times to find a unique code; uniqueness is checked against HC.Hasher.ResetCode across all hashers."
+    "EXEC HC6.nonApi_ensureUserInviteCode @userId, @rotateIfOlderThanMinutes = 10080 — may UPDATE HC.Hasher.ResetCode / ResetCodeLastUpdated (a non-compliant code, or a compliant one older than a week, is replaced), which fires the Hasher triggers (updatedAt; trgGenerateQrCode re-validates ResetCode)."
   ],
   "codeSmells": [
     {
       "severity": "medium",
-      "issue": "Success vs. error indistinguishable from rowset shape alone",
-      "detail": "Both the success path (6-letter code) and the not-found path (long error sentence) return a single inviteCode column. The C# EmailInviteCode caller must inspect the value to determine which case it received. A structured error rowset or a separate success flag column would be cleaner."
+      "issue": "SP body not wrapped in TRY/CATCH",
+      "detail": "Lines 34-59 have no TRY/CATCH. The helper logs its own errors and re-throws, but an error in the lookups here (lines 35, 54) reaches EmailInviteCode as a raw exception with no HC.ErrorLog row from this SP (CLAUDE.md 'TRY/CATCH is mandatory on EVERY SP')."
     },
     {
       "severity": "medium",
-      "issue": "ResetCode column is shared with QR code generation infrastructure",
-      "detail": "HC.Hasher.ResetCode (with prefix 'URC:') is reused as the invite code store. The column is also managed by the trgGenerateQrCode trigger, which can overwrite it on certain INSERT/UPDATE paths. A race condition between this SP and the trigger is theoretically possible."
+      "issue": "Parameter without a default",
+      "detail": "@email (line 2) has no SQL default. The one C# caller always supplies it."
+    },
+    {
+      "severity": "medium",
+      "issue": "Success vs. error indistinguishable from rowset shape alone",
+      "detail": "Both paths return one inviteCode column (lines 56-59); EmailInviteCode must inspect the value to tell a code from the not-found sentence."
     },
     {
       "severity": "low",
-      "issue": "GETDATE() used instead of SYSUTCDATETIME() for ResetCodeLastUpdated",
-      "detail": "The 60-minute staleness check uses ABS(DATEDIFF(minute, @ResetCodeLastUpdated, GETDATE())), which uses local server time. Other SPs use SYSDATETIMEOFFSET(). Inconsistent time function usage; no practical impact unless the server timezone is not UTC."
+      "issue": "Email lookup is not deterministic when two live accounts share an address",
+      "detail": "Line 35 assigns from SELECT … WHERE email = @email AND Removed = 0 with no ORDER BY; IX on Email is not unique-filtered on Removed, so a duplicate live address picks an arbitrary account."
     },
     {
       "severity": "low",
-      "issue": "WHILE loop in code generation without guaranteed termination on extreme collision",
-      "detail": "The loop guard is @stop < 10 but sets @stop = 10 on successful code generation. If all 10 iterations collide (probability ≈ 26^-54, effectively impossible), the SP exits silently without generating a code, and the SELECT returns whatever the current ResetCode value is (possibly an old code from before this call)."
+      "issue": "ResetCode is also policed by trgGenerateQrCode",
+      "detail": "The HC.Hasher trigger (db/schema/tables/HC.Hasher.Table.sql lines 194-244) rewrites ResetCode when it collides or lacks 'URC:'. The helper always writes a unique 'URC:' value, so they agree today; two places now define a valid code."
     }
   ],
   "breakingChanges": [
     "HC5 contained a hardcoded email override (james@jamesawhite.com → 'NCCARY'). HC6 removes this testing backdoor.",
-    "HC5 inlined HC.NUMBER_TO_STR_BASE scalar function. HC6 replaces it with an inline WHILE loop using SUBSTRING(alphabet, ...) for direct uppercase-letter generation."
+    "HC5 inlined HC.NUMBER_TO_STR_BASE scalar function. HC6 replaces it with an inline WHILE loop using SUBSTRING(alphabet, ...) for direct uppercase-letter generation.",
+    "1.1.0 (2026-09-07 / 2026-10-04): generation moved to HC6.nonApi_ensureUserInviteCode (a non-compliant code such as '######' is replaced, not handed out); the reuse window went from 60 minutes to one week (10080). Rowset unchanged."
   ]
 }

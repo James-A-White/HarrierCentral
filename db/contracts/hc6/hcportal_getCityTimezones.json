@@ -1,14 +1,14 @@
 {
   "schema": "HC6",
   "name": "hcportal_getCityTimezones",
-  "version": "1.0.0",
-  "description": "Returns the relevant timezone(s) for a zone, identified either by @cityId (HC.City.TimezoneId) or — for free-text 'Other' locations — by a directly chosen @timezoneId (Event.TimezoneId); @cityId takes precedence. Derives the Standard and Daylight (DST) offsets via AT TIME ZONE, returning one row for zones without DST and two rows for zones that observe it. Used for the read-only timezone display in the run editor. Requires standard portal authentication.",
+  "version": "1.1.0",
+  "description": "Returns the relevant timezone(s) for a zone, identified either by @cityId (HC.City.TimezoneId) or — for free-text 'Other' locations — by a directly chosen @timezoneId (Event.TimezoneId); @cityId takes precedence. Derives the Standard and Daylight (DST) offsets via AT TIME ZONE, returning one row for zones without DST and two rows for zones that observe it. Used for the read-only timezone display in the run editor. Auth: HC6.ValidatePortalAuth (device-bound token, NULL callerParamString); no kennel permission gate. Offsets are probed at 1 Jan and 1 Jul of the current UTC year.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": "Device.id",
+      "mapsToColumn": null,
       "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
@@ -37,27 +37,74 @@
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "description": "Returned instead of the result on auth failure or a runtime error from the CATCH block (e.g. an unknown Windows zone name in AT TIME ZONE).",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Auth error text or ERROR_MESSAGE()"
+        }
       ]
     },
     {
       "index": 0,
       "name": "CityTimezonesResult",
-      "description": "1 row (no DST) or 2 rows (Standard + Daylight) for the city's time zone. Empty rowset if the city is not found or has no timezone. Standard always precedes Daylight (sortOrder).",
+      "description": "1 row (no DST) or 2 rows (Standard + Daylight), Standard first. Empty rowset with the same columns (SELECT TOP 0) when neither @cityId nor @timezoneId resolves to a DomainValues.Timezone row — including a city whose TimezoneId is NULL with no @timezoneId fallback.",
       "columns": [
-        { "name": "sortOrder", "type": "INT", "nullable": false, "description": "0 = Standard, 1 = Daylight" },
-        { "name": "kind", "type": "NVARCHAR(20)", "nullable": false, "description": "'Standard' or 'Daylight'" },
-        { "name": "utcOffset", "type": "NVARCHAR(20)", "nullable": false, "description": "Formatted offset, e.g. 'UTC+00:00', 'UTC-05:00'" },
-        { "name": "ianaTimeZone", "type": "NVARCHAR(300)", "nullable": true, "description": "IANA zone name from DomainValues.Timezone (e.g. 'Europe/London'); may be null" },
-        { "name": "windowsTimeZone", "type": "NVARCHAR(300)", "nullable": false, "description": "Windows time zone id from DomainValues.Timezone (e.g. 'GMT Standard Time')" },
-        { "name": "observesDst", "type": "SMALLINT", "nullable": false, "description": "1 if the zone observes daylight saving (two rows), 0 if not (single row)" }
+        {
+          "name": "sortOrder",
+          "type": "INT",
+          "nullable": false,
+          "description": "0 = Standard, 1 = Daylight"
+        },
+        {
+          "name": "kind",
+          "type": "NVARCHAR(20)",
+          "nullable": false,
+          "description": "'Standard' or 'Daylight'"
+        },
+        {
+          "name": "utcOffset",
+          "type": "VARCHAR(9)",
+          "nullable": false,
+          "description": "Formatted offset 'UTC±HH:MM', e.g. 'UTC+00:00', 'UTC-05:00' (built from VARCHAR pieces; the empty TOP 0 branch declares NVARCHAR(20))"
+        },
+        {
+          "name": "ianaTimeZone",
+          "type": "NVARCHAR(300)",
+          "nullable": true,
+          "description": "IANA zone name from DomainValues.Timezone (e.g. 'Europe/London'); may be null"
+        },
+        {
+          "name": "windowsTimeZone",
+          "type": "NVARCHAR(300)",
+          "nullable": false,
+          "description": "Windows time zone id from DomainValues.Timezone (e.g. 'GMT Standard Time')"
+        },
+        {
+          "name": "observesDst",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 if the zone observes daylight saving (two rows), 0 if not (single row)"
+        }
       ]
     }
   ],
   "sideEffects": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH does not log to HC.ErrorLog",
+      "detail": "The CATCH block (line 112) returns the Success=0 envelope with ERROR_MESSAGE() but writes no HC.ErrorLog row, so a runtime failure is invisible server-side. CLAUDE.md: every CATCH must log to HC.ErrorLog."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

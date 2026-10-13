@@ -1,0 +1,149 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_deletePasskey",
+  "version": "1.0.0",
+  "description": "Web member's door to HC6.hcapp_deletePasskey (E9.F7.S18): removes one of the member's passkeys by clearing the credential columns on that HC.Device row. The device row and its secret survive, so a browser removing its own passkey stays signed in. A thin wrapper that EXECs the app SP with the same arguments and returns its envelope and remaining-passkey rowset unchanged; it adds no checks of its own. Auth: the wrapped SP's HC6.ValidateAppAuth — token signed for hcapp_deletePasskey; the hasher comes from the token and the UPDATE is scoped to them.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "The browser's HC.Device id (the web member session). No SQL default."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token signed for hcapp_deletePasskey (the SP that validates it). No SQL default."
+    },
+    {
+      "name": "targetDeviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "The device whose passkey to remove. Passed straight through; NULL is refused by the app SP (1950)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "As returned by HC6.hcapp_deletePasskey: Auth failure (ValidateAppAuth: 1220/1320 + signed-out 1220 errorType 7) returns the error detail ALONE — no envelope row before it."
+    },
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "As returned by HC6.hcapp_deletePasskey: On a refusal after auth: { success = 0, errorCode, errorType } then the detail at index 1. 1950 missing targetDeviceId (errorType 2); 1951 passkey not found / not yours / already gone (3); 1952 unhandled (5) — on that path the envelope is { success = 0, errorMessage = ERROR_MESSAGE() } instead.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "1950 / 1951. (Absent on the CATCH path, which emits errorMessage.)"
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "2 / 3. (Absent on the CATCH path.)"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "As returned by HC6.hcapp_deletePasskey: Error detail after an ErrorEnvelope (1950, 1951, 1952)."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "As returned by HC6.hcapp_deletePasskey: On success: the standard success envelope.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Always NULL."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Passkeys",
+      "description": "As returned by HC6.hcapp_deletePasskey: On success: the hasher's REMAINING passkey-bearing live devices, newest sign-in first — identical in shape to hcapp_listPasskeys rowset 1. May be empty.",
+      "columns": [
+        {
+          "name": "DeviceId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "Device.id as text."
+        },
+        {
+          "name": "Label",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "'Safari on iPhone', 'Harrier Central on iPhone' — from Device.OperatingSystem / IsMobile and HC6.DevicePlatformName(DeviceData)."
+        },
+        {
+          "name": "Platform",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "HC6.DevicePlatformName(Device.DeviceData)."
+        },
+        {
+          "name": "IsThisDevice",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when the row is the calling @deviceId."
+        },
+        {
+          "name": "LastLogin",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "Device.LastLogin."
+        },
+        {
+          "name": "IsMobile",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "ISNULL(Device.IsMobile, 0)."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "EXEC HC6.hcapp_deletePasskey with the same arguments — every side effect is the wrapped SP's:",
+    "  UPDATE HC.Device SET PasskeyCredentialId/PasskeyPublicKey/PasskeyCounter/PasskeyTransports = NULL, updatedAt = GETDATE() WHERE id = @targetDeviceId AND UserId = @userId AND removed = 0 AND PasskeyCredentialId IS NOT NULL (inside a transaction).",
+    "  INSERT LOG.GeneralLog ('HC6.hcapp_deletePasskey', 'Passkey removed', userId, 'device=… label=… by=…') — audit trail of the revocation, in the same transaction.",
+    "  INSERT HC.ErrorLog on 1950 (pre-flight, outside the transaction), 1951 (after ROLLBACK, so the row survives) and in the CATCH.",
+    "INSERT HC.ErrorLog ('<web>', userId NULL, deviceId) then THROW in the wrapper's CATCH, for an error the wrapped SP does not handle itself."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId and @accessToken have no SQL default (line 21). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

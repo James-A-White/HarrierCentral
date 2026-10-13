@@ -2,8 +2,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_setEventNotes]
     @deviceId                   UNIQUEIDENTIFIER,
     @accessToken                NVARCHAR(1000),
     @eventId                    UNIQUEIDENTIFIER,
-    @notes                      NVARCHAR(4000),
-    @hasherEventMapUpdatedAfter NVARCHAR(50),
+    @notes                      NVARCHAR(4000) = NULL,
+    @hasherEventMapUpdatedAfter NVARCHAR(50) = 'ignore',
     @notesVisibility            SMALLINT = NULL   -- 0 private · 1 shared · NULL keep
 AS
 -- =====================================================================

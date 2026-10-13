@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_markEventChatRead",
-  "version": "1.1.0",
-  "description": "Records that the calling user has read all current messages in an event chat. Snapshots the current message count and latest message ID from HC.EventMessage, then upserts HC.EventMessageBadgeCounts for the (eventId, userId) pair. Returns the count written (rowset 0) and FCM tokens for the user's other registered devices (rowset 1) so the API shim can fan-out a silent 'read_sync' push to zero their badge counts without showing a notification. The calling device is excluded from the fan-out.",
+  "version": "1.2.0",
+  "description": "Records that the calling user has read all current messages in an event chat. Snapshots the current message count and latest message ID from HC.EventMessage, then upserts HC.EventMessageBadgeCounts for the (eventId, userId) pair. Returns the count written (rowset 0) and FCM tokens for the user's other registered devices (rowset 1) so the API shim can fan-out a silent 'read_sync' push to zero their badge counts without showing a notification. The calling device is excluded from the fan-out. Since 2026-10-13 its MERGE into HC.EventMessageBadgeCounts holds HOLDLOCK: the table has no unique key on (UserId, EventId, KennelId, ThreadId, MessageType), and two concurrent MERGEs could each insert a row.",
   "parameters": [
     {
       "name": "deviceId",

@@ -1,14 +1,14 @@
 {
   "schema": "HC6",
   "name": "hcportal_addEditEvent",
-  "version": "1.0.0",
-  "description": "Creates a new event or updates an existing event for a kennel. Handles event data (name, description, location, pricing, tags, dissemination settings), optionally saves tags as kennel defaults, and triggers run number recalculation inside the transaction. @publicEventId=NULL means insert; non-NULL means update. Renamed from HC5's hcportal_addEditEvent2. @deleted parameter removed — deletion is exclusively via hcportal_deleteEvent.",
+  "version": "1.2.0",
+  "description": "Creates a new run/event or updates an existing one for a kennel from the Flutter portal run editor. @publicEventId NULL = insert, non-NULL = update (the event must belong to @publicKennelId). Handles name, description, location, structured CountryId/RegionId/CityId, manual TimezoneId, pricing, tags, dissemination settings; optionally saves the tags as the kennel's defaults; then renumbers runs (HC6.nonApi_updateRunNumbers) and refreshes attendees' run counts (HC6.nonApi_updateRunCountsForEventUsers) inside the same transaction. On update, a run imported by the AI runs-page import is 'adopted' (HC6.nonApi_adoptImportedRun) and its UseFb* mirror flags are forced to 0 so the import stops overwriting it. Auth: HC6.ValidatePortalAuth with @publicKennelId as callerParamString (token = UPPER(deviceSecret):UPPER(publicKennelId)). There is NO kennel permission gate — any authenticated portal device can write events for any kennel (see codeSmells). Renamed from HC5 hcportal_addEditEvent2; @deleted removed — deletion is exclusively via hcportal_deleteEvent. Permission (2026-10-13): HC6.nonApi_portalKennelAccess — AppAccessFlags 0x40000085 (SuperAdmin, Admin, public-web 0x80, Manage runs 0x4), createEditRuns, or platform CanEditKennel; otherwise {Success 0, ErrorMessage 'Not authorised to edit runs for this kennel'} after rollback.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": "Device.id",
+      "mapsToColumn": null,
       "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
@@ -23,14 +23,14 @@
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "Kennel.PublicKennelId",
-      "description": "Required: identifies the kennel this event belongs to. Declared nullable for SQL-side validation. Auth is checked against this value."
+      "description": "Required: the kennel the event belongs to. Also the callerParamString baked into the access token. Defaults to NULL so the SP can return 'publicKennelId is required' (checked AFTER auth, so a NULL value in practice fails auth first)."
     },
     {
       "name": "absoluteEventNumber",
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": "Event.AbsoluteEventNumber",
-      "description": "Optional absolute event number. Sentinels: -1 normalised to NULL (no-op), -2 on insert sets to NULL. On update: value <= 0 sets to NULL."
+      "description": "Optional absolute event number. -1 is normalised to NULL (no change). Insert: -2 → NULL, otherwise stored as given. Update: any value <= 0 clears the column; NULL keeps it."
     },
     {
       "name": "eventImage",
@@ -114,14 +114,14 @@
       "type": "INT",
       "nullable": true,
       "mapsToColumn": "Event.IntegrationEnabled",
-      "description": "Whether external integration is enabled. Changed from SMALLINT (HC5) to INT to match table column. Defaults to 1 on update, 0 on insert."
+      "description": "Event.IntegrationEnabled. NULL keeps existing on update (falls back to 1 if the column were NULL); on insert defaults to 0. Note the different fallbacks (insert 0, update 1)."
     },
     {
       "name": "isCountedRun",
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": "Event.IsCountedRun",
-      "description": "Whether this event counts toward run numbers. Sentinel: -1 normalised to NULL. Defaults to 1 on insert."
+      "description": "-1 normalised to NULL. Insert: defaults to 1. Update: NULL keeps existing (fallback 0)."
     },
     {
       "name": "isPromotedEvent",
@@ -233,7 +233,7 @@
       "type": "DATETIMEOFFSET(7)",
       "nullable": true,
       "mapsToColumn": "Event.EventStartDatetime",
-      "description": "Event start date/time. Values <= 1/1/2000 normalised to NULL. On insert: defaults to 3 days from now with kennel's DefaultRunStartTime applied if time is midnight or not provided."
+      "description": "Run start. Values <= 2000-01-01 are treated as NULL. Insert: NULL → now + 3 days; if the time part is midnight (or NULL), the kennel's DefaultRunStartTime is added. Update: NULL keeps existing."
     },
     {
       "name": "tags1",
@@ -261,28 +261,28 @@
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": "Event.UseFbImage",
-      "description": "Whether to use external (Facebook) image. Sentinel: -1 normalised to NULL. Hardcoded to 0 on insert."
+      "description": "Update only: -1 → NULL (no change), otherwise written to Event.UseFbImage. Ignored on insert (always 0). Forced to 0 after the update when the run was an adopted AI import."
     },
     {
       "name": "useFbLatLon",
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": "Event.UseFbLatLon",
-      "description": "Whether to use external lat/lon. Sentinel: -1 normalised to NULL. Hardcoded to 0 on insert."
+      "description": "Update only: -1 → NULL (no change), otherwise written to Event.UseFbLatLon. Ignored on insert (always 0). Forced to 0 after the update when the run was an adopted AI import."
     },
     {
       "name": "useFbLocation",
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": "Event.UseFbLocation",
-      "description": "Whether to use external location. Sentinel: -1 normalised to NULL. Hardcoded to 0 on insert."
+      "description": "Update only: -1 → NULL (no change), otherwise written to Event.UseFbLocation. Ignored on insert (always 0). Forced to 0 after the update when the run was an adopted AI import."
     },
     {
       "name": "useFbRunDetails",
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": "Event.UseFbRunDetails",
-      "description": "Whether to use external run details (name, start time, description). Sentinel: -1 normalised to NULL. Hardcoded to 0 on insert."
+      "description": "Update only: -1 → NULL (no change), otherwise written to Event.UseFbRunDetails. Ignored on insert (always 0). Forced to 0 after the update when the run was an adopted AI import."
     },
     {
       "name": "canEditRunAttendence",
@@ -324,57 +324,116 @@
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "Event.CountryId",
-      "description": "Statistics country reference. Falls back to kennel's CountryId on insert if not provided."
+      "description": "Event.CountryId. Update: NULL keeps existing; a non-NULL value also touches updatedAt on every HasherEventMap row for the event. Insert: NULL falls back to the kennel's CountryId."
     },
     {
       "name": "regionId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "Event.RegionId",
-      "description": "Statistics region reference (cascades from country). NULL = no change (keeps existing). The empty GUID 00000000-0000-0000-0000-000000000000 is the explicit clear sentinel (used when the country changes and invalidates the region)."
+      "description": "Event.RegionId (column added by db/hc6/portal/archive/HC.Event.AddRegionIdCityId_20260628.sql; missing from db/schema/tables/HC.Event.Table.sql). NULL = no change; empty GUID 00000000-0000-0000-0000-000000000000 = clear."
     },
     {
       "name": "cityId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "Event.CityId",
-      "description": "Statistics city reference (cascades from region). NULL = no change (keeps existing). The empty GUID 00000000-0000-0000-0000-000000000000 is the explicit clear sentinel (used when the country/region changes and invalidates the city)."
+      "description": "Event.CityId (column added by db/hc6/portal/archive/HC.Event.AddRegionIdCityId_20260628.sql; missing from the schema file). NULL = no change; empty GUID = clear."
     },
     {
       "name": "timezoneId",
       "type": "INT",
       "nullable": true,
       "mapsToColumn": "Event.TimezoneId",
-      "description": "Manual timezone override (DomainValues.Timezone.id) for free-text 'Other' locations. NULL = no change (keeps existing). 0 is the explicit clear sentinel — sent when a structured city is chosen so the manual override is dropped (the city's zone takes over). Real ids are >= 10."
+      "description": "Event.TimezoneId manual timezone override, references DomainValues.Timezone.id (column added by db/hc6/portal/archive/HC.Event.AddTimezoneId_20260628.sql; missing from the schema file). NULL = no change; 0 = clear."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "description": "Returned on any auth, validation, not-found, concurrent-modification or runtime (CATCH) error. Short-circuits; nothing else is returned.",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "'Authentication failed', 'deviceId is required', 'publicKennelId is required', 'Invalid publicEventId format', 'Kennel not found', 'Event not found', 'Concurrent modification detected - please refresh and try again', or ERROR_MESSAGE() from the CATCH block"
+        }
       ]
     },
     {
       "index": 0,
       "name": "SuccessResult",
-      "description": "Returned on successful insert or update. Single row.",
+      "description": "Returned after COMMIT on a successful insert or update. Single row. Note: business data in rowset 0 with no Success column.",
       "columns": [
-        { "name": "result", "type": "NVARCHAR(250)", "nullable": true, "description": "Human-readable success message, e.g. 'Successfully updated KennelShortName run/event #123' or 'Run added to Harrier Central'" },
-        { "name": "resultCode", "type": "INT", "nullable": true, "description": "1 on successful insert or update; NULL if neither path was taken" },
-        { "name": "publicEventId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "The public event ID — the existing ID on update, or the newly generated ID on insert" }
+        {
+          "name": "result",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "'Successfully updated <KennelShortName> run/event #<EventNumber>' (or without the number) on update; 'Run added to Harrier Central' on insert"
+        },
+        {
+          "name": "resultCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "1 on insert or update"
+        },
+        {
+          "name": "publicEventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "Existing PublicEventId on update, newly generated one on insert"
+        }
       ]
     }
   ],
   "sideEffects": [
-    "UPDATE HC.Event when @publicEventId identifies an existing event",
-    "UPDATE HC.HasherEventMap.updatedAt for all attendees when @countryId changes on an existing event",
-    "INSERT HC.Event when creating a new event (@publicEventId is NULL)",
-    "UPDATE HC.Kennel DefaultRunTags1/2/3 when @saveTagsAsKennelDefault = 1",
-    "EXEC HC.nonApi_updateRunNumbers inside transaction after insert or update"
+    "Update path: EXEC HC6.nonApi_adoptImportedRun (marks an AI runs-page import as adopted); UPDATE HC.Event (COALESCE no-change semantics, EventLastUpdatedSource='HC Portal', EventLastUpdatedBy=@hasherId, updatedAt=GETDATE()); if adopted, a second UPDATE forces UseFbRunDetails/UseFbLocation/UseFbLatLon/UseFbImage = 0",
+    "Update path with @countryId non-NULL: UPDATE HC.HasherEventMap.updatedAt for every row of the event (forces re-sync to phones)",
+    "Insert path: INSERT HC.Event with new id and PublicEventId, EventSource='HC Portal', InboundIntegrationId=0, UseFb* = 0",
+    "UPDATE HC.Kennel DefaultRunTags1/2/3 when @saveTagsAsKennelDefault = 1 and a value differs",
+    "EXEC HC6.nonApi_updateRunNumbers @eventId and EXEC HC6.nonApi_updateRunCountsForEventUsers @eventId, inside the transaction",
+    "HC.Event triggers (updatedAt / sync) fire on the INSERT/UPDATE",
+    "Calls HC6.nonApi_portalKennelAccess (read-only) for its permission check."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH does not log to HC.ErrorLog",
+      "detail": "Lines 490-493 roll back and return the error envelope but insert nothing into HC.ErrorLog, so runtime failures (renumber, run-count refresh, geography::Point) leave no server-side record."
+    },
+    {
+      "severity": "medium",
+      "issue": "Business data in rowset 0 without success envelope",
+      "detail": "Line 487 returns result/resultCode/publicEventId as rowset 0 with no Success column; the error path returns Success/ErrorMessage in the same position. Callers must distinguish by column name."
+    },
+    {
+      "severity": "low",
+      "issue": "Inconsistent defaults between insert and update",
+      "detail": "IntegrationEnabled falls back to 1 on update (line 237) but 0 on insert (line 431); IsCountedRun falls back to 0 on update (line 233) but 1 on insert (line 399)."
+    },
+    {
+      "severity": "low",
+      "issue": "Sentinel magic values, inconsistent across parameters",
+      "detail": "-1 = no change (lines 143-173), -2 = clear for numerics, -999.0 = clear lat/lon, '<null>' = clear strings, empty GUID = clear region/city (lines 287-288), 0 = clear timezone (line 292), and AbsoluteEventNumber is cleared by any value <= 0 on update (line 265) but only by -2 on insert (line 432)."
+    },
+    {
+      "severity": "low",
+      "issue": "Dead inputs on insert",
+      "detail": "@useFbImage/@useFbLatLon/@useFbLocation/@useFbRunDetails are ignored on insert (hard-coded 0, line 437)."
+    },
+    {
+      "severity": "low",
+      "issue": "Redundant validation",
+      "detail": "TRY_CAST(@publicEventId AS uniqueidentifier) (line 119) can never fail — the parameter is already UNIQUEIDENTIFIER. The publicKennelId NULL check (line 112) runs after auth, which already used it as the token context."
+    }
   ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",

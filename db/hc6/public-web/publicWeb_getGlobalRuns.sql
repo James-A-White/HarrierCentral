@@ -40,7 +40,8 @@ AS
 --                        the @PageSize cap; always one row so the client
 --                        can determine whether more pages exist without
 --                        a separate count call.
---              Rowset 1: one row per event, ordered by EventStartDatetime
+--              Rowset 1: one row per event, ordered by the true start instant
+--                           (EventStartDateTimeGmt, else EventStartDatetime; 2026-10-13)
 --                        ASC (future) or DESC (past), with KennelName /
 --                        PublicEventId as deterministic tiebreakers for
 --                        stable pagination when concurrent events exist.
@@ -95,7 +96,7 @@ BEGIN TRY
       AND  (   (@IsFuture = 1
                     AND (e.EventStartDateTimeGmt >= @FutureCutoff OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime >= @FutureCutoff)))
             OR (@IsFuture = 0
-                    AND (@MinEventDate IS NULL OR e.EventStartDatetime >= @MinEventDate)
+                    AND (@MinEventDate IS NULL OR COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) >= @MinEventDate)
                     AND (e.EventStartDateTimeGmt < ISNULL(@MaxEventDate, @UtcNow) OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime < ISNULL(@MaxEventDate, @UtcNow)))))
     OPTION (RECOMPILE);
 
@@ -111,7 +112,11 @@ BEGIN TRY
     -- future list with too small a memory grant.
 
     ;WITH page AS (
-        SELECT e.id, e.EventStartDatetime, k.KennelName, e.PublicEventId
+        -- SortAt (2026-10-13): the true instant, as the filters use. Sorting on
+        -- raw EventStartDatetime (a spurious +00:00 on ~2/3 of rows) jumbled
+        -- runs from different time zones: 49 misordered pairs in the next 60.
+        SELECT e.id, e.EventStartDatetime, k.KennelName, e.PublicEventId,
+               COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) AS SortAt
         FROM   HC.Event  e
         JOIN   HC.Kennel k ON k.id = e.KennelId
         WHERE  e.IsVisible = 1
@@ -122,11 +127,11 @@ BEGIN TRY
           AND  (   (@IsFuture = 1
                         AND (e.EventStartDateTimeGmt >= @FutureCutoff OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime >= @FutureCutoff)))
                 OR (@IsFuture = 0
-                        AND (@MinEventDate IS NULL OR e.EventStartDatetime >= @MinEventDate)
+                        AND (@MinEventDate IS NULL OR COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) >= @MinEventDate)
                         AND (e.EventStartDateTimeGmt < ISNULL(@MaxEventDate, @UtcNow) OR (e.EventStartDateTimeGmt IS NULL AND e.EventStartDatetime < ISNULL(@MaxEventDate, @UtcNow)))))
         ORDER BY
-            CASE WHEN @IsFuture = 1 THEN e.EventStartDatetime END ASC,
-            CASE WHEN @IsFuture = 0 THEN e.EventStartDatetime END DESC,
+            CASE WHEN @IsFuture = 1 THEN COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) END ASC,
+            CASE WHEN @IsFuture = 0 THEN COALESCE(e.EventStartDateTimeGmt, e.EventStartDatetime) END DESC,
             k.KennelName    ASC,
             e.PublicEventId ASC
         OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY
@@ -246,8 +251,8 @@ BEGIN TRY
     ) tzmap ON tzmap.WindowsTimeZone = tz.Timezone COLLATE DATABASE_DEFAULT
     ORDER BY
         -- Same order as the page CTE: only one CASE branch is active per call.
-        CASE WHEN @IsFuture = 1 THEN pg.EventStartDatetime END ASC,
-        CASE WHEN @IsFuture = 0 THEN pg.EventStartDatetime END DESC,
+        CASE WHEN @IsFuture = 1 THEN pg.SortAt END ASC,
+        CASE WHEN @IsFuture = 0 THEN pg.SortAt END DESC,
         pg.KennelName    ASC,    -- stable tiebreaker when concurrent events exist
         pg.PublicEventId ASC     -- final tiebreaker for consistent pagination
     OPTION (RECOMPILE);

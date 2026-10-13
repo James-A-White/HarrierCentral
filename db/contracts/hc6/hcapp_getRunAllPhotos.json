@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_getRunAllPhotos",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Returns every photo for a specific event regardless of status — pending, approved at any level, private, and soft-deleted (DeletedAt set) — newest first, to power the photo review screen (Pending and Reviewed tabs) and its status-count header. Gate: HC6.CheckKennelPermission 'batchPhotos' on @kennelId (feature 'Batch / view all photos'; SuperAdmin always) — errorCode 1334, errorType 13 otherwise. Unlike hcapp_getKennelPendingPhotos (one status, every event) this shows every status for one event. Auth: HC6.ValidateAppAuth (spNumber 36, @param NULL). Parameter and permission checks run before the TRY; the SELECT is wrapped, with runtime errors logged and re-thrown.",
   "parameters": [
     {
@@ -21,16 +21,16 @@
     {
       "name": "kennelId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "KennelPhotos.KennelId",
-      "description": "Kennel the event belongs to. Used for role check and to scope the query. Null or zero-UUID triggers a validation error (errorCode 1234, errorType 12)."
+      "description": "Kennel the event belongs to. Used for role check and to scope the query. Null or zero-UUID triggers a validation error (errorCode 1234, errorType 12). Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "KennelPhotos.EventId",
-      "description": "Event to fetch all photos for. Null or zero-UUID triggers a validation error (errorCode 1234, errorType 12)."
+      "description": "Event to fetch all photos for. Null or zero-UUID triggers a validation error (errorCode 1234, errorType 12). Defaults to NULL when omitted (2026-10-13)."
     }
   ],
   "rowsets": [
@@ -164,7 +164,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "All four parameters (lines 3-6) have no SQL default. A client that omits @kennelId or @eventId gets 'expects parameter' — an unlogged empty 500 before the SP runs, so the graceful 1234 check at line 65 is unreachable for an omitted parameter."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "low",

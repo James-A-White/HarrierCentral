@@ -1,93 +1,105 @@
 {
   "schema": "HC6",
   "name": "publicWeb_confirmAuthentication",
-  "version": "1.0.0",
-  "description": "Web half of the QR sign-in: polls HC.WebPortalAuthenticationRequests for the app's approval, provisions the browser as HC.Device (IsMobile 0) and returns its credentials. Single-use, 5-minute TTL. Reachable only via PublicWebAdminApi behind HC_INTERNAL_SECRET.",
+  "version": "1.1.0",
+  "description": "The public web's half of the QR sign-in (E9.F7.S7). The page shows https://www.hashruns.org/login/UWP:<authCode>; the phone's app calls hcapp_authenticateWebPortal, which writes the HC.WebPortalAuthenticationRequests row. The Next.js server polls this SP until that row exists, then the browser is provisioned as an HC.Device (IsMobile = 0) bound to the hasher who scanned and the credentials are returned for the member cookie. Single-use (the request row is marked Removed) with a 5-minute TTL on WebPortalAuthenticationRequests.updatedAt — hcportal_confirmAuthentication minus the portal's service-account auth. No SP-level auth: the scanData match is the proof (a random value the page chose that only a signed-in phone can have recorded), and the SP is reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET, with @newDeviceId and @qrCodeData taken from a server-signed ticket.",
   "parameters": [
     {
       "name": "newDeviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "Device.id",
-      "description": "Device id the browser will use"
+      "description": "Device id the browser will use (from the server-signed ticket). NULL → no rows."
     },
     {
       "name": "qrCodeData",
       "type": "NVARCHAR(250)",
       "nullable": true,
       "mapsToColumn": "WebPortalAuthenticationRequests.scanData",
-      "description": "The bare auth code the app recorded"
+      "description": "The scan data as the app recorded it (compared case- and space-insensitively with WebPortalAuthenticationRequests.scanData). NULL or shorter than 10 characters → no rows."
     },
     {
       "name": "deviceInfo",
       "type": "NVARCHAR(4000)",
       "nullable": true,
       "mapsToColumn": "Device.DeviceData",
-      "description": "JSON with browserName/userAgent"
+      "description": "JSON with browserName / userAgent; stored as Device.DeviceData ('' when NULL) on a new device row."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "Credentials",
-      "description": "No rows until the phone has scanned; one row afterwards",
+      "description": "No rows while unscanned, expired, already consumed, the hasher Removed, or a parameter missing (the caller keeps polling). One row once a live request matches.",
       "columns": [
         {
           "name": "deviceId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": ""
+          "description": "@newDeviceId."
         },
         {
           "name": "deviceSecret",
           "type": "NVARCHAR(150)",
           "nullable": false,
-          "description": ""
+          "description": "The existing device's secret when @newDeviceId already has an HC.Device row, else a fresh 75-character secret (hcapp_authorizeDevice's recipe)."
         },
         {
           "name": "timeWindow",
           "type": "INT",
           "nullable": false,
-          "description": ""
+          "description": "Token window in seconds (30-44 for a new device)."
         },
         {
           "name": "hasherId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": ""
+          "description": "Hasher.id of the scanning hasher."
         },
         {
           "name": "publicHasherId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": ""
+          "description": "Hasher.PublicHasherId."
         },
         {
           "name": "hashName",
           "type": "NVARCHAR(250)",
           "nullable": false,
-          "description": ""
+          "description": "COALESCE(Hasher.HashName, '')."
         },
         {
           "name": "displayName",
-          "type": "NVARCHAR(250)",
+          "type": "NVARCHAR(501)",
           "nullable": false,
-          "description": ""
+          "description": "COALESCE(Hasher.DisplayName, '') — persisted computed column."
         },
         {
           "name": "photo",
           "type": "NVARCHAR(1000)",
           "nullable": false,
-          "description": ""
+          "description": "COALESCE(Hasher.Photo, '')."
         }
       ]
     }
   ],
   "sideEffects": [
-    "Inserts HC.Device",
-    "Sets WebPortalAuthenticationRequests.Removed = 1"
+    "INSERT HC.Device (id = @newDeviceId, UserId, DeviceSecret, TimeWindow, DeviceData, IsMobile = 0) when no row exists for @newDeviceId — inside the transaction.",
+    "UPDATE HC.WebPortalAuthenticationRequests SET Removed = 1 for the matching scanData — single-use, same transaction.",
+    "INSERT HC.ErrorLog then THROW in the CATCH."
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Existing device row not checked against the hasher",
+      "detail": "Lines 52-54 reuse the secret of any existing HC.Device row with id = @newDeviceId without checking its UserId or removed flag, and return it alongside the SCANNING hasher's identity. Harmless while @newDeviceId comes from a server-signed ticket with a fresh random id; it would hand out another device's secret if a caller could choose the id."
+    },
+    {
+      "severity": "low",
+      "issue": "Check-then-INSERT on HC.Device without a lock",
+      "detail": "The existence read (line 53) is outside the transaction and unlocked; two concurrent polls with the same ticket would both INSERT the same id and one would fail with a PK violation (logged, re-thrown → 500). Polling is sequential today."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

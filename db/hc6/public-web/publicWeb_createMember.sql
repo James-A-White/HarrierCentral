@@ -1,6 +1,6 @@
 CREATE OR ALTER PROCEDURE [HC6].[publicWeb_createMember]
-    @email      NVARCHAR(250),
-    @hashName   NVARCHAR(250),
+    @email      NVARCHAR(250) = NULL,
+    @hashName   NVARCHAR(250) = NULL,
     @firstName  NVARCHAR(250) = NULL,
     @lastName   NVARCHAR(250) = NULL,
     @kennelSlug NVARCHAR(100) = NULL

@@ -178,6 +178,17 @@ END
         RETURN;
     END
 
+    -- Who may post (2026-10-13): the app's rule -- the sender belongs to the
+    -- run's kennel or has a row on this run (hcapp_sendEventMessage, 1263).
+    -- Until now any signed-in portal user could post to any run's chat and,
+    -- with the everyone flag, push the whole kennel.
+    IF NOT EXISTS (SELECT 1 FROM HC.HasherKennelMap WHERE UserId = @hasherId AND KennelId = @kennelId AND removed = 0)
+       AND NOT EXISTS (SELECT 1 FROM HC.HasherEventMap WHERE UserId = @hasherId AND EventId = @eventId)
+    BEGIN
+        SELECT 0 AS Success, 'Not authorised to post in this run''s chat' AS ErrorMessage;
+        RETURN;
+    END
+
     IF (ABS(DATEDIFF(minute, GETDATE(), @eventStartDateTimeInUtc)) <= (@timeLimitForNotificationsInHours * 60))
     BEGIN
         SET @isEventWithinTimeLimitForNotifications = 1;

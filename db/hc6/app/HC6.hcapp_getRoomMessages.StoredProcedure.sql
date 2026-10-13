@@ -146,7 +146,7 @@ BEGIN
     -- badge row on every read; and without MessageType/ThreadId in the
     -- match, this room would share one badge row with every role room and
     -- every future DM.
-    MERGE INTO HC.EventMessageBadgeCounts AS Target
+    MERGE INTO HC.EventMessageBadgeCounts WITH (HOLDLOCK) AS Target
     USING (VALUES (@userId, @newestSeq)) AS Source (UserId, LastSequenceCount)
     ON (Target.UserId = Source.UserId
         AND Target.EventId IS NULL

@@ -1,5 +1,5 @@
 CREATE OR ALTER PROCEDURE [HC6].[publicWeb_getMultiKennelRuns]
-    @SlugList    NVARCHAR(MAX),
+    @SlugList    NVARCHAR(MAX) = NULL,
     @IsFuture    SMALLINT,
     @MaxEvents   INT = NULL,
     @DaysOffset  INT = NULL

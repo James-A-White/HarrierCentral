@@ -140,7 +140,7 @@ DECLARE @readReceipt SMALLINT = CASE WHEN @markRead = 1 AND @apiOnlyRowsets = 1
 
 IF (@markRead = 1 AND @newestSeq IS NOT NULL)
 BEGIN
-    MERGE INTO HC.EventMessageBadgeCounts AS Target
+    MERGE INTO HC.EventMessageBadgeCounts WITH (HOLDLOCK) AS Target
     USING (VALUES (@userId, @newestSeq)) AS Source (UserId, LastSequenceCount)
     ON (Target.UserId = Source.UserId AND Target.EventId IS NULL AND Target.KennelId IS NULL
         AND Target.ThreadId = @threadId AND Target.MessageType = 0)

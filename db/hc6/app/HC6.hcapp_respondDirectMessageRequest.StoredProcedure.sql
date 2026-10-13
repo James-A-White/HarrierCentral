@@ -49,7 +49,7 @@ SELECT @fromId = h.id FROM HC.Hasher h WHERE h.PublicHasherId = @fromPublicHashe
 DECLARE @pending SMALLINT = CASE WHEN EXISTS (SELECT 1 FROM HC.HasherFriendMap f
     WHERE f.UserId = @fromId AND f.Friend_UserId = @userId AND f.FriendSince IS NULL AND f.Removed = 0) THEN 1 ELSE 0 END;
 
-IF (@fromId IS NULL OR @accept NOT IN (0, 1) OR @pending = 0)
+IF (@fromId IS NULL OR @accept IS NULL OR @accept NOT IN (0, 1) OR @pending = 0)   -- NULL used to pass and decline (2026-10-13)
 BEGIN
     DECLARE @detail NVARCHAR(200) = CONCAT('from=', COALESCE(CAST(@fromPublicHasherId AS NVARCHAR(40)), 'null'), ' accept=', @accept, ' pending=', @pending);
     SET @errorId = NEWID();

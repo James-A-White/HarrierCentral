@@ -1,214 +1,256 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getMyKennels",
-  "version": "1.1.0",
-  "description": "The app's Kennels tab: kennels followed / home / member / run with, counts (Hc + Historical), next run. ValidateAppAuth sp 112. 2026-09-16: plus the kennel page's fields (description, website, mismanagement, group invite, my credit).",
+  "version": "1.3.0",
+  "description": "The app's Kennels tab for a signed-in web member (E9.F7.S9): every live, eligible kennel (KennelStatus NOT IN (-1, 4) — the app's rule — or any kennel the member has runs at or calls home) with the member's own live HasherKennelMap row alongside where one exists, and everything the app's kennel card and kennel page draw from the synced tables: following / home / member state, notification and email preferences, run and haring counts, last run date, credit, the location line as the app composes it, the city's coordinates for 'N km from here', the kennel's last and next run, default prices, and a lower-case search text for the app's search. ORDER BY KennelName; the client re-sorts. HasherPreferences (v3, 2026-09-27) carries the caller's own unit / radius bitfield. Auth: HC6.ValidateAppAuth (spNumber 112, @param NULL); scoped to the token's user. Read-only. Since 2026-10-13 IsMember is computed from MembershipExpirationDate (column name and type unchanged); the stored HC.HasherKennelMap.IsMember is deprecated.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
-      "mapsToColumn": "Device.id",
-      "description": "The browser's device id"
+      "mapsToColumn": null,
+      "description": "The browser's HC.Device id. No SQL default."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Token for this SP's name (or the inner SP's), paramString = deviceSecret"
+      "description": "Short-lived token signed for this SP (ValidateAppAuth spNumber 112). No SQL default."
     }
   ],
   "rowsets": [
     {
       "index": 0,
-      "name": "Envelope",
-      "description": "success 1/0, errorCode, errorType",
+      "name": "AuthErrorEnvelope",
+      "description": "On a ValidateAppAuth failure: { success = 0, errorCode, errorType } then the detail at index 1; the SP RETURNs.",
       "columns": [
         {
           "name": "success",
           "type": "INT",
           "nullable": false,
-          "description": ""
+          "description": "Always 0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "ValidateAppAuth's error code."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "ValidateAppAuth's error type."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Error detail after the AuthErrorEnvelope (errorId, errorType, errorCode, errorTitle, errorUserMessage, errorProc)."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "On success, before the data rowsets: { success = 1, errorCode = NULL, errorType = NULL }.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
         },
         {
           "name": "errorCode",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "Always NULL."
         },
         {
           "name": "errorType",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "Always NULL."
         }
       ]
     },
     {
       "index": 1,
       "name": "Kennels",
-      "description": "Home first, then following, then by runs",
+      "description": "On success: one row per eligible live kennel (deleted = 0, removed = 0), ORDER BY KennelName. Member-specific columns are 0 / NULL where the caller has no live HasherKennelMap row (HasHkm = 0).",
       "columns": [
         {
           "name": "PublicKennelId",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": ""
+          "description": "Kennel.PublicKennelId."
         },
         {
           "name": "KennelSlug",
-          "type": "NVARCHAR(100)",
-          "nullable": true,
-          "description": ""
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "Kennel.KennelUniqueShortName."
         },
         {
           "name": "KennelShortName",
-          "type": "NVARCHAR(100)",
-          "nullable": true,
-          "description": ""
+          "type": "NVARCHAR(25)",
+          "nullable": false,
+          "description": "Kennel.KennelShortName."
         },
         {
           "name": "KennelName",
           "type": "NVARCHAR(250)",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "Kennel.KennelName."
         },
         {
           "name": "KennelLogo",
-          "type": "NVARCHAR(1000)",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Kennel.KennelLogo (may be a bundle:// ref)."
+        },
+        {
+          "name": "KennelCoverPhoto",
+          "type": "NVARCHAR(500)",
           "nullable": true,
-          "description": ""
+          "description": "Kennel.KennelCoverPhoto."
         },
         {
           "name": "KennelStatus",
-          "type": "INT",
-          "nullable": true,
-          "description": ""
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.KennelStatus."
         },
         {
           "name": "City",
           "type": "NVARCHAR(100)",
           "nullable": true,
-          "description": ""
+          "description": "City.CityName."
         },
         {
           "name": "Region",
           "type": "NVARCHAR(100)",
           "nullable": true,
-          "description": ""
+          "description": "Region.RegionName."
         },
         {
           "name": "Country",
           "type": "NVARCHAR(250)",
           "nullable": true,
-          "description": ""
+          "description": "Country.CountryName."
+        },
+        {
+          "name": "Location",
+          "type": "NVARCHAR(454)",
+          "nullable": false,
+          "description": "The app's location line (query_kennels.dart): 'City, [Region, ]Country' — region only when Country.ShowRegion = 1; just the country (or '') when there is no city."
+        },
+        {
+          "name": "CityLat",
+          "type": "NUMERIC(12,9)",
+          "nullable": true,
+          "description": "City.Latitude — for 'N km from here' and the kennel map."
+        },
+        {
+          "name": "CityLon",
+          "type": "NUMERIC(13,9)",
+          "nullable": true,
+          "description": "City.Longitude."
         },
         {
           "name": "KennelWebsiteDomain",
           "type": "NVARCHAR(250)",
           "nullable": true,
-          "description": ""
+          "description": "KennelWebsite.CustomDomain."
+        },
+        {
+          "name": "HasHkm",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when the caller has a live HasherKennelMap row for the kennel."
         },
         {
           "name": "Following",
           "type": "SMALLINT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "HasherKennelMap.Following (0 without a row)."
         },
         {
           "name": "IsHomeKennel",
           "type": "SMALLINT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "HasherKennelMap.IsHomeKennel."
         },
         {
           "name": "IsMember",
           "type": "SMALLINT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "HasherKennelMap.IsMember — legacy flag. Membership is MembershipExpirationDate in the future, not this (see codeSmells)."
+        },
+        {
+          "name": "KennelNotificationPref",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherKennelMap.KennelNotificationPreference."
+        },
+        {
+          "name": "KennelEmailAlertPref",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HasherKennelMap.KennelEmailAlertPreference."
         },
         {
           "name": "MembershipExpirationDate",
-          "type": "DATETIMEOFFSET",
+          "type": "DATETIMEOFFSET(7)",
           "nullable": true,
-          "description": ""
+          "description": "HasherKennelMap.MembershipExpirationDate — the member test (in the future = member)."
         },
         {
           "name": "MemberSince",
-          "type": "DATETIMEOFFSET",
+          "type": "DATETIMEOFFSET(7)",
           "nullable": true,
-          "description": ""
+          "description": "HasherKennelMap.MemberSince."
         },
         {
           "name": "DateOfLastRun",
-          "type": "DATETIMEOFFSET",
+          "type": "DATETIMEOFFSET(7)",
           "nullable": true,
-          "description": ""
+          "description": "HasherKennelMap.DateOfLastRun."
         },
         {
           "name": "Runs",
           "type": "INT",
-          "nullable": true,
-          "description": "HcTotalRunCount + HistoricalTotalRunCount"
+          "nullable": false,
+          "description": "HcTotalRunCount + HistoricalTotalRunCount."
         },
         {
           "name": "Haring",
           "type": "INT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "HcHaringCount + HistoricalHaringCount."
         },
         {
           "name": "IsEstimate",
           "type": "INT",
-          "nullable": true,
-          "description": ""
-        },
-        {
-          "name": "NextRunGmt",
-          "type": "DATETIMEOFFSET(7)",
-          "nullable": true,
-          "description": ""
-        },
-        {
-          "name": "NextRunLocal",
-          "type": "DATETIME2(7)",
-          "nullable": true,
-          "description": ""
-        },
-        {
-          "name": "NextRunNumber",
-          "type": "INT",
-          "nullable": true,
-          "description": ""
-        },
-        {
-          "name": "NextRunName",
-          "type": "NVARCHAR(250)",
-          "nullable": true,
-          "description": ""
-        },
-        {
-          "name": "NextRunPublicEventId",
-          "type": "UNIQUEIDENTIFIER",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "HasherKennelMap.HistoricalCountIsEstimate."
         },
         {
           "name": "KennelDescription",
-          "type": "NVARCHAR(MAX)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
-          "description": ""
+          "description": "Kennel.KennelDescription."
         },
         {
           "name": "KennelWebsiteUrl",
           "type": "NVARCHAR(500)",
           "nullable": true,
-          "description": ""
+          "description": "Kennel.KennelWebsiteUrl."
         },
         {
           "name": "KennelMismanagementTeam",
-          "type": "NVARCHAR(MAX)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
           "description": "CR-separated rows, tab between role and name"
         },
@@ -216,49 +258,145 @@
           "name": "MessagingGroupInviteUrl",
           "type": "NVARCHAR(500)",
           "nullable": true,
-          "description": ""
+          "description": "Kennel.MessagingGroupInviteUrl."
         },
         {
           "name": "DefaultMessagingPlatform",
           "type": "SMALLINT",
-          "nullable": true,
-          "description": "1 WhatsApp \u2026 5 WeChat"
+          "nullable": false,
+          "description": "COALESCE(Kennel.DefaultMessagingPlatform, 1) — 1 WhatsApp … 5 WeChat."
         },
         {
           "name": "AllowSelfPayment",
           "type": "SMALLINT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "Kennel.AllowSelfPayment."
         },
         {
           "name": "KennelCredit",
-          "type": "DECIMAL",
-          "nullable": true,
-          "description": "my credit at the kennel"
+          "type": "SMALLMONEY",
+          "nullable": false,
+          "description": "COALESCE(HasherKennelMap.KennelCredit, 0) — the caller's credit at the kennel."
         },
         {
           "name": "CurrencySymbol",
-          "type": "NVARCHAR(50)",
-          "nullable": true,
-          "description": "template with ^; kennel, else country, else $^"
+          "type": "NVARCHAR(5)",
+          "nullable": false,
+          "description": "Template with ^: COALESCE(Kennel, Country, '$^')."
         },
         {
           "name": "DigitsAfterDecimal",
-          "type": "INT",
-          "nullable": true,
-          "description": ""
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "COALESCE(Kennel, Country, 2)."
+        },
+        {
+          "name": "DistanceUnitsPref",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "COALESCE(Kennel.DistancePreference, Country.DistancePreference, 0) — 0 km, 1 miles."
         },
         {
           "name": "HasherPreferences",
           "type": "INT",
           "nullable": false,
           "description": "Since 1.1.0 (2026-09-27): the caller's HC.Hasher.Preferences (COALESCE 0). 0x03 distance unit (3 = miles, 1/2 = km, 0 = Auto), 0x3C >> 2 radius ladder. Same on every row."
+        },
+        {
+          "name": "DefaultPriceMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": false,
+          "description": "Kennel.DefaultEventPriceForMembers."
+        },
+        {
+          "name": "DefaultPriceNonMembers",
+          "type": "DECIMAL(10,4)",
+          "nullable": false,
+          "description": "Kennel.DefaultEventPriceForNonMembers."
+        },
+        {
+          "name": "ExcludeFromLeaderboard",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Kennel.ExcludeFromLeaderboard."
+        },
+        {
+          "name": "LastRunGmt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "EventStartDatetimeGmt of the kennel's latest visible live run before now."
+        },
+        {
+          "name": "LastRunLocal",
+          "type": "DATETIME2(7)",
+          "nullable": true,
+          "description": "That run's CAST(EventStartDatetime AS datetime2(7)) — wall clock."
+        },
+        {
+          "name": "LastRunNumber",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "That run's EventNumber."
+        },
+        {
+          "name": "NextRunGmt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "EventStartDatetimeGmt of the kennel's next visible live run at or after now."
+        },
+        {
+          "name": "NextRunLocal",
+          "type": "DATETIME2(7)",
+          "nullable": true,
+          "description": "Its wall-clock start."
+        },
+        {
+          "name": "NextRunNumber",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Its EventNumber."
+        },
+        {
+          "name": "NextRunName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Its EventName."
+        },
+        {
+          "name": "NextRunPublicEventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "Its PublicEventId."
+        },
+        {
+          "name": "SearchText",
+          "type": "NVARCHAR(4000)",
+          "nullable": false,
+          "description": "The app's searchKennelsText, lower-cased: ' ' + names, slug, city, region, country and the four *SearchTags (commas → spaces)."
         }
       ]
     }
   ],
-  "sideEffects": [],
-  "codeSmells": [],
+  "sideEffects": [
+    "INSERT HC.ErrorLog then THROW in the CATCH."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId and @accessToken have no SQL default (lines 24-25). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
+    },
+    {
+      "severity": "low",
+      "issue": "SearchText can truncate silently",
+      "detail": "Lines 112-117 concatenate non-MAX NVARCHARs whose declared widths sum past 4000 (four NVARCHAR(4000) tag columns), so the result is typed NVARCHAR(4000) and anything beyond is cut without error. Tags are short today."
+    },
+    {
+      "severity": "low",
+      "issue": "Two OUTER APPLY lookups per kennel",
+      "detail": "Lines 126-139 run a TOP 1 next-run and last-run seek for every eligible kennel (thousands) on every call. Acceptable with the EventStartDateTimeGmt index, but it is the cost centre if this page slows down."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

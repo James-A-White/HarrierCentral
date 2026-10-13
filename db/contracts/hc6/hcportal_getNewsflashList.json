@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_getNewsflashList",
-  "version": "1.0.1",
-  "description": "Returns all newsflashes, including soft-deleted ones (IsDeleted=1), for the HC Admin Tools management screen. Includes a dismissedCount per newsflash (number of users who clicked 'I've read it'). Ordered by CreatedAt DESC so the most recently created newsflash appears first. Intended for portal admins only — auth gates this to registered portal admin devices.",
+  "version": "1.1.0",
+  "description": "Returns all newsflashes, including soft-deleted ones (IsDeleted=1), for the HC Admin Tools management screen, each with a dismissedCount (number of users who clicked 'I've read it'). Ordered by CreatedAt DESC. Device-bound portal auth via HC6.ValidatePortalAuth; the SP applies NO admin/permission gate — any signed-in portal user may call it. The admin restriction exists only in the portal UI.",
   "parameters": [
     {
       "name": "deviceId",
@@ -23,10 +23,20 @@
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on auth failure or runtime error.",
+      "description": "Returned on auth failure (HC6.ValidatePortalAuth message) or from the CATCH block (ERROR_MESSAGE()).",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Human-readable error message"
+        }
       ]
     },
     {
@@ -34,23 +44,99 @@
       "name": "NewsflashList",
       "description": "Zero or more rows, one per newsflash, ordered by CreatedAt DESC (most recently created first). Includes soft-deleted rows (IsDeleted=1).",
       "columns": [
-        { "name": "newsflashId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Primary key of HC.PortalNewsflash" },
-        { "name": "title", "type": "NVARCHAR(250)", "nullable": false, "description": "Newsflash heading" },
-        { "name": "bodyText", "type": "NVARCHAR(MAX)", "nullable": false, "description": "Newsflash body content" },
-        { "name": "imageUrl", "type": "NVARCHAR(500)", "nullable": true, "description": "Optional Azure Blob URL for the header image" },
-        { "name": "startDate", "type": "DATE", "nullable": false, "description": "Date from which this newsflash is active" },
-        { "name": "endDate", "type": "DATE", "nullable": true, "description": "Optional expiry date (inclusive). NULL = no expiry." },
-        { "name": "kennelId", "type": "UNIQUEIDENTIFIER", "nullable": true, "description": "Targeted kennel ID. NULL = platform-wide newsflash." },
-        { "name": "kennelName", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Display name of the targeted kennel. NULL when kennelId is NULL." },
-        { "name": "isDeleted", "type": "BIT", "nullable": false, "description": "1 if soft-deleted, 0 if active" },
-        { "name": "createdAt", "type": "DATETIME", "nullable": false, "description": "UTC timestamp when the newsflash was created" },
-        { "name": "updatedAt", "type": "DATETIME", "nullable": false, "description": "UTC timestamp of last update" },
-        { "name": "dismissedCount", "type": "INT", "nullable": false, "description": "Number of users who have permanently dismissed this newsflash (IsDismissed=1). 0 if no readers yet." }
+        {
+          "name": "newsflashId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Primary key of HC.PortalNewsflash"
+        },
+        {
+          "name": "title",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Newsflash heading"
+        },
+        {
+          "name": "bodyText",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "Newsflash body content"
+        },
+        {
+          "name": "imageUrl",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Optional Azure Blob URL for the header image"
+        },
+        {
+          "name": "startDate",
+          "type": "DATE",
+          "nullable": false,
+          "description": "Date from which this newsflash is active"
+        },
+        {
+          "name": "endDate",
+          "type": "DATE",
+          "nullable": true,
+          "description": "Optional expiry date (inclusive). NULL = no expiry."
+        },
+        {
+          "name": "kennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "Targeted kennel ID. NULL = platform-wide newsflash."
+        },
+        {
+          "name": "kennelName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Display name of the targeted kennel. NULL when kennelId is NULL."
+        },
+        {
+          "name": "isDeleted",
+          "type": "BIT",
+          "nullable": false,
+          "description": "1 if soft-deleted, 0 if active"
+        },
+        {
+          "name": "createdAt",
+          "type": "DATETIME",
+          "nullable": false,
+          "description": "UTC timestamp when the newsflash was created"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DATETIME",
+          "nullable": false,
+          "description": "UTC timestamp of last update"
+        },
+        {
+          "name": "dismissedCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Number of users who have permanently dismissed this newsflash (IsDismissed=1). 0 if no readers yet."
+        }
       ]
     }
   ],
   "sideEffects": [],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "No admin gate in the SP",
+      "detail": "Lines 33-41: only ValidatePortalAuth runs. Any signed-in portal user can list every newsflash, including soft-deleted ones and those targeted at other kennels. The HC Admin Tools screen is the only thing restricting it."
+    },
+    {
+      "severity": "medium",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 67-70: CATCH returns the envelope without an HC.ErrorLog row."
+    },
+    {
+      "severity": "low",
+      "issue": "BIT column in a new table",
+      "detail": "HC.PortalNewsflash.IsDeleted is BIT (created 2026-04 by db/hc6/portal/archive/create_portal_newsflash_tables.sql); house rule is SMALLINT. isDeleted reaches the client as a JSON boolean."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

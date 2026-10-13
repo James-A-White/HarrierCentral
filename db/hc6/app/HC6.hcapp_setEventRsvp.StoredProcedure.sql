@@ -3,11 +3,11 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_setEventRsvp]
     @deviceId                    UNIQUEIDENTIFIER,
     @accessToken                 NVARCHAR(1000),
     @eventId                     UNIQUEIDENTIFIER,
-    @hasherId                    UNIQUEIDENTIFIER,
+    @hasherId                    UNIQUEIDENTIFIER = NULL,
     @isHare                      INT              = -1,
     @rsvpState                   INT              = -1,
-    @hasherEventMapUpdatedAfter  NVARCHAR(50),
-    @hasherKennelMapUpdatedAfter NVARCHAR(50),
+    @hasherEventMapUpdatedAfter  NVARCHAR(50) = 'ignore',
+    @hasherKennelMapUpdatedAfter NVARCHAR(50) = 'ignore',
     @hemId                       UNIQUEIDENTIFIER = NULL,
     @autoSetNotifications        SMALLINT         = 1
 
@@ -24,7 +24,9 @@ AS
 --   @deviceId                    - Registered device UUID
 --   @accessToken                 - Token validated against DeviceSecret
 --   @eventId                     - Event UUID
---   @hasherId                    - Target hasher (defaults to caller if NULL)
+--   @hasherId                    - Target hasher (defaults to caller if NULL).
+--                                  Another hasher needs manageAttendance or
+--                                  hare of this run (errorCode 1326).
 --   @isHare                      - 1 = is hare; -1 / NULL = keep existing
 --   @rsvpState                   - New RSVP state; -1 / NULL = keep existing
 --   @hasherEventMapUpdatedAfter  - Sync watermark for HasherEventMap
@@ -116,6 +118,42 @@ END
 -- ---------------------------------------------------------------
 IF (@hasherId IS NULL) SET @hasherId = @userId;
 
+-- ---------------------------------------------------------------
+-- Acting for another hasher (2026-10-13): the run admin check-in page
+-- sets pack members' RSVP and hare flags, so this is allowed to anyone
+-- holding "Manage attendance" for the run's kennel or a hare of THIS
+-- run -- the same guard as hcapp_setEventAttendence. Until now any
+-- signed-in device could set any hasher's RSVP or hare flag.
+-- @hemId resolves @hasherId from the row above, so it is covered too.
+-- ---------------------------------------------------------------
+IF (@hasherId <> @userId)
+BEGIN
+    DECLARE @rsvpKennelId UNIQUEIDENTIFIER;
+    SELECT @rsvpKennelId = KennelId FROM HC.Event WHERE id = @eventId;
+
+    DECLARE @rsvpAllowed SMALLINT = 0;
+    DECLARE @rsvpIsHare  SMALLINT = CASE WHEN EXISTS (
+            SELECT 1 FROM HC.HasherEventMap
+            WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1) THEN 1 ELSE 0 END;
+    IF (@rsvpKennelId IS NOT NULL)
+        EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @rsvpKennelId,
+             @functionKey = 'manageAttendance', @isHareOfEvent = @rsvpIsHare,
+             @allowed = @rsvpAllowed OUTPUT;
+    IF (@rsvpAllowed = 0)
+    BEGIN
+        SET @errorCode = 1326; SET @errorType = 13; SET @errorId = NEWID();
+        INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+        VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not authorised to set RSVP for other user',
+                'Caller is not the hasher and does not hold manageAttendance (or hare) for the kennel', @procName, @userId);
+        SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+        SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+               'Not authorised' AS errorTitle,
+               'You are not authorised to change another hashers RSVP.' AS errorUserMessage,
+               @procName AS errorProc;
+        RETURN;
+    END
+END
+
 -- rsvpState = 1 (not coming) forces isHare = 0
 IF (@rsvpState = 1) SET @isHare = 0;
 
@@ -180,7 +218,11 @@ BEGIN
             @kennelNotificationPreference = hkm.KennelNotificationPreference,
             @emailAlertPreference         = hkm.KennelEmailAlertPreference
         FROM HC.HasherKennelMap hkm
-        WHERE hkm.KennelId = @kennelId AND hkm.UserId = @userId;
+        -- The TARGET's kennel settings (2026-10-13). This read @userId, the
+        -- caller, so a run admin changing someone's RSVP on the check-in
+        -- page wrote the admin's own kennel notification and email choices
+        -- onto that hasher's run. Same as before for your own RSVP.
+        WHERE hkm.KennelId = @kennelId AND hkm.UserId = @hasherId;
     END
 END
 
@@ -239,7 +281,9 @@ BEGIN TRY
                  [EventNotificationPreference], [updatedAt])
             VALUES
                 (@hemId, @eventId, @kennelId, @hasherId,
-                 @rsvpState,
+                 -- 0 = no RSVP (the column default) when the call changes only
+                 -- the hare flag; NULL failed the NOT NULL column (2026-10-13).
+                 COALESCE(@rsvpState, 0),
                  CASE WHEN @isHare > 0 THEN 1 ELSE 0 END,
                  0,
                  @kennelNotificationPreference,

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_getRunPhotos",
-  "version": "1.2.0",
-  "description": "Returns photos for a run in two rowsets. Rowset 1 — the caller's own photos (every status, soft-deleted included, always fully returned, with AssetId for device-local display). Rowset 2 — others' photos the caller may see: Status >= 3 (public) for everyone, Status = 2 (members) only when HC.KennelAccessTier(@userId, photo's kennel) gives Tier >= 10 — the single audience oracle; soft-deleted excluded; filterable by @afterUpdatedAt for incremental updates. Call on demand when the map or photo UI is active; do not poll. Auth: HC6.ValidateAppAuth (spNumber 32, @param NULL). The eventId check runs before the TRY; the SELECTs are wrapped, with runtime errors logged and re-thrown.",
+  "version": "1.4.0",
+  "description": "Returns photos for a run in two rowsets. Rowset 1 — the caller's own photos (every status, soft-deleted included, always fully returned, with AssetId for device-local display). Rowset 2 — others' photos the caller may see: Status >= 3 (public) for everyone, Status = 2 (members) only when HC.KennelAccessTier(@userId, photo's kennel) gives Tier >= 10 — the single audience oracle; soft-deleted excluded; filterable by @afterUpdatedAt for incremental updates. Call on demand when the map or photo UI is active; do not poll. Auth: HC6.ValidateAppAuth (spNumber 32, @param NULL). The eventId check runs before the TRY; the SELECTs are wrapped, with runtime errors logged and re-thrown. Since 2026-10-13 the own-photos rowset excludes soft-deleted photos (DeletedAt IS NULL), as the shared rowset does.",
   "parameters": [
     {
       "name": "deviceId",
@@ -21,9 +21,9 @@
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "KennelPhotos.EventId",
-      "description": "The run to fetch photos for. Null or zero-UUID triggers a validation error (errorCode 1232, errorType 12)."
+      "description": "The run to fetch photos for. Null or zero-UUID triggers a validation error (errorCode 1232, errorType 12). Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "afterUpdatedAt",
@@ -278,12 +278,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "@deviceId, @accessToken and @eventId (lines 3-5) have no SQL default. A client that omits @eventId gets 'expects parameter' — an unlogged empty 500 before the SP runs, so the graceful 1232 check at line 69 is unreachable for an omitted parameter."
-    },
-    {
-      "severity": "medium",
-      "issue": "OwnPhotos returns soft-deleted rows without DeletedAt",
-      "detail": "Lines 88-107 select the caller's photos with no DeletedAt filter and do not return the DeletedAt column, so a photo the hasher (or a reviewer) deleted comes back indistinguishable from a live one; the client would re-draw it. Either filter DeletedAt IS NULL as rowset 2 does (line 131) or return the column."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "low",

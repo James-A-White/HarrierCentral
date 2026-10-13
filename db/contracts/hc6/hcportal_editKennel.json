@@ -1,14 +1,14 @@
 {
   "schema": "HC6",
   "name": "hcportal_editKennel",
-  "version": "1.2.0",
-  "description": "Updates an existing kennel's settings. Update-only (no insert path). Uses a COALESCE pattern: only parameters supplied as non-NULL are written; NULL means 'leave unchanged'. Two exceptions: @latitude and @longitude use -999.0 as a sentinel to explicitly set both columns to NULL (geographic nulling). There is no sentinel for clearing string fields to NULL. Covers kennel identity, dissemination, Google Calendar, payment config (3 slots), pricing, currency, location, tags, membership, notifications, and feature tier. Includes duplicate-name detection with auto-suggested alternatives for KennelUniqueShortName. UPDATE wrapped in a transaction.",
+  "version": "1.3.0",
+  "description": "Updates an existing kennel's settings. Update-only (no insert path). COALESCE pattern: a non-NULL parameter is written, NULL means 'leave unchanged'. Exceptions: @latitude or @longitude = -999.0 sets both columns NULL; @messagingGroupInviteUrl, @runsPageUrl, @cardPaymentProvider and @cardPaymentMerchantCode treat '' as 'clear to NULL'; other strings cannot be cleared. Covers identity, dissemination, Google Calendar, messaging group, payment config (3 slots), card payments (SumUp only), pricing, currency, location, tags, membership renewal, notifications, runs-page import and inbound integration, PackTrack trail config, and feature tier. Auth: HC6.ValidatePortalAuth with @publicKennelId as the callerParamString. Gate: the caller's HasherKennelMap row for the kennel must carry AppAccessFlags & 0x40000081 (superAdmin | authIsAdmin). Validation order: auth → publicKennelId NULL → runs page URL → inbound integration → KennelUniqueShortName uniqueness (with suggestions) → kennel exists → admin flags → card payment provider/merchant code. Several columns written here are newer than db/schema/tables/HC.Kennel.Table.sql; their types come from the run-once ALTER scripts named on each parameter.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": "Device.id",
+      "mapsToColumn": null,
       "description": "Auth: device ID used to look up the authenticated user and device secret. Validated via HC6.ValidatePortalAuth."
     },
     {
@@ -23,7 +23,7 @@
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "Kennel.PublicKennelId",
-      "description": "Routing: identifies the kennel to update. Validated IS NULL after auth. Kennel must exist."
+      "description": "Routing: identifies the kennel to update; also the token's callerParamString. Validated IS NULL after auth. Kennel must exist."
     },
     {
       "name": "kennelStatus",
@@ -114,7 +114,7 @@
       "type": "NVARCHAR(50)",
       "nullable": true,
       "mapsToColumn": "Kennel.KennelUniqueShortName",
-      "description": "Globally unique short name. Widened from NVARCHAR(25) in HC5 to NVARCHAR(50) in HC6 to match table column. Validated for uniqueness with auto-suggested alternatives on conflict. NULL = no change."
+      "description": "Globally unique short name. Widened from NVARCHAR(25) in HC5 to NVARCHAR(50) in HC6 to match table column. Validated for uniqueness with auto-suggested alternatives on conflict. NULL = no change. A name another kennel holds is refused with suggested alternatives (<shortName>-N, <shortName>-<CountryCode>)."
     },
     {
       "name": "kennelDescription",
@@ -150,6 +150,20 @@
       "nullable": true,
       "mapsToColumn": "Kennel.KennelWebsiteUrl",
       "description": "External kennel website URL. NULL = no change."
+    },
+    {
+      "name": "defaultMessagingPlatform",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.DefaultMessagingPlatform",
+      "description": "The kennel's default messaging platform for run chat links (SMALLINT, column NOT NULL DEFAULT 1). NULL = no change. Column added by db/hc6/app/archive/2026-09-15_kennel_messaging.sql (not yet in db/schema/tables)."
+    },
+    {
+      "name": "messagingGroupInviteUrl",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.MessagingGroupInviteUrl",
+      "description": "Invite link to the kennel's messaging group. NULL = no change; '' clears the column to NULL. Column NVARCHAR(500) added by db/hc6/app/archive/2026-09-15_kennel_messaging.sql."
     },
     {
       "name": "kennelEventsUrl",
@@ -199,6 +213,13 @@
       "nullable": true,
       "mapsToColumn": "Kennel.DefaultRunStartTime",
       "description": "Default start time for new runs. NULL = no change."
+    },
+    {
+      "name": "defaultRunDayOfWeek",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.DefaultRunDayOfWeek",
+      "description": "Default run day, 1 = Monday … 7 = Sunday. NULL = no change (not range-checked here). Column SMALLINT NULL added by db/hc6/portal/archive/add_DefaultRunDayOfWeek_to_Kennel.sql."
     },
     {
       "name": "currencyCode",
@@ -401,7 +422,7 @@
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": "Kennel.AllowCredit",
-      "description": "Master flag: whether credit payments are allowed for this kennel (1=on, default 1). NULL = no change."
+      "description": "Master flag: whether credit payments are allowed for this kennel (1=on, default 1). NULL = no change. Column SMALLINT NOT NULL added by db/hc6/app/archive/migration_add_AllowCredit_to_Kennel.sql."
     },
     {
       "name": "cityId",
@@ -478,28 +499,28 @@
       "type": "SMALLINT",
       "nullable": true,
       "mapsToColumn": "Kennel.MembershipRenewalMode",
-      "description": "Membership renewal rule: 1=rolling, 2=fixed year, 3=lifetime. NULL = leave unchanged (COALESCE partial update)."
+      "description": "Membership renewal rule: 1=rolling, 2=fixed year, 3=lifetime. NULL = leave unchanged (COALESCE partial update). Column added by db/hc6/archive/membership_columns_ALTER.sql."
     },
     {
       "name": "membershipPeriodStartDate",
       "type": "DATE",
       "nullable": true,
       "mapsToColumn": "Kennel.MembershipPeriodStartDate",
-      "description": "Fixed-year mode: membership year start. NULL = unchanged; cannot be cleared back to NULL."
+      "description": "Fixed-year mode: membership year start. NULL = unchanged; cannot be cleared back to NULL. Column added by db/hc6/archive/membership_columns_ALTER.sql."
     },
     {
       "name": "membershipPeriodEndDate",
       "type": "DATE",
       "nullable": true,
       "mapsToColumn": "Kennel.MembershipPeriodEndDate",
-      "description": "Fixed-year mode: membership year end. NULL = unchanged; cannot be cleared back to NULL."
+      "description": "Fixed-year mode: membership year end. NULL = unchanged; cannot be cleared back to NULL. Column added by db/hc6/archive/membership_columns_ALTER.sql."
     },
     {
       "name": "membershipPrice",
       "type": "DECIMAL(10,4)",
       "nullable": true,
       "mapsToColumn": "Kennel.MembershipPrice",
-      "description": "Default membership fee shown in the app charge dialog. NULL = unchanged."
+      "description": "Default membership fee shown in the app charge dialog. NULL = unchanged. Column added by db/hc6/archive/membership_columns_ALTER.sql."
     },
     {
       "name": "runCountStartDate",
@@ -530,6 +551,21 @@
       "description": "Free-text search tags for kennel discovery. NULL = no change."
     },
     {
+      "name": "runsPageUrl",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.RunsPageUrl",
+      "description": "The kennel's page of upcoming runs, read 4 times a day by the API's RunsPageImport (E3.F6.S3). NULL = no change; '' (after trim) clears. Must start http:// or https:// and be at most 500 characters after trim, else refused with a message. A changed address clears RunsPageHash so the next read imports the page. Column NVARCHAR(500) added by db/hc6/app/archive/2026-10-04_kennel_runs_page.sql.",
+      "typeMismatch": "Parameter NVARCHAR(MAX), column NVARCHAR(500) — deliberate, so an over-long paste is refused with a message rather than truncated."
+    },
+    {
+      "name": "inboundIntegrationId",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.InboundIntegrationId",
+      "description": "Where the kennel's runs come from (an inbound HC.Integration id: 0 HC, 1 Facebook, 2 Google Calendar, 3 San Diego, 5 Berlin, 6 Runs page (AI)). 6 turns the runs-page reader on. NULL = unchanged; an unknown or outbound id is refused. Added 2026-10-05. Must name an HC.Integration row with Direction = 0, else 'That inbound integration does not exist.'"
+    },
+    {
       "name": "excludeFromLeaderboard",
       "type": "SMALLINT",
       "nullable": true,
@@ -551,32 +587,39 @@
       "description": "Minutes before run to send check-in reminders. NULL = no change."
     },
     {
+      "name": "trailSymbolsConfigJson",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.TrailSymbolsConfigJson",
+      "description": "Per-kennel PackTrack trail-symbol config JSON. NULL = no change (clients use defaults); cannot be cleared. Column NVARCHAR(4000) (per db/hc6/archive/add_TrailTypesConfigJson_to_Kennel.sql, which mirrors it; not in db/schema/tables)."
+    },
+    {
+      "name": "trailTypesConfigJson",
+      "type": "NVARCHAR(4000)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.TrailTypesConfigJson",
+      "description": "Per-kennel PackTrack trail-type config JSON. NULL = no change (clients use defaults); cannot be cleared. Column NVARCHAR(4000) added by db/hc6/archive/add_TrailTypesConfigJson_to_Kennel.sql."
+    },
+    {
       "name": "cardPaymentProvider",
       "type": "NVARCHAR(30)",
       "nullable": true,
       "mapsToColumn": "Kennel.CardPaymentProvider",
-      "description": "Card payment app (E8.F7.S2): 'sumup', or '' to clear. NULL = no change. Lowercased and trimmed; any other value is refused (Success = 0)."
+      "description": "Card payment app (E8.F7.S2): 'sumup', or '' to clear. NULL = no change. Lowercased and trimmed; any other value is refused (Success = 0). Column added by db/hc6/app/archive/2026-09-22_kennel_payment_provider.sql."
     },
     {
       "name": "cardPaymentMerchantCode",
       "type": "NVARCHAR(100)",
       "nullable": true,
       "mapsToColumn": "Kennel.CardPaymentMerchantCode",
-      "description": "The club's SumUp merchant code (E8.F7.S2), or '' to clear. NULL = no change. Trimmed and uppercased; longer than 100 is refused."
-    },
-    {
-      "name": "inboundIntegrationId",
-      "type": "INT",
-      "nullable": true,
-      "mapsToColumn": "Kennel.InboundIntegrationId",
-      "description": "Where the kennel's runs come from (an inbound HC.Integration id: 0 HC, 1 Facebook, 2 Google Calendar, 3 San Diego, 5 Berlin, 6 Runs page (AI)). 6 turns the runs-page reader on. NULL = unchanged; an unknown or outbound id is refused. Added 2026-10-05."
+      "description": "The club's SumUp merchant code (E8.F7.S2), or '' to clear. NULL = no change. Trimmed and uppercased; longer than 100 is refused. Column added by db/hc6/app/archive/2026-09-22_kennel_payment_provider.sql."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error. Duplicate KennelUniqueShortName errors include auto-suggested alternatives in ErrorMessage.",
+      "description": "Returned on any validation, auth, permission or runtime error (CATCH returns ERROR_MESSAGE()). Short-circuits on first error. Duplicate KennelUniqueShortName errors include auto-suggested alternatives in ErrorMessage, which can exceed 255 characters.",
       "columns": [
         {
           "name": "Success",
@@ -586,7 +629,7 @@
         },
         {
           "name": "ErrorMessage",
-          "type": "NVARCHAR(255)",
+          "type": "NVARCHAR(MAX)",
           "nullable": true,
           "description": "Human-readable error message"
         }
@@ -599,7 +642,7 @@
       "columns": [
         {
           "name": "result",
-          "type": "NVARCHAR(250)",
+          "type": "VARCHAR(27)",
           "nullable": false,
           "description": "Always 'Kennel updated successfully'"
         },
@@ -613,7 +656,7 @@
     }
   ],
   "sideEffects": [
-    "UPDATE HC.Kennel — all provided non-NULL fields via COALESCE pattern. Latitude and Longitude are set to NULL if either @latitude or @longitude equals -999.0."
+    "UPDATE HC.Kennel — every non-NULL parameter via COALESCE, plus updatedAt = SYSUTCDATETIME(); Latitude/Longitude NULL when either is -999.0; RunsPageHash cleared when the runs page address changes. Wrapped in a transaction. HC.trgUpdateModifiedOnDateForKennels also fires (kennel re-syncs to phones)."
   ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
@@ -621,5 +664,37 @@
     "Never change a parameter type",
     "Never change a sentinel value meaning",
     "Never change the lat/lon nulling sentinel (-999.0) without updating all callers"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH does not log to HC.ErrorLog",
+      "detail": "Lines 401-404: the CATCH rolls back and returns ERROR_MESSAGE() with no HC.ErrorLog row. The header relies on the API shim logging every Success = 0 (nonApi_logPortalError); a failure the shim does not see leaves no record."
+    },
+    {
+      "severity": "medium",
+      "issue": "NVARCHAR(n) parameters receive user text",
+      "detail": "@kennelName NVARCHAR(250), @kennelShortName NVARCHAR(25), @kennelDescription NVARCHAR(4000), @kennelMismanagementTeam NVARCHAR(4000), @kennelSearchTags NVARCHAR(4000), @messagingGroupInviteUrl NVARCHAR(500) etc. (lines 10-105) match their columns, but SQL Server truncates an over-long argument silently. Only @runsPageUrl is NVARCHAR(MAX) with a LEN check."
+    },
+    {
+      "severity": "low",
+      "issue": "Sentinel magic value",
+      "detail": "Lines 360-361: -999.0 on @latitude or @longitude clears both coordinates. Strings use '' to clear on four parameters and cannot be cleared at all on the rest — inconsistent clear semantics within one SP."
+    },
+    {
+      "severity": "low",
+      "issue": "Uniqueness check before kennel lookup, without lock",
+      "detail": "Lines 201-246 check KennelUniqueShortName before the kennel is resolved and before the admin gate (so a non-admin learns which names exist), and without UPDLOCK/HOLDLOCK; two concurrent edits can race to the same name (a unique index, if any, then fails into the CATCH)."
+    },
+    {
+      "severity": "low",
+      "issue": "Admin check bypasses CheckKennelPermission",
+      "detail": "Lines 261-270 test raw AppAccessFlags & 0x40000081; mismanagement-role grantors cannot edit the kennel here."
+    },
+    {
+      "severity": "low",
+      "issue": "@defaultRunDayOfWeek not range-checked",
+      "detail": "Line 327 writes any SMALLINT; the documented range is 1-7."
+    }
   ]
 }

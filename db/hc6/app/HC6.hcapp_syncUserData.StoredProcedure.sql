@@ -664,6 +664,15 @@ END
 -- ---------------------------------------------------------------
 -- EVENTS – force replicate all for a specific kennel
 -- ---------------------------------------------------------------
+-- ⚠ CALL WITH @usePaging = 0 ONLY. Unlike every other rowset here, this
+-- one has no updatedAt watermark: it is meant to return the kennel's whole
+-- history in one reply. It still shares @paging250, which is 1,000,000
+-- with paging off and 250 with paging on. With paging on, every call
+-- would return the SAME first 250 rows (no "continue from here" marker),
+-- so a kennel with more than 250 runs would never finish loading.
+-- Safe today: all three callers (following a kennel, entering kennel
+-- admin, opening a linked run) leave usePaging at false. Reviewed
+-- 2026-10-13; James chose to document rather than guard.
 IF (@forceKennelId IS NOT NULL)
 BEGIN
     SELECT

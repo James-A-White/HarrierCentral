@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_approveKennelRequest",
-  "version": "1.1.0",
-  "description": "Approves a kennel request (E12.F1.S6): creates HC.Kennel (unique short name LH3 / LH3-GB / LH3-GBn, coin logo URL, parsed price), makes the requester HC admin (account created if the email has none), adds CanEditKennel platform admins as helpers, ensures an invite code, marks the request approved. UPDLOCK on the request row. Requires HC.PlatformAdmin with CanEditKennel = 1 (E12.F1). Visitors' price from NonMemberPrice when numeric, else the members' price. Membership: MembershipPrice / MembershipRenewalMode from the request (none ⇒ price 0, rolling). Since 2026-10-10 (E12.F1.S10) it also copies the request's logo (our blob only, else a coin), founding date, usual run day and start time, social links and runs page — a runs page switches on the runs-page import (InboundIntegrationId 6).",
+  "version": "1.4.0",
+  "description": "Approves a kennel request (E12.F1.S6): creates HC.Kennel (unique short name LH3 / LH3-GB / LH3-GBn, coin logo URL, parsed price), makes the requester HC admin (account created if the email has none), adds CanEditKennel platform admins as helpers, ensures an invite code, marks the request approved. UPDLOCK on the request row. Requires HC.PlatformAdmin with CanEditKennel = 1 (E12.F1). Visitors' price from NonMemberPrice when numeric, else the members' price. Membership: MembershipPrice / MembershipRenewalMode from the request (none ⇒ price 0, rolling). Since 2026-10-10 (E12.F1.S10) it also copies the request's logo (our blob only, else a coin), founding date, usual run day and start time, social links and runs page — a runs page switches on the runs-page import (InboundIntegrationId 6). Since 2026-10-11 it refuses a request that already has a KennelId (set by the old HC3W.importKennel without moving the status), so approving cannot create the kennel twice. Auth: HC6.ValidatePortalAuth with NULL callerParamString. HC.HasherKennelMap.IsMember is still written here but is DEPRECATED (2026-10-13): never read it.",
   "parameters": [
     {
       "name": "deviceId",
@@ -21,16 +21,16 @@
     {
       "name": "kennelImportId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "OfficeForms_KennelImport.KennelImportId",
-      "description": ""
+      "description": "Required: EXT.OfficeForms_KennelImport.KennelImportId of the request to approve. NO SQL default — omitting it fails before the SP runs (unlogged 500); an explicit NULL returns 'kennelImportId is required' (checked after auth and the CanEditKennel gate)."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "Success",
-      "description": "{ Success, ErrorMessage } — also the auth / CanEditKennel refusal.",
+      "description": "{ Success, ErrorMessage } — always returned. Refusals: auth failure, 'Not authorised: Platform Admin with CanEditKennel required', 'kennelImportId is required', request not found / already approved / already has a kennel / not open, missing or invalid name, short name (> 20 chars or not alphanumeric), country/region/city missing or inconsistent, invalid admin email, no free web address; or ERROR_MESSAGE() from CATCH (logged to HC.ErrorLog).",
       "columns": [
         {
           "name": "Success",
@@ -40,7 +40,7 @@
         },
         {
           "name": "ErrorMessage",
-          "type": "NVARCHAR(500)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
           "description": "Why, for the reviewer"
         }
@@ -116,13 +116,13 @@
     "UPDATE EXT.OfficeForms_KennelImport RequestStatus 2, KennelId, ReviewedBy/At",
     "API: welcome email via the Logic App"
   ],
+  "codeSmells": [],
   "breakingChangesVsHc3w": [
     "No dbo.Users login / hard-coded password hash",
     "Logo is a blob URL, not bundle://",
     "Helpers from HC.PlatformAdmin, not a hard-coded id",
     "Requester gets HC admin only, not all mismanagement roles"
   ],
-  "codeSmells": [],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

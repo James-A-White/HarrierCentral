@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getGlobalCalendar",
-  "version": "1.0.1",
-  "description": "Returns one row per (event date, kennel) for all kennels with publicly visible events in the given date window. All kennels are included regardless of whether they have a KennelWebsite row — logo and colour are NULL for unconfigured kennels and the frontend falls back to an initial-letter placeholder. Used by the harriercentral.com global run calendar with load-more pagination.",
+  "version": "1.1.0",
+  "description": "Returns one row per (local event date, kennel) for every live kennel with visible, live runs in a date window, for the global run calendar with load-more paging. Dates are the kennel-local EventStartLocalDate (persisted, served by the filtered index IX_Event_LocalDate_Visible). Kennels without a KennelWebsite row are included with a NULL colour; the frontend falls back to an initial-letter placeholder. No authentication. Read-only.",
   "parameters": [
     {
       "name": "fromDate",
@@ -36,13 +36,13 @@
     {
       "index": 1,
       "name": "CalendarRows",
-      "description": "One row per (EventDate, Kennel) combination. DISTINCT collapses multiple events on the same day for the same kennel. Ordered by EventDate ASC, KennelName ASC. Empty rowset = no events in the date window.",
+      "description": "One row per (EventStartLocalDate, kennel) — GROUP BY collapses a kennel's several runs on one day; ORDER BY EventDate, KennelName. Empty = no runs in the window.",
       "columns": [
         {
           "name": "EventDate",
           "type": "DATE",
           "nullable": false,
-          "description": "Local date of the event as stored in EventStartDatetime (datetimeoffset cast to DATE)."
+          "description": "HC.Event.EventStartLocalDate — the kennel-local date of the run (persisted computed column)."
         },
         {
           "name": "KennelSlug",
@@ -52,7 +52,7 @@
         },
         {
           "name": "KennelName",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(250)",
           "nullable": false,
           "description": "Full kennel name for display and alt text."
         },
@@ -76,15 +76,40 @@
         },
         {
           "name": "EventNumber",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "MIN(Event.EventNumber) of the kennel's runs that day — the run-detail link target (/{slug}/{EventNumber})."
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "CatchEnvelope",
+      "description": "On a runtime error (CATCH, line 88): { Success = 0, ErrorMessage = ERROR_MESSAGE() }, possibly after rowsets already sent. NOT logged to HC.ErrorLog and not re-raised.",
+      "columns": [
+        {
+          "name": "Success",
           "type": "INT",
           "nullable": false,
-          "description": "MIN(EventNumber) for this kennel on this date. Used to build the run detail URL (/runs/{EventNumber}). May be 0 for uncounted events; caller falls back to the kennel homepage in that case."
+          "description": "0."
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "ERROR_MESSAGE()."
         }
       ]
     }
   ],
   "sideEffects": [],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH does not log to HC.ErrorLog",
+      "detail": "The CATCH (lines 87-89) returns { Success = 0, ErrorMessage } without writing HC.ErrorLog and without THROW, so a timeout or bad input surfaces to the shim as a data rowset and leaves no server-side record (CLAUDE.md 'Every CATCH must log'). The sentinel row may already have been sent."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

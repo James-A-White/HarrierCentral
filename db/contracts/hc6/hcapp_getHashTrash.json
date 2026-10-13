@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_getHashTrash",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Returns the HashTrash article for a run. Published articles (HashTrashStatus = 1) are returned to any authenticated user. Draft articles (HashTrashStatus = 0) are returned only when HC6.CheckKennelPermission 'viewHashTrashDrafts' allows the caller for @kennelId (feature 'View Hash Trash drafts': those who can save can see drafts; SuperAdmin always) — otherwise content and status come back NULL with no error. If the event does not exist in that kennel (or is deleted) the rowset is EMPTY (zero rows); if the article has not been written, one row of NULLs. Callers treat NULL content as 'no article'. Auth: HC6.ValidateAppAuth (spNumber 54, @param NULL). Read SP — no success envelope on the happy path. New feature — no HC5 equivalent.",
   "parameters": [
     {
@@ -21,16 +21,16 @@
     {
       "name": "kennelId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Event.KennelId",
-      "description": "Kennel that owns the event. Required — null or zero-UUID triggers validation error."
+      "description": "Kennel that owns the event. Required — null or zero-UUID triggers validation error. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "Event.id",
-      "description": "Event to fetch HashTrash for. Required — null or zero-UUID triggers validation error."
+      "description": "Event to fetch HashTrash for. Required — null or zero-UUID triggers validation error. Defaults to NULL when omitted (2026-10-13)."
     }
   ],
   "rowsets": [
@@ -98,7 +98,7 @@
     {
       "severity": "medium",
       "issue": "Parameter without a default",
-      "detail": "All four parameters (lines 3-6) have no SQL default. A client that omits @kennelId or @eventId gets 'expects parameter' — an unlogged empty 500 before the SP runs, so the graceful 1234 'Missing parameter' check at line 70 is unreachable for an omitted parameter."
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "low",

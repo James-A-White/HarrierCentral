@@ -113,8 +113,19 @@ END
 DECLARE @publicHasherId UNIQUEIDENTIFIER;
 SELECT @publicHasherId = h.PublicHasherId FROM HC.Hasher h WHERE h.id = @userId;
 
+-- A resend of a message this sender already stored (2026-10-13): writes
+-- nothing, returns the stored message and empty push rowsets. The phone
+-- resends the same @messageId when a reply is lost; the second INSERT used
+-- to hit the primary key and report a delivered message as unsent.
+DECLARE @isResend SMALLINT = CASE WHEN EXISTS (
+        SELECT 1 FROM HC.EventMessage
+        WHERE id = @messageId AND UserId = @userId AND ThreadId = @threadId) THEN 1 ELSE 0 END;
+
 BEGIN TRY
     BEGIN TRANSACTION;
+
+    IF (@isResend = 0)
+    BEGIN
 
     -- A reply quotes a message of THIS thread (E9.F1.S21). Anything else —
     -- a stale id, another chat's message — sends as a plain message rather
@@ -135,7 +146,7 @@ BEGIN TRY
 
     -- The sender never sees their own message as unread. Keyed on the full
     -- thread identity, like the room MERGE and for the same reason.
-    MERGE INTO HC.EventMessageBadgeCounts AS Target
+    MERGE INTO HC.EventMessageBadgeCounts WITH (HOLDLOCK) AS Target
     USING (VALUES (@userId, @seq)) AS Source (UserId, LastSequenceCount)
     ON (Target.UserId = Source.UserId AND Target.EventId IS NULL AND Target.KennelId IS NULL
         AND Target.ThreadId = @threadId AND Target.MessageType = 0)
@@ -143,6 +154,7 @@ BEGIN TRY
     WHEN NOT MATCHED BY TARGET THEN
         INSERT (UserId, EventId, KennelId, ThreadId, MessageType, LastSequenceCount, LastReadAt)
         VALUES (Source.UserId, NULL, NULL, @threadId, 0, Source.LastSequenceCount, SYSDATETIMEOFFSET());
+    END
 
     COMMIT TRANSACTION;
 END TRY
@@ -198,6 +210,8 @@ BEGIN TRY
       AND @otherPref <> 2;
 
     -- Rowset 2: visible; Rowset 3: silent (the other party muted this thread).
+    -- A resend notifies nobody: its first send already did.
+    IF (@isResend = 1) DELETE FROM #dmAudience;
     SELECT UserId, FcmToken, BadgeTotal FROM #dmAudience WHERE @otherPref <> 3;
     SELECT UserId, FcmToken, BadgeTotal FROM #dmAudience WHERE @otherPref = 3;
     DROP TABLE #dmAudience;

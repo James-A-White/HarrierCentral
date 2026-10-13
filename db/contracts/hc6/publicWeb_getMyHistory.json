@@ -1,230 +1,274 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getMyHistory",
-  "version": "2.0.0",
-  "description": "The app's Run Counts tab, server-side: the app's own three queries (history_list_page.dart). By Kennel = HKM Historical* + Hc* per kennel; By Country = HC runs grouped by the RUN's country (Event.CountryId) merged with historical counts grouped by the kennel's country; totals = by-kennel rows summed. No deleted filter, to match the app's local query exactly. ValidateAppAuth sp 113.",
+  "version": "2.1.0",
+  "description": "The app's Run Counts tab for a signed-in web member (E9.F7.S5) — the app's own three queries (history_list_page.dart) moved server-side. By Kennel = HasherKennelMap Historical* + Hc* per live kennel with any runs; By Country = HC runs (attended, AttendenceState >= 20, counted, visible, started) grouped by the RUN's country (Event.CountryId — a travelling kennel lands in several) merged with the historical counts grouped by the KENNEL's country; Totals = the By Kennel rows summed. The HC-run query has no Event.deleted filter, deliberately, to match the app's local query. Auth: HC6.ValidateAppAuth (spNumber 113, @param NULL); everything is scoped to the token's user. Read-only.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": false,
-      "mapsToColumn": "Device.id",
-      "description": "The browser's device id"
+      "mapsToColumn": null,
+      "description": "The browser's HC.Device id. No SQL default."
     },
     {
       "name": "accessToken",
       "type": "NVARCHAR(1000)",
       "nullable": false,
       "mapsToColumn": null,
-      "description": "Token for this SP's name, paramString = deviceSecret"
+      "description": "Short-lived token signed for this SP (ValidateAppAuth spNumber 113). No SQL default."
     }
   ],
   "rowsets": [
     {
       "index": 0,
-      "name": "Envelope",
-      "description": "success 1/0, errorCode, errorType",
+      "name": "AuthErrorEnvelope",
+      "description": "On a ValidateAppAuth failure: { success = 0, errorCode, errorType } then the detail at index 1; the SP RETURNs.",
       "columns": [
         {
           "name": "success",
           "type": "INT",
           "nullable": false,
-          "description": ""
+          "description": "Always 0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "ValidateAppAuth's error code."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "ValidateAppAuth's error type."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "Error detail after the AuthErrorEnvelope (errorId, errorType, errorCode, errorTitle, errorUserMessage, errorProc)."
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "On success, before the data rowsets: { success = 1, errorCode = NULL, errorType = NULL }.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
         },
         {
           "name": "errorCode",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "Always NULL."
         },
         {
           "name": "errorType",
           "type": "INT",
           "nullable": true,
-          "description": ""
+          "description": "Always NULL."
         }
       ]
     },
     {
       "index": 1,
       "name": "Totals",
-      "description": "One row",
+      "description": "On success: one row.",
       "columns": [
         {
           "name": "Runs",
           "type": "INT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "SUM(TotalRuns) of the by-kennel rows."
         },
         {
           "name": "Haring",
           "type": "INT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "SUM(TotalHaring)."
         },
         {
           "name": "Kennels",
           "type": "INT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "COUNT of by-kennel rows."
         },
         {
           "name": "IsEstimate",
           "type": "INT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "1 when any kennel's historical count is an estimate."
         }
       ]
     },
     {
       "index": 2,
       "name": "ByKennel",
-      "description": "runs desc",
+      "description": "On success: one row per live kennel (deleted = 0, removed = 0) where the caller's live HasherKennelMap row has TotalRuns > 0; ORDER BY TotalRuns DESC, KennelShortName. SELECT * from a temp table — column order is the INTO list.",
       "columns": [
         {
           "name": "PublicKennelId",
           "type": "UNIQUEIDENTIFIER",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "Kennel.PublicKennelId."
         },
         {
           "name": "KennelSlug",
-          "type": "NVARCHAR(100)",
-          "nullable": true,
-          "description": ""
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "Kennel.KennelUniqueShortName."
         },
         {
           "name": "KennelShortName",
-          "type": "NVARCHAR(100)",
-          "nullable": true,
-          "description": ""
+          "type": "NVARCHAR(25)",
+          "nullable": false,
+          "description": "Kennel.KennelShortName."
         },
         {
           "name": "KennelName",
           "type": "NVARCHAR(250)",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "Kennel.KennelName."
         },
         {
           "name": "KennelLogo",
-          "type": "NVARCHAR(1000)",
-          "nullable": true,
-          "description": ""
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Kennel.KennelLogo (may be a bundle:// ref)."
         },
         {
           "name": "TotalRuns",
           "type": "INT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "HistoricalTotalRunCount + HcTotalRunCount."
         },
         {
           "name": "TotalHaring",
           "type": "INT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "HistoricalHaringCount + HcHaringCount."
         },
         {
           "name": "HcRuns",
           "type": "INT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "HcTotalRunCount."
         },
         {
           "name": "HcHaring",
           "type": "INT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "HcHaringCount."
         },
         {
           "name": "HistoricalRuns",
           "type": "INT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "HistoricalTotalRunCount."
         },
         {
           "name": "HistoricalHaring",
           "type": "INT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "HistoricalHaringCount."
         },
         {
           "name": "IsEstimate",
           "type": "INT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "HasherKennelMap.HistoricalCountIsEstimate."
         },
         {
           "name": "Following",
           "type": "SMALLINT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "HasherKennelMap.Following."
         },
         {
           "name": "KennelCredit",
-          "type": "DECIMAL",
-          "nullable": true,
-          "description": ""
+          "type": "SMALLMONEY",
+          "nullable": false,
+          "description": "HasherKennelMap.KennelCredit (SMALLMONEY column)."
         },
         {
           "name": "DigitsAfterDecimal",
-          "type": "INT",
-          "nullable": true,
-          "description": ""
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "COALESCE(Kennel.DigitsAfterDecimal, Country.DigitsAfterDecimal, 2)."
         },
         {
           "name": "CurrencySymbol",
-          "type": "NVARCHAR(50)",
-          "nullable": true,
-          "description": ""
+          "type": "NVARCHAR(5)",
+          "nullable": false,
+          "description": "COALESCE(Kennel.CurrencySymbol, Country.CurrencySymbol, '$^')."
         }
       ]
     },
     {
       "index": 3,
       "name": "ByCountry",
-      "description": "runs desc",
+      "description": "On success: one row per country with RunCount > 0, ORDER BY RunCount DESC, CountryName.",
       "columns": [
         {
           "name": "CountryId",
           "type": "UNIQUEIDENTIFIER",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "Country.id."
         },
         {
           "name": "CountryName",
           "type": "NVARCHAR(250)",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "Country.CountryName."
         },
         {
           "name": "CountryCode",
-          "type": "NVARCHAR(10)",
-          "nullable": true,
-          "description": ""
+          "type": "NVARCHAR(5)",
+          "nullable": false,
+          "description": "Country.CountryCode."
         },
         {
           "name": "FlagFile",
-          "type": "NVARCHAR(250)",
+          "type": "NVARCHAR(100)",
           "nullable": true,
-          "description": "file name under images/flags"
+          "description": "Country.FlagFile — file name under images/flags."
         },
         {
           "name": "RunCount",
           "type": "INT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "HC attended counted runs in the country + historical runs of kennels in the country."
         },
         {
           "name": "HareCount",
           "type": "INT",
-          "nullable": true,
-          "description": ""
+          "nullable": false,
+          "description": "Same, for haring."
         }
       ]
     }
   ],
-  "sideEffects": [],
-  "codeSmells": [],
+  "sideEffects": [
+    "CREATE TABLE #byKennel, #hc, #hist (session temp tables, dropped at the end of the call).",
+    "INSERT HC.ErrorLog then THROW in the CATCH."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId and @accessToken have no SQL default (lines 2-3). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
+    },
+    {
+      "severity": "low",
+      "issue": "By Country and By Kennel disagree on removed kennels",
+      "detail": "By Kennel (line 71) drops deleted / removed kennels, but the historical half of By Country (lines 109-113) joins HC.Kennel with no such filter and the HC half (lines 94-101) counts runs of any kennel. A member of a since-removed kennel sees its runs by country but not by kennel or in Totals. Mirrors the app, so a fix belongs on both sides."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",

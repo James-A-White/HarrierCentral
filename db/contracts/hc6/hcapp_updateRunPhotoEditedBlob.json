@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_updateRunPhotoEditedBlob",
-  "version": "1.0.0",
-  "description": "Saves the URL of a Hash-Flash-edited (cropped) version of a run photo. Writes only to KennelPhotos.EditedBlobUrl — the original BlobUrl is never modified. Callers should always start a re-edit from the original BlobUrl, not from EditedBlobUrl. Auth requires Hash Flash (0x20), GM (0x02), VGM (0x04), or RA (0x08) for the specified kennel. Returns a 'Photo not found' error (via @@ROWCOUNT=0 check) if @photoId + @kennelId does not match any row.",
+  "version": "1.3.0",
+  "description": "Saves the URL of a Hash-Flash-edited (cropped) version of a run photo. Writes only KennelPhotos.EditedBlobUrl — the original BlobUrl is never modified; callers should always start a re-edit from BlobUrl. If the run's cover (HC.Event.EventCoverPhotoUrl, a COPY of the chosen photo's URL) currently holds this photo's original or previous edit, it is re-pointed at the new edit (2026-09-12); a cover showing another photo is left alone. Auth: HC6.ValidateAppAuth (spNumber 48). Gate: HC6.CheckKennelPermission 'editPhoto' for @kennelId (else 1334 / 3). @photoId + @kennelId must match a row (else 4040 / 3). Since 2026-10-13 the photo row and the run's cover copy are updated in one transaction (photo row read WITH UPDLOCK, HOLDLOCK); the not-found branch rolls back before logging.",
   "parameters": [
     {
       "name": "deviceId",
@@ -21,34 +21,49 @@
     {
       "name": "kennelId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "KennelPhotos.KennelId",
-      "description": "Kennel that owns the photo. Used for auth scope and included in the UPDATE WHERE clause. Null or zero-UUID triggers a validation error (errorCode 1234, errorType 2)."
+      "description": "Kennel that owns the photo. Used for auth scope and included in the UPDATE WHERE clause. Null or zero-UUID triggers a validation error (errorCode 1234, errorType 2). Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "photoId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "KennelPhotos.id",
-      "description": "Photo to update. Null or zero-UUID triggers a validation error (errorCode 1234, errorType 2). If the combination of @photoId + @kennelId matches no row (@@ROWCOUNT=0 after UPDATE), a 'Photo not found' error is returned (errorCode 4040, errorType 3)."
+      "description": "Photo to update. Null or zero-UUID triggers a validation error (errorCode 1234, errorType 2). If the combination of @photoId + @kennelId matches no row (@@ROWCOUNT=0 after UPDATE), a 'Photo not found' error is returned (errorCode 4040, errorType 3). Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "editedBlobUrl",
       "type": "NVARCHAR(500)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "KennelPhotos.EditedBlobUrl",
-      "description": "Blob URL of the cropped/edited version. Must be non-empty (LEN check after LTRIM/RTRIM). Triggers a validation error if empty or whitespace-only."
+      "description": "Blob URL of the cropped/edited version. Must be non-empty (LEN check after LTRIM/RTRIM). Triggers a validation error if empty or whitespace-only. Defaults to NULL when omitted (2026-10-13)."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "Envelope",
-      "description": "Always present. On auth, validation, photo-not-found, or role check failure: success=0, errorCode and errorType set. On DB error: success=0, errorCode=1933, errorType=5. On success: success=1, errorCode=NULL, errorType=NULL.",
+      "description": "Always present. Failure: success = 0 with ValidateAppAuth codes, 1234 / 2 missing parameter, 1334 / 3 not authorised, 4040 / 3 photo not found, 1933 / 5 unhandled. Success: success = 1, errorCode / errorType NULL.",
       "columns": [
-        { "name": "success", "type": "INT", "nullable": false, "description": "1 on success, 0 on any failure." },
-        { "name": "errorCode", "type": "INT", "nullable": true, "description": "Numeric error code. NULL on success." },
-        { "name": "errorType", "type": "INT", "nullable": true, "description": "Error classification code. NULL on success." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 on any failure."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "Numeric error code. NULL on success."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "Error classification code. NULL on success."
+        }
       ]
     },
     {
@@ -58,29 +73,21 @@
     }
   ],
   "sideEffects": [
-    "Updates KennelPhotos.EditedBlobUrl and KennelPhotos.UpdatedAt for the matched photo.",
-    "Writes to HC.ErrorLog on validation failure, role check failure, photo-not-found, or unhandled DB error."
+    "UPDATE HC.KennelPhotos SET EditedBlobUrl = @editedBlobUrl, UpdatedAt = GETUTCDATE() WHERE id = @photoId AND KennelId = @kennelId.",
+    "UPDATE HC.Event SET EventCoverPhotoUrl = @editedBlobUrl for the photo's run, only when the cover currently equals this photo's BlobUrl or previous EditedBlobUrl. Fires the Event updatedAt trigger, so the run re-syncs.",
+    "EXEC HC6.CheckKennelPermission 'editPhoto' — pre-flight.",
+    "Writes to HC.ErrorLog on validation failure, refusal, not found, or unhandled error."
   ],
   "codeSmells": [
     {
       "severity": "medium",
-      "issue": "Missing TRY/CATCH wrapping around the UPDATE and @@ROWCOUNT check",
-      "detail": "The UPDATE and @@ROWCOUNT=0 check are inside BEGIN TRY, but there is no ROLLBACK in the CATCH block because there is no BEGIN TRANSACTION. The SP does not wrap the UPDATE in a transaction, relying on the single-statement implicit transaction. If @@ROWCOUNT=0 fires, the INSERT into HC.ErrorLog and the SELECT error rowset happen outside any transaction, which is fine, but the pattern is inconsistent with other photo write SPs."
+      "issue": "Parameter without a default",
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
     },
     {
       "severity": "low",
-      "issue": "errorType inconsistency between validation (2) and photo-not-found (3) errors in this SP",
-      "detail": "The validation error for missing parameters uses errorType=2 (which the CLAUDE.md standard maps to 'Validation error'). The photo-not-found error uses errorType=3 ('Auth failure or entity not found'). The role-check error also uses errorType=3. This is consistent with the standard but different from how some other SPs handle the entity-not-found case (e.g., hcapp_updatePhotoStatus uses errorType=13 for photo-not-found)."
-    },
-    {
-      "severity": "low",
-      "issue": "Role mask 0x002E excludes WebMeister — inconsistent with hcapp_batchUpdatePhotoStatus",
-      "detail": "This SP uses 0x002E. hcapp_batchUpdatePhotoStatus uses 0x102E (adds WebMeister 0x1000)."
-    },
-    {
-      "severity": "low",
-      "issue": "HcVersion hardcoded to '<unknown>' in all ErrorLog inserts",
-      "detail": "Consistent with other HC6 SPs but means the version is never captured in the error log."
+      "issue": "errorType 3 used for both refusal and not-found",
+      "detail": "Lines 97 and 129: a permission refusal (1334) and a missing photo (4040) share errorType 3; other SPs use 13 for refusals."
     }
   ],
   "breakingChanges": [

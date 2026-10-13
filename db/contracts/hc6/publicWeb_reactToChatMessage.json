@@ -1,0 +1,194 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_reactToChatMessage",
+  "version": "1.1.0",
+  "description": "The public web's door to HC6.hcapp_reactToChatMessage (E9.F1.S22, add or remove an emoji reaction on a chat message). A thin 'wrap for writes' wrapper: it EXECs hcapp_reactToChatMessage with the browser's own device credentials and adds no checks of its own, so the web and the app cannot drift. Auth, permission gate and every rule live in hcapp_reactToChatMessage (the token must be signed for 'hcapp_reactToChatMessage', because the inner SP validates under its own name). Reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET. Returns hcapp_reactToChatMessage's rowsets unchanged. The web reads only the row carrying success (and its reactions JSON); the API does not send the author's silent push for a web reaction. Since 2026-10-13 the public-web API drops every FcmToken column before replying, so the push-recipient rowsets reach the web server without device tokens (positions and row counts unchanged).",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "The calling browser's HC.Device id (the browser is a registered device). No SQL default."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Device-bound token signed for 'hcapp_reactToChatMessage' (the inner SP validates it under its own name via HC6.ValidateAppAuth). No SQL default."
+    },
+    {
+      "name": "messageId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.id",
+      "description": "The message reacted to. Required; NULL → 1990. Unknown or removed → 1991. Passed straight to hcapp_reactToChatMessage."
+    },
+    {
+      "name": "reaction",
+      "type": "NVARCHAR(20)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "A code from HC6.ChatReactionCatalog(): thumbs, heart, laugh, beer, run, fire. Required; NULL → 1990. Not in the catalog → 1993. Stored as a key in EventMessage.ReactionsJson. Passed straight to hcapp_reactToChatMessage."
+    },
+    {
+      "name": "on",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "1 add (default) / 0 remove. Not validated: any value other than 1 (including NULL) removes. Default 1 (add); 0 removes. Passed straight to hcapp_reactToChatMessage."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "From hcapp_reactToChatMessage: Auth failure only (ValidateAppAuth): the error detail is returned ALONE at index 0 and the SP returns — no envelope precedes it."
+    },
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "From hcapp_reactToChatMessage: Every other refusal: {success 0, errorCode, errorType} at index 0, followed by the StandardErrorResult detail at index 1. Codes: 1990 missing messageId/reaction (errorType 2); 1991 message not found or removed (3); 1992 not allowed — the caller cannot see the thread or the author has blocked them (3); 1993 unknown reaction code (3); 1994 unhandled error from the CATCH (5).",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "1990–1994."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "2 validation, 3 not found / not allowed, 5 unhandled."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ref": "StandardErrorResult",
+      "description": "From hcapp_reactToChatMessage: Follows the ErrorEnvelope on every non-auth refusal."
+    },
+    {
+      "index": 0,
+      "name": "Result",
+      "description": "From hcapp_reactToChatMessage: On success (nonApi outcome 1): one row.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
+        },
+        {
+          "name": "messageId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "UPPER(@messageId)."
+        },
+        {
+          "name": "reactions",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "EventMessage.ReactionsJson after the change, e.g. {\"beer\":[\"<PublicHasherId>\",...]}; NULL when no reactions remain."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "PushDetail",
+      "description": "From hcapp_reactToChatMessage: On success, API ONLY (stripped before the reply): where the message lives, in the keys the app's open chat page matches a push on. One row.",
+      "columns": [
+        {
+          "name": "MessageId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "UPPER(@messageId)."
+        },
+        {
+          "name": "ThreadKind",
+          "type": "VARCHAR(6)",
+          "nullable": false,
+          "description": "'dm' (ThreadId set), 'run' (EventId set), 'kennel' (KennelId set), else 'room'."
+        },
+        {
+          "name": "EventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "EventMessage.EventId for a run thread."
+        },
+        {
+          "name": "PublicEventId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "Event.PublicEventId for a run thread."
+        },
+        {
+          "name": "KennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "EventMessage.KennelId for a kennel thread."
+        },
+        {
+          "name": "RoomType",
+          "type": "INT",
+          "nullable": true,
+          "description": "EventMessage.MessageType, only when EventId, KennelId and ThreadId are all NULL (a global room)."
+        },
+        {
+          "name": "ThreadId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "EventMessage.ThreadId for a DM."
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "SilentRecipients",
+      "description": "From hcapp_reactToChatMessage: On success, API ONLY: the message AUTHOR's mobile devices (IsMobile 1, removed 0, FcmToken present, build >= HC6.MinBuildForChatPush()) — never the reactor's own (empty when the reactor is the author). A data-only push so an open thread refreshes; nobody is buzzed for a beer. No 180-day idle cut-off here, unlike the message sends.",
+      "columns": [
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Device.UserId — the author's internal Hasher.id."
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Device.FcmToken."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "EXEC HC6.hcapp_reactToChatMessage — everything it does:",
+    "  EXEC HC6.nonApi_reactToChatMessage — UPDATE HC.EventMessage.ReactionsJson and ReactionsUpdatedAt (outcome 1); nothing written for outcomes 2–4.",
+    "  INSERT HC.ErrorLog on 1990 and on every nonApi refusal (1991–1993), and in the CATCH (1994).",
+    "  The API shim sends a silent FCM data push (Type=reaction) to the author's phones from rowset 2; nothing is queued in the database.",
+    "On an error that escapes the inner SP (or the EXEC itself) the CATCH rolls back, logs 'Unhandled error in publicWeb_reactToChatMessage' to HC.ErrorLog (HcVersion '<web>', deviceId) and re-THROWs, so the API returns 500."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken (line 18-19) have no SQL default. A caller that omits one fails with 'expects parameter' before the SP runs: PublicWebAdminApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

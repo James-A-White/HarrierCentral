@@ -1,0 +1,169 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_signOutDevice",
+  "version": "1.0.0",
+  "description": "The public web's door to HC6.hcapp_signOutDevice (E9.F7.S19, sign one of the caller's devices out). A thin 'wrap for writes' wrapper: it EXECs hcapp_signOutDevice with the browser's own device credentials and adds no checks of its own, so the web and the app cannot drift. Auth, permission gate and every rule live in hcapp_signOutDevice (the token must be signed for 'hcapp_signOutDevice', because the inner SP validates under its own name). Reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET. Returns hcapp_signOutDevice's rowsets unchanged.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Device.id",
+      "description": "The calling browser's HC.Device id (the browser is a registered device). No SQL default."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Device-bound token signed for 'hcapp_signOutDevice' (the inner SP validates it under its own name via HC6.ValidateAppAuth). No SQL default."
+    },
+    {
+      "name": "targetDeviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Device.id",
+      "description": "The device to sign out. NULL returns 1960. Must belong to the caller and still have removed = 0, else 1961 (already signed out / not yours). Passed straight to hcapp_signOutDevice."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "From hcapp_signOutDevice: Auth failure (ValidateAppAuth: 1322 device not registered / type 3, 1122 bad token / type 1, signed-out device / type 7) returns this detail rowset ALONE. The SP's own refusals return an envelope at index 0 and this detail at index 1: 1960 missing targetDeviceId (errorType 2), 1961 not found / already signed out (3), 1962 unhandled (5). No debugMessage column."
+    },
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "From hcapp_signOutDevice: Index 0 on 1960 and 1961. NOTE the CATCH (1962) emits {success:0, errorMessage:ERROR_MESSAGE()} instead — see codeSmells.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "The SP's error code."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "The SP's error type."
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "From hcapp_signOutDevice: On success.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Always NULL on success; ERROR_MESSAGE() text on the CATCH path."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Devices",
+      "description": "From hcapp_signOutDevice: On success: the caller's devices after the change, the same shape as hcapp_listDevices (WHERE UserId = @userId AND (removed = 0 OR PasskeyCredentialId IS NOT NULL), most recent sign-in first). The signed-out row stays listed only while it still holds a passkey.",
+      "columns": [
+        {
+          "name": "DeviceId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "Device.id as text."
+        },
+        {
+          "name": "Label",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "'<OperatingSystem or Harrier Central/Browser> on <platform>' — built from Device.OperatingSystem, IsMobile and HC6.DevicePlatformName(DeviceData)."
+        },
+        {
+          "name": "Platform",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "HC6.DevicePlatformName(Device.DeviceData)."
+        },
+        {
+          "name": "IsThisDevice",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when the row is the calling @deviceId."
+        },
+        {
+          "name": "LastLogin",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "Device.LastLogin."
+        },
+        {
+          "name": "IsMobile",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "ISNULL(Device.IsMobile, 0)."
+        },
+        {
+          "name": "AppVersion",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "Device.Version as of the last sign-in; NULL when blank (564 rows platform-wide)."
+        },
+        {
+          "name": "AppBuild",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "Device.BuildNumber as of the last sign-in; NULL when blank."
+        },
+        {
+          "name": "HasPasskey",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when Device.PasskeyCredentialId is set. The credential id and public key never leave the server."
+        },
+        {
+          "name": "IsSignedOut",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 when Device.SignedOutAt is set — deliberately NOT from `removed`, which 300 legacy rows carry without meaning."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "EXEC HC6.hcapp_signOutDevice — everything it does:",
+    "  UPDATE HC.Device SET DeviceSecret = <new 75-char secret from CRYPT_GEN_RANDOM>, SignedOutAt = now, FcmToken = NULL, ApnsToken = NULL, removed = 1, updatedAt WHERE id = @targetDeviceId AND UserId = @userId AND removed = 0 — in a transaction; @@ROWCOUNT = 0 rolls back FIRST, then logs, then returns 1961.",
+    "  INSERT LOG.GeneralLog ('HC6.hcapp_signOutDevice', 'Device signed out', hasher, device label, acting device).",
+    "  INSERT HC.ErrorLog on 1960, 1961 and in the CATCH.",
+    "  The device's passkey (PasskeyCredentialId) is left in place.",
+    "On an error that escapes the inner SP (or the EXEC itself) the CATCH rolls back, logs 'Unhandled error in publicWeb_signOutDevice' to HC.ErrorLog (HcVersion '<web>', deviceId) and re-THROWs, so the API returns 500."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken (line 14-15) have no SQL default. A caller that omits one fails with 'expects parameter' before the SP runs: PublicWebAdminApi's catch logs only a generic exception row and returns 500, and the SP's own graceful checks and error envelope never run."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

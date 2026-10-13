@@ -273,3 +273,16 @@ echo "  Done.  $PASS deployed,  $FAIL failed.  (helpers + portal + public-web + 
 echo "  Build $DEPLOY_BUILD.  Check it: python3 tools/sp_versions.py"
 echo "══════════════════════════════════════════════════════════════"
 echo ""
+
+# Table definitions (db/schema/tables/) are generated from the live database.
+# A run-once script that changed a table without regenerating them leaves
+# agents reading stale columns, so say so here, every deploy. Read-only.
+if command -v python3 >/dev/null 2>&1; then
+    if ! python3 "$REPO_ROOT/tools/schema_dump.py" --check >/tmp/hc_schema_drift.$$ 2>&1; then
+        echo "  ⚠ Table definitions are out of date with the live database:"
+        sed 's/^/      /' /tmp/hc_schema_drift.$$ | head -20
+        echo "    Run: python3 tools/schema_dump.py   and commit db/schema/tables/"
+        echo ""
+    fi
+    rm -f /tmp/hc_schema_drift.$$
+fi

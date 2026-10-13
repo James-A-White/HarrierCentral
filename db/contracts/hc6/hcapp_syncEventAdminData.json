@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_syncEventAdminData",
-  "version": "1.0.0",
-  "description": "Incremental pull-sync SP for event admin data. Returns up to 6 result sets — each is only emitted when its corresponding 'updatedAfter' cursor parameter is not 'ignore'. Callers track the max updatedAt from each result set as the next cursor. Used as a delegate by write SPs (addEditEvent, processPayment, joinEventAsVisitor, etc.) that need to return fresh data after writing. @procName and @param support the write-SP delegation pattern: the delegating SP passes its own name and compound token suffix so the token the client generated matches the one validated here.",
+  "version": "1.2.0",
+  "description": "Incremental pull-sync of event-scoped admin data (ValidateAppAuth, spNumber 71). Returns up to 6 result sets — each only when its 'updatedAfter' watermark is not 'ignore' (NULL or <= 2000-01-01 is treated as 'ignore'). Callers track the max updatedAt from each result set as the next watermark. HasherEventMap, Payments and Receipts are scoped to @eventId; HasherKennelMap to the event's kennel; Hashers are global. Permission gate on a DIRECT call (@procName NULL): HC6.CheckAreaEntry areaKey 'runAdmin' on the app surface (derived entry — any run-admin capability), with @isHareOfEvent set when the caller is a designated hare of this event; else errorCode 1371. Used as a delegate by write SPs (addEditEvent, processPayment, joinEventAsVisitor, etc.) that return fresh data after writing: the delegating SP passes its own name and compound token suffix (@procName/@param), the token is validated against that context and the admin gate is skipped. Read SP: no success envelope; the body is wrapped in TRY/CATCH that logs to HC.ErrorLog and re-throws.",
   "parameters": [
     {
       "name": "deviceId",
@@ -21,9 +21,9 @@
     {
       "name": "eventId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "Event to scope the sync to. Required — validated against null/all-zeros and logged to HC.ErrorLog if missing."
+      "description": "Event to scope the sync to. Required — validated against null/all-zeros and logged to HC.ErrorLog if missing. Defaults to NULL when omitted (2026-10-13)."
     },
     {
       "name": "hashersUpdatedAfter",
@@ -79,7 +79,7 @@
       "type": "INT",
       "nullable": true,
       "mapsToColumn": null,
-      "description": "Default 0 (unlimited). When 1, page limits are applied: 1000 rows for Hashers, 250 rows for HasherEventMap and HasherKennelMap. Payments and Receipts are always unlimited."
+      "description": "Default 0 (unlimited). When 1: 2500 rows for Hashers, 250 rows for HasherEventMap and HasherKennelMap. Event is at most one row; Payments and Receipts have no page limit."
     },
     {
       "name": "procName",
@@ -100,7 +100,7 @@
     {
       "index": 0,
       "name": "ErrorResult",
-      "description": "Returned on auth failure or missing @eventId. Auth failures come from HC6.ValidateAppAuth; eventId failure is validated inline. Columns: errorId (UNIQUEIDENTIFIER), errorType (INT), errorCode (INT), errorTitle (NVARCHAR), errorUserMessage (NVARCHAR), errorProc (NVARCHAR).",
+      "description": "Returned instead of all data rowsets on: auth failure from ValidateAppAuth (errorType 11, not logged here); NULL or zero-UUID @eventId (errorType 12, errorCode 1271, logged); caller lacking the 'runAdmin' area entry on a direct call (errorType 13, errorCode 1371, logged).",
       "columns": [
         {
           "name": "errorId",
@@ -112,13 +112,13 @@
           "name": "errorType",
           "type": "INT",
           "nullable": false,
-          "description": "Error classification. Auth failure: from ValidateAppAuth. Missing eventId: 12 (param validation)."
+          "description": "11 = auth (ValidateAppAuth); 12 = validation; 13 = not authorised."
         },
         {
           "name": "errorCode",
           "type": "INT",
           "nullable": false,
-          "description": "Numeric error code. Missing eventId: 1271."
+          "description": "1271 = missing eventId; 1371 = not authorised for event admin sync; see ValidateAppAuth for auth codes."
         },
         {
           "name": "errorTitle",
@@ -143,7 +143,7 @@
     {
       "index": "conditional",
       "name": "Hashers",
-      "description": "Emitted only when @hashersUpdatedAfter != 'ignore'. All HC.Hasher rows updated after the watermark — not scoped to event or kennel. Page limit: 1000 rows (when @usePaging = 1). Ordered by updatedAt ASC, id ASC.",
+      "description": "Emitted only when @hashersUpdatedAfter != 'ignore'. All HC.Hasher rows updated after the watermark — not scoped to event or kennel. Page limit: 2500 rows (when @usePaging = 1). Ordered by updatedAt ASC, id ASC.",
       "columns": [
         {
           "name": "hasherId",
@@ -352,27 +352,27 @@
         },
         {
           "name": "hemEventNumber",
-          "type": "INT",
-          "nullable": true,
+          "type": "SMALLINT",
+          "nullable": false,
           "description": "Joined Event.EventNumber."
         },
         {
           "name": "hemEventName",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(250)",
           "nullable": true,
           "description": "Resolved event name: FbEventName when Event.UseFbRunDetails = 1, otherwise EventName."
         },
         {
           "name": "hemEventStartDatetime",
           "type": "DATETIME2",
-          "nullable": true,
-          "description": "Resolved event start: CONVERT(DATETIME2, FbEventStartDatetime) or CONVERT(DATETIME2, EventStartDatetime). Timezone stripped by the DATETIME2 cast."
+          "nullable": false,
+          "description": "CONVERT(DATETIME2, Event.EventStartDatetime) — the stored offset is dropped, leaving the local wall-clock value (see /hc-event-datetimes)."
         },
         {
           "name": "hemEventStartDatetimeGmt",
           "type": "DATETIMEOFFSET(7)",
-          "nullable": true,
-          "description": "COALESCE(Event.EventStartDatetimeGmt, Event.EventStartDatetime) — UTC start time."
+          "nullable": false,
+          "description": "COALESCE(Event.EventStartDatetimeGmt, Event.EventStartDatetime) — the UTC instant. Note: unlike hcapp_syncKennelAdminData, which CONVERTs the same name to DATETIME2, this one stays DATETIMEOFFSET."
         },
         {
           "name": "hemCanEditRunAttendence",
@@ -631,78 +631,78 @@
         {
           "name": "isVisible",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.IsVisible."
         },
         {
           "name": "isCountedRun",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.IsCountedRun."
         },
         {
           "name": "eventGeographicScope",
-          "type": "INT",
-          "nullable": true,
+          "type": "SMALLINT",
+          "nullable": false,
           "description": "Event.EventGeographicScope."
         },
         {
           "name": "eventInboundIntegrationId",
-          "type": "UNIQUEIDENTIFIER",
-          "nullable": true,
-          "description": "Event.InboundIntegrationId."
+          "type": "INT",
+          "nullable": false,
+          "description": "Event.InboundIntegrationId — HC.Integration id (INT) of the import that feeds this run."
         },
         {
           "name": "isPromotedEvent",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.IsPromotedEvent."
         },
         {
           "name": "eventNumber",
-          "type": "INT",
-          "nullable": true,
+          "type": "SMALLINT",
+          "nullable": false,
           "description": "Event.EventNumber."
         },
         {
           "name": "eventPriceForMembers",
-          "type": "DECIMAL",
+          "type": "DECIMAL(10,4)",
           "nullable": true,
           "description": "Event.EventPriceForMembers."
         },
         {
           "name": "eventPriceForNonMembers",
-          "type": "DECIMAL",
+          "type": "DECIMAL(10,4)",
           "nullable": true,
           "description": "Event.EventPriceForNonMembers."
         },
         {
           "name": "eventPriceForExtras",
-          "type": "DECIMAL",
+          "type": "DECIMAL(10,4)",
           "nullable": true,
           "description": "Event.EventPriceForExtras."
         },
         {
           "name": "extrasDescription",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(250)",
           "nullable": true,
           "description": "Event.ExtrasDescription."
         },
         {
           "name": "doTrackHashCash",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.DoTrackHashCash."
         },
         {
           "name": "eventFacebookId",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(250)",
           "nullable": true,
           "description": "Event.EventFacebookId."
         },
         {
           "name": "absoluteEventNumber",
-          "type": "INT",
+          "type": "SMALLINT",
           "nullable": true,
           "description": "Event.AbsoluteEventNumber."
         },
@@ -738,146 +738,146 @@
         },
         {
           "name": "hares",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(2500)",
           "nullable": true,
           "description": "Event.Hares."
         },
         {
           "name": "eventPaymentScheme",
-          "type": "INT",
+          "type": "NVARCHAR(10)",
           "nullable": true,
-          "description": "Event.EventPaymentScheme."
+          "description": "Event.EventPaymentScheme — payment scheme code."
         },
         {
           "name": "eventPaymentUrl",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(2000)",
           "nullable": true,
           "description": "Event.EventPaymentUrl."
         },
         {
           "name": "eventPaymentUrlExpires",
-          "type": "DATETIMEOFFSET",
+          "type": "DATETIMEOFFSET(7)",
           "nullable": true,
           "description": "Event.EventPaymentUrlExpires."
         },
         {
           "name": "unconfirmedBankXferCount",
           "type": "INT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.UnconfirmedBankXferCount."
         },
         {
           "name": "tags1",
-          "type": "NVARCHAR",
-          "nullable": true,
-          "description": "Event.Tags1."
+          "type": "INT",
+          "nullable": false,
+          "description": "Event.Tags1 — tag bit field."
         },
         {
           "name": "tags2",
-          "type": "NVARCHAR",
-          "nullable": true,
-          "description": "Event.Tags2."
+          "type": "INT",
+          "nullable": false,
+          "description": "Event.Tags2 — tag bit field."
         },
         {
           "name": "tags3",
-          "type": "NVARCHAR",
-          "nullable": true,
-          "description": "Event.Tags3."
+          "type": "INT",
+          "nullable": false,
+          "description": "Event.Tags3 — tag bit field."
         },
         {
           "name": "eventImage",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(500)",
           "nullable": true,
           "description": "Resolved image URL: FbEventImage when Event.UseFbImage = 1, otherwise EventImage."
         },
         {
           "name": "eventName",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(250)",
           "nullable": true,
           "description": "Resolved event name: FbEventName when Event.UseFbRunDetails = 1, otherwise EventName."
         },
         {
           "name": "eventStartDatetime",
           "type": "DATETIME2",
-          "nullable": true,
-          "description": "Resolved event start: CONVERT(DATETIME2, FbEventStartDatetime) or CONVERT(DATETIME2, EventStartDatetime). Timezone stripped by DATETIME2 cast."
+          "nullable": false,
+          "description": "CONVERT(DATETIME2, Event.EventStartDatetime) — local wall-clock value with the (often spurious +00:00) offset dropped."
         },
         {
           "name": "eventStartDatetimeGmt",
-          "type": "DATETIMEOFFSET",
-          "nullable": true,
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
           "description": "COALESCE(Event.EventStartDatetimeGmt, Event.EventStartDatetime) — UTC start time."
         },
         {
           "name": "eventDescription",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
           "description": "Resolved description: FbEventDescription when UseFbRunDetails = 1, otherwise EventDescription."
         },
         {
           "name": "locationOneLineDesc",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(250)",
           "nullable": true,
           "description": "Resolved one-line location: FbLocationOneLineDesc when UseFbRunDetails = 1, otherwise LocationOneLineDesc."
         },
         {
           "name": "eventUrl",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(500)",
           "nullable": true,
           "description": "Event.EventUrl."
         },
         {
           "name": "narrowEventLatitude",
-          "type": "DECIMAL",
+          "type": "DECIMAL(18,15)",
           "nullable": true,
           "description": "Resolved latitude: FbLatitude when UseFbLatLon = 1 and FB coords are valid, otherwise COALESCE(Event.Latitude, Kennel.Latitude)."
         },
         {
           "name": "narrowEventLongitude",
-          "type": "DECIMAL",
+          "type": "DECIMAL(19,15)",
           "nullable": true,
           "description": "Resolved longitude: FbLongitude when UseFbLatLon = 1 and FB coords are valid, otherwise COALESCE(Event.Longitude, Kennel.Longitude)."
         },
         {
           "name": "locationPostCode",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(250)",
           "nullable": true,
           "description": "Resolved post code: FbLocationPostCode when UseFbLocation = 1, otherwise LocationPostCode."
         },
         {
           "name": "locationCity",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(250)",
           "nullable": true,
           "description": "Resolved city: FbLocationCity when UseFbLocation = 1, otherwise LocationCity."
         },
         {
           "name": "locationStreet",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(250)",
           "nullable": true,
           "description": "Resolved street: FbLocationStreet when UseFbLocation = 1, otherwise LocationStreet."
         },
         {
           "name": "locationCountry",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(250)",
           "nullable": true,
           "description": "Resolved country: FbLocationCountry when UseFbLocation = 1, otherwise LocationCountry."
         },
         {
           "name": "locationRegion",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(250)",
           "nullable": true,
           "description": "Resolved region: FbLocationRegion when UseFbLocation = 1, otherwise LocationRegion."
         },
         {
           "name": "locationSubRegion",
-          "type": "NVARCHAR",
+          "type": "NVARCHAR(250)",
           "nullable": true,
           "description": "Resolved sub-region: FbLocationSubRegion when UseFbLocation = 1, otherwise LocationSubRegion."
         },
         {
           "name": "removed",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.removed."
         },
         {
@@ -889,54 +889,54 @@
         {
           "name": "useFbLocation",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.UseFbLocation flag — returned raw so callers can inspect the resolver logic."
         },
         {
           "name": "useFbLatLon",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.UseFbLatLon flag."
         },
         {
           "name": "useFbRunDetails",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.UseFbRunDetails flag."
         },
         {
           "name": "useFbImage",
           "type": "SMALLINT",
-          "nullable": true,
+          "nullable": false,
           "description": "Event.UseFbImage flag."
         },
         {
           "name": "hcLatitude",
-          "type": "DECIMAL",
+          "type": "DECIMAL(18,15)",
           "nullable": true,
           "description": "Event.Latitude — the raw HC-entered latitude (not FB)."
         },
         {
           "name": "hcLongitude",
-          "type": "DECIMAL",
+          "type": "DECIMAL(19,15)",
           "nullable": true,
           "description": "Event.Longitude — the raw HC-entered longitude (not FB)."
         },
         {
           "name": "countryId",
-          "type": "INT",
+          "type": "UNIQUEIDENTIFIER",
           "nullable": true,
           "description": "Event.CountryId."
         },
         {
           "name": "fbLatitude",
-          "type": "DECIMAL",
+          "type": "DECIMAL(18,15)",
           "nullable": true,
           "description": "COALESCE(Event.w3wLatitude, Event.FbLatitude) — w3w coordinates take precedence over FB."
         },
         {
           "name": "fbLongitude",
-          "type": "DECIMAL",
+          "type": "DECIMAL(19,15)",
           "nullable": true,
           "description": "COALESCE(Event.w3wLongitude, Event.FbLongitude) — w3w coordinates take precedence over FB."
         }
@@ -945,7 +945,7 @@
     {
       "index": "conditional",
       "name": "Payments",
-      "description": "Emitted only when @paymentsUpdatedAfter != 'ignore'. HC.Payment rows for @eventId updated after the watermark. PaidDate, CancelledDate and ConfirmedDate are CAST to DATETIME — timezone stripped. No page limit.",
+      "description": "Emitted only when @paymentsUpdatedAfter != 'ignore'. HC.Payment rows for @eventId updated after the watermark. PaidDate, CancelledDate and ConfirmedDate are CAST to DATETIME — offset stripped. No ORDER BY and no page limit.",
       "columns": [
         {
           "name": "paymentId",
@@ -1116,7 +1116,7 @@
     {
       "index": "conditional",
       "name": "Receipts",
-      "description": "Emitted only when @receiptsUpdatedAfter != 'ignore'. HC.Receipt rows for @eventId updated after the watermark. No page limit.",
+      "description": "Emitted only when @receiptsUpdatedAfter != 'ignore'. HC.Receipt rows for @eventId updated after the watermark. No ORDER BY and no page limit.",
       "columns": [
         {
           "name": "receiptId",
@@ -1212,18 +1212,23 @@
     }
   ],
   "sideEffects": [
-    "Inserts a row into HC.ErrorLog when @eventId is null or all-zeros (errorCode 1271)."
+    "Inserts an HC.ErrorLog row when @eventId is null or all-zeros (1271), when a direct caller fails the runAdmin gate (1371), and on any unhandled error (CATCH logs then re-throws). Otherwise read-only."
   ],
   "codeSmells": [
     {
-      "severity": "high",
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "These parameters have no SQL default, so a call that omits one is refused by SQL Server before the procedure runs (unlogged empty 500): @deviceId, @accessToken. On 2026-10-13 every parameter whose body already handled NULL (and every sync watermark) was given a default; these remain because they are the auth pair or the body never checks them for NULL."
+    },
+    {
+      "severity": "low",
       "issue": "@kennelCreditsUpdatedAfter is a dead parameter",
-      "detail": "The parameter is accepted in the signature for caller compatibility but no KennelCredits result set is emitted. The corresponding block was commented out in HC5 and has not been reinstated in HC6. Callers that pass this watermark receive no data back for it, with no error or warning. Consider removing the parameter once all callers have been updated."
+      "detail": "Line 12: accepted for caller compatibility but never read — no KennelCredits result set is emitted (the block was commented out in HC5 and not reinstated). Harmless to a client that sends it (it has a default), but the client gets no data for that watermark and no signal why."
     },
     {
       "severity": "medium",
       "issue": "Watermark cursors are NVARCHAR cast to DATETIMEOFFSET without TRY_CAST",
-      "detail": "All six watermark parameters are NVARCHAR(50) and are cast to DATETIMEOFFSET(7) via a bare CAST inside each IF block. An invalid string (e.g. a malformed date from a buggy caller) will throw an unhandled exception rather than returning a clean error result. Use TRY_CAST with a fallback, or validate format before casting."
+      "detail": "All six watermark parameters are NVARCHAR(50) and are cast to DATETIMEOFFSET(7) with a bare CAST inside each IF block (lines 170, 193, 246, 289, 358, 396). A malformed string throws; the CATCH (lines 418-424) now logs it to HC.ErrorLog and re-throws, so the client sees a raw 500 rather than an error rowset. TRY_CAST with a graceful error would be cleaner."
     },
     {
       "severity": "medium",
@@ -1249,6 +1254,21 @@
       "severity": "low",
       "issue": "@procName parameter type widened from HC5 NVARCHAR(100) to HC6 NVARCHAR(128)",
       "detail": "HC5 declared @procName as NVARCHAR(100); HC6 uses NVARCHAR(128) to match OBJECT_NAME() output. This is a compatible change for all callers passing values shorter than 100 characters, but is technically a parameter type change."
+    },
+    {
+      "severity": "medium",
+      "issue": "Payments and Receipts have no ORDER BY",
+      "detail": "Lines 387-388 and 413-414: no ORDER BY, so a client taking the last row's updatedAt as its next watermark (rather than the max) can skip rows. Hashers, HEM and HKM all order by updatedAt, id."
+    },
+    {
+      "severity": "low",
+      "issue": "Correlated subquery repeated per row",
+      "detail": "Lines 216 and 220 each run SELECT h.Preferences FROM HC.Hasher per HEM row to compute notes and notesShared. Join HC.Hasher once."
+    },
+    {
+      "severity": "low",
+      "issue": "Unknown @eventId passes the existence check",
+      "detail": "Line 114: an @eventId that does not exist leaves @kennelId NULL; a direct call then fails the runAdmin gate (1371 'Not authorised') rather than reporting 'run not found', and a delegated call returns empty rowsets."
     }
   ],
   "breakingChanges": [

@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_markEventChatRead",
-  "version": "1.0.0",
-  "description": "Records that the calling user has read all current messages in an event chat. Upserts HC.EventMessageBadgeCounts with the current message count, timestamp, and latest message ID. Returns the FCM tokens of the user's other devices so the API shim can fan out a silent read_sync push to zero the badge without showing a notification. Service accounts are explicitly blocked.",
+  "version": "1.2.0",
+  "description": "Records that the calling user has read all current messages in an event chat: upserts HC.EventMessageBadgeCounts (EventId, UserId, Removed = 0) with the current non-removed message count, timestamp and latest message id, then returns the FCM tokens of the user's other devices so the API shim can fan out a silent read_sync push that zeroes the badge without a notification. Device-bound portal auth via HC6.ValidatePortalAuth (@publicEventId is in the token param string); service accounts (callerType != 0) are refused. No check that the caller may see the run's chat. Since 2026-10-13 its MERGE into HC.EventMessageBadgeCounts holds HOLDLOCK: the table has no unique key on (UserId, EventId, KennelId, ThreadId, MessageType), and two concurrent MERGEs could each insert a row.",
   "parameters": [
     {
       "name": "deviceId",
@@ -29,8 +29,27 @@
   "rowsets": [
     {
       "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "Returned instead of the data rowsets on auth failure, service-account caller, NULL @publicEventId, 'Event not found', or from the CATCH block (ERROR_MESSAGE()).",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Why"
+        }
+      ]
+    },
+    {
+      "index": 0,
       "name": "ReadResult",
-      "description": "Single row confirming the sequence count written. On any error the SP returns the standard Success/ErrorMessage envelope instead.",
+      "description": "Single row confirming the sequence count written.",
       "columns": [
         {
           "name": "LastSequenceCount",
@@ -47,7 +66,7 @@
       "columns": [
         {
           "name": "FcmToken",
-          "type": "NVARCHAR(MAX)",
+          "type": "NVARCHAR(500)",
           "nullable": false,
           "description": "FCM registration token for one of the user's other devices"
         }
@@ -55,9 +74,21 @@
     }
   ],
   "sideEffects": [
-    "Upserts HC.EventMessageBadgeCounts for (eventId, hasherId) — sets LastSequenceCount, LastReadAt, LastReadMessageId"
+    "MERGE HC.EventMessageBadgeCounts for (EventId, UserId, Removed = 0): UPDATE LastSequenceCount, LastReadAt, LastReadMessageId, updatedAt, or INSERT a new row (inside a transaction)",
+    "The API shim sends a silent read_sync push to every token in rowset 1"
   ],
-  "codeSmells": [],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 135-138: CATCH returns the envelope without an HC.ErrorLog row."
+    },
+    {
+      "severity": "low",
+      "issue": "Snapshot taken outside the transaction",
+      "detail": "Lines 86-93 count messages and pick the latest id before BEGIN TRANSACTION; a message arriving between the two SELECTs can make LastSequenceCount and LastReadMessageId disagree by one."
+    }
+  ],
   "breakingChangeRules": [
     "Never remove or rename the LastSequenceCount column — Flutter reads it to confirm the write succeeded",
     "Never remove the FcmToken column from rowset 1 — the API shim depends on it for fan-out",

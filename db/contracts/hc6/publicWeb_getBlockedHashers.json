@@ -1,0 +1,84 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getBlockedHashers",
+  "version": "1.0.0",
+  "description": "Web member's door to HC6.hcapp_getBlockedHashers (E9.F1.S16/S17): the member's blocked hashers, for the screen where a block is undone. Read-only. A thin wrapper that EXECs the app SP and returns its rowsets unchanged. Auth: the wrapped SP's HC6.ValidateAppAuth — token signed for hcapp_getBlockedHashers; scoped to the token's user.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "The browser's HC.Device id (the web member session). No SQL default."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": false,
+      "mapsToColumn": null,
+      "description": "Short-lived token signed for hcapp_getBlockedHashers (the SP that validates it). No SQL default."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "As returned by HC6.hcapp_getBlockedHashers: Auth failure (ValidateAppAuth) returns the error detail alone and the SP returns. No compact envelope."
+    },
+    {
+      "index": 0,
+      "name": "BlockedHashers",
+      "description": "As returned by HC6.hcapp_getBlockedHashers: On success: one row per blocked hasher, ORDER BY HasherFriendMap.updatedAt DESC. Empty when the caller has blocked nobody. WHERE f.UserId = @userId AND f.Ignore = 1 (no filter on f.Removed or h.Removed: a GDPR-deleted hasher still appears as 'Deleted User').",
+      "columns": [
+        {
+          "name": "PublicHasherId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "UPPER(CAST(Hasher.PublicHasherId AS NVARCHAR(40))) — the blocked hasher's public id in upper case; the app lowercases it on arrival (lowerGuidsInPlace)."
+        },
+        {
+          "name": "DisplayName",
+          "type": "NVARCHAR(501)",
+          "nullable": false,
+          "description": "Hasher.DisplayName — persisted computed column honouring NameDisplayPreference."
+        },
+        {
+          "name": "Photo",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Hasher.Photo — profile photo URL."
+        },
+        {
+          "name": "BlockedAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "HasherFriendMap.updatedAt — when the block was last set (column added by db/hc6/app/archive/2026-09-29_hasher_block.sql)."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "EXEC HC6.hcapp_getBlockedHashers with the same arguments — every side effect is the wrapped SP's:",
+    "  None on success. INSERT HC.ErrorLog then THROW on an unhandled error (CATCH, line 48).",
+    "INSERT HC.ErrorLog ('<web>', userId NULL, deviceId) then THROW in the wrapper's CATCH, for an error the wrapped SP does not handle itself."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId and @accessToken have no SQL default (line 14). A caller that omits one is refused by SQL Server before the procedure runs — an empty 500 with no HC.ErrorLog row (CLAUDE.md 'SP parameter with NO default'). The Next.js client always sends them, so this is latent."
+    },
+    {
+      "severity": "low",
+      "issue": "Error logged twice",
+      "detail": "The wrapped SP's CATCH logs to HC.ErrorLog and THROWs; this wrapper's CATCH (lines 23-28) catches the re-raise and logs a second row for the same failure."
+    }
+  ],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

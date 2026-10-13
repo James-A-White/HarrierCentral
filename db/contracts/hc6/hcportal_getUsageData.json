@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_getUsageData",
-  "version": "1.2.0",
-  "description": "Returns comprehensive platform usage statistics for the HC admin portal dashboard. Returns 5 rowsets: app version distribution (iOS vs Android), integration job status, usage metrics across data types (Account, Activity, Event, Kennel, Login, Payment, Portal, Error, Push, App Error), recent login details, and recently updated/active events.",
+  "version": "1.4.0",
+  "description": "Returns platform usage statistics for the HC Admin Tools usage dashboard in five rowsets: app version distribution (iOS vs Android), integration job status, usage metrics across data types (Account, Activity, Event, Kennel, Login, Payment, Portal, Error, Push, App Error, PackTrack, AI Tokens, Azure Cost in pence incl. VAT, Email, First Sign-in), the last day's login details per user, and recently updated/active runs. Device-bound portal auth via HC6.ValidatePortalAuth; the SP applies NO platform-admin gate (HC.PlatformAdmin.CanViewMonitor exists but is not checked here). Permission (2026-10-13): platform admins with CanViewMonitor only; otherwise {Success 0, 'Not authorised to view the monitor'}.",
   "parameters": [
     {
       "name": "deviceId",
@@ -23,7 +23,7 @@
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "description": "Returned on auth failure (HC6.ValidatePortalAuth message) or from the CATCH block (ERROR_MESSAGE()). A CATCH after earlier rowsets were sent appends this envelope after them.",
       "columns": [
         {
           "name": "Success",
@@ -33,7 +33,7 @@
         },
         {
           "name": "ErrorMessage",
-          "type": "NVARCHAR(255)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
           "description": "Human-readable error message"
         }
@@ -73,7 +73,7 @@
     {
       "index": 2,
       "name": "IntegrationJobData",
-      "description": "Latest integration job run statistics for the most recent 10 integrations (by IntegrationAbbreviation order). Only jobs with a non-null endedAt are included.",
+      "description": "Latest finished job per integration, TOP 10 ordered by IntegrationAbbreviation. Integration 1 (Facebook, defunct) is excluded; integration 6 (runs-page reader) is always listed, with COALESCEd defaults (endedAt 2000-01-01, minutesAgo 999999) before its first job. newRuns14d / updatedRuns14d / kennelsUsing are filled for integration 6 only, NULL otherwise.",
       "columns": [
         {
           "name": "integrationAbbreviation",
@@ -194,11 +194,11 @@
     {
       "index": 3,
       "name": "UsageStatistics",
-      "description": "Usage metrics for 10 data types (Account, Activity, Event, Kennel, Login, Payment, Portal, Error, Push, App Error) across multiple time windows. Rows ordered by id (0-9). 'App Error' (id 9, added 2026-09-09) counts HC.ClientErrorLog sessions that HC6.ClientLogAppError classes as an app error; the portal colours it like 'Error' (higher is worse). Counts SUM CASE expressions so all count columns can be 0 but are not NULL in practice.",
+      "description": "One row per data type, ordered by id: 0 Account, 1 Activity, 2 Event, 3 Kennel, 4 Login, 5 Payment, 6 Portal, 7 Error, 8 Push (IsVisible pushes only), 9 App Error (HC.ClientErrorLog sessions HC6.ClientLogAppError classes as an app error), 10 PackTrack (tracks by TrackFirstPointAt), 11 AI Tokens (LOG.AiUsage.TotalTokens), 12 Azure Cost (pence incl. VAT via HC6.AzureVatMultiplier(); complete days only; Hour columns always 0), 13 Email (run-email recipients from LOG.GeneralLog JSON), 14 First Sign-in (first ever LaunchAndLogin row per user). Each period is paired with the previous period of the same length (…Comp). Two hard-coded user ids are excluded from Activity/Login/Portal/First Sign-in style rows. Counts are SUMs and can be NULL when a source has no rows in the window.",
       "columns": [
         {
           "name": "dataType",
-          "type": "NVARCHAR",
+          "type": "VARCHAR(13)",
           "nullable": false,
           "description": "Type of data: 'Account', 'Activity', 'Event', 'Kennel', 'Login', 'Payment', 'Portal', 'Error', 'Push', or 'App Error'"
         },
@@ -352,7 +352,7 @@
     {
       "index": 5,
       "name": "RecentEvents",
-      "description": "UNION DISTINCT of the top 20 most recently updated events and top 20 most active events (by HasherEventMap activity in last 24 hours). Only includes events within 48 hours of start that are visible (IsVisible=1). Ordered by minutesAgoUpdated ASC.",
+      "description": "DISTINCT union of the 20 most recently updated and the 20 most active (HasherEventMap rows updated in the last 24 h) visible runs whose EventStartLocal is later than 48 h before now, ordered by minutesAgoUpdated.",
       "columns": [
         {
           "name": "kennelName",
@@ -375,8 +375,8 @@
         {
           "name": "eventName",
           "type": "NVARCHAR(250)",
-          "nullable": false,
-          "description": "Event name (FbEventName if UseFbRunDetails != 0, otherwise EventName)"
+          "nullable": true,
+          "description": "FbEventName when UseFbRunDetails != 0 (the generic import mirror), else EventName."
         },
         {
           "name": "minutesAgoUpdated",
@@ -394,7 +394,7 @@
           "name": "minutesUntilRun",
           "type": "INT",
           "nullable": false,
-          "description": "Minutes until the event starts (DATEDIFF(MINUTE, GETDATE(), EventStartDatetime)). Negative if already started."
+          "description": "DATEDIFF(MINUTE, GETDATE(), Event.EventStartDatetime) — negative once the run has started."
         },
         {
           "name": "activityLastDay",
@@ -407,11 +407,31 @@
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
           "description": "Public identifier for the event from HC.Event.PublicEventId"
+        },
+        {
+          "name": "kennelUniqueShortName",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "Kennel.KennelUniqueShortName — for the run's /<slug>/<number> web link (added 2026-10-09)."
+        },
+        {
+          "name": "eventNumber",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Event.EventNumber."
+        },
+        {
+          "name": "isCountedRun",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Event.IsCountedRun."
         }
       ]
     }
   ],
-  "sideEffects": [],
+  "sideEffects": [
+    "Calls HC6.nonApi_portalKennelAccess (read-only) for its permission check."
+  ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",
@@ -424,6 +444,29 @@
   ],
   "changes": [
     "2026-10-05: integration rowset drops Facebook (1), always lists Runs page (6) — COALESCEd defaults when it has no job yet (minutesAgo 999999) — and adds newRuns14d, updatedRuns14d, kennelsUsing (NULL except integration 6). Activity rowset adds 'AI Tokens' (id 11, LOG.AiUsage.TotalTokens) and 'Azure Cost' (id 12, LOG.AzureDailyCost in PENCE; Day = latest complete day vs the day before; Hour always 0).",
-    "2026-10-05 (later): 'Azure Cost' pence now INCLUDE VAT via HC6.AzureVatMultiplier() (1.20); LOG.AzureDailyCost stays pre-tax."
+    "2026-10-05 (later): 'Azure Cost' pence now INCLUDE VAT via HC6.AzureVatMultiplier() (1.20); LOG.AzureDailyCost stays pre-tax.",
+    "2026-10-13 (contract sweep): rowset 3 now lists PackTrack (10), Email (13) and First Sign-in (14, added 2026-10-11); rowset 5 gains kennelUniqueShortName, eventNumber, isCountedRun (added 2026-10-09)."
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 671-674: CATCH returns the envelope without an HC.ErrorLog row; with five rowsets a mid-way failure appends the envelope after partial data."
+    },
+    {
+      "severity": "low",
+      "issue": "Hard-coded user ids",
+      "detail": "Lines 174-178: two GUIDs excluded from the counts are literals in the SP rather than data (e.g. a flag on HC.PlatformAdmin)."
+    },
+    {
+      "severity": "low",
+      "issue": "Raw EventStartDatetime and local/server clock mixing",
+      "detail": "Line 65 compares EventStartLocal (wall clock) with GETDATE() (server clock), and minutesUntilRun (lines 615, 639) uses raw EventStartDatetime, which carries a spurious +00:00 on most rows (see /hc-event-datetimes); EventStartDateTimeGmt is the instant column."
+    },
+    {
+      "severity": "low",
+      "issue": "Dirty reads",
+      "detail": "NOLOCK on every table read throughout the SP."
+    }
   ]
 }

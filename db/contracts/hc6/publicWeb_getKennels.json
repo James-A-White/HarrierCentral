@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getKennels",
-  "version": "1.0.0",
-  "description": "Returns the URL slug for every active kennel that has a KennelWebsite row. Used by the Next.js sitemap index to generate per-kennel sitemap references at build/revalidation time. No authentication required.",
+  "version": "1.1.0",
+  "description": "Returns the URL slug for every live kennel (deleted = 0, removed = 0) that has a HC.KennelWebsite row. Used by the Next.js sitemap index to generate per-kennel sitemap references at build / revalidation time. No authentication. Read-only.",
   "parameters": [],
   "rowsets": [
     {
@@ -12,24 +12,26 @@
       "columns": [
         {
           "name": "Slug",
-          "type": "NVARCHAR(100)",
+          "type": "NVARCHAR(50)",
           "nullable": false,
           "description": "HC.Kennel.KennelUniqueShortName — the URL path segment for this kennel"
         }
       ]
     }
   ],
-  "sideEffects": [],
+  "sideEffects": [
+    "INSERT HC.ErrorLog then THROW in the CATCH."
+  ],
   "codeSmells": [
-    {
-      "severity": "medium",
-      "issue": "No TRY/CATCH block",
-      "detail": "The SP has no error handling. A runtime error will propagate as an unstructured SQL exception rather than the standard error envelope. Low risk for a simple SELECT, but inconsistent with all other HC6 SPs."
-    },
     {
       "severity": "medium",
       "issue": "Does not filter by kw.Enabled",
       "detail": "Returns kennels that have a KennelWebsite row regardless of whether Enabled = 1. Kennels with Enabled = 0 (website disabled/under construction) will appear in the sitemap. Consider adding AND kw.Enabled = 1 to the WHERE clause."
+    },
+    {
+      "severity": "low",
+      "issue": "Wrong SP name in log",
+      "detail": "The CATCH (line 32) logs ErrorName 'Unhandled error in getKennels' and HcVersion '<unknown>'. ProcName is correct."
     }
   ],
   "breakingChangeRules": [

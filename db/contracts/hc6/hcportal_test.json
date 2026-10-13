@@ -1,14 +1,14 @@
 {
   "schema": "HC6",
   "name": "hcportal_test",
-  "version": "1.0.0",
-  "description": "Test/debug SP that retrieves the top 5 event names for a given kennel, ordered by event start date descending. No authentication — intentionally lightweight for testing.",
+  "version": "1.1.0",
+  "description": "Test/debug SP: the top 5 event names for a given kennel, newest EventStartDatetime first. No authentication — intentionally lightweight for testing the API shim. Returns names of any kennel's runs (including deleted/hidden ones) to anyone who can reach it.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": "Device.id",
+      "mapsToColumn": null,
       "description": "Accepted but unused. The API shim always passes deviceId; this parameter prevents mapping errors."
     },
     {
@@ -25,8 +25,18 @@
       "name": "ErrorEnvelope",
       "description": "Returned on any runtime error. No auth or validation — only the CATCH block can produce this.",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(4000)",
+          "nullable": true,
+          "description": "Human-readable error message"
+        }
       ]
     },
     {
@@ -49,5 +59,22 @@
     "Never rename a parameter",
     "Never change a parameter type",
     "Never change a sentinel value meaning"
+  ],
+  "codeSmells": [
+    {
+      "severity": "low",
+      "issue": "Dead input parameter",
+      "detail": "Line 4: @deviceId is accepted and never used (kept so the shim's standard call maps)."
+    },
+    {
+      "severity": "low",
+      "issue": "CATCH block does not log to HC.ErrorLog",
+      "detail": "Lines 35-37: CATCH returns the envelope with no HC.ErrorLog row."
+    },
+    {
+      "severity": "low",
+      "issue": "Unauthenticated and unfiltered",
+      "detail": "Lines 29-32 read HC.Event with no auth and no deleted/removed/IsVisible filter, ordered by raw EventStartDatetime. Harmless while only names are returned, but it is an open endpoint."
+    }
   ]
 }

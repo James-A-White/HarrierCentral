@@ -1,5 +1,5 @@
 CREATE OR ALTER PROCEDURE [HC6].[publicWeb_getEvents]
-    @PublicKennelId    NVARCHAR(50),
+    @PublicKennelId    NVARCHAR(50) = NULL,
     @IsFuture          SMALLINT,
     @MaxEvents         INT           = NULL,
     @DateCutoff        NVARCHAR(50)  = NULL,

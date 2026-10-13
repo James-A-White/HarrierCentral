@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcportal_reactToChatMessage",
-  "version": "1.0.0",
-  "description": "Portal twin of hcapp_reactToChatMessage for run chat (E9.F1.S22): same rule (HC6.nonApi_reactToChatMessage), no push.",
+  "version": "1.1.0",
+  "description": "Portal twin of hcapp_reactToChatMessage (E9.F1.S22, 2026-09-30): adds or removes the portal user's emoji reaction on a chat message. The rule and the write are HC6.nonApi_reactToChatMessage, shared with the app and the web; the portal sends no push (the chat refreshes on its next fetch). Auth: HC6.ValidatePortalAuth, standard token (no param string); who may react is decided inside nonApi_reactToChatMessage (outcome 3 = not allowed in that chat).",
   "parameters": [
     {
       "name": "deviceId",
@@ -21,16 +21,16 @@
     {
       "name": "messageId",
       "type": "UNIQUEIDENTIFIER",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": "EventMessage.id",
-      "description": "The message reacted to."
+      "description": "The message reacted to. Required: NULL returns 'messageId and reaction are required'."
     },
     {
       "name": "reaction",
       "type": "NVARCHAR(20)",
-      "nullable": false,
+      "nullable": true,
       "mapsToColumn": null,
-      "description": "A code from HC6.ChatReactionCatalog(): thumbs, heart, laugh, beer, run, fire."
+      "description": "A code from HC6.ChatReactionCatalog(). Required."
     },
     {
       "name": "on",
@@ -44,7 +44,7 @@
     {
       "index": 0,
       "name": "Envelope",
-      "description": "{ Success, ErrorMessage, reactions }",
+      "description": "Always one row. Success = 1 when nonApi_reactToChatMessage reports outcome 1. Success = 0 on auth failure, missing parameters, outcome 3 ('You can''t react in that chat.'), outcome 4 ('That reaction isn''t available.'), any other outcome ('That message is no longer in the chat.'), or from the CATCH block (HC.ErrorLog row, ERROR_MESSAGE()).",
       "columns": [
         {
           "name": "Success",
@@ -54,7 +54,7 @@
         },
         {
           "name": "ErrorMessage",
-          "type": "NVARCHAR(255)",
+          "type": "NVARCHAR(4000)",
           "nullable": true,
           "description": "Why, on 0"
         },
@@ -62,13 +62,14 @@
           "name": "reactions",
           "type": "NVARCHAR(MAX)",
           "nullable": true,
-          "description": "JSON after the change"
+          "description": "The message's reactions JSON after the change (NULL when none, and on every error path)."
         }
       ]
     }
   ],
   "sideEffects": [
-    "UPDATE HC.EventMessage.ReactionsJson / ReactionsUpdatedAt"
+    "EXEC HC6.nonApi_reactToChatMessage — UPDATE HC.EventMessage reactions JSON for the message",
+    "On a runtime error: INSERT HC.ErrorLog"
   ],
   "codeSmells": [],
   "breakingChangeRules": [

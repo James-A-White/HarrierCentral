@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_updatePhotoCaption",
-  "version": "1.0.0",
-  "description": "Allows an authorised reviewer (Hash Flash 0x20, GM 0x02, VGM 0x04, or RA 0x08) to add, edit, or clear the caption (Description) on a kennel photo. Works on photos of any status. Passing NULL for @description explicitly clears the existing caption. The role check is performed against the photo's kennel, which is resolved via a lookup — no @kennelId parameter is required from the caller.",
+  "version": "1.1.0",
+  "description": "Adds, edits or clears the caption (KennelPhotos.Description) on a kennel photo of any status. Auth: HC6.ValidateAppAuth (spNumber 92). Gate: HC6.CheckKennelPermission 'editPhoto' on the photo's own kennel (resolved from the photo, so no @kennelId is sent) — Hash Flash / GM / VGM / RA and whoever else the data-driven matrix grants. NULL @description clears the caption; '' stores an empty caption.",
   "parameters": [
     {
       "name": "deviceId",
@@ -37,37 +37,116 @@
     {
       "index": 0,
       "name": "Envelope",
-      "description": "Always present. On auth, validation, or role check failure: success=0, errorCode and errorType set. On DB error: success=0, errorCode=1933, errorType=19. On success: success=1, errorCode=NULL, errorType=NULL.",
+      "description": "Always present. Failure: success = 0 with ValidateAppAuth codes, 1333 / 13 photo not found, 1333 / 13 not authorised, or 1933 / 19 unhandled. Success: success = 1, errorCode / errorType NULL.",
       "columns": [
-        { "name": "success", "type": "INT", "nullable": false, "description": "1 on success, 0 on any failure." },
-        { "name": "errorCode", "type": "INT", "nullable": true, "description": "Numeric error code. NULL on success." },
-        { "name": "errorType", "type": "INT", "nullable": true, "description": "Error classification code. NULL on success." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 on success, 0 on any failure."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "Numeric error code. NULL on success."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "Error classification code. NULL on success."
+        }
       ]
     },
     {
       "index": 1,
       "name": "CaptionResult",
-      "description": "On success: the updated photoId and the new description value (which may be NULL if the caption was cleared). On error: standard HC6 error detail rowset. These two shapes are mutually exclusive at index 1.",
+      "description": "On success: the photo id and the caption now stored (NULL when cleared).",
       "columns": [
-        { "name": "photoId", "type": "UNIQUEIDENTIFIER", "nullable": false, "description": "Echoed back from @photoId." },
-        { "name": "description", "type": "NVARCHAR(MAX)", "nullable": true, "description": "The new caption value. NULL if @description was passed as NULL (caption cleared)." }
+        {
+          "name": "photoId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Echoed back from @photoId."
+        },
+        {
+          "name": "description",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "The new caption value. NULL if @description was passed as NULL (caption cleared)."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "ErrorDetail",
+      "description": "On failure, in place of CaptionResult.",
+      "columns": [
+        {
+          "name": "errorId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.ErrorLog id."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error type."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "Error code."
+        },
+        {
+          "name": "errorTitle",
+          "type": "NVARCHAR(500)",
+          "nullable": true,
+          "description": "Short title."
+        },
+        {
+          "name": "errorUserMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "User-facing message."
+        },
+        {
+          "name": "errorProc",
+          "type": "NVARCHAR(128)",
+          "nullable": false,
+          "description": "OBJECT_NAME(@@PROCID)."
+        }
       ]
     }
   ],
   "sideEffects": [
-    "Updates KennelPhotos.Description and KennelPhotos.UpdatedAt for the photo.",
-    "Writes to HC.ErrorLog on photo-not-found, role check failure, or unhandled DB error."
+    "UPDATE HC.KennelPhotos SET Description = @description, UpdatedAt = GETUTCDATE() WHERE id = @photoId (in a transaction).",
+    "EXEC HC6.CheckKennelPermission 'editPhoto' — pre-flight.",
+    "Writes to HC.ErrorLog on photo-not-found, permission refusal, or unhandled error (CATCH rolls back first)."
   ],
   "codeSmells": [
     {
-      "severity": "low",
-      "issue": "Role mask 0x002E excludes WebMeister — inconsistent with hcapp_batchUpdatePhotoStatus and hcapp_getRunAllPhotos",
-      "detail": "This SP uses 0x002E (Hash Flash | GM | VGM | RA). hcapp_batchUpdatePhotoStatus and hcapp_getRunAllPhotos use 0x102E which also includes WebMeister (0x1000). A WebMeister who can batch-approve photos cannot edit captions, which is likely an unintentional inconsistency."
+      "severity": "medium",
+      "issue": "Parameter without a default",
+      "detail": "@deviceId, @accessToken, @photoId (lines 3-5) have no SQL default. A client that omits one is refused by SQL before the procedure runs: no HC.ErrorLog row, an empty 500 in the app, and any graceful check inside is unreachable (CLAUDE.md, Rack of Lamb 2026-09-29)."
     },
     {
       "severity": "low",
-      "issue": "HcVersion hardcoded to '<unknown>' in all ErrorLog inserts",
-      "detail": "Consistent with other HC6 SPs but means the version is never captured in the error log."
+      "issue": "One error code for two different failures",
+      "detail": "Lines 74 and 93 both return 1333 / errorType 13 — 'photo not found' and 'not authorised' cannot be told apart by code, only by title."
+    },
+    {
+      "severity": "low",
+      "issue": "Deleted photos are still editable",
+      "detail": "Line 68 looks the photo up by id only; a row with DeletedAt set still passes and has its caption changed."
+    },
+    {
+      "severity": "low",
+      "issue": "Unhandled errorType 19",
+      "detail": "Line 124 returns errorType 19 rather than the standard 5."
     }
   ],
   "breakingChanges": [

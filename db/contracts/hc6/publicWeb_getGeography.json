@@ -1,22 +1,22 @@
 {
   "schema": "HC6",
   "name": "publicWeb_getGeography",
-  "version": "1.0.0",
-  "description": "Anonymous Country → Region → City lists for the add-kennel form: no params = countries; @countryId = regions; @regionId = cities.",
+  "version": "1.1.0",
+  "description": "The cascading Country → Region → City lists for the hashruns.org/add-kennel form (E12.F1.S7), so a request names the database's own places instead of free text. The same lists hcportal_getCountries / getRegions / getCities give an authenticated admin; this one is anonymous and reference data only. One door, three questions: no parameters → every live country; @countryId → that country's live regions; @regionId → that region's live cities (@regionId wins when both are given). Read-only.",
   "parameters": [
     {
       "name": "countryId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "Region.CountryId",
-      "description": ""
+      "description": "Return this country's regions (ignored when @regionId is given)."
     },
     {
       "name": "regionId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "City.RegionId",
-      "description": ""
+      "description": "Return this region's cities. Takes precedence over @countryId."
     }
   ],
   "rowsets": [
@@ -28,18 +28,21 @@
           "name": "id",
           "type": "UNIQUEIDENTIFIER",
           "nullable": false,
-          "description": ""
+          "description": "City.id / Region.id / Country.id."
         },
         {
           "name": "name",
           "type": "NVARCHAR(250)",
           "nullable": false,
-          "description": ""
+          "description": "City.CityName (NVARCHAR(100)) / Region.RegionName (NVARCHAR(100)) / Country.CountryName (NVARCHAR(250)) — typed by the branch taken."
         }
-      ]
+      ],
+      "description": "One rowset whose source depends on the parameters: HC.City (CityName), HC.Region (RegionName) or HC.Country (CountryName), Removed = 0, ordered by name. Empty for an unknown id."
     }
   ],
-  "sideEffects": [],
+  "sideEffects": [
+    "INSERT HC.ErrorLog then THROW in the CATCH."
+  ],
   "codeSmells": [],
   "breakingChangeRules": [
     "Never remove a column from any rowset",

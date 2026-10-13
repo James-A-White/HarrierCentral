@@ -1,14 +1,14 @@
 {
   "schema": "HC6",
   "name": "hcportal_confirmAuthentication",
-  "version": "1.0.0",
-  "description": "Confirms a portal authentication request initiated by a QR code scan from the mobile app. The portal (browser) calls this SP after displaying a QR code. If the app has scanned it and inserted a matching WebPortalAuthenticationRequests record, the SP provisions a new HC.Device record with a shared secret and returns the user's profile along with the device credentials (obfuscated as iconDataBase64 and colorPaletteIndex). If no matching auth request exists, returns silently with no rowset.",
+  "version": "1.1.0",
+  "description": "Confirms a portal login request. Called by the portal (browser) — authenticated as the portal service account via HC6.ValidatePortalAuth with @qrCodeData as the callerParamString — while it waits for the mobile app to approve a login, either by scanning an on-screen QR code (@isQrFlow = 1, 5-minute TTL) or by the same-device app-login flow (@isQrFlow = 0, code in the URL, 90-second TTL). If a matching, unconsumed, in-TTL HC.WebPortalAuthenticationRequests row exists, the SP reuses the offered @newDeviceId only when that HC.Device row already belongs to the hasher logging in (2026-09-19: never hand one hasher another hasher's device); otherwise it provisions a new HC.Device row (IsMobile = 0) with a fresh shared secret. It returns the hasher's profile with the device credentials obfuscated as iconDataBase64 / colorPaletteIndex, then marks the request consumed (single use). No matching request returns silently with no rowset.",
   "parameters": [
     {
       "name": "deviceId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
-      "mapsToColumn": "Device.id",
+      "mapsToColumn": null,
       "description": "Auth: the service account's device ID for authenticating this portal polling call. Validated via HC6.ValidatePortalAuth."
     },
     {
@@ -16,7 +16,7 @@
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "Device.id",
-      "description": "The device ID to provision for the new browser session. If NULL, auto-generated via NEWID()."
+      "description": "The device id the browser offers (the one it already holds) so its HC.Device row can be reused. NULL is replaced with NEWID(). Replaced with a fresh NEWID() when the existing row belongs to a different hasher (or has no owner)."
     },
     {
       "name": "accessToken",
@@ -30,14 +30,16 @@
       "type": "NVARCHAR(250)",
       "nullable": true,
       "mapsToColumn": "WebPortalAuthenticationRequests.scanData",
-      "description": "The QR code payload to match against pending auth requests. Must be non-NULL and at least 10 characters (LEN check). Matched case-insensitively with TRIM(LOWER()). Also used as the paramString for auth token validation."
+      "description": "The QR code payload to match against pending auth requests. Must be non-NULL and at least 10 characters (LEN check). Matched case-insensitively with TRIM(LOWER()). Also used as the paramString for auth token validation.",
+      "typeMismatch": "Parameter NVARCHAR(250); column HC.WebPortalAuthenticationRequests.scanData is NVARCHAR(100). Harmless for matching (a longer value simply matches nothing)."
     },
     {
       "name": "deviceInfo",
       "type": "NVARCHAR(4000)",
       "nullable": true,
       "mapsToColumn": "Device.DeviceData",
-      "description": "JSON device info for the browser session. Stored in HC.Device.DeviceData when provisioning a new device."
+      "description": "JSON device info for the browser session. Stored in HC.Device.DeviceData when provisioning a new device.",
+      "typeMismatch": "Parameter NVARCHAR(4000); column HC.Device.DeviceData is NVARCHAR(MAX). Device info over 4000 characters is truncated silently."
     },
     {
       "name": "isQrFlow",
@@ -51,10 +53,20 @@
     {
       "index": 0,
       "name": "ErrorEnvelope",
-      "description": "Returned on any validation, auth, or runtime error. Short-circuits on first error.",
+      "description": "Returned on auth failure, NULL or short (<10 chars) @qrCodeData, or a runtime error (CATCH returns ERROR_MESSAGE()). Short-circuits on first error.",
       "columns": [
-        { "name": "Success", "type": "INT", "nullable": false, "description": "Always 0 on error" },
-        { "name": "ErrorMessage", "type": "NVARCHAR(255)", "nullable": true, "description": "Human-readable error message" }
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 on error"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(255)",
+          "nullable": true,
+          "description": "Human-readable error message"
+        }
       ]
     },
     {
@@ -76,7 +88,7 @@
         },
         {
           "name": "scanData",
-          "type": "NVARCHAR(250)",
+          "type": "NVARCHAR(100)",
           "nullable": false,
           "description": "The matched QR code scan data from HC.WebPortalAuthenticationRequests"
         },
@@ -126,12 +138,30 @@
     }
   ],
   "sideEffects": [
-    "INSERT into HC.Device when provisioning a new browser device (new shared secret and time window). Wrapped in a transaction."
+    "INSERT HC.Device (id, UserId, DeviceSecret, TimeWindow, DeviceData, IsMobile = 0) when no reusable device row owned by the logging-in hasher exists. Wrapped in a transaction.",
+    "UPDATE HC.WebPortalAuthenticationRequests SET Removed = 1 WHERE scanData matches @qrCodeData (case/space-insensitive) — consumes the request so the code cannot be replayed."
   ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
     "Never rename a parameter",
     "Never change a parameter type",
     "Never change a sentinel value meaning"
+  ],
+  "codeSmells": [
+    {
+      "severity": "medium",
+      "issue": "CATCH does not log to HC.ErrorLog",
+      "detail": "Lines 193-196: the CATCH rolls back and returns ERROR_MESSAGE() with no HC.ErrorLog row (the header says logging moved to the API shim), so a failed login confirmation leaves no server record."
+    },
+    {
+      "severity": "low",
+      "issue": "Consume is not atomic with the match",
+      "detail": "The request is matched at lines 81-109 and consumed by a separate UPDATE at line 188, outside any transaction and without UPDLOCK. Two concurrent polls carrying the same code can both pass the check and both receive device credentials."
+    },
+    {
+      "severity": "low",
+      "issue": "Non-sargable match on scanData",
+      "detail": "Lines 82, 107, 183 and 190 compare trim(lower(scanData)) = trim(lower(@qrCodeData)), which cannot use an index on scanData."
+    }
   ]
 }

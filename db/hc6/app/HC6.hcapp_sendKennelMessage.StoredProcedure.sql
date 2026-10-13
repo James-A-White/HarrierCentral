@@ -120,8 +120,19 @@ SELECT @publicHasherId = h.PublicHasherId FROM HC.Hasher h WHERE h.id = @userId;
 SET @messageReleasabilityFlags = COALESCE(@messageReleasabilityFlags, 63);
 SET @messageTitle = COALESCE(@messageTitle, '');
 
+-- A resend of a message this sender already stored (2026-10-13): writes
+-- nothing, returns the stored message and empty push rowsets. The phone
+-- resends the same @messageId when a reply is lost; the second INSERT used
+-- to hit the primary key and report a delivered message as unsent.
+DECLARE @isResend SMALLINT = CASE WHEN EXISTS (
+        SELECT 1 FROM HC.EventMessage
+        WHERE id = @messageId AND UserId = @userId AND KennelId = @kennelId AND EventId IS NULL) THEN 1 ELSE 0 END;
+
 BEGIN TRY
     BEGIN TRANSACTION;
+
+    IF (@isResend = 0)
+    BEGIN
 
     -- A reply quotes a message of THIS thread (E9.F1.S21). Anything else —
     -- a stale id, another chat's message — sends as a plain message rather
@@ -163,7 +174,7 @@ BEGIN TRY
     FROM HC.EventMessage em WHERE em.id = @messageId;
 
     -- Sender never sees their own message as unread
-    MERGE INTO HC.EventMessageBadgeCounts AS Target
+    MERGE INTO HC.EventMessageBadgeCounts WITH (HOLDLOCK) AS Target
     USING (VALUES (@userId, @kennelId, @messageSequenceCount)) AS Source (UserId, KennelId, LastSequenceCount)
     ON (Target.UserId = Source.UserId AND Target.KennelId = Source.KennelId)
     WHEN MATCHED THEN
@@ -171,6 +182,7 @@ BEGIN TRY
     WHEN NOT MATCHED BY TARGET THEN
         INSERT (UserId, KennelId, LastSequenceCount)
         VALUES (Source.UserId, Source.KennelId, Source.LastSequenceCount);
+    END
 
     COMMIT TRANSACTION;
 END TRY
@@ -185,6 +197,12 @@ BEGIN CATCH
            @procName AS errorProc;
     RETURN;
 END CATCH
+
+-- The message is COMMITTED by this point (2026-10-13, as sendRoomMessage).
+-- Everything below ran outside any TRY, so a failure here was an unlogged
+-- raw 500 for a message that had been stored. Now it is logged and
+-- swallowed, never re-thrown.
+BEGIN TRY
 
 -- ---------------------------------------------------------------
 -- Rowset 0: message detail
@@ -260,6 +278,9 @@ WHERE hkm.KennelId = @kennelId
    OR (@sendToFollowers     != 0 AND hkm.Following = 1)
   );
 
+-- A resend notifies nobody: its first send already did.
+IF (@isResend = 1) DELETE FROM #pushAudience;
+
 -- Rowset 1: visible push notification recipients
 -- BadgeTotal: the recipient's unread total for the app ICON (HC6.UserUnreadChatTotal,
 -- the same rule as the in-app badges); the API puts it in aps.badge (2026-09-28).
@@ -278,3 +299,11 @@ SELECT DISTINCT a.UserId, a.FcmToken,
 CROSS APPLY HC6.UserUnreadChatTotal(a.UserId) bt WHERE a.Pref = 3;
 
 DROP TABLE #pushAudience;
+
+END TRY
+BEGIN CATCH
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), HC6.DeviceHcVersion(@deviceId),
+            'Push audience failed in sendKennelMessage', ERROR_MESSAGE(), @procName, @userId);
+    -- Swallowed on purpose: the message is stored. See the note above the TRY.
+END CATCH
