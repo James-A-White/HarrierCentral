@@ -1,3 +1,13 @@
+## 3.1.9+1471 (2026-10-13)
+
+### Fixes
+
+- **Apple Watch**: a run that starts automatically now appears on the watch,
+  not only one started from the Live Run screen (E5.F1.S7).
+- **Apple Watch**: the session log records whether the watch is paired,
+  installed and reachable, and why the phone could not update it, so a
+  blank watch can be diagnosed.
+
 ## 3.1.9+1470 (2026-10-12)
 
 ### New Features
