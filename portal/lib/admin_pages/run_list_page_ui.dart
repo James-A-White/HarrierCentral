@@ -71,7 +71,7 @@ class RunListPage extends StatelessWidget {
         return Scaffold(
           backgroundColor: const Color(0xFFF1F5F9),
           appBar: _buildAppBar(context),
-          body: Obx(() {
+          body: _withBusyBar(Obx(() {
             final Widget content;
             if (formController.allEvents.isEmpty &&
                 formController.allEventsDetails.isEmpty) {
@@ -109,9 +109,30 @@ class RunListPage extends StatelessWidget {
                 Expanded(child: content),
               ],
             );
-          }),
+          })),
         );
       },
+    );
+  }
+
+  /// A thin progress bar across the top of the page while a page action
+  /// (open kennel, edit run, design website …) is fetching.
+  Widget _withBusyBar(Widget child) {
+    return Stack(
+      children: [
+        Positioned.fill(child: child),
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Obx(() {
+            final busy = formController.busyAction.value != null;
+            return busy
+                ? const LinearProgressIndicator(minHeight: 3)
+                : const SizedBox.shrink();
+          }),
+        ),
+      ],
     );
   }
 
@@ -614,7 +635,7 @@ class RunListPage extends StatelessWidget {
             label: 'Edit Kennel',
             icon: Icons.settings_outlined,
             isPrimary: false,
-            onTap: () async {
+            onTap: () => formController.runBusy('Edit Kennel', () async {
               final kennel = await _getKennel(k.publicKennelId);
               if (kennel != null) {
                 await Get.to<KennelEditPage>(
@@ -633,7 +654,7 @@ class RunListPage extends StatelessWidget {
                   );
                 }
               }
-            },
+            }),
           ),
         // Gated on the 'manageProducts' function key, resolved server-side in
         // hcportal_getLandingPageData so this button and the SP's own
@@ -666,7 +687,7 @@ class RunListPage extends StatelessWidget {
             label: 'Edit Website',
             icon: Icons.language_outlined,
             isPrimary: false,
-            onTap: () async {
+            onTap: () => formController.runBusy('Edit Website', () async {
               final websiteData = await _getKennelWebsite(k.publicKennelId);
               if (websiteData != null) {
                 await Get.to<KennelWebsiteEditPage>(
@@ -683,14 +704,17 @@ class RunListPage extends StatelessWidget {
                   await deleteAfterExit<KennelWebsiteController>(Get.find<KennelWebsiteController>());
                 }
               }
-            },
+            }),
           ),
         if (k.canDesignWebsite == 1)
           (
             label: 'Design Website',
             icon: Icons.brush_outlined,
             isPrimary: false,
-            onTap: () => _openWebsiteDesigner(k.kennelUniqueShortName),
+            onTap: () => formController.runBusy(
+              'Design Website',
+              () => _openWebsiteDesigner(k.kennelUniqueShortName),
+            ),
           ),
         if (k.canManageRuns)
           (
@@ -803,19 +827,28 @@ class RunListPage extends StatelessWidget {
     final color = a.isPrimary
         ? const Color(0xFFB91C1C)
         : const Color(0xFF334155);
-    return ListTile(
-      dense: true,
-      leading: Icon(a.icon, size: 20, color: color),
-      title: Text(
-        a.label,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: a.isPrimary ? FontWeight.w700 : FontWeight.w500,
-          color: color,
+    return Obx(() {
+      final busyKey = formController.busyAction.value;
+      return ListTile(
+        dense: true,
+        leading: busyKey == a.label
+            ? SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: color),
+              )
+            : Icon(a.icon, size: 20, color: color),
+        title: Text(
+          a.label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: a.isPrimary ? FontWeight.w700 : FontWeight.w500,
+            color: color,
+          ),
         ),
-      ),
-      onTap: a.onTap,
-    );
+        onTap: busyKey != null ? null : a.onTap,
+      );
+    });
   }
 
   Widget _appBarActionsMenu(List<_BarAction> actions) {
@@ -830,21 +863,34 @@ class RunListPage extends StatelessWidget {
           color: const Color(0xFF1D4ED8),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.menu, size: 18, color: Colors.white),
-            SizedBox(width: 6),
-            Text(
-              'Menu',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+        child: Obx(() {
+          final busy = formController.busyAction.value != null;
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (busy)
+                const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              else
+                const Icon(Icons.menu, size: 18, color: Colors.white),
+              const SizedBox(width: 6),
+              const Text(
+                'Menu',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          );
+        }),
       ),
       onSelected: (i) => actions[i].onTap(),
       itemBuilder: (context) => [
@@ -884,6 +930,8 @@ class RunListPage extends StatelessWidget {
     String label, {
     required VoidCallback onPressed,
     bool isPrimary = false,
+    // Spins beside the label and refuses presses while true.
+    bool loading = false,
   }) {
     return TextButton(
       style: TextButton.styleFrom(
@@ -898,8 +946,24 @@ class RunListPage extends StatelessWidget {
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
       ),
-      onPressed: onPressed,
-      child: Text(label),
+      onPressed: loading ? null : onPressed,
+      child: loading
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: isPrimary ? Colors.white : const Color(0xFF475569),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(label),
+              ],
+            )
+          : Text(label),
     );
   }
 
@@ -931,30 +995,33 @@ class RunListPage extends StatelessWidget {
           const SizedBox(height: 16),
           if (formController.kennel.canManageKennel ||
               formController.kennel.canManageHashCash) ...[
-            _appBarBtn(
-              'Edit Kennel',
-              onPressed: () async {
-                final kennel = await _getKennel(
-                  formController.kennel.publicKennelId,
-                );
-                if (kennel != null) {
-                  await Get.to<KennelEditPage>(
-                    () => KennelEditPage(
-                      key: UniqueKey(),
-                      kennelData: kennel,
-                      appAccessFlags: formController.kennel.appAccessFlags,
-                      canEditKennelStatus: formController.canEditKennel,
-                    ),
+            Obx(
+              () => _appBarBtn(
+                'Edit Kennel',
+                loading: formController.busyAction.value == 'Edit Kennel',
+                onPressed: () => formController.runBusy('Edit Kennel', () async {
+                  final kennel = await _getKennel(
+                    formController.kennel.publicKennelId,
                   );
-                  // Get.to returns as the page STARTS to fade out; its TabBar is
-                  // still drawing with this controller's TabController.
-                  if (Get.isRegistered<KennelPageFormController>()) {
-                    await deleteAfterExit<KennelPageFormController>(
-                      Get.find<KennelPageFormController>(),
+                  if (kennel != null) {
+                    await Get.to<KennelEditPage>(
+                      () => KennelEditPage(
+                        key: UniqueKey(),
+                        kennelData: kennel,
+                        appAccessFlags: formController.kennel.appAccessFlags,
+                        canEditKennelStatus: formController.canEditKennel,
+                      ),
                     );
+                    // Get.to returns as the page STARTS to fade out; its TabBar is
+                    // still drawing with this controller's TabController.
+                    if (Get.isRegistered<KennelPageFormController>()) {
+                      await deleteAfterExit<KennelPageFormController>(
+                        Get.find<KennelPageFormController>(),
+                      );
+                    }
                   }
-                }
-              },
+                }),
+              ),
             ),
             const SizedBox(height: 16),
           ],
@@ -981,37 +1048,46 @@ class RunListPage extends StatelessWidget {
             const SizedBox(height: 16),
           ],
           if (formController.kennel.canEditWebsite == 1) ...[
-            _appBarBtn(
-              'Edit Website',
-              onPressed: () async {
-                final websiteData = await _getKennelWebsite(
-                  formController.kennel.publicKennelId,
-                );
-                if (websiteData != null) {
-                  await Get.to<KennelWebsiteEditPage>(
-                    () => KennelWebsiteEditPage(
-                      key: UniqueKey(),
-                      websiteData: websiteData,
-                      publicKennelId: formController.kennel.publicKennelId,
-                      kennelName: formController.kennel.kennelName,
-                      kennelUniqueShortName:
-                          formController.kennel.kennelUniqueShortName,
-                    ),
+            Obx(
+              () => _appBarBtn(
+                'Edit Website',
+                loading: formController.busyAction.value == 'Edit Website',
+                onPressed: () => formController.runBusy('Edit Website', () async {
+                  final websiteData = await _getKennelWebsite(
+                    formController.kennel.publicKennelId,
                   );
-                  // Pop has started, not finished: delete once the page is gone.
-                  if (Get.isRegistered<KennelWebsiteController>()) {
-                    await deleteAfterExit<KennelWebsiteController>(Get.find<KennelWebsiteController>());
+                  if (websiteData != null) {
+                    await Get.to<KennelWebsiteEditPage>(
+                      () => KennelWebsiteEditPage(
+                        key: UniqueKey(),
+                        websiteData: websiteData,
+                        publicKennelId: formController.kennel.publicKennelId,
+                        kennelName: formController.kennel.kennelName,
+                        kennelUniqueShortName:
+                            formController.kennel.kennelUniqueShortName,
+                      ),
+                    );
+                    // Pop has started, not finished: delete once the page is gone.
+                    if (Get.isRegistered<KennelWebsiteController>()) {
+                      await deleteAfterExit<KennelWebsiteController>(Get.find<KennelWebsiteController>());
+                    }
                   }
-                }
-              },
+                }),
+              ),
             ),
             const SizedBox(height: 16),
           ],
           if (formController.kennel.canDesignWebsite == 1)
-            _appBarBtn(
-              'Design Website',
-              onPressed: () => _openWebsiteDesigner(
-                formController.kennel.kennelUniqueShortName,
+            Obx(
+              () => _appBarBtn(
+                'Design Website',
+                loading: formController.busyAction.value == 'Design Website',
+                onPressed: () => formController.runBusy(
+                  'Design Website',
+                  () => _openWebsiteDesigner(
+                    formController.kennel.kennelUniqueShortName,
+                  ),
+                ),
               ),
             ),
         ],
@@ -1355,10 +1431,13 @@ class RunListPage extends StatelessWidget {
                             formController.thisEventChatCount[event
                                 .publicEventId] ??
                             0,
-                        onTap: () async {
-                          formController.eventForSingleEventDetailsView.value =
-                              await querySingleEvent(event.publicEventId);
-                        },
+                        onTap: () => formController.runBusy(
+                          'select:${event.publicEventId}',
+                          () async {
+                            formController.eventForSingleEventDetailsView.value =
+                                await querySingleEvent(event.publicEventId);
+                          },
+                        ),
                         onEdit: canEdit
                             ? () => _editRunFromList(event.publicEventId)
                             : null,
@@ -1378,7 +1457,11 @@ class RunListPage extends StatelessWidget {
   // full run details (the editor needs the rich RunDetailsModel, not the lighter
   // list model), then mirrors the detail panel's post-edit refresh so the list
   // and any open detail view reflect the changes.
-  Future<void> _editRunFromList(String publicEventId) async {
+  // Busy for the whole trip, so a second press cannot push a second editor.
+  Future<void> _editRunFromList(String publicEventId) => formController
+      .runBusy('edit:$publicEventId', () => _openRunEditor(publicEventId));
+
+  Future<void> _openRunEditor(String publicEventId) async {
     final edr = await querySingleEvent(publicEventId);
     await Get.to<RunEditPage>(
       () => RunEditPage(

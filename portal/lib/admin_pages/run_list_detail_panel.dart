@@ -789,22 +789,25 @@ class RunListDetailPanel extends StatelessWidget {
               },
             ),
           if (controller.kennel.canManageRuns)
-            _btn(
-              'Delete',
-              Icons.delete_outline,
-              style: _Btn.danger,
-              onPressed: () async {
-                final confirm = await CoreUtilities.showAlert(
-                      'Delete Run',
-                      'Would you like to delete "${rdm.eventName}"?',
-                      'Delete run',
-                      showCancelButton: true,
-                    ) ??
-                    false;
-                if (confirm && rdm.publicEventId != null) {
-                  await controller.deleteEvent(rdm.publicEventId);
-                }
-              },
+            Obx(
+              () => _btn(
+                'Delete',
+                Icons.delete_outline,
+                style: _Btn.danger,
+                loading: controller.isDeleting.value,
+                onPressed: () async {
+                  final confirm = await CoreUtilities.showAlert(
+                        'Delete Run',
+                        'Would you like to delete "${rdm.eventName}"?',
+                        'Delete run',
+                        showCancelButton: true,
+                      ) ??
+                      false;
+                  if (confirm && rdm.publicEventId != null) {
+                    await controller.deleteEvent(rdm.publicEventId);
+                  }
+                },
+              ),
             ),
         ],
       ),
@@ -831,6 +834,8 @@ class RunListDetailPanel extends StatelessWidget {
     IconData icon, {
     required VoidCallback onPressed,
     _Btn style = _Btn.secondary,
+    // Spins in place of the icon and refuses presses while true.
+    bool loading = false,
   }) {
     final Color bg, border, fg;
     switch (style) {
@@ -859,11 +864,18 @@ class RunListDetailPanel extends StatelessWidget {
         textStyle:
             const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
       ),
-      onPressed: onPressed,
+      onPressed: loading ? null : onPressed,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 17),
+          if (loading)
+            SizedBox(
+              width: 17,
+              height: 17,
+              child: CircularProgressIndicator(strokeWidth: 2, color: fg),
+            )
+          else
+            Icon(icon, size: 17),
           const SizedBox(width: 6),
           Text(label),
         ],

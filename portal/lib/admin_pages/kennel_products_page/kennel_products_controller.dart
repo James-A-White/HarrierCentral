@@ -43,6 +43,10 @@ class KennelProductsController extends TabUiController
   /// back on, so it has to be able to see what is off sale.
   final RxBool activeOnly = false.obs;
 
+  /// The product whose on/off-sale change is in flight: its button spins,
+  /// and a second change is refused until the first returns.
+  final RxnString savingProductId = RxnString();
+
   Worker? _screenSizeDebouncer;
 
   @override
@@ -169,6 +173,16 @@ class KennelProductsController extends TabUiController
   /// sync removes deleted rows from every phone, which would orphan the
   /// payments made against it.
   Future<void> setOnSale(ProductModel p, bool onSale) async {
+    if (savingProductId.value != null) return;
+    savingProductId.value = p.productId;
+    try {
+      await _setOnSale(p, onSale);
+    } finally {
+      savingProductId.value = null;
+    }
+  }
+
+  Future<void> _setOnSale(ProductModel p, bool onSale) async {
     await saveProduct(
       productId: p.productId,
       productType: p.productType,

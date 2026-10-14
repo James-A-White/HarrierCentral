@@ -517,9 +517,12 @@ class _SongDetailPanel extends StatelessWidget {
                 onPressed: controller.cancelAddNewSong,
               ),
               const SizedBox(width: 8),
-              HcButton.primary(
-                label: 'Save Song',
-                onPressed: controller.saveNewSong,
+              Obx(
+                () => HcButton.primary(
+                  label: 'Save Song',
+                  loading: controller.isSavingSong.value,
+                  onPressed: controller.saveNewSong,
+                ),
               ),
             ],
           ),
@@ -652,9 +655,12 @@ class _SongDetailPanel extends StatelessWidget {
                 onPressed: controller.cancelEditSong,
               ),
               const SizedBox(width: 8),
-              HcButton.primary(
-                label: 'Save Changes',
-                onPressed: controller.saveEditedSong,
+              Obx(
+                () => HcButton.primary(
+                  label: 'Save Changes',
+                  loading: controller.isSavingSong.value,
+                  onPressed: controller.saveEditedSong,
+                ),
               ),
             ],
           ),

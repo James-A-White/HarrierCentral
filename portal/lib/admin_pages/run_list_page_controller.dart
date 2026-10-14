@@ -54,6 +54,27 @@ class RunListPageController extends GetxController
   static const int _pastWeeksIncrement = 17; // load ~4 more months each time
   int _pastWeeksWindow = _pastWeeksInitial;
   final RxBool isLoadingMorePast = false.obs;
+
+  /// True while a run delete is in flight: spins the Delete button and
+  /// refuses a second press until the first returns.
+  final RxBool isDeleting = false.obs;
+
+  /// The page action in flight (a nav label, or `edit:<id>` / `select:<id>`):
+  /// it spins, a progress bar shows, and every other action is refused until
+  /// it returns, so a slow fetch cannot push the same page twice.
+  final RxnString busyAction = RxnString();
+
+  /// Runs [work] as [key], refusing it while another action is in flight.
+  /// Busy is set before the first await and cleared in the finally.
+  Future<void> runBusy(String key, Future<void> Function() work) async {
+    if (busyAction.value != null) return;
+    busyAction.value = key;
+    try {
+      await work();
+    } finally {
+      busyAction.value = null;
+    }
+  }
   bool hasMorePast = true;
 
   String get publicHasherId => box.get(HIVE_HASHER_ID) as String;
@@ -515,6 +536,16 @@ class RunListPageController extends GetxController
   }
 
   Future<void> deleteEvent(String? eventId) async {
+    if (isDeleting.value) return;
+    isDeleting.value = true;
+    try {
+      await _deleteEvent(eventId);
+    } finally {
+      isDeleting.value = false;
+    }
+  }
+
+  Future<void> _deleteEvent(String? eventId) async {
     if (eventId != null) {
       final deviceId = box.get(HIVE_DEVICE_ID) as String;
       final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';

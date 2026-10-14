@@ -5,6 +5,10 @@ import 'package:intl/intl.dart';
 // Newsflash Management Page
 // ---------------------------------------------------------------------------
 
+/// The newsflash whose delete is in flight: its delete button spins, and
+/// every delete is refused until the first returns.
+final RxnString _deletingNewsflashId = RxnString();
+
 class NewsflashManagementPage extends StatelessWidget {
   const NewsflashManagementPage({super.key, this.allKennels = const []});
 
@@ -41,6 +45,8 @@ class NewsflashManagementPage extends StatelessWidget {
         ],
       ),
       body: Obx(() {
+        // Read before any early return so the Obx always tracks it.
+        final String? deletingId = _deletingNewsflashId.value;
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -60,6 +66,8 @@ class NewsflashManagementPage extends StatelessWidget {
             final nf = controller.newsflashes[index];
             return _NewsflashTile(
               newsflash: nf,
+              deleting: deletingId == nf.newsflashId,
+              deleteLocked: deletingId != null,
               onEdit: () => _showForm(context, controller, nf),
               onDelete: () => _confirmDelete(context, controller, nf),
               onReaders: () => _showReaders(context, controller, nf),
@@ -89,6 +97,8 @@ class NewsflashManagementPage extends StatelessWidget {
     final kennelIdState = ValueNotifier<String?>(existing?.kennelId);
     final isUploading = ValueNotifier<bool>(false);
     final formKey = GlobalKey<FormState>();
+    // A second press would pop the page behind the dialog and save twice.
+    var saving = false;
 
     unawaited(Get.dialog<void>(
       Dialog(
@@ -107,7 +117,9 @@ class NewsflashManagementPage extends StatelessWidget {
             kennels: kennels,
             isEditing: existing != null,
             onSave: () async {
+              if (saving || isUploading.value) return;
               if (!formKey.currentState!.validate()) return;
+              saving = true;
               Get.back<void>();
               await controller.saveNewsflash(
                 newsflashId: existing?.newsflashId,
@@ -130,6 +142,17 @@ class NewsflashManagementPage extends StatelessWidget {
   // ---------------------------------------------------------------------------
 
   Future<void> _confirmDelete(BuildContext context,
+      NewsflashManagementController controller, NewsflashAdminModel nf) async {
+    if (_deletingNewsflashId.value != null) return;
+    _deletingNewsflashId.value = nf.newsflashId;
+    try {
+      await _confirmAndDelete(controller, nf);
+    } finally {
+      _deletingNewsflashId.value = null;
+    }
+  }
+
+  Future<void> _confirmAndDelete(
       NewsflashManagementController controller, NewsflashAdminModel nf) async {
     final confirmed = await Get.defaultDialog<bool>(
       title: 'Delete Newsflash',
@@ -181,9 +204,13 @@ class _NewsflashTile extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     required this.onReaders,
+    this.deleting = false,
+    this.deleteLocked = false,
   });
 
   final NewsflashAdminModel newsflash;
+  final bool deleting;
+  final bool deleteLocked;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback onReaders;
@@ -259,10 +286,17 @@ class _NewsflashTile extends StatelessWidget {
                     onPressed: onEdit,
                   ),
                   IconButton(
-                    icon: const Icon(MaterialCommunityIcons.delete_outline,
-                        size: 20, color: Color(0xFFDC2626)),
+                    icon: deleting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Color(0xFFDC2626)),
+                          )
+                        : const Icon(MaterialCommunityIcons.delete_outline,
+                            size: 20, color: Color(0xFFDC2626)),
                     tooltip: 'Delete',
-                    onPressed: onDelete,
+                    onPressed: deleteLocked ? null : onDelete,
                   ),
                 ],
               ],
@@ -478,9 +512,13 @@ class _NewsflashForm extends StatelessWidget {
                 onPressed: () => Get.back<void>(),
               ),
               const SizedBox(width: 8),
-              HcButton.primary(
-                label: isEditing ? 'Save changes' : 'Create',
-                onPressed: onSave,
+              // No save while an image upload is in flight.
+              ValueListenableBuilder<bool>(
+                valueListenable: isUploading,
+                builder: (_, uploading, _) => HcButton.primary(
+                  label: isEditing ? 'Save changes' : 'Create',
+                  onPressed: uploading ? null : onSave,
+                ),
               ),
             ],
           ),

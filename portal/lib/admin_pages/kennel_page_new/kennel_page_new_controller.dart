@@ -267,6 +267,10 @@ class KennelPageFormController extends TabUiController
   /// Whether the "Edit Song" form is currently displayed.
   final RxBool isEditingSong = false.obs;
 
+  /// True while a song add or edit is in flight: spins the Save button and
+  /// refuses a second press until the first returns.
+  final RxBool isSavingSong = false.obs;
+
   /// Text controllers for the new song form.
   final TextEditingController newSongNameController = TextEditingController();
   final TextEditingController newSongTuneOfController = TextEditingController();
@@ -930,6 +934,16 @@ class KennelPageFormController extends TabUiController
 
   /// Saves edits to the selected song via the API and refreshes the list.
   Future<void> saveEditedSong() async {
+    if (isSavingSong.value) return;
+    isSavingSong.value = true;
+    try {
+      await _saveEditedSong();
+    } finally {
+      isSavingSong.value = false;
+    }
+  }
+
+  Future<void> _saveEditedSong() async {
     final songId = selectedSongId.value;
     if (songId.isEmpty) return;
 
@@ -964,6 +978,16 @@ class KennelPageFormController extends TabUiController
 
   /// Saves the new song via the API and refreshes the song list.
   Future<void> saveNewSong() async {
+    if (isSavingSong.value) return;
+    isSavingSong.value = true;
+    try {
+      await _saveNewSong();
+    } finally {
+      isSavingSong.value = false;
+    }
+  }
+
+  Future<void> _saveNewSong() async {
     final songName = newSongNameController.text.trim();
     if (songName.isEmpty) {
       await CoreUtilities.showAlert(

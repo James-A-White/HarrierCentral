@@ -529,6 +529,10 @@ class RunEmailAudienceController extends GetxController {
 
   final Rx<RunEmailAudience?> audience = Rx<RunEmailAudience?>(null);
   final RxBool isLoading = true.obs;
+
+  /// The hasher whose bounce is being cleared: their button spins, and every
+  /// Clear bounce refuses a second press until the first returns.
+  final RxnString clearingHasherId = RxnString();
   final RxString error = ''.obs;
   final RxInt pill = 0.obs;
   final RxString query = ''.obs;
@@ -591,6 +595,16 @@ class RunEmailAudienceController extends GetxController {
   /// parity with the app). Asks first — it is for an address the admin has
   /// checked with the hasher; a fresh bounce marks it again.
   Future<void> clearBounce(RunEmailAudienceEntry e) async {
+    if (clearingHasherId.value != null) return;
+    clearingHasherId.value = e.hasherId;
+    try {
+      await _clearBounce(e);
+    } finally {
+      if (!isClosed) clearingHasherId.value = null;
+    }
+  }
+
+  Future<void> _clearBounce(RunEmailAudienceEntry e) async {
     final bool? go = await Get.dialog<bool>(
       AlertDialog(
         title: const Text('Clear the bounce?', textAlign: TextAlign.center),
@@ -867,7 +881,14 @@ class RunEmailAudienceDialog extends StatelessWidget {
           // A bounced address cannot be moved in, but an admin may clear the
           // bounce once they have checked it (E19.F4.S5).
           : (e.isBouncing && !e.isBlocked)
-              ? HcButton.secondary(label: 'Clear bounce', onPressed: () => c.clearBounce(e))
+              ? Obx(() {
+                  final String? clearing = c.clearingHasherId.value;
+                  return HcButton.secondary(
+                    label: 'Clear bounce',
+                    loading: clearing == e.hasherId,
+                    onPressed: clearing != null ? null : () => c.clearBounce(e),
+                  );
+                })
               : null,
     );
   }

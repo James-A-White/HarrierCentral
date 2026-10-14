@@ -303,16 +303,24 @@ class _ProductGroupTab extends StatelessWidget {
                   onPressed: () => _openForm(context, p),
                 ),
                 const SizedBox(width: 8),
-                if (p.isActive)
-                  HcButton.secondary(
-                    label: 'Take off sale',
-                    onPressed: () => unawaited(_confirmOffSale(p)),
-                  )
-                else
-                  HcButton.secondary(
-                    label: 'Put on sale',
-                    onPressed: () => unawaited(controller.setOnSale(p, true)),
-                  ),
+                Obx(() {
+                  final String? savingId = controller.savingProductId.value;
+                  return p.isActive
+                      ? HcButton.secondary(
+                          label: 'Take off sale',
+                          loading: savingId == p.productId,
+                          onPressed: savingId != null
+                              ? null
+                              : () => unawaited(_confirmOffSale(p)),
+                        )
+                      : HcButton.secondary(
+                          label: 'Put on sale',
+                          loading: savingId == p.productId,
+                          onPressed: savingId != null
+                              ? null
+                              : () => unawaited(controller.setOnSale(p, true)),
+                        );
+                }),
               ],
             ),
           ],

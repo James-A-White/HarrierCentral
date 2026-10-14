@@ -1108,6 +1108,8 @@ class KennelHashersController extends TabUiController
   /// Central": the hashers just imported, or everyone in the kennel who has
   /// never signed in. Shows the counts first; sends only on confirm.
   Future<void> emailInviteCodes() async {
+    // A send loop already running refuses a second one.
+    if (isMajorUpdate) return;
     String scope = lastImportedPublicHasherIds.isNotEmpty ? 'imported' : 'neverLoggedIn';
     final String? chosen = await Get.dialog<String>(
       StatefulBuilder(
@@ -1898,14 +1900,26 @@ class KennelHashersController extends TabUiController
     stateManager = event.stateManager;
   }
 
+  /// Refuses a second press while a save is in flight: busy is set before
+  /// the first await and cleared in the finally.
   Future<void> saveBulkHashers() async {
+    if (isMajorUpdate) return;
+    isMajorUpdate = true;
+    update();
+    try {
+      await _saveBulkHashers();
+    } finally {
+      isMajorUpdate = false;
+      update();
+    }
+  }
+
+  Future<void> _saveBulkHashers() async {
     stateManager!.setCurrentCell(rows[98].cells['firstName'], 0);
     stateManager!.setCurrentCell(rows[99].cells['firstName'], 0);
     stateManager!.gridFocusNode.unfocus(
       disposition: UnfocusDisposition.previouslyFocusedChild,
     );
-    isMajorUpdate = true;
-    update();
 
     await Future<void>.delayed(const Duration(seconds: 2));
 
@@ -2050,8 +2064,6 @@ class KennelHashersController extends TabUiController
     }
     // New members were added → other views must refetch to include them.
     _hashersFresh = false;
-    isMajorUpdate = false;
-    update();
   }
 }
 
@@ -2257,17 +2269,12 @@ class _KennelHashersContent extends StatelessWidget {
                       HcButton.secondary(
                         label: 'Email invite codes',
                         icon: Icons.forward_to_inbox,
-                        onPressed: c.isReadingFile ? null : c.emailInviteCodes,
+                        onPressed: (c.isReadingFile || c.isMajorUpdate) ? null : c.emailInviteCodes,
                       ),
-                      ElevatedButton(
-                        child: const Text(
-                          'Save',
-                          style: TextStyle(color: Colors.white),
-                          textAlign: TextAlign.center,
-                        ),
-                        onPressed: () async {
-                          await c.saveBulkHashers();
-                        },
+                      HcButton.primary(
+                        label: 'Save',
+                        loading: c.isMajorUpdate,
+                        onPressed: c.isReadingFile ? null : c.saveBulkHashers,
                       ),
                     ],
                   ),
