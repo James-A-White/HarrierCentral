@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_addSong",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Creates a new song record in HC.Song and immediately links it to the requesting kennel via HC.KennelSongMap. Both inserts are wrapped in a single transaction. The authenticated hasher is recorded as AddedBy_UserId; the resolved internal kennelId as AddedBy_KennelId. ImageUrl, AudioUrl, AutoAddToKennel, and Rank are not set at creation time (ImageUrl/AudioUrl = NULL, AutoAddToKennel = 0, Rank = 0). Caller must hold authIsSuperAdmin (0x40000000) or authCanManageSongs (0x00000040) for the requesting kennel. Service accounts (callerType 1 or 2) are explicitly rejected. Auth: HC6.ValidatePortalAuth with @publicKennelId as callerParamString. This is a new SP with no HC5 equivalent.",
   "parameters": [
     {
@@ -80,6 +80,13 @@
       "nullable": true,
       "mapsToColumn": "Song.BawdyRating",
       "description": "Required. Must be exactly 0, 1, 2, or 3. Validated before insert; returns error if null or out of range."
+    },
+    {
+      "name": "newSongId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Song.id",
+      "description": "The new song's id, minted by the portal ONCE per add form and resent on every attempt. Unknown => inserted under it; already added by this kennel => a repeat: success (resultCode 1, newSongId = this id), nothing new except a missing KennelSongMap row; added by another kennel => error envelope. Default NULL = NEWID()."
     }
   ],
   "rowsets": [
@@ -131,7 +138,8 @@
   "sideEffects": [
     "INSERT into HC.Song with the supplied fields; AddedBy_KennelId = resolved @kennelId, AddedBy_UserId = authenticated @hasherId, ImageUrl = NULL, AudioUrl = NULL, AutoAddToKennel = 0, Rank = 0, Removed = 0",
     "INSERT into HC.KennelSongMap linking the new song to the requesting kennel (KennelId = resolved @kennelId, Removed = 0)",
-    "HC.Song / HC.KennelSongMap updatedAt triggers fire, so the song syncs to the kennel's phones"
+    "HC.Song / HC.KennelSongMap updatedAt triggers fire, so the song syncs to the kennel's phones",
+    "A repeated @newSongId inserts no second song; on an unhandled error: ROLLBACK then INSERT HC.ErrorLog."
   ],
   "codeSmells": [
     {
@@ -164,5 +172,8 @@
     "Never rename a parameter",
     "Never change a parameter type",
     "Never change a sentinel value meaning"
+  ],
+  "changes": [
+    "1.2.0 (2026-10-14): optional @newSongId (idempotency audit P6; Idempotent writes: creates a row, client-id). Checked WITH (UPDLOCK, HOLDLOCK) inside the transaction: unknown => the song is inserted under it; already added by this kennel => the same SuccessResult row, no second song, and the KennelSongMap row inserted only if the kennel has none for it; added by another kennel => error envelope. NULL = NEWID() as before. The CATCH now logs to HC.ErrorLog (rollback first)."
   ]
 }

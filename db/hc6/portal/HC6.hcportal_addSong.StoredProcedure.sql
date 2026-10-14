@@ -11,11 +11,15 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_addSong]
     @actions        NVARCHAR(MAX)    = NULL,
     @variants       NVARCHAR(MAX)    = NULL,
     @tags           NVARCHAR(MAX)    = NULL,
-    @bawdyRating    SMALLINT         = NULL
+    @bawdyRating    SMALLINT         = NULL,
+    -- 2026-10-14 (idempotency audit P6): the new song's id, minted by the
+    -- portal ONCE per add form. NULL = the old behaviour (NEWID()).
+    @newSongId      UNIQUEIDENTIFIER = NULL
 
 AS
 -- =====================================================================
 -- Procedure: HC6.hcportal_addSong
+-- Idempotency: client-id — @newSongId minted once per add form; a repeat returns it, nothing inserted.
 -- Description: Creates a new song record in HC.Song and immediately
 --              links it to the requesting kennel via HC.KennelSongMap.
 --              Both inserts are wrapped in a single transaction.
@@ -31,6 +35,15 @@ AS
 --             @variants      (optional; NULL if blank)
 --             @tags          (optional; NULL if blank)
 --             @bawdyRating   (required; must be 0, 1, 2 or 3)
+--             @newSongId     (optional; the client-minted id, see below)
+-- Idempotent writes ("creates a row", 2026-10-14, idempotency audit P6):
+--   the portal mints @newSongId once per add form and resends it on every
+--   attempt. It is checked WITH (UPDLOCK, HOLDLOCK) inside the transaction:
+--   unknown => inserted under it; already added by this kennel => a repeat
+--   after a lost reply: the same success row, no second song, and the
+--   kennel's KennelSongMap row is created only if it has none at all (a row
+--   the admin has since switched off is left off); added by another
+--   kennel => refused. The CATCH now logs to HC.ErrorLog.
 -- Returns: SuccessResult rowset (resultCode, result, newSongId) or
 --          error envelope (Success, ErrorMessage)
 -- Author: Harrier Central
@@ -118,9 +131,41 @@ BEGIN TRY
     END
 
     -- Insert song and link to kennel in a single transaction
-    DECLARE @newSongId UNIQUEIDENTIFIER = NEWID();
+    DECLARE @songId UNIQUEIDENTIFIER = COALESCE(@newSongId, NEWID());
 
     BEGIN TRANSACTION;
+
+    IF (@newSongId IS NOT NULL)
+    BEGIN
+        DECLARE @found SMALLINT = 0;
+        DECLARE @existingKennelId UNIQUEIDENTIFIER;
+        SELECT @found = 1, @existingKennelId = s.AddedBy_KennelId
+        FROM HC.Song s WITH (UPDLOCK, HOLDLOCK)
+        WHERE s.id = @songId;
+
+        IF (@found = 1)
+        BEGIN
+            IF (@existingKennelId IS NULL OR @existingKennelId <> @kennelId)
+            BEGIN
+                ROLLBACK TRANSACTION;
+                SELECT 0 AS Success, 'That song id is already in use' AS ErrorMessage;
+                RETURN;
+            END
+
+            -- A repeat: the song is there. Its kennel link exists once.
+            IF NOT EXISTS (SELECT 1 FROM HC.KennelSongMap ksm WITH (UPDLOCK, HOLDLOCK)
+                           WHERE ksm.KennelId = @kennelId AND ksm.SongId = @songId)
+                INSERT INTO HC.KennelSongMap (id, KennelId, SongId, Removed)
+                VALUES (NEWID(), @kennelId, @songId, 0);
+
+            COMMIT TRANSACTION;
+            SELECT
+                CAST(1 AS INT)  AS resultCode,
+                'Success'       AS result,
+                @songId         AS newSongId;
+            RETURN;
+        END
+    END
 
     INSERT INTO HC.Song (
         id,
@@ -141,7 +186,7 @@ BEGIN TRY
         Removed
     )
     VALUES (
-        @newSongId,
+        @songId,
         LTRIM(RTRIM(@songName)),
         CASE WHEN LEN(COALESCE(@tuneOf, N'')) = 0 THEN NULL ELSE LTRIM(RTRIM(@tuneOf)) END,
         @bawdyRating,
@@ -161,7 +206,7 @@ BEGIN TRY
 
     -- Link the new song to the kennel that created it
     INSERT INTO HC.KennelSongMap (id, KennelId, SongId, Removed)
-    VALUES (NEWID(), @kennelId, @newSongId, 0);
+    VALUES (NEWID(), @kennelId, @songId, 0);
 
     COMMIT TRANSACTION;
 
@@ -169,10 +214,15 @@ BEGIN TRY
     SELECT
         CAST(1 AS INT)  AS resultCode,
         'Success'       AS result,
-        @newSongId      AS newSongId
+        @songId         AS newSongId
 
 END TRY
 BEGIN CATCH
+    -- Roll back FIRST, then log: a log row written inside the transaction
+    -- would be erased by the rollback.
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (NEWID(), '<unknown>', 'Unhandled error in hcportal_addSong',
+            ERROR_MESSAGE(), OBJECT_NAME(@@PROCID), @hasherId);
     SELECT 0 AS Success, ERROR_MESSAGE() AS ErrorMessage;
 END CATCH
