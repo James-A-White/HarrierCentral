@@ -17,6 +17,7 @@ AS
 -- Parameters:  @deviceId / @accessToken - the browser's device credentials
 -- Returns:     Rowset 0: envelope. Rowset 1: runs, chronological, IsPast
 --              by the 6-hour rule.
+-- Changes: 2026-10-14 — PackOffMinutes (E3.F1.S6), effective minutes after the gather.
 -- Author:      Harrier Central
 -- Created:     2026-09-16
 -- HC5 Source:  none
@@ -59,6 +60,8 @@ BEGIN TRY
         e.EventNumber,
         e.EventName,
         CAST(e.EventStartDatetime AS datetime2(7))                      AS EventStartDatetime,
+        -- Pack-off (E3.F1.S6): minutes after the gather, run else kennel; NULL = at the gather.
+        COALESCE(e.PackOffMinutes, (SELECT kp.PackOffMinutes FROM HC.Kennel kp WHERE kp.id = e.KennelId)) AS PackOffMinutes,
         CAST(e.EventEndDatetime   AS datetime2(7))                      AS EventEndDatetime,
         e.EventStartDatetimeGmt,
         COALESCE(tzmap.IANATimeZone_001, tzmap.IANATimeZone_any)        AS KennelIANATimezone,
