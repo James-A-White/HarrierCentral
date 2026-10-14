@@ -33,6 +33,17 @@ that **creates** something must also be safe to arrive twice.
 
 ## Real risks — a repeat creates a duplicate (most harmful first)
 
+**All eight fixed on dev 2026-10-14, not yet deployed** (SPs, API +106, app,
+portal): receipts `3e765cd3`/`9ce35dac`, run email `19c6a37d`/`f75b610b`/
+`3d7524da`, help pushes `dd2ba8ba`, share song `8d27fce0`/`4f86a51c`,
+membership `8ce8c993`/`4ebae57e`, down downs `a5a2a941`/`30a931ce`,
+haberdashery `bd1b9d00`, snooze `9d87ed11`. Where a fix differs from the
+proposal: the run-email send id lives in the log row's `Data` JSON (no
+schema change) and the sends of one run queue on the run's `HC.Event` row;
+share song treats the same person, run and song within 60 s as a repeat
+(no new parameter); the receipt check is also scoped to the run, closing an
+edit-another-run's-receipt hole.
+
 | # | Feature | Trigger | SP | What duplicates | Fix |
 |---|---|---|---|---|---|
 | 1 | **New expense receipt** (money) | `pages/run_admin/receipt_detail_page.dart:457`; id sent as `GUID_EMPTY` (~:153); `_isLoading` set only after the blob upload (~:170) | `hcapp_addEditReceipt` — `GUID_EMPTY` → NULL (:76), then `NEWID()` (:181); default retries | A second `HC.Receipt` row, so a second reimbursement; each extra tap re-uploads the image | Mint the receipt id once per page and send it (the SP already treats an existing id as an edit); `WITH (UPDLOCK, HOLDLOCK)` on its existence check (~:161); set `_isLoading` before the upload and return early if set |
