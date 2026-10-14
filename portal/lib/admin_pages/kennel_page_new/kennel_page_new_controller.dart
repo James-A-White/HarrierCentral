@@ -650,6 +650,17 @@ class KennelPageFormController extends TabUiController
 
   @override
   Future<void> save(bool showDialog) async {
+    // "Google Calendar" needs a Google Calendar link (E3.F6.S5): refused here
+    // with the reason, and by hcportal_editKennel as the backstop. Nothing is
+    // saved meanwhile — saving the rest and marking the form clean would drop
+    // the run-source choice silently. Auto-save just waits.
+    if ((editedData.value.inboundIntegrationId ?? 0) == kGoogleCalendarIntegration &&
+        !isGoogleCalendarLink(editedData.value.runsPageUrl)) {
+      if (showDialog) {
+        await CoreUtilities.showAlert('Not a Google Calendar link', kGoogleCalendarLinkHelp, 'OK');
+      }
+      return;
+    }
     final deviceId = box.get(HIVE_DEVICE_ID) as String;
     final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
     final accessToken = Utilities.generateToken(

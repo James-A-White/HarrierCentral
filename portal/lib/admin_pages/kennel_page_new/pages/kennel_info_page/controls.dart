@@ -267,6 +267,8 @@ extension KennelInfoControlsExtension on KennelPageFormController {
             '— run number, date, time, hares, start and On On. Runs you already '
             'have in Harrier Central are never touched, and anything you change '
             'on an imported run stays changed.\n\n'
+            'A Google Calendar works too: choose "Google Calendar" as where runs '
+            'come from and paste the calendar\'s public link here.\n\n'
             'Leave it empty if you post your runs in Harrier Central.',
       ),
       editedFieldValue: editedData.value.runsPageUrl,

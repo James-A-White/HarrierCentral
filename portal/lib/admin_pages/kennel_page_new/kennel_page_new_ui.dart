@@ -420,6 +420,7 @@ class KennelInfoTabContent extends StatelessWidget {
         // is the switch that turns it on (2026-10-05).
         HelperWidgets().categoryLabelWidget('Inbound Integration'),
         _inboundIntegrationDropdown(),
+        _googleCalendarHint(),
         const SizedBox(height: 12),
         _buildTextField(KennelInfoField.runsPageUrl),
         _runsPageStatus(),
@@ -499,7 +500,7 @@ class KennelInfoTabContent extends StatelessWidget {
     const Map<int, String> sources = <int, String>{
       0: 'None — runs are entered in Harrier Central',
       6: 'Runs page (AI) — read the address below 4× a day',
-      2: 'Google Calendar',
+      2: 'Google Calendar — read your public calendar link below 4× a day',
       5: 'Berlin website',
       3: 'San Diego website',
       1: 'Facebook group (retired)',
@@ -533,6 +534,27 @@ class KennelInfoTabContent extends StatelessWidget {
     );
   });
 
+  /// With "Google Calendar" chosen, how to get the right link — and, while
+  /// the address is not one, that Save will refuse it (E3.F6.S5).
+  Widget _googleCalendarHint() => Obx(() {
+    final int source = controller.editedData.value.inboundIntegrationId ?? 0;
+    final String url = (controller.editedData.value.runsPageUrl ?? '').trim();
+    if (source != kGoogleCalendarIntegration) return const SizedBox.shrink();
+    final bool ok = isGoogleCalendarLink(url);
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: SizedBox(
+        width: 460,
+        child: Text(
+          ok
+              ? 'Google Calendar link recognised. Runs are read from the calendar four times a day.'
+              : kGoogleCalendarLinkHelp,
+          style: TextStyle(fontSize: 12, color: ok ? Colors.green.shade800 : Colors.red.shade700),
+        ),
+      ),
+    );
+  });
+
   /// "Test this page": reads the address in the field now and shows what it
   /// finds, importing only if asked (runs_page_test.dart).
   Widget _runsPageTestButton() => Obx(() {
@@ -557,11 +579,12 @@ class KennelInfoTabContent extends StatelessWidget {
   Widget _runsPageStatus() {
     final String? url = controller.originalData.runsPageUrl;
     final String? status = controller.originalData.runsPageStatus;
-    final bool on = (controller.originalData.inboundIntegrationId ?? 0) == 6;
+    final int source = controller.originalData.inboundIntegrationId ?? 0;
+    final bool on = source == 6 || source == kGoogleCalendarIntegration;
     final String text = (url == null || url.isEmpty)
         ? 'Not importing: no runs page set.'
         : !on
-        ? 'Not importing: set "Runs come from" to Runs page (AI) and save. Test this page works either way.'
+        ? 'Not importing: set "Runs come from" to Runs page (AI) or Google Calendar and save. Test this page works either way.'
         : (status == null || status.isEmpty)
         ? 'Saved — the first read happens within 15 minutes.'
         : 'Last read: $status';
