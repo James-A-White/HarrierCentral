@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 /// A kennel's social and chat links (E12.F4.S4, James 2026-10-10): one
 /// entry of HC.Kennel.SocialLinksJson / the request's SocialLinksJson.
@@ -42,6 +43,7 @@ class SocialLink {
 
   /// What is wrong with this link, or null — the same rules the SP applies.
   String? get problem {
+    if (platform.isEmpty) return 'Choose a platform';
     final String u = (url ?? '').trim();
     if (u.isEmpty) {
       if (platform == 'wechat' && ((handle ?? '').trim().isNotEmpty || qrImageUrl != null)) return null;
@@ -99,16 +101,49 @@ String? socialPlatformOf(String host) {
   return null;
 }
 
+/// The platform's brand logo (Font Awesome 5 Brands, as the app uses);
+/// Material stand-ins where FA5 has none. '' = no platform chosen yet.
 IconData socialPlatformIcon(String platform) => switch (platform) {
-  'facebook' => Icons.facebook,
-  'instagram' => Icons.camera_alt_outlined,
-  'whatsapp' || 'signal' || 'telegram' || 'wechat' || 'line' || 'kakaotalk' || 'zalo' || 'viber' => Icons.chat_outlined,
-  'discord' => Icons.forum_outlined,
-  'strava' => Icons.directions_run,
-  'meetup' => Icons.groups_outlined,
-  'youtube' || 'tiktok' => Icons.play_circle_outline,
+  'facebook' => FontAwesome5Brands.facebook,
+  'instagram' => FontAwesome5Brands.instagram,
+  'whatsapp' => FontAwesome5Brands.whatsapp,
+  'telegram' => FontAwesome5Brands.telegram,
+  'wechat' => FontAwesome5Brands.weixin,
+  'line' => FontAwesome5Brands.line,
+  'viber' => FontAwesome5Brands.viber,
+  'discord' => FontAwesome5Brands.discord,
+  'strava' => FontAwesome5Brands.strava,
+  'meetup' => FontAwesome5Brands.meetup,
+  'x' => FontAwesome5Brands.twitter,
+  'tiktok' => FontAwesome5Brands.tiktok,
+  'youtube' => FontAwesome5Brands.youtube,
+  'reddit' => FontAwesome5Brands.reddit,
+  'signal' || 'kakaotalk' || 'zalo' => Icons.chat_outlined,
+  'threads' || 'bluesky' => Icons.alternate_email,
   'mailinglist' => Icons.mail_outline,
   _ => Icons.link,
+};
+
+/// The platform's brand colour (the same values as the app).
+Color socialPlatformColor(String platform) => switch (platform) {
+  'facebook' => const Color(0xFF1877F2),
+  'instagram' => const Color(0xFFE4405F),
+  'whatsapp' => const Color(0xFF25D366),
+  'signal' => const Color(0xFF3A76F0),
+  'telegram' => const Color(0xFF26A5E4),
+  'wechat' => const Color(0xFF07C160),
+  'line' => const Color(0xFF06C755),
+  'kakaotalk' => const Color(0xFF3C1E1E),
+  'zalo' => const Color(0xFF0068FF),
+  'viber' => const Color(0xFF7360F2),
+  'discord' => const Color(0xFF5865F2),
+  'strava' => const Color(0xFFFC4C02),
+  'meetup' => const Color(0xFFED1C40),
+  'x' || 'tiktok' || 'threads' => const Color(0xFF000000),
+  'youtube' => const Color(0xFFFF0000),
+  'bluesky' => const Color(0xFF1185FE),
+  'reddit' => const Color(0xFFFF4500),
+  _ => const Color(0xFF455A64),
 };
 
 List<SocialLink> socialLinksFromJson(String? json) {

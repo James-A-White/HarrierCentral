@@ -103,7 +103,8 @@ class _SocialLinkRow extends StatelessWidget {
     final String? problem = link.problem;
     final bool isWeChat = link.platform == 'wechat';
     final bool isOther = link.platform == 'other';
-    final bool untouched = (link.url ?? link.handle ?? '').isEmpty && link.qrImageUrl == null;
+    final bool untouched = link.platform.isEmpty ||
+        ((link.url ?? link.handle ?? '').isEmpty && link.qrImageUrl == null);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -127,14 +128,15 @@ class _SocialLinkRow extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(4, 10, 8, 0),
-                child: Icon(socialPlatformIcon(link.platform), size: 22, color: Colors.black54),
+                padding: const EdgeInsets.fromLTRB(4, 0, 8, 0),
+                child: _PlatformLogoSquare(platform: link.platform),
               ),
               SizedBox(
                 width: 160,
                 child: DropdownButtonFormField<String>(
                   key: ValueKey('social-platform-$index-${link.platform}'),
-                  initialValue: link.platform,
+                  initialValue: link.platform.isEmpty ? null : link.platform,
+                  hint: const Text('Choose…'),
                   isExpanded: true,
                   decoration: const InputDecoration(
                     labelText: 'Platform',
@@ -233,6 +235,35 @@ class _SocialLinkRow extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// The square to the left of a row: the platform's logo in its brand colour,
+/// or an empty dashed-looking placeholder until a platform is chosen.
+class _PlatformLogoSquare extends StatelessWidget {
+  const _PlatformLogoSquare({required this.platform});
+
+  final String platform;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool chosen = platform.isNotEmpty;
+    return Tooltip(
+      message: chosen ? socialPlatformLabel(platform) : 'Choose a platform',
+      child: Container(
+        width: 40,
+        height: 40,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: chosen ? Colors.white : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: chosen ? Colors.grey.shade300 : Colors.grey.shade400),
+        ),
+        child: chosen
+            ? Icon(socialPlatformIcon(platform), size: 24, color: socialPlatformColor(platform))
+            : Icon(Icons.add_link, size: 20, color: Colors.grey.shade500),
       ),
     );
   }

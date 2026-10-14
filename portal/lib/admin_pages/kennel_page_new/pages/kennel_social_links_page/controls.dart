@@ -46,7 +46,9 @@ extension KennelSocialLinksControlsExtension on KennelPageFormController {
     if (_socialLinks.length >= kMaxSocialLinks) return;
     _socialLinkFields.add(TextEditingController());
     _socialLabelFields.add(TextEditingController());
-    _socialLinks.add(SocialLink(platform: 'facebook'));
+    // No platform yet: the row's logo square shows a placeholder until one
+    // is chosen.
+    _socialLinks.add(SocialLink(platform: ''));
     // Nothing to flush: an empty row is not valid, so the model is unchanged.
   }
 
