@@ -799,6 +799,7 @@ Hashers care enormously about their run count. Getting it wrong is the most visi
 
 **⚠ Known gap:** client session rows written by apps before 3.0.13 (TestFlight and Play internal 2026-09-09, not yet in the stores) carry the device's *current* build, which can be one release too new. Server-side records are exact from 2026-09-09.
 | `E10.F4.S7` | As a **Platform Admin**, I want a device health view when I open a user from the dashboard so that I can see that user's memory, CPU, network, GPS and battery per session without reading raw logs. | `Shipped` |
+| `E10.F4.S8` | As a **Platform Admin**, I want the Usage Data dashboard to open in a few seconds, every time, so that the page I check a release on does not fail when I need it. `hcportal_getUsageData` timed out once (2026-10-13 23:04 UTC, *Execution Timeout Expired*, the page did not load). Measured on a normal open 2026-10-14: 10.5 s, of which 10.1 s is the activity grid (Result Set 3), at 2 s CPU and ~157,000 logical reads, so about 8 s is spent waiting on the S1 database's I/O. The grid grew a row at a time (Email, First Sign-in, run links) and each row is another range count over a large table (`HC.ClientErrorLog`, `HC.LaunchAndLogin`, `HC.HasherEventMap`, `HC.PushLog`, `LOG.GeneralLog`). Next: per-table I/O for the grid, one branch at a time (an ad-hoc run of the whole statement hung), then an index or a narrower range for the worst; the cached plan suggests indexes on `HC.Kennel`, `HC.IntegrationJob` and `HC.Event`, which may belong to other statements. Fingerprint `api hcportal_getUsageData … Execution Timeout Expired` in `tools/known_errors.tsv`. | `Backlog` |
 
 ---
 
@@ -1059,6 +1060,7 @@ One developer, nights and weekends, shipping to two app stores and a live produc
 | `E15.G3.R2` | Every shipped component carries a version bump and a changelog entry. | The coordinated release procedure, per component. |
 | `E15.G3.R3` | A version already live in a store closes its train; the next release takes a new name. | The version-naming rule. |
 | `E15.G3.R4` | iOS and Android ship from the same commit. | The dual-store release flow. |
+| `E15.G3.R5` | The iOS app installs on every iOS version Harrier Central chooses to support; the minimum is a decision, never a default Xcode wrote. | **Nothing yet.** ⚠ Known gap (found 2026-10-14): the Runner target's `IPHONEOS_DEPLOYMENT_TARGET` is **26.0** (Debug and Release in `project.pbxproj`, there since the app joined this repo, `43e8a479`, 2026-05-09), while the Podfile and the share extension say 15.0. Every 3.x build therefore requires iOS 26: in the 14 days to 2026-10-14 no iPhone below iOS 26 ran a 3.x build, and the 15 iPhone users on iOS 18 are stuck on 2.1.2 (14) or 2.0.0 (1, Nennehkorraw, Sierra H4) — the store offers them nothing newer. Before lowering it (likely to 15.0, James's call): check the native code (watch bridge, PushKit, MetricKit, share extension) for iOS 26-only API without an availability guard, and build and boot on an iOS 18 simulator. |
 
 ### E15.G4 · Verification
 
