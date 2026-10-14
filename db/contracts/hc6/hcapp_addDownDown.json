@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_addDownDown",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Records a DownDown charge against one or more people at a run. Anyone authenticated may submit, checked in or not. Targets are registered hashers (@hasherIds, pipe-delimited UUIDs), people not in the app (@externalNames, a JSON array of names, stored on HC.DownDowns.ExternalNames), or a mix — at least one valid target is required, together with @kennelId, @eventId and a non-blank @chargeText (else 1234 / errorType 2). Where COALESCE(Event.CanEditRunAttendence, Kennel.CanEditRunAttendence) = 1 the caller is checked in first via HC6.nonApi_ensureTrackAttendance (At Hash / RSVP Yes, run counts recomputed, an admin's removal left alone); otherwise attendance is untouched (1.1.0, James 2026-09-12; 1.0.0 refused anyone below At Hash). Creates one HC.DownDowns row and one HC.DownDownHashers row per valid hasher UUID and returns the new id as rowset 0 { downDownId }. Auth: HC6.ValidateAppAuth (spNumber 55, standard token). No permission gate. Blank test is LEN()-based so an emoji-only charge survives the collation. New feature — no HC5 equivalent.",
   "parameters": [
     {
@@ -73,6 +73,13 @@
       "nullable": true,
       "mapsToColumn": "DownDowns.ExternalNames",
       "description": "Optional JSON array of names for people not in the app, e.g. [\"Dizzy Lizzy\",\"Two-Buck Chuck\"]. Counted only when ISJSON = 1 and the entry is non-blank; stored verbatim on the DownDowns row when at least one such name exists, otherwise NULL. Default NULL."
+    },
+    {
+      "name": "downDownId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "DownDowns.id",
+      "description": "The charge's id, minted once per Add page by the app (E14.G2.R5, 2026-10-14). A charge with this id on this run already = a repeat: it is returned unchanged, nothing inserted. NULL = the SP mints one (older apps)."
     }
   ],
   "rowsets": [

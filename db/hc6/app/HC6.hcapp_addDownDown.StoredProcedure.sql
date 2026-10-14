@@ -9,7 +9,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_addDownDown]
     @songChoice      NVARCHAR(500) = NULL,
     @songId          UNIQUEIDENTIFIER = NULL,
     @chargePhotoUrl  NVARCHAR(MAX) = NULL,
-    @externalNames   NVARCHAR(MAX) = NULL
+    @externalNames   NVARCHAR(MAX) = NULL,
+    @downDownId      UNIQUEIDENTIFIER = NULL
 
 AS
 -- =====================================================================
@@ -34,6 +35,8 @@ AS
 --   @chargeText     - Description of the charge
 --   @chargePhotoUrl - Optional blob URL of an attached charge photo
 --   @externalNames  - Optional JSON array of names for people not in the app
+--   @downDownId     - Optional: the charge's id, minted once per Add page
+--                     (idempotent create, E14.G2.R5); a repeat returns it.
 -- Returns:
 --   On success (rowset 0): { downDownId }
 --   On error  (rowset 0): { success=0, errorCode, errorType }
@@ -141,7 +144,20 @@ END
 BEGIN TRY
     BEGIN TRANSACTION;
 
-    DECLARE @newId UNIQUEIDENTIFIER = NEWID();
+    -- Idempotent create (E14.G2.R5, 2026-10-14): the app mints the charge's
+    -- id once per Add page and sends it on every attempt. A repeat after a
+    -- lost reply finds the charge the first attempt made and returns it —
+    -- never a second charge. Locked so two copies cannot both insert. NULL
+    -- (an older app) keeps the old behaviour.
+    DECLARE @newId UNIQUEIDENTIFIER = COALESCE(@downDownId, NEWID());
+    IF (@downDownId IS NOT NULL AND EXISTS (
+            SELECT 1 FROM HC.DownDowns WITH (UPDLOCK, HOLDLOCK)
+            WHERE id = @downDownId AND EventId = @eventId))
+    BEGIN
+        COMMIT TRANSACTION;
+        SELECT @newId AS downDownId;
+        RETURN;
+    END
 
     -- Only persist external names when there is at least one; store NULL otherwise.
     DECLARE @externalNamesToStore NVARCHAR(MAX) =
