@@ -140,6 +140,11 @@ class RunEditPageController extends TabUiController
   /// the internal one: a browser never holds internal ids (/hc-primary-keys).
   final String _newRunPublicId = const Uuid().v4();
 
+  /// The start last found clear of other runs, or confirmed by the editor
+  /// (E3.F1.S8), so each start value is checked once — not on every
+  /// auto-save tick.
+  DateTime? _startCleared;
+
   // ---------------------------------------------------------------------------
   // State - Integration Flags
   // ---------------------------------------------------------------------------
@@ -876,6 +881,15 @@ class RunEditPageController extends TabUiController
       _aiEditConfirmed = true;
     }
 
+    // Another run of this kennel at the same local date and time? Weekend
+    // events have several runs at once, so this asks; it never refuses.
+    // Auto-save never saves past an unanswered question: it waits, and the
+    // next manual Save asks.
+    if (!await _startClearOrConfirmed(showDialog)) {
+      autoSaveCounter.value = 0;
+      return;
+    }
+
     autoSaveCounter.value = -1; // Show "Saving..."
 
     try {
@@ -1102,6 +1116,98 @@ class RunEditPageController extends TabUiController
 
   /// "This run is kept in step with the kennel's website by AI…" — true to
   /// save anyway.
+  /// True to go ahead and save. Checks only a new run's start or a changed
+  /// one (`hcportal_getRunsAtStart`, the app's rule — E3.F1.S8). When the
+  /// check cannot run, the save goes ahead: it is advice, not a gate.
+  Future<bool> _startClearOrConfirmed(bool showDialog) async {
+    final DateTime start = editedData.value.eventStartDatetime;
+    if (start == _startCleared) return true;
+    if (!isAddMode && start == originalData.eventStartDatetime) return true;
+
+    final List<Map<String, dynamic>>? runs = await _runsAtStart(start);
+    if (runs == null) return true; // could not check: save without asking
+    if (runs.isEmpty) {
+      _startCleared = start;
+      return true;
+    }
+    if (!showDialog) return false;
+
+    final String names = runs
+        .take(5)
+        .map((Map<String, dynamic> r) {
+          final String name = '${r['eventName'] ?? ''}'.trim();
+          final int number = (r['eventNumber'] as num?)?.toInt() ?? 0;
+          return '• ${name.isEmpty ? 'A run' : name}'
+              '${number > 0 ? ' (#$number)' : ''}';
+        })
+        .join('\n');
+    final String more =
+        runs.length > 5 ? '\n…and ${runs.length - 5} more' : '';
+    final bool? ok = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('Another run at this time?'),
+        content: Text(
+          '${kennelData.kennelShortName} already has '
+          '${runs.length == 1 ? 'a run' : '${runs.length} runs'} starting at '
+          '${DateFormat('EEE d MMM yyyy, h:mm a').format(start)}:\n\n'
+          '$names$more\n\n'
+          'Weekend events often have several runs at once. Save this one too?',
+        ),
+        actions: [
+          HcButton.secondary(
+            label: 'Cancel',
+            onPressed: () => Get.back<bool>(result: false),
+          ),
+          HcButton.primary(
+            label: 'Save anyway',
+            onPressed: () => Get.back<bool>(result: true),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return false;
+    _startCleared = start;
+    return true;
+  }
+
+  /// The kennel's other runs at [start]'s local date and time, or null when
+  /// the check could not run. [start] goes in exactly as the save sends it.
+  Future<List<Map<String, dynamic>>?> _runsAtStart(DateTime start) async {
+    try {
+      final String deviceId = box.get(HIVE_DEVICE_ID) as String;
+      final String deviceSecret =
+          (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
+      final String publicKennelId = normalizeUuid(
+        originalData.publicKennelId.isNotEmpty
+            ? originalData.publicKennelId
+            : kennelData.publicKennelId,
+      );
+      final String publicEventId = isAddMode
+          ? _newRunPublicId
+          : normalizeUuid(originalData.publicEventId ?? '');
+      final ApiResult result = await ServiceCommon.sendHttpPostToHC6Api(
+        <String, dynamic>{
+          'queryType': 'getRunsAtStart',
+          'deviceId': deviceId,
+          'accessToken': Utilities.generateToken(
+            deviceId,
+            'hcportal_getRunsAtStart',
+            paramString: deviceSecret,
+          ),
+          'publicKennelId': publicKennelId,
+          if (publicEventId.length > 10) 'publicEventId': publicEventId,
+          'eventStartDatetime': start.toIso8601String(),
+        },
+      );
+      if (result is! ApiSuccess) return null;
+      final List<dynamic> sets = jsonDecode(result.body) as List<dynamic>;
+      if (sets.length < 2) return <Map<String, dynamic>>[];
+      return (sets[1] as List<dynamic>).whereType<Map<String, dynamic>>().toList();
+    } on Exception {
+      return null;
+    }
+  }
+
   Future<bool> _confirmAiEdit() async {
     final bool? ok = await Get.dialog<bool>(
       AlertDialog(

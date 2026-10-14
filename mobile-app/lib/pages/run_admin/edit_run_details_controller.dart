@@ -258,6 +258,9 @@ class EditRunDetailsController extends GetxController
     eventDatetimeController.text = DateFormat(
       'E, d MMM, yyyy, h:mm a',
     ).format(eventAggregate.event.eventStartDatetime);
+    // A run not saved yet has no saved start, so its first save is always
+    // checked. isUnsaved (not isNewRun): this also runs after a save.
+    _savedStartText = isUnsaved ? '' : eventDatetimeController.text;
     locationOneLineDescController.text =
         eventAggregate.event.locationOneLineDesc ?? '';
     haresController.text = eventAggregate.event.hares ?? '';
@@ -409,6 +412,13 @@ class EditRunDetailsController extends GetxController
       return false;
     }
 
+    // Another run of this kennel at the same local date and time? Weekend
+    // events have several runs at once, so this asks; it never refuses.
+    if (eventDatetimeController.text != _savedStartText &&
+        !await _confirmAnotherRunAtThisTime()) {
+      return false;
+    }
+
     FocusManager.instance.primaryFocus?.unfocus();
     mutate(() {
       isUpdating.value = true;
@@ -462,11 +472,53 @@ class EditRunDetailsController extends GetxController
     );
 
     await refreshAfterSave(eventId);
+    _savedStartText = eventDatetimeController.text;
     mutate(() {
       isUpdating.value = false;
       captureSavedSnapshot();
     });
     return true;
+  }
+
+  /// True to go ahead and save. Asks only when the kennel already has a run
+  /// at this local date and time (`hcapp_getRunsAtStart`, E3.F1.S8). When the
+  /// check cannot run (offline, an error) the save goes ahead: it is advice.
+  Future<bool> _confirmAnotherRunAtThisTime() async {
+    final DateTime? start = DateFormat(
+      'E, d MMM, yyyy, h:mm a',
+    ).tryParse(eventDatetimeController.text);
+    if (start == null) return true;
+
+    final List<Map<String, dynamic>>? runs = await EventsService()
+        .getRunsAtStart(
+          kennelId: eventAggregate.event.kennelId,
+          eventId: saveEventId,
+          start: start,
+        );
+    if (runs == null || runs.isEmpty) return true;
+
+    final String names = runs
+        .take(5)
+        .map((Map<String, dynamic> r) {
+          final String name = '${r['eventName'] ?? ''}'.trim();
+          final int number = (r['eventNumber'] as num?)?.toInt() ?? 0;
+          return '• ${name.isEmpty ? 'A run' : name}'
+              '${number > 0 ? ' (#$number)' : ''}';
+        })
+        .join('\n');
+    final String more = runs.length > 5
+        ? '\n…and ${runs.length - 5} more'
+        : '';
+    final bool? ok = await Utilities.showAlert(
+      'Another run at this time?',
+      '${eventAggregate.kennel.kennelShortName} already has '
+          '${runs.length == 1 ? 'a run' : '${runs.length} runs'} starting at '
+          '${eventDatetimeController.text}:\n\n$names$more\n\n'
+          'Weekend events often have several runs at once. Save this one too?',
+      'Save anyway',
+      showCancelButton: true,
+    );
+    return ok == true;
   }
 
   /// Jump tabs, safely.
@@ -497,6 +549,10 @@ class EditRunDetailsController extends GetxController
   /// copies). `hcapp_addEditEvent` inserts under a supplied id and treats
   /// one that exists in the kennel as an edit.
   final HcId _newRunId = HcId(const Uuid().v4());
+
+  /// The start as last saved, in the Details field's own text, so a save
+  /// that does not change the start is not checked again (E3.F1.S8).
+  String _savedStartText = '';
 
   /// The id every `addEditEvent` call saves under: the run's own once it has
   /// one, else [_newRunId].

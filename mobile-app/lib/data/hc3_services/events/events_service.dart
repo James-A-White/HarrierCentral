@@ -498,6 +498,49 @@ class EventsService extends BaseService {
   //     // Send authorization headers to your backend
   //     //headers: {HttpHeaders.authorizationHeader: 'Basic your_api_token_here'},
 
+  /// The kennel's other runs that start at the same local date and time as
+  /// [start] (E3.F1.S8), so the run editor can ask "Another run at this
+  /// time?" before saving. [eventId] is the run being saved and never
+  /// matches itself. [start] is sent exactly as [addEditEvent] sends it.
+  ///
+  /// Advice, not a gate: null when the check could not run (offline, an
+  /// error, a timeout), and the caller then saves without asking. The error
+  /// dialog is suppressed for that reason only — the save that follows
+  /// reports any real problem. One attempt, no retries: a slow link must
+  /// not hold the save up.
+  Future<List<Map<String, dynamic>>?> getRunsAtStart({
+    required String kennelId,
+    required String eventId,
+    required DateTime start,
+  }) async {
+    final String userId = currentUserId;
+    final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    final String deviceSecret =
+        (getStringPref(StringPrefsEnum.deviceSecret) ?? '').toUpperCase();
+
+    final String responseBody = await ServiceCommon.sendHttpPost(
+      () => jsonEncode(<String, String>{
+        'queryType': 'getRunsAtStart',
+        'deviceId': deviceId,
+        'kennelId': kennelId,
+        'eventId': eventId,
+        'startDatetime': start.toString(),
+        'accessToken': Utilities.generateToken(
+          userId,
+          'hcapp_getRunsAtStart',
+          paramString: deviceSecret,
+        ),
+      }),
+      errorCallback: (dynamic _) async => true,
+      noRetries: true,
+    );
+    if (responseBody.startsWith(ERROR_PREFIX)) return null;
+
+    final List<dynamic> adHocData = await tableModel.syncUserDataService
+        .updateSqlTablesWithResultsFromApiWithAdHocData(responseBody);
+    return adHocData.whereType<Map<String, dynamic>>().toList();
+  }
+
   Future<RunDetailsAggregate?> getSingleRun(String eventId) async {
     //final Geolocator locator = Geolocator();
     RunDetailsAggregate? item;
