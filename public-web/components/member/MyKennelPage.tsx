@@ -32,14 +32,15 @@ export function MyKennelPage({ kennel, nextRuns, back }: { kennel: MyKennel; nex
   const [pref, setPref] = useState<{ kind: PrefKind; run: MyRun } | null>(null);
   const [rsvpFor, setRsvpFor] = useState<MyRun | null>(null);
   const [showLinks, setShowLinks] = useState(false);
-  const [busy, setBusy] = useState<string | null>(null);
+  // The run with a write in flight, and which of its icons is spinning.
+  const [busy, setBusy] = useState<{ id: string; on: "state" | PrefKind } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const here = `/me/kennels/${kennel.KennelSlug}`;
   const short = kennel.KennelShortName;
 
   async function rsvp(run: MyRun, answer: Answer) {
-    setMenuFor(null); setRsvpFor(null); setBusy(run.PublicEventId); setError(null);
+    setMenuFor(null); setRsvpFor(null); setBusy({ id: run.PublicEventId, on: "state" }); setError(null);
     try {
       const r = await fetch("/api/member/rsvp", {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -52,7 +53,7 @@ export function MyKennelPage({ kennel, nextRuns, back }: { kennel: MyKennel; nex
   }
 
   async function notify(run: MyRun, kind: PrefKind, value: number) {
-    setPref(null); setBusy(run.PublicEventId); setError(null);
+    setPref(null); setBusy({ id: run.PublicEventId, on: kind }); setError(null);
     try {
       const r = await fetch("/api/member/notify", {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -140,7 +141,7 @@ export function MyKennelPage({ kennel, nextRuns, back }: { kennel: MyKennel; nex
             {runs.map((r) => (
               <RunCard key={r.PublicEventId} run={r} distance={null} back={here}
                 menuOpen={menuFor === r.PublicEventId} onMenu={() => setMenuFor(menuFor === r.PublicEventId ? null : r.PublicEventId)}
-                onRsvp={rsvp} onPref={(run, kind) => setPref({ kind, run })} onState={setRsvpFor} busy={busy === r.PublicEventId} />
+                onRsvp={rsvp} onPref={(run, kind) => setPref({ kind, run })} onState={setRsvpFor} busy={busy?.id === r.PublicEventId} busyOn={busy?.on} />
             ))}
           </ul>
         </>

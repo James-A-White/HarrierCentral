@@ -12,7 +12,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Search, X, Menu, Heart, ArrowDownWideNarrow, ArrowDownAZ, Building2, Globe } from "lucide-react";
+import { Search, X, Menu, Heart, ArrowDownWideNarrow, ArrowDownAZ, Building2, Globe, Loader2 } from "lucide-react";
 import type { ChatThreadRow, MyKennel } from "@/lib/member-api";
 import { ChatBubble, indexThreads, type ThreadIndex } from "@/components/member/ChatBubble";
 import { HC_BLUE, HC_GREEN, HC_RED, bellIcon, envelopeIcon, formatDistance, haversine, money, prefersImperial } from "@/components/member/app-look";
@@ -53,7 +53,8 @@ export function MyKennels({ initialKennels }: { initialKennels: MyKennel[] }) {
   const [dialOpen, setDialOpen] = useState(false);
   const [popup, setPopup] = useState<Popup>(null);
   const [threads, setThreads] = useState<ThreadIndex | null>(null);
-  const [busy, setBusy] = useState<string | null>(null);
+  // The kennel with a write in flight, and which of its icons is spinning.
+  const [busy, setBusy] = useState<{ id: string; on: "follow" | "bell" | "envelope" } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // The app has the phone's location; the browser asks once. Without it
@@ -111,7 +112,7 @@ export function MyKennels({ initialKennels }: { initialKennels: MyKennel[] }) {
   }
 
   async function follow(k: MyKennel, v: { following?: 0 | 1 | 2; isHomeKennel?: 0 | 1 }) {
-    setPopup(null); setBusy(k.PublicKennelId); setError(null);
+    setPopup(null); setBusy({ id: k.PublicKennelId, on: "follow" }); setError(null);
     try {
       if (!(await post("/api/member/follow", { publicKennelId: k.PublicKennelId.toLowerCase(), ...v }))) return;
       if (v.isHomeKennel === 1) {
@@ -126,7 +127,7 @@ export function MyKennels({ initialKennels }: { initialKennels: MyKennel[] }) {
   }
 
   async function notify(k: MyKennel, field: "notification" | "email", value: number) {
-    setPopup(null); setBusy(k.PublicKennelId); setError(null);
+    setPopup(null); setBusy({ id: k.PublicKennelId, on: field === "notification" ? "bell" : "envelope" }); setError(null);
     try {
       if (!(await post("/api/member/notify", { publicKennelId: k.PublicKennelId.toLowerCase(), [field]: value }))) return;
       patch(k.PublicKennelId, (x) => field === "notification" ? { ...x, KennelNotificationPref: value, HasHkm: 1 } : { ...x, KennelEmailAlertPref: value, HasHkm: 1 });
@@ -166,7 +167,7 @@ export function MyKennels({ initialKennels }: { initialKennels: MyKennel[] }) {
       <ul className={`px-2 pb-24 ${error ? "" : "pt-12"}`}>
         {visible.map((k) => (
           <KennelCard
-            key={k.PublicKennelId} k={k} distance={distanceOf(k)} busy={busy === k.PublicKennelId} threads={threads}
+            key={k.PublicKennelId} k={k} distance={distanceOf(k)} busy={busy?.id === k.PublicKennelId} busyOn={busy?.on} threads={threads}
             onFollow={() => setPopup({ kind: "follow", k })}
             onBell={() => setPopup({ kind: "bell", k })}
             onEnvelope={() => setPopup({ kind: "envelope", k })}
@@ -216,8 +217,8 @@ function Dial({ label, color, active, onClick, children }: { label: string; colo
 }
 
 /** kennel_list_item.dart — the card. */
-function KennelCard({ k, distance, busy, threads, onFollow, onBell, onEnvelope }: {
-  k: MyKennel; distance: number | null; busy: boolean; threads: ThreadIndex | null; onFollow: () => void; onBell: () => void; onEnvelope: () => void;
+function KennelCard({ k, distance, busy, busyOn, threads, onFollow, onBell, onEnvelope }: {
+  k: MyKennel; distance: number | null; busy: boolean; busyOn?: "follow" | "bell" | "envelope"; threads: ThreadIndex | null; onFollow: () => void; onBell: () => void; onEnvelope: () => void;
 }) {
   const href = `/me/kennels/${k.KennelSlug}`;
   const followIcon = k.Following === 1 ? "checkbox_yes" : k.Following === 2 ? "checkbox_no" : "checkbox_empty";
@@ -229,20 +230,26 @@ function KennelCard({ k, distance, busy, threads, onFollow, onBell, onEnvelope }
       {/* Header: follow checkbox · home · name · envelope · bell */}
       <div className="flex items-center gap-1 pr-2">
         <button type="button" onClick={onFollow} disabled={busy} aria-label="Following" className="flex h-12 w-12 shrink-0 items-center justify-center disabled:opacity-50">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/images/icons/${followIcon}.png`} alt="" className="h-6 w-6" />
+          {busy && busyOn === "follow"
+            ? <Loader2 className="h-6 w-6 animate-spin text-zinc-500" aria-label="Saving" />
+            // eslint-disable-next-line @next/next/no-img-element
+            : <img src={`/images/icons/${followIcon}.png`} alt="" className="h-6 w-6" />}
         </button>
         {k.IsHomeKennel === 1 && (
           <svg viewBox="0 0 24 24" className="h-[35px] w-[35px] shrink-0" fill={HC_RED} aria-label="Home kennel"><path d="M12 3 2 12h3v8h5v-6h4v6h5v-8h3L12 3z" /></svg>
         )}
         <Link href={href} className="font-condensed min-w-0 flex-1 truncate text-[20px] font-semibold leading-none text-zinc-900" style={{ fontWeight: 600 }}>{k.KennelName}</Link>
         <button type="button" onClick={onEnvelope} disabled={busy} aria-label="Email alerts" className="flex h-10 w-10 shrink-0 items-center justify-center disabled:opacity-50">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/images/icons/${envelopeIcon(k.KennelEmailAlertPref)}.png`} alt="" className="h-6 w-6" />
+          {busy && busyOn === "envelope"
+            ? <Loader2 className="h-6 w-6 animate-spin text-zinc-500" aria-label="Saving" />
+            // eslint-disable-next-line @next/next/no-img-element
+            : <img src={`/images/icons/${envelopeIcon(k.KennelEmailAlertPref)}.png`} alt="" className="h-6 w-6" />}
         </button>
         <button type="button" onClick={onBell} disabled={busy} aria-label="Notifications" className="flex h-10 w-10 shrink-0 items-center justify-center disabled:opacity-50">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/images/icons/${bellIcon(k.KennelNotificationPref)}.png`} alt="" className="h-6 w-6" />
+          {busy && busyOn === "bell"
+            ? <Loader2 className="h-6 w-6 animate-spin text-zinc-500" aria-label="Saving" />
+            // eslint-disable-next-line @next/next/no-img-element
+            : <img src={`/images/icons/${bellIcon(k.KennelNotificationPref)}.png`} alt="" className="h-6 w-6" />}
         </button>
       </div>
       <div className="h-px bg-zinc-300" />

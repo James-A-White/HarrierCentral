@@ -31,7 +31,7 @@ export const rsvpChoices: Choice<Answer>[] = [
 import { ChatBubble, indexThreads, type ThreadIndex } from "@/components/member/ChatBubble";
 import type { ChatThreadRow } from "@/lib/member-api";
 import { relativeTime } from "@/lib/member-format";
-import { Search, X, PartyPopper, MapPinned, CalendarSearch, MoreVertical, Map as MapIcon, Images, MessagesSquare, Beer, Info, Settings } from "lucide-react";
+import { Search, X, PartyPopper, MapPinned, CalendarSearch, MoreVertical, Map as MapIcon, Images, MessagesSquare, Beer, Info, Settings, Loader2 } from "lucide-react";
 
 const RSVP_YES = 3, RSVP_MAYBE = 2, RSVP_NO = 1, AT_HASH = 20, ON_IN = 30;
 /** themeButtonColors: the app's section banner colour. */
@@ -100,7 +100,8 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
   const [pref, setPref] = useState<{ kind: PrefKind; run: MyRun } | null>(null);
   const [rsvpFor, setRsvpFor] = useState<MyRun | null>(null);
   const [threads, setThreads] = useState<ThreadIndex | null>(null);
-  const [busy, setBusy] = useState<string | null>(null);
+  // The run with a write in flight, and which of its icons is spinning.
+  const [busy, setBusy] = useState<{ id: string; on: "state" | PrefKind } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const prefs = runs[0]?.HasherPreferences ?? 0;
   // The hasher's choice, else the browser's region (no one kennel here).
@@ -205,7 +206,7 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
   }, [visiblePast.length]);
 
   async function rsvp(run: MyRun, answer: Answer) {
-    setBusy(run.PublicEventId); setError(null); setMenuFor(null);
+    setBusy({ id: run.PublicEventId, on: "state" }); setError(null); setMenuFor(null); setRsvpFor(null);
     try {
       const r = await fetch("/api/member/rsvp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ publicEventId: run.PublicEventId.toLowerCase(), rsvp: answer }) });
       const j = (await r.json()) as { ok?: boolean; error?: string };
@@ -229,7 +230,7 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
 
   // The bell and the envelope (E9.F7.S14): the app's own preference SP.
   async function notify(run: MyRun, kind: PrefKind, value: number) {
-    setPref(null); setBusy(run.PublicEventId); setError(null);
+    setPref(null); setBusy({ id: run.PublicEventId, on: kind }); setError(null);
     try {
       const r = await fetch("/api/member/notify", {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -283,7 +284,7 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
             Loading older runs… ({past.length - pastShown} more)
           </li>
         )}
-        {visiblePast.map((r) => <RunCard key={r.PublicEventId} run={r} past distance={distanceOf(r)} menuOpen={menuFor === r.PublicEventId} onMenu={() => setMenuFor(menuFor === r.PublicEventId ? null : r.PublicEventId)} onRsvp={rsvp} onPref={(run, kind) => setPref({ kind, run })} onState={setRsvpFor} threads={threads} busy={busy === r.PublicEventId} />)}
+        {visiblePast.map((r) => <RunCard key={r.PublicEventId} run={r} past distance={distanceOf(r)} menuOpen={menuFor === r.PublicEventId} onMenu={() => setMenuFor(menuFor === r.PublicEventId ? null : r.PublicEventId)} onRsvp={rsvp} onPref={(run, kind) => setPref({ kind, run })} onState={setRsvpFor} threads={threads} busy={busy?.id === r.PublicEventId} busyOn={busy?.on} />)}
 
         {past.length > 0 && (
           <li ref={dividerRef} className="scroll-mt-[186px]">
@@ -330,7 +331,7 @@ export function HashRunsView({ initialRuns }: { initialRuns: MyRun[] }) {
                 </p>
               )}
               <ul className="space-y-2">
-                {rows.map((r) => <RunCard key={r.PublicEventId} run={r} distance={distanceOf(r)} menuOpen={menuFor === r.PublicEventId} onMenu={() => setMenuFor(menuFor === r.PublicEventId ? null : r.PublicEventId)} onRsvp={rsvp} onPref={(run, kind) => setPref({ kind, run })} onState={setRsvpFor} threads={threads} busy={busy === r.PublicEventId} />)}
+                {rows.map((r) => <RunCard key={r.PublicEventId} run={r} distance={distanceOf(r)} menuOpen={menuFor === r.PublicEventId} onMenu={() => setMenuFor(menuFor === r.PublicEventId ? null : r.PublicEventId)} onRsvp={rsvp} onPref={(run, kind) => setPref({ kind, run })} onState={setRsvpFor} threads={threads} busy={busy?.id === r.PublicEventId} busyOn={busy?.on} />)}
               </ul>
             </li>
           );
@@ -372,9 +373,11 @@ function Banner({ children, left, right }: { children: React.ReactNode; left?: R
   );
 }
 
-export function RunCard({ run, past, distance, menuOpen, onMenu, onRsvp, onPref, onState, busy, back = "/me/runs", threads = null }: {
+export function RunCard({ run, past, distance, menuOpen, onMenu, onRsvp, onPref, onState, busy, busyOn = "state", back = "/me/runs", threads = null }: {
   run: MyRun; past?: boolean; distance: number | null; menuOpen: boolean; onMenu: () => void; onRsvp: (r: MyRun, a: Answer) => void;
-  onPref?: (r: MyRun, kind: PrefKind) => void; onState?: (r: MyRun) => void; busy: boolean; back?: string; threads?: ThreadIndex | null;
+  onPref?: (r: MyRun, kind: PrefKind) => void; onState?: (r: MyRun) => void; busy: boolean;
+  /** Which icon spins while [busy]: the RSVP state, the bell or the envelope. */
+  busyOn?: "state" | PrefKind; back?: string; threads?: ThreadIndex | null;
 }) {
   const href = `/${run.KennelSlug}/${run.EventNumber}?back=${encodeURIComponent(back)}`;
   const when = run.EventStartDatetimeGmt ?? run.EventStartDatetime;
@@ -398,17 +401,23 @@ export function RunCard({ run, past, distance, menuOpen, onMenu, onRsvp, onPref,
           aria-label={past ? "This run has been" : `Answer ${run.EventName}`}
           className="-m-1.5 flex h-11 w-11 shrink-0 items-center justify-center p-1.5 disabled:cursor-default"
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/images/icons/${stateIcon(run)}.png`} alt="" className="h-6 w-6" />
+          {busy && busyOn === "state"
+            ? <Loader2 className="h-6 w-6 animate-spin text-zinc-500" aria-label="Saving" />
+            // eslint-disable-next-line @next/next/no-img-element
+            : <img src={`/images/icons/${stateIcon(run)}.png`} alt="" className="h-6 w-6" />}
         </button>
         <Link href={href} className="min-w-0 flex-1 truncate text-[20px] font-bold leading-tight text-zinc-900">{run.EventName}</Link>
         <button type="button" onClick={() => onPref?.(run, "envelope")} disabled={busy || !onPref} aria-label="Email alert" className="shrink-0 disabled:opacity-60">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/images/icons/${envelopeIcon(run.MyEmailAlertPref)}.png`} alt="" className="h-7 w-7" />
+          {busy && busyOn === "envelope"
+            ? <Loader2 className="h-7 w-7 animate-spin text-zinc-500" aria-label="Saving" />
+            // eslint-disable-next-line @next/next/no-img-element
+            : <img src={`/images/icons/${envelopeIcon(run.MyEmailAlertPref)}.png`} alt="" className="h-7 w-7" />}
         </button>
         <button type="button" onClick={() => onPref?.(run, "bell")} disabled={busy || !onPref} aria-label="Notifications" className="ml-1 shrink-0 disabled:opacity-60">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/images/icons/${bellIcon(run.MyNotificationPref)}.png`} alt="" className="h-7 w-7" />
+          {busy && busyOn === "bell"
+            ? <Loader2 className="h-7 w-7 animate-spin text-zinc-500" aria-label="Saving" />
+            // eslint-disable-next-line @next/next/no-img-element
+            : <img src={`/images/icons/${bellIcon(run.MyNotificationPref)}.png`} alt="" className="h-7 w-7" />}
         </button>
       </div>
       <div className="mx-1.5 h-px bg-zinc-300" />

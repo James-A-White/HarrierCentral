@@ -4,7 +4,7 @@ import { Puck, migrate } from "@measured/puck";
 import "@measured/puck/puck.css";
 import type { Data } from "@measured/puck";
 import { useState, useRef, useCallback, useMemo } from "react";
-import { Layers } from "lucide-react";
+import { Layers, Loader2 } from "lucide-react";
 import { createPuckConfig } from "./config";
 import { toKennelContext } from "@/lib/kennel-utils";
 import { KennelDataProvider } from "./KennelDataContext";
@@ -33,6 +33,12 @@ export function PuckEditor({ slug, initialConfig, pageData }: PuckEditorProps) {
   const [pendingPageId, setPendingPageId] = useState<string | null>(null);
   const [showPagePanel, setShowPagePanel] = useState(true);
   const [toast, setToast]               = useState<Toast | null>(null);
+  // A publish or a page-panel save in flight. Both write the whole site
+  // config, so they share one guard: a second press is refused until the
+  // first returns, and two saves can never interleave and undo each other.
+  const [publishing, setPublishing]     = useState(false);
+  const [saving, setSaving]             = useState(false);
+  const busyRef = useRef(false);
 
   const latestDataRef  = useRef<Data>(
     initialConfig.pages.find(p => p.id === "home")?.layout ?? getDefaultLayout("home")
@@ -69,12 +75,16 @@ export function PuckEditor({ slug, initialConfig, pageData }: PuckEditorProps) {
   // ── save ──────────────────────────────────────────────────────────────────
 
   async function persistConfig(config: SiteConfig): Promise<boolean> {
-    const res = await fetch("/api/admin/save-layout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slug, pageLayoutJson: JSON.stringify(config) }),
-    });
-    return res.ok;
+    try {
+      const res = await fetch("/api/admin/save-layout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug, pageLayoutJson: JSON.stringify(config) }),
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
   }
 
   const doSave = useCallback(async (data: Data, baseConfig: SiteConfig): Promise<SiteConfig | null> => {
@@ -90,19 +100,31 @@ export function PuckEditor({ slug, initialConfig, pageData }: PuckEditorProps) {
   }, [currentPageId, slug]);
 
   const handlePublish = useCallback(async (data: Data) => {
-    const newConfig = await doSave(data, siteConfig);
-    if (newConfig) {
-      setSiteConfig(newConfig);
-      setIsDirty(false);
-      showToast("Published successfully.", true);
-    } else {
-      showToast("Publish failed. Please try again.", false);
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setPublishing(true);
+    try {
+      const newConfig = await doSave(data, siteConfig);
+      if (newConfig) {
+        setSiteConfig(newConfig);
+        setIsDirty(false);
+        showToast("Published successfully.", true);
+      } else {
+        showToast("Publish failed. Please try again.", false);
+      }
+    } finally {
+      busyRef.current = false;
+      setPublishing(false);
     }
   }, [siteConfig, doSave]);
 
   // ── page panel config changes (auto-save) ─────────────────────────────────
 
   const handleUpdateConfig = useCallback(async (newConfig: SiteConfig) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setSaving(true);
+    try {
     // Merge the currently-editing page's latest data so nothing is lost
     const merged: SiteConfig = {
       ...newConfig,
@@ -123,6 +145,10 @@ export function PuckEditor({ slug, initialConfig, pageData }: PuckEditorProps) {
       showToast("Saved.", true);
     } else {
       showToast("Save failed.", false);
+    }
+    } finally {
+      busyRef.current = false;
+      setSaving(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPageId, slug]);
@@ -148,20 +174,27 @@ export function PuckEditor({ slug, initialConfig, pageData }: PuckEditorProps) {
   }, [currentPageId, isDirty, switchPage]);
 
   const handlePublishAndSwitch = useCallback(async () => {
-    if (!pendingPageId) return;
-    const newConfig = await doSave(latestDataRef.current, siteConfig);
-    if (newConfig) {
-      setSiteConfig(newConfig);
-      showToast("Published successfully.", true);
-    } else {
-      showToast("Publish failed.", false);
+    if (!pendingPageId || busyRef.current) return;
+    busyRef.current = true;
+    setPublishing(true);
+    try {
+      const newConfig = await doSave(latestDataRef.current, siteConfig);
+      if (newConfig) {
+        setSiteConfig(newConfig);
+        showToast("Published successfully.", true);
+      } else {
+        showToast("Publish failed.", false);
+      }
+      switchPage(pendingPageId, newConfig ?? siteConfig);
+      setPendingPageId(null);
+    } finally {
+      busyRef.current = false;
+      setPublishing(false);
     }
-    switchPage(pendingPageId, newConfig ?? siteConfig);
-    setPendingPageId(null);
   }, [pendingPageId, doSave, siteConfig, switchPage]);
 
   const handleDiscardAndSwitch = useCallback(() => {
-    if (!pendingPageId) return;
+    if (!pendingPageId || busyRef.current) return;
     switchPage(pendingPageId);
     setPendingPageId(null);
   }, [pendingPageId, switchPage]);
@@ -235,28 +268,36 @@ export function PuckEditor({ slug, initialConfig, pageData }: PuckEditorProps) {
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <button
                 onClick={handlePublishAndSwitch}
+                disabled={publishing}
                 style={{
                   flex: 1, minWidth: 120, padding: "10px 0", borderRadius: 8, border: "none",
-                  background: "#2563eb", color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: 14,
+                  background: "#2563eb", color: "#fff", fontWeight: 600, fontSize: 14,
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  cursor: publishing ? "default" : "pointer", opacity: publishing ? 0.75 : 1,
                 }}
               >
-                Publish &amp; Switch
+                {publishing && <Loader2 size={14} className="animate-spin" />}
+                {publishing ? "Publishing…" : <>Publish &amp; Switch</>}
               </button>
               <button
                 onClick={handleDiscardAndSwitch}
+                disabled={publishing}
                 style={{
                   flex: 1, minWidth: 120, padding: "10px 0", borderRadius: 8,
                   border: "1px solid #444", background: "transparent",
-                  color: "#ccc", fontWeight: 600, cursor: "pointer", fontSize: 14,
+                  color: "#ccc", fontWeight: 600, fontSize: 14,
+                  cursor: publishing ? "default" : "pointer", opacity: publishing ? 0.5 : 1,
                 }}
               >
                 Discard &amp; Switch
               </button>
               <button
                 onClick={() => setPendingPageId(null)}
+                disabled={publishing}
                 style={{
                   padding: "10px 18px", borderRadius: 8, border: "1px solid #333",
-                  background: "transparent", color: "#777", cursor: "pointer", fontSize: 14,
+                  background: "transparent", color: "#777", fontSize: 14,
+                  cursor: publishing ? "default" : "pointer", opacity: publishing ? 0.5 : 1,
                 }}
               >
                 Cancel
@@ -270,12 +311,31 @@ export function PuckEditor({ slug, initialConfig, pageData }: PuckEditorProps) {
       <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
 
         {showPagePanel && (
-          <PagePanel
-            siteConfig={siteConfig}
-            currentPageId={currentPageId}
-            onSelectPage={handleSelectPage}
-            onUpdateConfig={handleUpdateConfig}
-          />
+          <div style={{ position: "relative", display: "flex" }}>
+            <PagePanel
+              siteConfig={siteConfig}
+              currentPageId={currentPageId}
+              onSelectPage={handleSelectPage}
+              onUpdateConfig={handleUpdateConfig}
+            />
+            {/* While a save or publish is in flight the panel takes no clicks:
+                each change is built from the last saved config, so a second
+                one before the first returns would undo it. */}
+            {(saving || publishing) && (
+              <div
+                aria-busy="true"
+                style={{
+                  position: "absolute", inset: 0, zIndex: 10,
+                  background: "rgba(255,255,255,0.55)", cursor: "progress",
+                  display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: 12,
+                  fontFamily: "system-ui, sans-serif", fontSize: 12, color: "#374151", gap: 6,
+                }}
+              >
+                <Loader2 size={14} className="animate-spin" />
+                {saving ? "Saving…" : "Publishing…"}
+              </div>
+            )}
+          </div>
         )}
 
         <div style={{ flex: 1, overflow: "hidden", minWidth: 0 }}>
@@ -322,13 +382,27 @@ export function PuckEditor({ slug, initialConfig, pageData }: PuckEditorProps) {
                       {currentPageName()}
                     </span>
 
-                    {isDirty && (
+                    {publishing ? (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, color: "#60a5fa", whiteSpace: "nowrap" }}>
+                        <Loader2 size={12} className="animate-spin" /> Publishing…
+                      </span>
+                    ) : isDirty && (
                       <span style={{ fontSize: 11, color: "#f59e0b", whiteSpace: "nowrap" }}>
                         ● Unpublished
                       </span>
                     )}
                   </div>
-                  {children}
+                  {/* Puck's own Publish button: no presses while one is in flight */}
+                  <span
+                    aria-disabled={publishing || saving}
+                    style={{
+                      display: "inline-flex",
+                      pointerEvents: publishing || saving ? "none" : undefined,
+                      opacity: publishing || saving ? 0.5 : 1,
+                    }}
+                  >
+                    {children}
+                  </span>
                 </>
               ),
             }}

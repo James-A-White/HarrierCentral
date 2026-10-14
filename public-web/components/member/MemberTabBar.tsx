@@ -7,7 +7,7 @@
  */
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LayoutList, Users, Map as MapIcon, History, Music, MessageSquare, KeyRound, UserX } from "lucide-react";
 
 const TABS = [
@@ -22,6 +22,10 @@ export function MemberTabBar({ hashName }: { hashName: string }) {
   const pathname = usePathname();
   const router = useRouter();
   const [unread, setUnread] = useState(0);
+  // Sign out answers at once and refuses a second press; it stays set on
+  // success because the page is leaving.
+  const [signingOut, setSigningOut] = useState(false);
+  const signingOutRef = useRef(false);
 
   // The app's chat bubble with the global badge: the sum of unread across threads.
   useEffect(() => {
@@ -32,9 +36,17 @@ export function MemberTabBar({ hashName }: { hashName: string }) {
   }, [pathname]);
 
   async function signOut() {
-    await fetch("/api/member/logout", { method: "POST" });
-    router.push("/");
-    router.refresh();
+    if (signingOutRef.current) return;
+    signingOutRef.current = true;
+    setSigningOut(true);
+    try {
+      await fetch("/api/member/logout", { method: "POST" });
+      router.push("/");
+      router.refresh();
+    } catch {
+      signingOutRef.current = false;
+      setSigningOut(false);
+    }
   }
 
   const current = TABS.find((t) => pathname.startsWith(t.href));
@@ -70,7 +82,7 @@ export function MemberTabBar({ hashName }: { hashName: string }) {
             <Link href="/me/blocked" aria-label="Messages and blocking" title="Messages and blocking" className="text-white/80 hover:text-white">
               <UserX className="h-5 w-5" />
             </Link>
-            <button type="button" onClick={signOut} className="underline underline-offset-2 hover:text-white">Sign out</button>
+            <button type="button" onClick={signOut} disabled={signingOut} className="underline underline-offset-2 hover:text-white disabled:opacity-60">{signingOut ? "Signing out…" : "Sign out"}</button>
           </div>
         </div>
       </div>

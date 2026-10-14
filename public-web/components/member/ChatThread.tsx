@@ -116,6 +116,10 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel, dm }: {
   const [viewerAt, setViewerAt] = useState<number | null>(null);
   const [locationMenu, setLocationMenu] = useState(false);
   const [locating, setLocating] = useState(false);
+  // A picked photo being converted (HEIC, large) before its bubble appears:
+  // the photo button spins and refuses a second pick until it is ready.
+  const [preparing, setPreparing] = useState(false);
+  const preparingRef = useRef(false);
   const [pinPicker, setPinPicker] = useState(false);
   const bottom = useRef<HTMLDivElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -312,14 +316,21 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel, dm }: {
     e.target.value = "";   // picking the same file again must still fire
     if (!picked) return;
     if (!picked.type.startsWith("image/")) { setError("Only photos can be sent."); return; }
+    if (preparingRef.current) return;
+    preparingRef.current = true; setPreparing(true);
     setError(null);
     const messageId = upper(crypto.randomUUID());
-    const file = await browserReadable(picked);
-    if (file.size > 10 * 1024 * 1024) { setError("That photo is too big. Photos can be up to 10 MB."); return; }
-    files.current.set(messageId, file);
-    const preview = URL.createObjectURL(file);
-    previews.current.add(preview);
-    merge([mine(messageId, "", CHAT_KIND_PHOTO, { pending: "sending", preview })]);
+    let file: Blob;
+    try {
+      file = await browserReadable(picked);
+      if (file.size > 10 * 1024 * 1024) { setError("That photo is too big. Photos can be up to 10 MB."); return; }
+      files.current.set(messageId, file);
+      const preview = URL.createObjectURL(file);
+      previews.current.add(preview);
+      merge([mine(messageId, "", CHAT_KIND_PHOTO, { pending: "sending", preview })]);
+    } finally {
+      preparingRef.current = false; setPreparing(false);
+    }
     await uploadAndSend(messageId, file);
   }
 
@@ -619,9 +630,9 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel, dm }: {
         )}
         <div className="flex items-end gap-1.5">
         <input ref={fileInput} type="file" accept="image/*" className="hidden" onChange={onPickPhoto} />
-        <button type="button" aria-label="Send a photo" onClick={() => fileInput.current?.click()}
-          className="flex h-11 w-9 shrink-0 items-center justify-center text-zinc-500 hover:text-zinc-800">
-          <ImagePlus className="h-6 w-6" />
+        <button type="button" aria-label={preparing ? "Preparing the photo" : "Send a photo"} disabled={preparing || sending} onClick={() => fileInput.current?.click()}
+          className="flex h-11 w-9 shrink-0 items-center justify-center text-zinc-500 hover:text-zinc-800 disabled:opacity-40">
+          {preparing ? <Loader2 className="h-6 w-6 animate-spin" /> : <ImagePlus className="h-6 w-6" />}
         </button>
         <button type="button" aria-label="Send a location" disabled={locating || sending} onClick={() => setLocationMenu(true)}
           className="flex h-11 w-9 shrink-0 items-center justify-center text-zinc-500 hover:text-zinc-800 disabled:opacity-40">
