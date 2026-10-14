@@ -133,8 +133,9 @@ class KennelDeveloperTabContent extends StatelessWidget {
           controller: controller,
           sidebarKey: 'developer_hashRunsKennel',
           label: 'HashRuns.org link for ${data.kennelName}',
-          url:
-              'https://www.hashruns.org/#/RD?publicKennelIds=${data.kennelPublicId}',
+          // /rd/<public kennel id> is the kennel's runs on hashruns.org; the
+          // old /#/RD?publicKennelIds= form only reaches it through a redirect.
+          url: 'https://www.hashruns.org/rd/${data.kennelPublicId}',
           isMobile: isMobileScreen,
         ),
         const SizedBox(height: 12),
@@ -142,7 +143,9 @@ class KennelDeveloperTabContent extends StatelessWidget {
           controller: controller,
           sidebarKey: 'developer_hashRunsCity',
           label: 'HashRuns.org link for ${data.cityName}',
-          url: 'https://www.hashruns.org/#/RD?cityIds=${data.cityId}',
+          // The worldwide list opened already searched for the place (?q=,
+          // E20.F2.S3). The old /#/RD?cityIds= form showed every run on earth.
+          url: _hashRunsSearch(data.cityName),
           isMobile: isMobileScreen,
         ),
         const SizedBox(height: 12),
@@ -150,8 +153,7 @@ class KennelDeveloperTabContent extends StatelessWidget {
           controller: controller,
           sidebarKey: 'developer_hashRunsRegion',
           label: 'HashRuns.org link for ${data.regionName}',
-          url:
-              'https://www.hashruns.org/#/RD?regionIds=${data.provinceStateId}',
+          url: _hashRunsSearch(data.regionName),
           isMobile: isMobileScreen,
         ),
         const SizedBox(height: 12),
@@ -159,11 +161,19 @@ class KennelDeveloperTabContent extends StatelessWidget {
           controller: controller,
           sidebarKey: 'developer_hashRunsCountry',
           label: 'HashRuns.org link for ${data.countryName}',
-          url: 'https://www.hashruns.org/#/RD?countryIds=${data.countryId}',
+          url: _hashRunsSearch(data.countryName),
           isMobile: isMobileScreen,
         ),
       ],
     );
+  }
+
+  /// hashruns.org's worldwide run list, searched for [place] (null when the
+  /// kennel has no such place, which hides the Try it button).
+  static String? _hashRunsSearch(String? place) {
+    final String q = (place ?? '').trim();
+    if (q.isEmpty) return null;
+    return 'https://www.hashruns.org/?q=${Uri.encodeQueryComponent(q)}';
   }
 
   /// Builds the Web Components section.
