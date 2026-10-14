@@ -12,6 +12,7 @@ AS
 -- Returns: rowset 0 — { KennelId, KennelName, KennelShortName, RunsPageUrl,
 --   RunsPageHash, LocalToday, TimeZoneName, LatestRunNumber, LatestRunDate,
 --   DefaultStartTime, CityName, CountryName, AnchorLat, AnchorLon }
+-- Changes: 2026-10-15 — kennels on Google Calendar (2) are read too (E3.F6.S5).
 -- Author: Harrier Central
 -- Created: 2026-10-04
 -- =====================================================================
@@ -57,7 +58,9 @@ BEGIN TRY
     -- Enabled flag is shown on the monitor tile only (James, 2026-10-05).
     WHERE k.deleted = 0 AND ISNULL(k.removed, 0) = 0
       AND ((@kennelId IS NOT NULL AND k.id = @kennelId)
-           OR (@kennelId IS NULL AND k.InboundIntegrationId = 6
+           -- 6 Runs page (AI), and 2 Google Calendar: the same reader, which
+           -- turns a Google Calendar link into its public iCal feed (2026-10-15).
+           OR (@kennelId IS NULL AND k.InboundIntegrationId IN (2, 6)
                AND k.RunsPageUrl IS NOT NULL AND LEN(k.RunsPageUrl) > 10
                -- Due? The timer fires every 15 minutes (2026-10-05). On a run
                -- day (a run on the kennel's local today) every kennel is due
