@@ -25,7 +25,10 @@ function checkRateLimit(ip: string): boolean {
 
 /** HTML-escape for an attribute value. */
 /** The kennel's admin page. The slug is encoded, so a crafted one cannot turn the path into "//other-host". */
-const adminPage = (slug: string, base: string) => new URL(`/${encodeURIComponent(slug)}/admin/layout`, base);
+// No slug means no kennel to return to: the home page, never `//admin/layout`
+// (a protocol-relative path, which the browser reads as a host called "admin").
+const adminPage = (slug: string, base: string) =>
+  new URL(slug ? `/${encodeURIComponent(slug)}/admin/layout` : "/", base);
 const cleanSlug = (v: string) => v.slice(0, 100);
 
 const esc = (v: string) =>
