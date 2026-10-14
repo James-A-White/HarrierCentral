@@ -23,6 +23,8 @@ AS
 --             2026-04-06 — BackgroundImage no longer inherited from FILTH;
 --                           returns NULL when kennel has none.
 --             2026-03-28 — Added k.PublicKennelId.
+--             2026-10-14 — SocialLinksJson (E12.F4.S4): public entries only,
+--                           via HC6.KennelSocialLinksVisible.
 --             2026-04-12 — Removed FILTH kennel fallback join (kwf).
 --                           Style defaults that were sourced from FILTH's
 --                           KennelWebsite row are now hardcoded literals
@@ -120,7 +122,12 @@ BEGIN TRY
         kw.PageFeaturesJson,
 
         -- ── Units: 0 = km, 1 = miles (bit 0) — as the app's distanceUnitsPref
-        COALESCE(k.DistancePreference, cn.DistancePreference, 0)    AS DistancePreference
+        COALESCE(k.DistancePreference, cn.DistancePreference, 0)    AS DistancePreference,
+
+        -- ── Social and chat links (E12.F4.S4): PUBLIC entries only — this
+        --    page is cached and served to anyone. Members-only entries reach
+        --    a signed-in member through hcapp_getKennelSocialLinks.
+        HC6.KennelSocialLinksVisible(k.SocialLinksJson, 0)          AS SocialLinksJson
 
     FROM HC.Kennel k
     LEFT JOIN HC.KennelWebsite kw ON kw.KennelId = k.id
