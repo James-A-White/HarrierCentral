@@ -166,6 +166,9 @@ class RunTabsController extends GetxController
 
   @override
   void onClose() {
+    BootLogger.logControllerClose(
+      'RunTabsController ${futureRun.event.eventId}',
+    );
     tabController.removeListener(_onTab);
     tabController.dispose();
     gridListTabController.dispose();

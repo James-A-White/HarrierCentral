@@ -825,6 +825,9 @@ class CheckInPackController extends GetxController
       paymentType,
       specialRunPrice: specialRunPrice,
     );
+    // Cancel answers followTypeCancel, not an EnumPayForExtras; passing it on
+    // threw a TypeError in _processPayment (1465, 2026-10-12).
+    if (payForExtras is! EnumPayForExtras) return; // cancelled
     final List<dynamic>? results = await _processPayment(
       index,
       member,

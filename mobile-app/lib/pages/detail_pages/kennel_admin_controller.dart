@@ -47,6 +47,9 @@ class KennelAdminController extends GetxController {
 
   @override
   void onClose() {
+    BootLogger.logControllerClose(
+      'KennelAdminController ${kennelAggregateItem.kennel.kennelId}',
+    );
     mapController.dispose();
     _dataChangeSub?.cancel();
     super.onClose();

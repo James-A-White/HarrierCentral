@@ -28,17 +28,60 @@ class BootLogger {
   /// buffers in memory until AppBootService decides whether to drain it.
   static void logError(String tag, Object error, StackTrace? stack) {
     final timestamp = DateTime.now().toIso8601String();
-    final frames = stack
+    final List<String>? lines = stack
         ?.toString()
         .split('\n')
         .where((l) => l.trim().isNotEmpty)
         .take(8)
-        .join('\n');
+        .toList();
+    final frames = lines?.join('\n');
     final entry =
         '[$timestamp] $tag $error${frames != null ? '\n$frames' : ''}';
     debugPrint(entry);
 
-    _record(entry);
+    // A widget holding a disposed controller throws on EVERY frame: 100-300
+    // copies a session (2026-10-11..13), which pushed every breadcrumb out
+    // of the 100 KB upload and left the cause of the run-page teardown with
+    // no trail. The first few copies are kept whole; after that the repeat
+    // is only counted, with a [TRACE] line at 10, 100, 1000…
+    final String signature =
+        '$tag ${'$error'.split('\n').first} ${lines?.firstOrNull ?? ''}';
+    final int seen = (_errorRepeats[signature] ?? 0) + 1;
+    _errorRepeats[signature] = seen;
+    if (seen <= _repeatsKeptWhole) {
+      _record(entry);
+    } else if (_isPowerOfTen(seen)) {
+      _record(
+        '[$timestamp] [TRACE] repeat x$seen this session: $tag '
+        '${'$error'.split('\n').first}',
+      );
+    }
+  }
+
+  static const int _repeatsKeptWhole = 3;
+  static final Map<String, int> _errorRepeats = <String, int>{};
+
+  static bool _isPowerOfTen(int n) {
+    while (n >= 10 && n % 10 == 0) {
+      n ~/= 10;
+    }
+    return n == 1;
+  }
+
+  /// A breadcrumb for a controller whose onClose disposes something a widget
+  /// may still be drawing with (a TabController, a MapController). The
+  /// caller's frames say WHO deleted it — GetX's route clean-up
+  /// (RouterReportManager), a GetBuilder's dispose, or our own Get.delete —
+  /// which is what the disposed-controller errors never record.
+  static void logControllerClose(String what) {
+    final String frames = StackTrace.current
+        .toString()
+        .split('\n')
+        .where((l) => l.trim().isNotEmpty)
+        .skip(1) // this function
+        .take(10)
+        .join('\n');
+    logBreadcrumb('[CLOSE] $what\n$frames');
   }
 
   /// Record a non-error breadcrumb (a lifecycle/state marker) into the same

@@ -250,6 +250,9 @@ class RunAndKennelMapController extends GetxController {
 
   @override
   void onClose() {
+    BootLogger.logControllerClose(
+      'RunAndKennelMapController ${kennel?.kennelId ?? 'global'}',
+    );
     _tabWorker?.dispose();
     _compass.stop();
     if (_preciseHeld && Get.isRegistered<LocationService>()) {

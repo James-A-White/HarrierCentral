@@ -577,6 +577,8 @@ class PaymentReportPage extends StatelessWidget {
           return popup;
         },
       );
+      // Cancel answers followTypeCancel, which payForEvent cannot take.
+      if (payForExtras is! EnumPayForExtras) return; // cancelled
       final List<dynamic> results = await c.payForEvent(
         packMember,
         paymentType,
