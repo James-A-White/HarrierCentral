@@ -153,6 +153,9 @@ AS
 -- Idempotency: set-state — every column is written to the value sent; a
 --   repeat writes the same values again.
 -- Changes:
+--   - 2026-10-14: 999 clears the position as well as -999 (the portal still
+--     sent HC5's 999, which was stored as a latitude); any other latitude
+--     outside ±90 or longitude outside ±180 is refused.
 --   - 2026-10-15: refused when it would import from and publish to the
 --     same Google Calendar (a feedback loop, James).
 --   - 2026-10-15: Google Calendar (inbound 2) refused without a Google
@@ -222,6 +225,17 @@ BEGIN TRY
 	   AND (@packOffMinutes < 0 OR @packOffMinutes > 600)
 	BEGIN
 		SELECT 0 AS Success, 'The pack must leave within 10 hours of the gather.' AS ErrorMessage;
+		RETURN;
+	END
+
+	-- Validation: the kennel's position. -999 clears it (back to the city's);
+	-- 999 is the HC5 clear that the portal kept sending after the switch to
+	-- -999, and it was stored as a real latitude (DH3, found 2026-10-14), so
+	-- it clears too. Anything else must be a real coordinate.
+	IF (@latitude IS NOT NULL AND @latitude NOT IN (-999.0, 999.0) AND @latitude NOT BETWEEN -90 AND 90)
+	   OR (@longitude IS NOT NULL AND @longitude NOT IN (-999.0, 999.0) AND @longitude NOT BETWEEN -180 AND 180)
+	BEGIN
+		SELECT 0 AS Success, 'The kennel''s position must be a latitude between -90 and 90 and a longitude between -180 and 180.' AS ErrorMessage;
 		RETURN;
 	END
 
@@ -444,8 +458,8 @@ BEGIN TRY
 		CityId = COALESCE(@cityId, CityId),
 		ProvinceStateId = COALESCE(@provinceStateId, ProvinceStateId),
 		CountryId = COALESCE(@countryId, CountryId),
-		Latitude = CASE WHEN ((@latitude = -999.0) OR (@longitude = -999.0)) THEN NULL ELSE COALESCE(@latitude, Latitude) END,
-		Longitude = CASE WHEN ((@latitude = -999.0) OR (@longitude = -999.0)) THEN NULL ELSE COALESCE(@longitude, Longitude) END,
+		Latitude = CASE WHEN @latitude IN (-999.0, 999.0) OR @longitude IN (-999.0, 999.0) THEN NULL ELSE COALESCE(@latitude, Latitude) END,
+		Longitude = CASE WHEN @latitude IN (-999.0, 999.0) OR @longitude IN (-999.0, 999.0) THEN NULL ELSE COALESCE(@longitude, Longitude) END,
 		DefaultRunTags1 = COALESCE(@defaultRunTags1, DefaultRunTags1),
 		DefaultRunTags2 = COALESCE(@defaultRunTags2, DefaultRunTags2),
 		DefaultRunTags3 = COALESCE(@defaultRunTags3, DefaultRunTags3),

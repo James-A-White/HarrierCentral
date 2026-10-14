@@ -2,7 +2,7 @@
   "schema": "HC6",
   "name": "hcportal_editKennel",
   "version": "1.3.0",
-  "description": "Updates an existing kennel's settings. Update-only (no insert path). COALESCE pattern: a non-NULL parameter is written, NULL means 'leave unchanged'. Exceptions: @latitude or @longitude = -999.0 sets both columns NULL; @messagingGroupInviteUrl, @runsPageUrl, @cardPaymentProvider and @cardPaymentMerchantCode treat '' as 'clear to NULL'; other strings cannot be cleared. Covers identity, dissemination, Google Calendar, messaging group, payment config (3 slots), card payments (SumUp only), pricing, currency, location, tags, membership renewal, notifications, runs-page import and inbound integration, PackTrack trail config, and feature tier. Auth: HC6.ValidatePortalAuth with @publicKennelId as the callerParamString. Gate: the caller's HasherKennelMap row for the kennel must carry AppAccessFlags & 0x40000081 (superAdmin | authIsAdmin). Validation order: auth → publicKennelId NULL → runs page URL → inbound integration → KennelUniqueShortName uniqueness (with suggestions) → kennel exists → admin flags → card payment provider/merchant code. Several columns written here are newer than db/schema/tables/HC.Kennel.Table.sql; their types come from the run-once ALTER scripts named on each parameter. Idempotency: set-state — every column is written to the value sent; a repeat writes the same values again. Google Calendar (2026-10-15, E3.F6.S5): when this save sets or keeps InboundIntegrationId 2 (Google Calendar) and touches @inboundIntegrationId or @runsPageUrl, the effective runs-page address must be a Google Calendar link (https://calendar.google.com/calendar/… with src=, cid= or /calendar/ical/), else Success 0 with how to copy the calendar's public URL. The runs-page reader reads that calendar through its public iCal feed. Feedback-loop guard (2026-10-15): with InboundIntegrationId 2 (Google Calendar) and PublishToGoogleCalendar 1 after the save, Success 0 when the import calendar's id (from /calendar/ical/<id>/ or src=<id>) appears in PublishToGoogleCalendarAddresses, or cannot be read from the link (a base64 cid= share link).",
+  "description": "Updates an existing kennel's settings. Update-only (no insert path). COALESCE pattern: a non-NULL parameter is written, NULL means 'leave unchanged'. Exceptions: @latitude or @longitude = -999.0 (or 999.0) sets both columns NULL, and an out-of-range coordinate is refused; @messagingGroupInviteUrl, @runsPageUrl, @cardPaymentProvider and @cardPaymentMerchantCode treat '' as 'clear to NULL'; other strings cannot be cleared. Covers identity, dissemination, Google Calendar, messaging group, payment config (3 slots), card payments (SumUp only), pricing, currency, location, tags, membership renewal, notifications, runs-page import and inbound integration, PackTrack trail config, and feature tier. Auth: HC6.ValidatePortalAuth with @publicKennelId as the callerParamString. Gate: the caller's HasherKennelMap row for the kennel must carry AppAccessFlags & 0x40000081 (superAdmin | authIsAdmin). Validation order: auth → publicKennelId NULL → runs page URL → social links → pack-off minutes → position range → inbound integration → KennelUniqueShortName uniqueness (with suggestions) → kennel exists → admin flags → card payment provider/merchant code. Several columns written here are newer than db/schema/tables/HC.Kennel.Table.sql; their types come from the run-once ALTER scripts named on each parameter. Idempotency: set-state — every column is written to the value sent; a repeat writes the same values again. Google Calendar (2026-10-15, E3.F6.S5): when this save sets or keeps InboundIntegrationId 2 (Google Calendar) and touches @inboundIntegrationId or @runsPageUrl, the effective runs-page address must be a Google Calendar link (https://calendar.google.com/calendar/… with src=, cid= or /calendar/ical/), else Success 0 with how to copy the calendar's public URL. The runs-page reader reads that calendar through its public iCal feed. Feedback-loop guard (2026-10-15): with InboundIntegrationId 2 (Google Calendar) and PublishToGoogleCalendar 1 after the save, Success 0 when the import calendar's id (from /calendar/ical/<id>/ or src=<id>) appears in PublishToGoogleCalendarAddresses, or cannot be read from the link (a base64 cid= share link).",
   "parameters": [
     {
       "name": "deviceId",
@@ -450,14 +450,14 @@
       "type": "DECIMAL(18,14)",
       "nullable": true,
       "mapsToColumn": "Kennel.Latitude",
-      "description": "Kennel latitude. Sentinel: -999.0 on either @latitude or @longitude sets both Latitude and Longitude columns to NULL (geographic nulling). Otherwise NULL = no change. Sentinel changed from 999 (HC5) to -999.0 in HC6."
+      "description": "Kennel latitude. Sentinel: -999.0 (or 999.0, the HC5 value the portal kept sending until 2026-10-14, which had been stored as a real latitude) on either @latitude or @longitude sets both Latitude and Longitude columns to NULL (geographic nulling). Otherwise NULL = no change. Any other latitude outside -90..90 or longitude outside -180..180 is refused (Success 0, 2026-10-14)."
     },
     {
       "name": "longitude",
       "type": "DECIMAL(19,15)",
       "nullable": true,
       "mapsToColumn": "Kennel.Longitude",
-      "description": "Kennel longitude. Sentinel: -999.0 on either @latitude or @longitude sets both Latitude and Longitude columns to NULL (geographic nulling). Otherwise NULL = no change. Sentinel changed from 999 (HC5) to -999.0 in HC6."
+      "description": "Kennel longitude. Sentinel: -999.0 (or 999.0, the HC5 value the portal kept sending until 2026-10-14, which had been stored as a real latitude) on either @latitude or @longitude sets both Latitude and Longitude columns to NULL (geographic nulling). Otherwise NULL = no change. Any other latitude outside -90..90 or longitude outside -180..180 is refused (Success 0, 2026-10-14)."
     },
     {
       "name": "defaultRunTags1",
@@ -670,7 +670,7 @@
     }
   ],
   "sideEffects": [
-    "UPDATE HC.Kennel — every non-NULL parameter via COALESCE, plus updatedAt = SYSUTCDATETIME(); Latitude/Longitude NULL when either is -999.0; RunsPageHash cleared when the runs page address changes. Wrapped in a transaction. HC.trgUpdateModifiedOnDateForKennels also fires (kennel re-syncs to phones)."
+    "UPDATE HC.Kennel — every non-NULL parameter via COALESCE, plus updatedAt = SYSUTCDATETIME(); Latitude/Longitude NULL when either is -999.0 or 999.0; RunsPageHash cleared when the runs page address changes. Wrapped in a transaction. HC.trgUpdateModifiedOnDateForKennels also fires (kennel re-syncs to phones)."
   ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
