@@ -989,6 +989,26 @@ class LiveRunGeneralController extends GetxController
   /// Tells the pack the runner is back on trail, and removes the distress mark
   /// from the live map so nobody keeps searching. The chat message is the
   /// permanent record; the map should only show what is still true.
+  /// Assistance messages sent but not yet confirmed, by kind — so "Try
+  /// again" after a lost reply re-sends the SAME message (E14.G2.R5,
+  /// 2026-10-14). `hcapp_sendEventMessage` returns the stored message for an
+  /// id it already has, so the pack is pushed once. A fresh id is minted
+  /// after a success, or two minutes after the first attempt (a genuinely new
+  /// call for help, not a retry).
+  final Map<String, ({String id, DateTime at})> _unconfirmedSends =
+      <String, ({String id, DateTime at})>{};
+
+  String _sendIdFor(String kind) {
+    final ({String id, DateTime at})? pending = _unconfirmedSends[kind];
+    if (pending != null &&
+        DateTime.now().difference(pending.at) < const Duration(minutes: 2)) {
+      return pending.id;
+    }
+    final String id = const Uuid().v4();
+    _unconfirmedSends[kind] = (id: id, at: DateTime.now());
+    return id;
+  }
+
   Future<bool> sendFoundTrailMessage() async {
     final String name =
         getStringPref(StringPrefsEnum.displayName) ?? 'A hasher';
@@ -1020,7 +1040,7 @@ class LiveRunGeneralController extends GetxController
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';
-    final String messageId = const Uuid().v4();
+    final String messageId = _sendIdFor('backOnTrail');
 
     final String result = await ServiceCommon.sendHttpPost(() {
       return jsonEncode(<String, dynamic>{
@@ -1037,7 +1057,9 @@ class LiveRunGeneralController extends GetxController
         'messageReleasabilityFlags': kChatReleasabilityAssistance,
       });
     });
-    return !result.startsWith(ERROR_PREFIX);
+    final bool sent = !result.startsWith(ERROR_PREFIX);
+    if (sent) _unconfirmedSends.remove('backOnTrail');
+    return sent;
   }
 
   /// Broadcasts an assistance request into the run chat — a normal event chat
@@ -1112,7 +1134,8 @@ class LiveRunGeneralController extends GetxController
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final String deviceSecret =
         getStringPref(StringPrefsEnum.deviceSecret) ?? '';
-    final String messageId = const Uuid().v4();
+    final String sendKind = urgent ? 'help' : 'lost';
+    final String messageId = _sendIdFor(sendKind);
 
     final String result = await ServiceCommon.sendHttpPost(() {
       // Minted inside the closure: fresh token per attempt (token retry).
@@ -1130,8 +1153,10 @@ class LiveRunGeneralController extends GetxController
         'messageReleasabilityFlags': kChatReleasabilityAssistance,
       });
     });
+    final bool chatSent = !result.startsWith(ERROR_PREFIX);
+    if (chatSent) _unconfirmedSends.remove(sendKind);
     return (
-      chatSent: !result.startsWith(ERROR_PREFIX),
+      chatSent: chatSent,
       markPlaced: await markFuture,
     );
   }
