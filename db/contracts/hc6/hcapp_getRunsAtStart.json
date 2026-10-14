@@ -1,0 +1,121 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getRunsAtStart",
+  "version": "1.0.0",
+  "description": "The kennel's other runs at the same local date and time (to the minute) as a run about to be saved (E3.F1.S8). The app asks before saving a new run or a changed start and confirms 'Another run at this time?' when anything comes back. Rule: HC6.RunsAtLocalStart, shared with hcportal_getRunsAtStart. Missing input or a caller without createEditRuns gets an empty answer, never an error.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Registered device. Default NULL (auth failure)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Standard token (paramString = device secret)."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.KennelId",
+      "description": "The run's kennel. NULL = empty answer."
+    },
+    {
+      "name": "eventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.id",
+      "description": "The run being saved (the id the app minted for a new one); never matches itself. NULL or the empty GUID excludes nothing."
+    },
+    {
+      "name": "startDatetime",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventStartDatetime",
+      "description": "The start exactly as hcapp_addEditEvent will receive it; its local wall clock (offset ignored) is compared to EventStartLocal, to the minute. NULL = empty answer."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "On auth failure (ValidateAppAuth) only: the error detail alone, no envelope. Runtime errors are logged to HC.ErrorLog and re-thrown."
+    },
+    {
+      "index": 0,
+      "name": "SuccessEnvelope",
+      "description": "Otherwise always.",
+      "columns": [
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1"
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL"
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": true,
+          "description": "NULL"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "RunsAtStart",
+      "description": "adHocData: one row per other run of the kennel at that local start; absent or empty = no clash.",
+      "columns": [
+        {
+          "name": "adHocDataId",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1 (adHocData marker)."
+        },
+        {
+          "name": "eventId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "HC.Event.id, lower-case."
+        },
+        {
+          "name": "eventName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "The run's name (FbEventName when the run uses imported details)."
+        },
+        {
+          "name": "eventNumber",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HC.Event.EventNumber."
+        },
+        {
+          "name": "isVisible",
+          "type": "BIT",
+          "nullable": false,
+          "description": "Hidden runs are included."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
