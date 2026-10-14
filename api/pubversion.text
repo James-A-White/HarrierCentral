@@ -1,3 +1,7 @@
+1.0.61+107
+    • Beta Testers assistant (E18.F9): answers testers in the app's Beta Testers room within seconds, asks follow-up questions until it understands a report, then emails James one proposal per case (Claude Opus 5.5, read-only code / log / database tools); kicked by the room message, 5-minute timer backstop; off unless BETA_ASSISTANT_ENABLED=1
+    • BetaRoomTest: a dry run of one assistant turn that sends nothing (internal secret)
+
 1.0.61+106
     • Unsubscribe link acts only on POST: mail scanners can no longer unsubscribe members (one-click still works)
     • Run email: a repeated send with the same send id emails nobody

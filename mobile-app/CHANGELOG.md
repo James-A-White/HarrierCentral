@@ -1,3 +1,11 @@
+## 3.1.10+1477 (2026-10-14)
+
+### New Features
+
+- **Send my logs** (Beta Testers room only): uploads this session's app log at
+  once and posts "📎 Logs sent", so James's assistant can look at a problem
+  while it is fresh.
+
 ## 3.1.10+1476 (2026-10-14)
 
 ### New Features
