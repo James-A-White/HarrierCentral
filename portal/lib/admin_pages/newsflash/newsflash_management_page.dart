@@ -99,6 +99,9 @@ class NewsflashManagementPage extends StatelessWidget {
     final formKey = GlobalKey<FormState>();
     // A second press would pop the page behind the dialog and save twice.
     var saving = false;
+    // A NEW newsflash's id, minted once for this dialog and sent on every
+    // Save (E14.G2.R5): a repeat after a lost reply inserts nothing.
+    final String? newNewsflashId = existing == null ? const Uuid().v4() : null;
 
     unawaited(Get.dialog<void>(
       Dialog(
@@ -120,9 +123,11 @@ class NewsflashManagementPage extends StatelessWidget {
               if (saving || isUploading.value) return;
               if (!formKey.currentState!.validate()) return;
               saving = true;
-              Get.back<void>();
-              await controller.saveNewsflash(
+              // The dialog stays open until the save succeeds: on a failure
+              // the text is still there and Save again sends the same id.
+              final bool ok = await controller.saveNewsflash(
                 newsflashId: existing?.newsflashId,
+                newNewsflashId: newNewsflashId,
                 title: titleCtrl.text.trim(),
                 bodyText: bodyCtrl.text.trim(),
                 imageUrl: imageUrlState.value,
@@ -130,6 +135,8 @@ class NewsflashManagementPage extends StatelessWidget {
                 endDate: endDateState.value,
                 kennelId: kennelIdState.value,
               );
+              saving = false;
+              if (ok) Get.back<void>();
             },
           ),
         ),

@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_addEditNewsflash",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Creates or updates a portal newsflash. When @newsflashId is NULL a new row is inserted with the calling admin's hasherId recorded as CreatedByHasherId. When @newsflashId is provided the existing active (IsDeleted=0) newsflash is updated. Image upload to Azure Blob Storage is handled by the Flutter portal before calling this SP — @imageUrl receives the resulting blob URL. An empty or whitespace-only @imageUrl is treated as NULL (no image / clear existing image). Validation is fast-failed before the auth round-trip. Auth: HC6.ValidatePortalAuth with NULL callerParamString. There is no permission gate beyond a valid portal token (see codeSmells). HC.PortalNewsflash is defined in db/hc6/portal/archive/create_portal_newsflash_tables.sql (not in db/schema/tables). Permission (2026-10-13): platform admins with CanManageNewsflash only; otherwise {Success 0, 'Not authorised to manage newsflashes'}.",
   "parameters": [
     {
@@ -66,6 +66,13 @@
       "nullable": true,
       "mapsToColumn": "PortalNewsflash.KennelId",
       "description": "Optional. NULL = platform-wide newsflash shown to all users. When provided, the kennel must exist in HC.Kennel."
+    },
+    {
+      "name": "newNewsflashId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "PortalNewsflash.NewsflashId",
+      "description": "A new newsflash's id, minted once per portal dialog (E14.G2.R5, 2026-10-14). Already present = a repeat after a lost reply: success, nothing inserted. NULL = the SP mints one. Ignored when @newsflashId (an edit) is given."
     }
   ],
   "rowsets": [

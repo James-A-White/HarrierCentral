@@ -140,9 +140,13 @@ Future<bool> addEditNewsflash({
   required DateTime startDate,
   DateTime? endDate,
   String? kennelId,
+  // A new newsflash's id, minted once per dialog (E14.G2.R5): a Save repeated
+  // after a lost reply finds it and inserts nothing.
+  String? newNewsflashId,
 }) async {
   final body = <String, String?>{
     'queryType': 'addEditNewsflash',
+    'newNewsflashId': ?newNewsflashId,
     'deviceId': _deviceId(),
     'accessToken': _token('hcportal_addEditNewsflash'),
     'newsflashId': newsflashId,

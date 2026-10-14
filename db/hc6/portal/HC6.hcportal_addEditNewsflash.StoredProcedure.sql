@@ -8,7 +8,8 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_addEditNewsflash]
     @imageUrl       NVARCHAR(500) = NULL,       -- NULL or empty = no image / clear existing image
     @startDate      DATE = NULL,
     @endDate        DATE = NULL,                -- NULL = no expiry
-    @kennelId       UNIQUEIDENTIFIER = NULL     -- NULL = all kennels; provided = kennel-targeted
+    @kennelId       UNIQUEIDENTIFIER = NULL,    -- NULL = all kennels; provided = kennel-targeted
+    @newNewsflashId UNIQUEIDENTIFIER = NULL     -- a NEW newsflash's id, minted once per dialog (E14.G2.R5)
 
 AS
 -- =====================================================================
@@ -26,6 +27,11 @@ AS
 --             @startDate     — required; defaults to today in the portal UI
 --             @endDate       — optional; must be >= @startDate if provided
 --             @kennelId      — optional; NULL = platform-wide newsflash
+--             @newNewsflashId — optional (2026-10-14, E14.G2.R5): the id the
+--                              portal minted for a new newsflash, sent on
+--                              every attempt. Already there = a repeat after
+--                              a lost reply: success, nothing inserted.
+--                              Idempotent writes pattern: creates a row.
 -- Returns: Standard success envelope
 -- Author: Harrier Central
 -- Created: 2026-04-10
@@ -105,14 +111,19 @@ BEGIN TRY
 
     IF @newsflashId IS NULL
     BEGIN
-        -- Add new newsflash
-        INSERT INTO HC.PortalNewsflash
-            (Title, BodyText, ImageUrl, StartDate, EndDate, KennelId,
-             IsDeleted, CreatedByHasherId, CreatedAt, UpdatedAt)
-        VALUES
-            (LTRIM(RTRIM(@title)), LTRIM(RTRIM(@bodyText)), @resolvedImageUrl,
-             @startDate, @endDate, @kennelId,
-             0, @hasherId, GETUTCDATE(), GETUTCDATE());
+        -- Add new newsflash. With @newNewsflashId the portal's own id is the
+        -- key, and a repeat (the first attempt committed, its reply was lost)
+        -- finds it under lock and inserts nothing.
+        IF (@newNewsflashId IS NULL OR NOT EXISTS (
+                SELECT 1 FROM HC.PortalNewsflash WITH (UPDLOCK, HOLDLOCK)
+                WHERE NewsflashId = @newNewsflashId))
+            INSERT INTO HC.PortalNewsflash
+                (NewsflashId, Title, BodyText, ImageUrl, StartDate, EndDate, KennelId,
+                 IsDeleted, CreatedByHasherId, CreatedAt, UpdatedAt)
+            VALUES
+                (COALESCE(@newNewsflashId, NEWID()), LTRIM(RTRIM(@title)), LTRIM(RTRIM(@bodyText)), @resolvedImageUrl,
+                 @startDate, @endDate, @kennelId,
+                 0, @hasherId, GETUTCDATE(), GETUTCDATE());
     END
     ELSE
     BEGIN

@@ -17,8 +17,11 @@ class NewsflashManagementController extends GetxController {
     isLoading.value = false;
   }
 
-  Future<void> saveNewsflash({
+  /// True when saved. On false the error is shown and the caller keeps its
+  /// dialog open, so Save again resends the same [newNewsflashId].
+  Future<bool> saveNewsflash({
     String? newsflashId,
+    String? newNewsflashId,
     required String title,
     required String bodyText,
     String? imageUrl,
@@ -34,12 +37,14 @@ class NewsflashManagementController extends GetxController {
       startDate: startDate,
       endDate: endDate,
       kennelId: kennelId,
+      newNewsflashId: newNewsflashId,
     );
     if (ok) {
       await loadNewsflashes();
     } else {
       _showError('Failed to save newsflash. Please try again.');
     }
+    return ok;
   }
 
   Future<void> softDelete(String newsflashId) async {
