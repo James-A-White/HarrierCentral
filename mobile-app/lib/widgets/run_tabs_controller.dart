@@ -98,6 +98,11 @@ class RunTabsController extends GetxController
   final RxInt thisUserIndex = (-1).obs;
   final Rx<EnumRsvpState> rsvpRequested = rsvpUnknown.obs;
 
+  /// True while an RSVP is on its way to the server: a second RSVP press is
+  /// refused until it returns, and the speed dial's RSVP items are disabled.
+  /// (rsvpRequested is never reset, so it cannot serve as the in-flight flag.)
+  final RxBool rsvpSaving = false.obs;
+
   /// This hasher's own attendance on the run, so the past-run "I was at this
   /// run" button goes away once they have said so (E4.F4.S3).
   late final RxInt myAttendence = futureRun.extensions.attendenceState.obs;
@@ -407,6 +412,16 @@ class RunTabsController extends GetxController
   }
 
   Future<void> setRsvpState(EnumRsvpState rsvpState) async {
+    if (rsvpSaving.value) return;
+    rsvpSaving.value = true;
+    try {
+      await _setRsvpState(rsvpState);
+    } finally {
+      if (!isClosed) rsvpSaving.value = false;
+    }
+  }
+
+  Future<void> _setRsvpState(EnumRsvpState rsvpState) async {
     // Optimistic: this user's row goes blue while the server answers.
     final int i = thisUserIndex.value;
     if (packListLoaded.value && i >= 0 && i < packList.length) {

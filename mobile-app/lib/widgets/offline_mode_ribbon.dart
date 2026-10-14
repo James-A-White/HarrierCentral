@@ -1,6 +1,9 @@
 import 'package:harrier_central/imports.dart';
 import 'package:intl/intl.dart';
 
+/// True while "Try reconnect" is checking: a second tap is ignored.
+bool _reconnecting = false;
+
 class OfflineModeRibbon extends StatelessWidget {
   const OfflineModeRibbon({
     super.key,
@@ -53,11 +56,22 @@ class OfflineModeRibbon extends StatelessWidget {
                     ) ??
                     false);
 
-            if (!tryReconnect) return;
+            if (!tryReconnect || _reconnecting) return;
 
-            final reconnected = await network.forceRecheck();
+            // Say so at once: the check can take several seconds.
+            _reconnecting = true;
+            hcSnack('Trying to reconnect…', seconds: 15);
+            final bool reconnected;
+            try {
+              reconnected = await network.forceRecheck();
+            } finally {
+              _reconnecting = false;
+              closeAllSnackbarsSafely();
+            }
 
-            if (reconnected) {
+            if (!reconnected) {
+              hcSnack('Still offline. Try again in a moment.', error: true);
+            } else {
               await Utilities.showAlert2(
                 'Connected',
                 'You are now connected to Harrier Central.',

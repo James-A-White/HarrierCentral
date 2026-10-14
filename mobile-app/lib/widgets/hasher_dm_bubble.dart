@@ -16,6 +16,14 @@ enum HasherDmState {
   talked,
 }
 
+/// Hashers whose bubble is opening a message right now (keyed by the id the
+/// bubble was given). `DirectMessageService.start` may create a request and
+/// push them, so a tap shows a spinner at once and a second tap on the same
+/// hasher is refused until the first returns — the hasher page's Message
+/// button does the same with its own flag. File-level because the bubble is
+/// stateless and drawn on many rows.
+final RxSet<String> _dmOpening = <String>{}.obs;
+
 /// The chat bubble on a hasher's row, wherever individual hashers are
 /// listed — the RSVP pack first (James, 2026-10-12: "anywhere in the app
 /// where you see individual hashers there should be a way to open a direct
@@ -74,11 +82,18 @@ class HasherDmBubble extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final String key = (id ?? pub)!;
     final NotificationService? ns = notificationServiceOrNull;
-    // No service means nothing reactive to read, and an Obx that reads no
-    // Rx throws — draw the not-yet bubble outside one.
-    if (ns == null) return _button(HasherDmState.notFriends, 0, null);
+    // No service: only the opening set to read.
+    if (ns == null) {
+      return Obx(() {
+        final bool busy = _dmOpening.contains(key);
+        return _button(HasherDmState.notFriends, 0, null, key, busy);
+      });
+    }
     return Obx(() {
+      // Read first, before anything can branch past it (Obx rule).
+      final bool busy = _dmOpening.contains(key);
       final EventChatSummary? row = ns.unreadChatRuns.firstWhereOrNull(
         (EventChatSummary s) =>
             s.isDmThread &&
@@ -90,11 +105,17 @@ class HasherDmBubble extends StatelessWidget {
           : (row.messageCount ?? 0) > 0
           ? HasherDmState.talked
           : HasherDmState.friends;
-      return _button(state, row?.badgeCount ?? 0, row);
+      return _button(state, row?.badgeCount ?? 0, row, key, busy);
     });
   }
 
-  Widget _button(HasherDmState state, int unread, EventChatSummary? row) {
+  Widget _button(
+    HasherDmState state,
+    int unread,
+    EventChatSummary? row,
+    String key,
+    bool busy,
+  ) {
     return IconButton(
       // Compact: it sits at the end of rows that are already full.
       visualDensity: VisualDensity.compact,
@@ -105,8 +126,17 @@ class HasherDmBubble extends StatelessWidget {
       tooltip: state == HasherDmState.notFriends
           ? 'Ask $displayName to chat'
           : 'Message $displayName',
-      onPressed: () => unawaited(_open(row)),
-      icon: _icon(state, unread),
+      onPressed: busy ? null : () => unawaited(_open(row, key)),
+      icon: busy
+          ? SizedBox(
+              width: size * 0.7,
+              height: size * 0.7,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: onDark ? Colors.white70 : Colors.grey.shade700,
+              ),
+            )
+          : _icon(state, unread),
     );
   }
 
@@ -159,7 +189,20 @@ class HasherDmBubble extends StatelessWidget {
     }
   }
 
-  Future<void> _open(EventChatSummary? row) async {
+  Future<void> _open(EventChatSummary? row, String key) async {
+    if (_dmOpening.contains(key)) return;
+    _dmOpening.add(key);
+    try {
+      await _openNow(row);
+    } finally {
+      _dmOpening.remove(key);
+    }
+    // A thread opened (or a hasher who accepts anyone became a friend):
+    // re-read the rows so this bubble and every other one catch up.
+    unawaited(notificationServiceOrNull?.getEventChatMessageCounts());
+  }
+
+  Future<void> _openNow(EventChatSummary? row) async {
     final HcId? thread = row?.threadId;
     if (row != null && thread != null) {
       await ChatPageController.openDirectMessage(
@@ -177,9 +220,6 @@ class HasherDmBubble extends StatelessWidget {
         hasherId: (hasherId ?? '').isEmpty ? null : HcId(hasherId!),
       );
     }
-    // A thread opened (or a hasher who accepts anyone became a friend):
-    // re-read the rows so this bubble and every other one catch up.
-    unawaited(notificationServiceOrNull?.getEventChatMessageCounts());
   }
 }
 

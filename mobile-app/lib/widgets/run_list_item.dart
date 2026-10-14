@@ -1191,6 +1191,9 @@ class RunListItem extends StatelessWidget {
   }
 
   void _showRsvpOptionsPopup() async {
+    // An RSVP already in flight (-1 = the row's spinner): the popup must not
+    // reopen mid-save and send a second one.
+    if (rliController.rsvpState.value == -1) return;
     if (Utilities.isConnected(
       showDialog: true,
       message:
@@ -1320,6 +1323,8 @@ class RunListItem extends StatelessWidget {
   }
 
   Future<void> _setRsvpState(EnumRsvpState rsvpState) async {
+    // One at a time: -1 means a save is already in flight.
+    if (rliController.rsvpState.value == -1) return;
     // Remember the current RSVP so we can roll back if the call fails — the
     // line below optimistically flips to the -1 "loading" sentinel.
     final int previousRsvpState = rliController.rsvpState.value;
@@ -1541,6 +1546,7 @@ class RunListItem extends StatelessWidget {
         (retVal == emailAlertsAuto)) {
       final String userId = currentUserId;
       final EnumEmailAlertState nState = retVal;
+      final int previous = rliController.emailAlertPreference.value;
       rliController.setEmailState(-1);
 
       List<dynamic> results = await tableModel.hasherEventMapService
@@ -1552,7 +1558,12 @@ class RunListItem extends StatelessWidget {
             nState,
           );
 
-      rliController.setEmailState(results[0]?['emailAlertPreference'] ?? 0);
+      // Empty = offline, a dropped socket or an error envelope: put the
+      // previous state back rather than leave the spinner up for ever.
+      final Map<String, dynamic>? row = firstRow(results);
+      rliController.setEmailState(
+        row == null ? previous : (row['emailAlertPreference'] ?? 0),
+      );
     }
   }
 
@@ -1560,6 +1571,8 @@ class RunListItem extends StatelessWidget {
     if ((retVal != NotificationState.unchanged)) {
       final String userId = currentUserId;
       final NotificationState nState = retVal;
+      final NotificationState previous =
+          rliController.notificationPreference.value;
       rliController.setNotificationState(NotificationState.unchanged);
 
       List<dynamic> results = await tableModel.hasherEventMapService
@@ -1572,9 +1585,13 @@ class RunListItem extends StatelessWidget {
           );
 
       // // provided to the function
+      // Empty reply: put the previous state back (see _setEmailAlertState).
+      final Map<String, dynamic>? row = firstRow(results);
       rliController.setNotificationState(
-        NotificationState.fromInt(results[0]?['notificationPreference'] ?? 0) ??
-            NotificationState.auto,
+        row == null
+            ? previous
+            : NotificationState.fromInt(row['notificationPreference'] ?? 0) ??
+                  NotificationState.auto,
       );
     }
   }

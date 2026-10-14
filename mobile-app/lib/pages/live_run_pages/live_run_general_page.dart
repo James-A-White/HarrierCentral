@@ -95,6 +95,21 @@ class LiveRunGeneralController extends GetxController
 
   final RxBool isTracking = false.obs;
   final RxBool torchOn = false.obs;
+
+  /// Busy flags (E14.G2.R5, 2026-10-14): each is set before the first await
+  /// of its action, shown on the button, and refuses a second press until
+  /// the first returns.
+  /// Start Run Tracking: pre-flight, resume and auto check-in in flight.
+  final RxBool isStarting = false.obs;
+
+  /// End Run: the On Inn mark (a one-shot GPS fix) and the stop in flight.
+  final RxBool isEnding = false.obs;
+
+  /// Send Help: the confirmed request is being sent.
+  final RxBool sendingHelp = false.obs;
+
+  /// Make a Charge: the Down Down page is opening or open.
+  bool chargeOpening = false;
   final RxDouble distanceKm = 0.0.obs;
   final Rx<Duration> elapsed = const Duration().obs;
   final Rx<Position?> lastPosition = Rx<Position?>(null);
@@ -358,6 +373,9 @@ class LiveRunGeneralController extends GetxController
       trackingOpensAtLabel(run.event.eventStartDatetimeGmt);
 
   Future<void> toggleTracking() async {
+    // A start already in flight refuses a second press: two would run the
+    // pre-flight twice and send two auto check-ins.
+    if (isStarting.value) return;
     final newValue = !_locationService.joinRunTracking.value;
     _locationService.eventId = run.event.eventId;
     _locationService.userId = getStringPref(StringPrefsEnum.userId);
@@ -368,6 +386,15 @@ class LiveRunGeneralController extends GetxController
       return;
     }
 
+    isStarting.value = true;
+    try {
+      await _startTracking();
+    } finally {
+      if (!isClosed) isStarting.value = false;
+    }
+  }
+
+  Future<void> _startTracking() async {
     // Starting. First, can this phone record a trail at all? (E5.F1.S13:
     // the answer is given at the start line, not by an empty map later.)
     if (!await _runPreflight()) return;
@@ -409,7 +436,7 @@ class LiveRunGeneralController extends GetxController
         backfill: backfill,
       );
     } else {
-      _locationService.joinRunTracking.value = newValue;
+      _locationService.joinRunTracking.value = true;
     }
 
     // Tracking this run IS attending it. Someone who turned up without an RSVP
@@ -741,15 +768,21 @@ class LiveRunGeneralController extends GetxController
   /// early bailer never shows an On-Inn in the middle of nowhere
   /// (docs/packtrack_auto_stop_plan.md).
   Future<void> endRun({required bool markOnInn}) async {
-    if (markOnInn) {
-      try {
-        await _locationService.markPoint(HashRunPointTypes.onInn);
-      } catch (_) {
-        // Best-effort: a failed one-shot fix must never block the stop.
+    if (isEnding.value) return;
+    isEnding.value = true;
+    try {
+      if (markOnInn) {
+        try {
+          await _locationService.markPoint(HashRunPointTypes.onInn);
+        } catch (_) {
+          // Best-effort: a failed one-shot fix must never block the stop.
+        }
       }
+      stopTracking();
+      unawaited(loadRunSummary());
+    } finally {
+      if (!isClosed) isEnding.value = false;
     }
-    stopTracking();
-    unawaited(loadRunSummary());
   }
 
   // ── End-of-run summary (James, 2026-09-27) ──────────────────────────────
@@ -1325,6 +1358,9 @@ class LiveRunGeneralPage extends StatelessWidget {
       final bool armedAnywhere = controller.autoStart.armed.value;
       final String armedStatus = controller.autoStart.status.value;
       final bool armedHere = armedAnywhere && controller.autoStartArmedHere;
+      // Busy flags, read here for the same reason.
+      final bool starting = controller.isStarting.value;
+      final bool ending = controller.isEnding.value;
 
       if (!tracking && !paused) {
         final canStart = controller.canStartTracking.value;
@@ -1334,9 +1370,20 @@ class LiveRunGeneralPage extends StatelessWidget {
           height: 45,
           width: double.infinity,
           child: ElevatedButton.icon(
-            icon: const Icon(Icons.play_arrow, size: 20),
+            icon: starting
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.play_arrow, size: 20),
             label: Text(
-              canStart
+              starting
+                  ? 'Starting…'
+                  : canStart
                   ? 'Start Run Tracking'
                   : 'Tracking available at ${controller.trackingOpensAt}',
               style: ts_button.copyWith(fontSize: canStart ? 18 : 15),
@@ -1350,7 +1397,7 @@ class LiveRunGeneralPage extends StatelessWidget {
               padding: buttonPadding,
               shape: buttonShape,
             ),
-            onPressed: canStart ? controller.toggleTracking : null,
+            onPressed: canStart && !starting ? controller.toggleTracking : null,
           ),
         );
 
@@ -1402,7 +1449,7 @@ class LiveRunGeneralPage extends StatelessWidget {
                     ElevatedButton.icon(
                       icon: const Icon(Icons.play_arrow, size: 20),
                       label: Text(
-                        'Start now',
+                        starting ? 'Starting…' : 'Start now',
                         style: ts_button,
                         textAlign: TextAlign.center,
                       ),
@@ -1411,10 +1458,12 @@ class LiveRunGeneralPage extends StatelessWidget {
                         foregroundColor: Colors.white,
                         shape: buttonShape,
                       ),
-                      onPressed: () async {
-                        await controller.cancelAutoStart();
-                        await controller.toggleTracking();
-                      },
+                      onPressed: starting
+                          ? null
+                          : () async {
+                              await controller.cancelAutoStart();
+                              await controller.toggleTracking();
+                            },
                     ),
                   OutlinedButton.icon(
                     icon: const Icon(
@@ -1520,10 +1569,15 @@ class LiveRunGeneralPage extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: hc_red,
                   foregroundColor: Colors.white,
+                  disabledBackgroundColor: hc_red.withValues(alpha: 0.6),
+                  disabledForegroundColor: Colors.white70,
                   padding: buttonPadding,
                   shape: buttonShape,
                 ),
-                onPressed: () async {
+                // Disabled while ending: a second On Inn mark cannot be sent.
+                onPressed: ending
+                    ? null
+                    : () async {
                   final choice = await showDialog<EndRunChoice>(
                     context: context,
                     barrierDismissible: false,
@@ -1585,6 +1639,8 @@ class LiveRunGeneralPage extends StatelessWidget {
                       ],
                     ),
                   );
+                  // A press that slipped in while another end was running.
+                  if (controller.isEnding.value) return;
                   if (choice == EndRunChoice.onInn) {
                     await controller.endRun(markOnInn: true);
                   } else if (choice == EndRunChoice.stoppedEarly) {
@@ -1606,13 +1662,27 @@ class LiveRunGeneralPage extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Image.asset(
-                      'images/live_run_trail_markers/oninn.png',
-                      height: 26,
-                      width: 26,
-                    ),
+                    if (ending)
+                      const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    else
+                      Image.asset(
+                        'images/live_run_trail_markers/oninn.png',
+                        height: 26,
+                        width: 26,
+                      ),
                     const SizedBox(width: 6),
-                    Text('End Run', style: ts_button.copyWith(fontSize: 18)),
+                    Text(
+                      ending ? 'Ending…' : 'End Run',
+                      style: ts_button.copyWith(fontSize: 18),
+                      textAlign: TextAlign.center,
+                    ),
                   ],
                 ),
               ),
@@ -1729,17 +1799,31 @@ class LiveRunGeneralPage extends StatelessWidget {
                   ),
                 ),
                 onPressed: () async {
-                  await controller.markChargeLocation();
-                  if (!context.mounted) return;
-                  await Get.to(
-                    () => AddDownDownPage(
-                      kennelId: controller.run.kennel.kennelId,
-                      eventId: controller.run.event.eventId,
-                      eventName: controller.run.event.eventName,
-                      kennelSlug: controller.run.kennel.kennelUniqueShortName,
-                      eventNumber: controller.run.event.eventNumber,
-                    ),
-                  );
+                  // Open the page at once (the feedback) and drop the gavel
+                  // mark in the background: the runner has not moved, so the
+                  // fix is the same. The flag refuses a second tap during
+                  // the push, which would mark twice and open two pages.
+                  if (controller.chargeOpening) return;
+                  controller.chargeOpening = true;
+                  try {
+                    unawaited(
+                      controller.markChargeLocation().catchError((Object e) {
+                        // Best-effort, as before: a failed fix never blocks
+                        // the charge.
+                      }),
+                    );
+                    await Get.to(
+                      () => AddDownDownPage(
+                        kennelId: controller.run.kennel.kennelId,
+                        eventId: controller.run.event.eventId,
+                        eventName: controller.run.event.eventName,
+                        kennelSlug: controller.run.kennel.kennelUniqueShortName,
+                        eventNumber: controller.run.event.eventNumber,
+                      ),
+                    );
+                  } finally {
+                    controller.chargeOpening = false;
+                  }
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -2072,7 +2156,10 @@ class LiveRunGeneralPage extends StatelessWidget {
     final buttonShape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(12),
     );
-    return SizedBox(
+    return Obx(() {
+      // Read first, before any branch (Obx rule).
+      final bool sending = controller.sendingHelp.value;
+      return SizedBox(
       height: 52,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -2088,33 +2175,55 @@ class LiveRunGeneralPage extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepOrange.shade700,
                 foregroundColor: Colors.white,
+                disabledBackgroundColor: Colors.deepOrange.shade700.withValues(
+                  alpha: 0.6,
+                ),
+                disabledForegroundColor: Colors.white70,
                 shape: buttonShape,
               ),
-              onPressed: () =>
-                  unawaited(_confirmAndSendAssist(context, urgent: false)),
+              onPressed: sending
+                  ? null
+                  : () => unawaited(
+                      _confirmAndSendAssist(context, urgent: false),
+                    ),
             ),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: ElevatedButton.icon(
-              icon: const Icon(Icons.sos, size: 22),
+              icon: sending
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.sos, size: 22),
               label: Text(
-                'Send Help',
+                sending ? 'Sending…' : 'Send Help',
                 style: ts_button.copyWith(fontSize: 16),
                 textAlign: TextAlign.center,
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: hc_red,
                 foregroundColor: Colors.white,
+                disabledBackgroundColor: hc_red.withValues(alpha: 0.6),
+                disabledForegroundColor: Colors.white70,
                 shape: buttonShape,
               ),
-              onPressed: () =>
-                  unawaited(_confirmAndSendAssist(context, urgent: true)),
+              onPressed: sending
+                  ? null
+                  : () => unawaited(
+                      _confirmAndSendAssist(context, urgent: true),
+                    ),
             ),
           ),
         ],
       ),
     );
+    });
   }
 
   /// Torch + share-my-run. Utility tools, not trail actions — always enabled,
@@ -2176,6 +2285,7 @@ class LiveRunGeneralPage extends StatelessWidget {
     BuildContext context, {
     required bool urgent,
   }) async {
+    if (controller.sendingHelp.value) return;
     // "I'm Lost" is a question before it's an announcement. Open the compass
     // straight away and let the runner decide whether to tell anyone — most of
     // the time the arrow answers it and nobody needs troubling. Send Help is
@@ -2255,7 +2365,15 @@ class LiveRunGeneralPage extends StatelessWidget {
     if (confirmed != true) return;
 
     if (urgent) _lastHelpSentAt = DateTime.now();
-    final result = await controller.sendAssistanceMessage(urgent: urgent);
+    // Busy from the confirm on: the GPS fix and the send can take seconds,
+    // and the buttons say "Sending…" and refuse a second press meanwhile.
+    controller.sendingHelp.value = true;
+    final ({bool chatSent, bool markPlaced}) result;
+    try {
+      result = await controller.sendAssistanceMessage(urgent: urgent);
+    } finally {
+      if (!controller.isClosed) controller.sendingHelp.value = false;
+    }
     final bool anySent = result.chatSent || result.markPlaced;
     Get.snackbar(
       anySent ? 'Pack notified' : 'Nothing got through',

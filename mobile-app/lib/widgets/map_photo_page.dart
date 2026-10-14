@@ -368,15 +368,17 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
           // (James, 2026-09-27).
           IconButton(
             tooltip: 'Save to my photos',
-            icon: const Icon(Icons.download, color: Colors.white),
-            onPressed: () => unawaited(
-              PhotoDownload.saveToCameraRoll(
-                _currentPhoto.imageUrl,
-                latitude: _currentPhoto.latitude,
-                longitude: _currentPhoto.longitude,
-                takenAt: _currentPhoto.capturedAt,
-              ),
-            ),
+            icon: _saving
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.download, color: Colors.white),
+            onPressed: _saving ? null : () => unawaited(_saveCurrent()),
           ),
           // Your photo, your call — at any point in its life, whether it is
           // still waiting on the Hash Flash or was approved months ago
@@ -384,8 +386,17 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
           if (_currentPhoto.canMakePrivate)
             IconButton(
               tooltip: 'Make private',
-              icon: const Icon(Icons.visibility_off, color: Colors.white),
-              onPressed: _makeCurrentPrivate,
+              icon: _makingPrivate
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.visibility_off, color: Colors.white),
+              onPressed: _makingPrivate ? null : _makeCurrentPrivate,
             ),
         ],
       ),
@@ -598,6 +609,27 @@ class _MapPhotoPageState extends State<MapPhotoPage> {
   }
 
   bool _makingPrivate = false;
+
+  /// True while "Save to my photos" is downloading and saving: the icon spins
+  /// and a second press is refused (PhotoDownload's own flag stops a second
+  /// save; this one shows it).
+  bool _saving = false;
+
+  Future<void> _saveCurrent() async {
+    if (_saving) return;
+    final MapPhotoItem photo = _currentPhoto;
+    setState(() => _saving = true);
+    try {
+      await PhotoDownload.saveToCameraRoll(
+        photo.imageUrl,
+        latitude: photo.latitude,
+        longitude: photo.longitude,
+        takenAt: photo.capturedAt,
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
 
   Widget _buildInfoFooter(BuildContext context, double bottomInset) {
     final photo = _currentPhoto;

@@ -330,8 +330,9 @@ class ChatPageController extends GetxController {
         // A location card (E9.F1.S12).
         updated = msg.copyWith(status: core.MessageStatus.delivered);
       }
-      if (updated != null)
+      if (updated != null) {
         unawaited(chatController.updateMessage(msg, updated));
+      }
     }
   }
 
@@ -1225,6 +1226,20 @@ class ChatPageController extends GetxController {
   /// stream's fix when it has one, so this never opens a second geolocator
   /// stream (memory: lost-compass-local-track).
   Future<void> _sendCurrentLocation() async {
+    // A fix can take up to 20 s: one at a time, and say so at once.
+    if (_locating) return;
+    _locating = true;
+    try {
+      await _sendCurrentLocationNow();
+    } finally {
+      _locating = false;
+    }
+  }
+
+  /// True while "Where I am now" is finding a fix — a second tap is ignored.
+  bool _locating = false;
+
+  Future<void> _sendCurrentLocationNow() async {
     Position? fix;
     try {
       LocationPermission permission = await Geolocator.checkPermission();
@@ -1242,12 +1257,15 @@ class ChatPageController extends GetxController {
         );
         return;
       }
+      hcSnack('Finding your location…', seconds: 20);
       fix = await LocationService.ensure().freshFix().timeout(
         const Duration(seconds: 20),
       );
     } catch (e, s) {
       BootLogger.logError('[ChatPageController._sendCurrentLocation]', e, s);
     }
+    // The "Finding…" toast has done its job; the bubble or the error follows.
+    closeAllSnackbarsSafely();
     if (isClosed) return;
     if (fix == null) {
       hcSnack(
@@ -1413,16 +1431,30 @@ class ChatPageController extends GetxController {
   /// comes back as "requested", by design.
   Future<void> _startDirectMessage(core.Message message) async {
     if (!_isFromSomeoneElse(message)) return;
-    // The same flow as the hasher page's Message button (message_hasher.dart).
-    await messageHasher(
-      HcId(message.authorId),
-      _authorNameOf(message),
-      onUnblocked: () {
-        // Their messages come back into every chat, including this one.
-        if (!isClosed) refetchOpenThreads();
-      },
-    );
+    // One at a time: the start may create a request and push them, so a
+    // second tap while the first is in flight is ignored.
+    if (_openingDm) return;
+    _openingDm = true;
+    final String name = _authorNameOf(message);
+    // Short, so the outcome toast (queued behind it) is not held up.
+    hcSnack('Messaging $name…', seconds: 2);
+    try {
+      // The same flow as the hasher page's Message button (message_hasher.dart).
+      await messageHasher(
+        HcId(message.authorId),
+        name,
+        onUnblocked: () {
+          // Their messages come back into every chat, including this one.
+          if (!isClosed) refetchOpenThreads();
+        },
+      );
+    } finally {
+      _openingDm = false;
+    }
   }
+
+  /// True while a direct message is being started from a long-press.
+  bool _openingDm = false;
 
 
   /// Open a DM thread standalone, then refresh the badges on return so the

@@ -66,6 +66,11 @@ Future<void> showPaymentOutboxSheet(BuildContext context) {
   );
 }
 
+/// True while the sheet's Send now is flushing: the button spins and is
+/// disabled until the flush returns. (The service's own private flag stops a
+/// second flush; this one shows it.)
+final RxBool _sendingNow = false.obs;
+
 class _PaymentOutboxSheetBody extends StatelessWidget {
   const _PaymentOutboxSheetBody();
 
@@ -85,6 +90,8 @@ class _PaymentOutboxSheetBody extends StatelessWidget {
         bottom: 20 + MediaQuery.of(context).padding.bottom,
       ),
       child: Obx(() {
+        // Read first, before anything can branch past it (Obx rule).
+        final bool sending = _sendingNow.value;
         final List<PendingPayment> entries = List<PendingPayment>.of(
           outbox.pending,
         )..sort((a, b) => a.createdAtMs.compareTo(b.createdAtMs));
@@ -146,23 +153,39 @@ class _PaymentOutboxSheetBody extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  icon: const Icon(Icons.send, color: Colors.white),
-                  label: const Text(
-                    'Send now',
-                    style: TextStyle(color: Colors.white),
+                  icon: sending
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.send, color: Colors.white),
+                  label: Text(
+                    sending ? 'Sending…' : 'Send now',
+                    style: const TextStyle(color: Colors.white),
                     textAlign: TextAlign.center,
                   ),
-                  onPressed: () async {
-                    if (Utilities.isNotConnected()) {
-                      showHcSnackbar(
-                        'Still no connection — they will send the moment '
-                        'one is available.',
-                        isError: true,
-                      );
-                      return;
-                    }
-                    await Get.find<PaymentOutboxService>().flush();
-                  },
+                  onPressed: sending
+                      ? null
+                      : () async {
+                          if (Utilities.isNotConnected()) {
+                            showHcSnackbar(
+                              'Still no connection — they will send the '
+                              'moment one is available.',
+                              isError: true,
+                            );
+                            return;
+                          }
+                          _sendingNow.value = true;
+                          try {
+                            await Get.find<PaymentOutboxService>().flush();
+                          } finally {
+                            _sendingNow.value = false;
+                          }
+                        },
                 ),
               ),
           ],
@@ -186,11 +209,11 @@ class _PaymentOutboxSheetBody extends StatelessWidget {
         ),
         actions: <Widget>[
           TextButton(
-            onPressed: () => Get.back<bool>(result: false),
+            onPressed: () => hcPop<bool>(result: false),
             child: const Text('Keep', textAlign: TextAlign.center),
           ),
           TextButton(
-            onPressed: () => Get.back<bool>(result: true),
+            onPressed: () => hcPop<bool>(result: true),
             child: const Text('Discard', textAlign: TextAlign.center),
           ),
         ],

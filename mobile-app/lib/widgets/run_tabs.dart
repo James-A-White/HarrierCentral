@@ -1628,6 +1628,8 @@ class RunTabs extends StatelessWidget {
 
   Widget _body(BuildContext context, RunTabsController c) {
     final bool fabIsVisible = c.fabIsVisible.value;
+    // An RSVP in flight disables the speed dial's RSVP items.
+    final bool rsvpSaving = c.rsvpSaving.value;
     return Stack(
       children: <Widget>[
         AppScaffold(
@@ -1660,30 +1662,40 @@ class RunTabs extends StatelessWidget {
                       children: <SpeedDialChild>[
                         SpeedDialChild(
                           child: const Icon(Feather.x),
-                          backgroundColor: hc_red,
+                          backgroundColor: rsvpSaving ? Colors.grey : hc_red,
                           label: 'I\'m not coming',
                           labelStyle: const TextStyle(fontSize: 18.0),
-                          onTap: () async {
-                            await c.setRsvpState(rsvpNo);
-                          },
+                          onTap: rsvpSaving
+                              ? null
+                              : () async {
+                                  await c.setRsvpState(rsvpNo);
+                                },
                         ),
                         SpeedDialChild(
                           child: const Icon(AntDesign.question),
-                          backgroundColor: Colors.orange,
+                          backgroundColor: rsvpSaving
+                              ? Colors.grey
+                              : Colors.orange,
                           label: 'I might come',
                           labelStyle: const TextStyle(fontSize: 18.0),
-                          onTap: () async {
-                            await c.setRsvpState(rsvpMaybe);
-                          },
+                          onTap: rsvpSaving
+                              ? null
+                              : () async {
+                                  await c.setRsvpState(rsvpMaybe);
+                                },
                         ),
                         SpeedDialChild(
                           child: const Icon(Feather.check),
-                          backgroundColor: Colors.green,
+                          backgroundColor: rsvpSaving
+                              ? Colors.grey
+                              : Colors.green,
                           label: 'I\'m coming',
                           labelStyle: const TextStyle(fontSize: 18.0),
-                          onTap: () async {
-                            await c.setRsvpState(rsvpYes);
-                          },
+                          onTap: rsvpSaving
+                              ? null
+                              : () async {
+                                  await c.setRsvpState(rsvpYes);
+                                },
                         ),
                         //   backgroundColor: Colors.white,
                         //   label: 'I will hare',

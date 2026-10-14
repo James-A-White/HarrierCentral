@@ -50,7 +50,28 @@ class KennelHistory {
   /// Verbatim the kennel-admin auto-follow: mark followed, clear the stale
   /// ten-day slice of this kennel's events, then force-replicate its full
   /// history so the run is actually there.
+  ///
+  /// It takes many seconds, so a toast says so before the follow, and a
+  /// second call while one is running waits for that one rather than
+  /// following and replicating again.
   static Future<void> followAndLoad(String kennelId) async {
+    final Future<void>? running = _inFlight;
+    if (running != null) return running;
+    hcSnack('Following and loading their runs…', seconds: 60);
+    final Future<void> load = _followAndLoad(kennelId);
+    _inFlight = load;
+    try {
+      await load;
+    } finally {
+      _inFlight = null;
+      // The toast has done its job; the run (or its absence) follows.
+      closeAllSnackbarsSafely();
+    }
+  }
+
+  static Future<void>? _inFlight;
+
+  static Future<void> _followAndLoad(String kennelId) async {
     await HasherKennelMapService().updateHasherKennelStatus(
       kennelId,
       AppDomainType.user,

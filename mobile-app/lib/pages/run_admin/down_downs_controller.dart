@@ -22,6 +22,33 @@ class DownDownsController extends GetxController {
   /// The charge whose song is being shared, from the press until the server
   /// answers: its share icon spins and a second press does nothing.
   final RxnString sharingDownDownId = RxnString();
+
+  /// Charges with a done / cancel change on its way to the server. The row
+  /// changes at once (optimistically, put back if the server refuses) and a
+  /// second tap on it is ignored until the first returns.
+  final RxSet<String> busyDownDownIds = <String>{}.obs;
+
+  /// Runs [write] for [dd] once at a time, showing [optimistic] at once and
+  /// putting [dd] back when the write fails.
+  Future<void> _rowWrite(
+    DownDownModel dd,
+    DownDownModel optimistic,
+    Future<bool> Function() write,
+  ) async {
+    final String id = dd.downDownId;
+    if (busyDownDownIds.contains(id)) return;
+    busyDownDownIds.add(id);
+    _replace(optimistic);
+    bool ok = false;
+    try {
+      ok = await write();
+    } finally {
+      if (!isClosed) {
+        busyDownDownIds.remove(id);
+        if (!ok) _replace(dd);
+      }
+    }
+  }
   final RxList<DownDownModel> downDowns = <DownDownModel>[].obs;
   Timer? _pollTimer;
 
@@ -128,45 +155,45 @@ class DownDownsController extends GetxController {
     downDowns.assignAll(ordered(next));
   }
 
-  Future<void> markDone(DownDownModel dd) async {
-    final ok = await _service.markDownDownDone(
+  Future<void> markDone(DownDownModel dd) => _rowWrite(
+    dd,
+    _copyWith(dd, isDone: true, isCancelled: false),
+    () => _service.markDownDownDone(
       kennelId: kennelId,
       eventId: eventId,
       downDownId: dd.downDownId,
-    );
-    if (isClosed || !ok) return;
-    _replace(_copyWith(dd, isDone: true, isCancelled: false));
-  }
+    ),
+  );
 
-  Future<void> unmarkDone(DownDownModel dd) async {
-    final ok = await _service.unmarkDownDownDone(
+  Future<void> unmarkDone(DownDownModel dd) => _rowWrite(
+    dd,
+    _copyWith(dd, isDone: false),
+    () => _service.unmarkDownDownDone(
       kennelId: kennelId,
       eventId: eventId,
       downDownId: dd.downDownId,
-    );
-    if (isClosed || !ok) return;
-    _replace(_copyWith(dd, isDone: false));
-  }
+    ),
+  );
 
-  Future<void> cancel(DownDownModel dd) async {
-    final ok = await _service.cancelDownDown(
+  Future<void> cancel(DownDownModel dd) => _rowWrite(
+    dd,
+    _copyWith(dd, isCancelled: true, isDone: false),
+    () => _service.cancelDownDown(
       kennelId: kennelId,
       eventId: eventId,
       downDownId: dd.downDownId,
-    );
-    if (isClosed || !ok) return;
-    _replace(_copyWith(dd, isCancelled: true, isDone: false));
-  }
+    ),
+  );
 
-  Future<void> uncancel(DownDownModel dd) async {
-    final ok = await _service.uncancelDownDown(
+  Future<void> uncancel(DownDownModel dd) => _rowWrite(
+    dd,
+    _copyWith(dd, isCancelled: false),
+    () => _service.uncancelDownDown(
       kennelId: kennelId,
       eventId: eventId,
       downDownId: dd.downDownId,
-    );
-    if (isClosed || !ok) return;
-    _replace(_copyWith(dd, isCancelled: false));
-  }
+    ),
+  );
 
   Future<void> shareSong(DownDownModel dd) async {
     if (dd.songId == null) return;
