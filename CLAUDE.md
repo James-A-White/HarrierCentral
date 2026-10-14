@@ -296,14 +296,17 @@ the delimiter — never comma. Commas appear in natural language and some data f
 splitting the list. Use `STRING_SPLIT(@param, '|')` on the SQL side and
 `join('|')` / `split('|')` on the Dart side.
 
-**Every user action is acknowledged at once (every client):**
+**Every user gesture is acknowledged at once (every client):**
 
-Wherever a person taps, clicks or submits — app, portal or public web — the
-screen answers **in the same frame**: a spinner on the button, the button
-disabled or recoloured, a progress bar, an optimistic change. Never a pause
-in which nothing moves while a request, a check or a dialog is prepared
-(James, 2026-10-14). A press that shows nothing looks missed, and pressing
-again is how one run was saved twice, then four times.
+Every gesture the system acts on — a tap, click, double-tap, long-press,
+swipe, drag, pull-to-refresh, toggle, checkbox, slider, menu or picker
+choice, key press or form submit, in the app, the portal or the public web —
+is answered **in the same frame**: a spinner on the button, the control
+disabled or recoloured, a row spinner, a progress bar, a "Sending…" toast,
+an optimistic change (James, 2026-10-14). Never a pause in which nothing
+moves while a request, a check, a GPS fix, an upload or a dialog is
+prepared. A gesture that shows nothing looks missed, and repeating it is how
+one run was saved twice, then four times, and how a swipe paid twice.
 
 - **Show it before the first `await`.** Set the busy state, then do the
   work; clear it in a `finally`. A save that first awaits a confirmation
