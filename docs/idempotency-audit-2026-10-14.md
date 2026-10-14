@@ -230,3 +230,33 @@ That every write button is actually `disabled={busy}` (the handlers set busy but
 test it first); whether a preview could fetch the admin token URL (W6); whether
 `AddKennelForm` says a resubmit replaced the code (W2); `PublicWebApi.cs` (read-only
 proxies seen, not read).
+
+---
+
+# Prevention (2026-10-14)
+
+James: "make sure we've closed off the possibility of these risks emerging
+again with new development." Rules are in CLAUDE.md ("Every user gesture is
+acknowledged at once", "Idempotent writes", "A GET never acts"); three checks
+make them mechanical:
+
+| Check | Catches | Runs |
+|---|---|---|
+| `tools/idempotency_scan.py` | a write SP with no `-- Idempotency: <pattern>` header line; a check-then-INSERT with no UPDLOCK | commit hook when `db/hc6` changes; `tools/deploy_hc6.sh` refuses to deploy while it prints |
+| `tools/get_write_scan.py` | an API Function or public-web route whose GET writes, sends or consumes a token | commit hook when `api/Endpoints` or `public-web/app/api` change |
+| `tools/catch_log_scan.py` (existing) | a CATCH that leaves no HC.ErrorLog row | commit hook when `db/hc6` changes |
+
+`tools/idempotency_baseline.txt` grandfathers the procedures written before the
+rule (175 findings when created) and only shrinks.
+
+## Follow-up: unlocked check-then-insert found by the scan in older SPs
+
+Concurrency-only (two requests at the same instant), grandfathered, to fix when
+each is next touched: `hcapp_addEditUser` (HC.Hasher), `hcapp_authenticateWebPortal`
+(WebPortalAuthenticationRequests), `hcapp_joinEventAsVisitor` (HC.Hasher),
+`hcapp_processPayment` (HasherKennelMap), `hcapp_setChatPin` (HasherEventMap),
+`hcapp_updateDownDown` (DownDownHashers), `hcportal_approveKennelRequest`
+(HasherKennelMap), `hcportal_getKennelWebsite` (KennelWebsite),
+`hcportal_setPlatformAdmin` (PlatformAdmin), `nonApi_ensureTrackAttendance`
+(HasherEventMap), `publicWeb_savePageLayout` (KennelWebsite). Several sit behind a
+unique key, so the race ends in a logged error rather than a duplicate.
