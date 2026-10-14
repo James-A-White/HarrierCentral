@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "publicWeb_submitKennelRequest",
-  "version": "1.5.0",
-  "description": "hashruns.org/add-kennel (E12.F1.S7): stores a request to add a kennel in EXT.OfficeForms_KennelImport as RequestStatus 0 (awaiting email) with a six-digit ConfirmCode; it reaches the review queue only when publicWeb_confirmKennelRequest gets the code back. Guards, in order, before any transaction: required fields and widths (LEN against the column, never a silent cut); the location must exist and agree (region in country, city in region, or free-text city); run fees and membership fields are numbers / a valid type; the three opt-in answers are present; at most five requests per SubmitIp per day. The same email + short name within 30 days with status 0 or 1 is the same request: status 0 gets a fresh code on the existing row, status 1 is reported as already submitted with no code. No device token: reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET (the Next.js route adds a honeypot, time-to-submit and per-IP limits in front). The API emails the code and removes confirmCode from the reply, adding codeSent. Replaces EXT.ImportNewKennel. Validation refusals are logged to HC.ErrorLog since 2026-10-13, and the returned errorId names that row (it was a fresh NEWID() with no row).",
+  "version": "1.6.0",
+  "description": "hashruns.org/add-kennel (E12.F1.S7): stores a request to add a kennel in EXT.OfficeForms_KennelImport as RequestStatus 0 (awaiting email) with a six-digit ConfirmCode; it reaches the review queue only when publicWeb_confirmKennelRequest gets the code back. Guards, in order, before any transaction: required fields and widths (LEN against the column, never a silent cut); the location must exist and agree (region in country, city in region, or free-text city); run fees and membership fields are numbers / a valid type; the three opt-in answers are present; at most five requests per SubmitIp per day. The same email + short name within 30 days with status 0 or 1 is the same request: status 0 within 30 minutes of the row's updatedAt keeps its ConfirmCode (and ConfirmAttempts, and updatedAt) and the API emails that SAME code again; status 0 older than that gets a fresh code and ConfirmAttempts = 0 on the existing row, status 1 is reported as already submitted with no code. No device token: reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET (the Next.js route adds a honeypot, time-to-submit and per-IP limits in front). The API emails the code and removes confirmCode from the reply, adding codeSent. Replaces EXT.ImportNewKennel. Validation refusals are logged to HC.ErrorLog since 2026-10-13, and the returned errorId names that row (it was a fresh NEWID() with no row). Idempotent writes: 'upserts by a natural key' (email + short name under UPDLOCK, HOLDLOCK) plus 'sends something' — a repeat resends the original code rather than rotating it (2026-10-14, idempotency audit W2: rotating killed the first email's code and turned it into a wrong attempt).",
   "parameters": [
     {
       "name": "firstName",
@@ -296,13 +296,19 @@
           "name": "confirmCode",
           "type": "NVARCHAR(10)",
           "nullable": true,
-          "description": "Six digits. NULL when the matching request is already confirmed (status 1). Stripped by the API."
+          "description": "Six digits. NULL when the matching request is already confirmed (status 1). On a repeat of an unconfirmed request within 30 minutes of its updatedAt this is the EXISTING code, not a new one. Stripped by the API."
         },
         {
           "name": "alreadySubmitted",
           "type": "INT",
           "nullable": false,
           "description": "1 when an open request for the same email + short name in the last 30 days was found (no new row), else 0."
+        },
+        {
+          "name": "codeKept",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Added 1.6.0 (2026-10-14). 1 when confirmCode is the existing, unrotated code of a repeat within 30 minutes; else 0. Informational — the API passes it through."
         }
       ],
       "description": "Rowset 1 on success. The API sends confirmCode by email, then removes it and adds codeSent (1/0) before replying."

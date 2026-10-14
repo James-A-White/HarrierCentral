@@ -51,6 +51,12 @@ AS
 --              and agree; five requests per IP a day; the same email and
 --              short name within 30 days is the same request, and gets its
 --              code again instead of a second row.
+--              Idempotent writes: "upserts by a natural key" (email + short
+--              name under UPDLOCK, HOLDLOCK) and "sends something" — a repeat
+--              of an unconfirmed request within 30 minutes of the row's
+--              updatedAt returns the SAME ConfirmCode (the API resends it)
+--              instead of rotating it (2026-10-14, audit W2).
+-- Idempotency: locked-upsert — email + short name under UPDLOCK, HOLDLOCK; a repeat within 30 min resends the SAME code.
 --              Reachable only through PublicWebAdminApi behind
 --              HC_INTERNAL_SECRET (the Next.js server route adds the
 --              honeypot, time-to-submit and per-IP limits in front).
@@ -62,7 +68,7 @@ AS
 --              rowset 1 — on error: { errorId, errorType, errorCode,
 --                errorTitle, errorUserMessage, errorProc };
 --                on success: { requestId, email, firstName, kennelName,
---                confirmCode, alreadySubmitted }. confirmCode is removed
+--                confirmCode, alreadySubmitted, codeKept }. confirmCode is removed
 --                by the API after the email is sent.
 -- Author:      Harrier Central
 -- Created:     2026-09-28
@@ -183,9 +189,11 @@ BEGIN TRY
         RIGHT(N'000000' + CAST(ABS(CHECKSUM(NEWID())) % 1000000 AS NVARCHAR(7)), 6);
 
     -- The same person asking for the same kennel again (a lost email, a
-    -- double submit) is the same request: a fresh code on the open row.
-    DECLARE @requestId UNIQUEIDENTIFIER, @existingStatus SMALLINT;
-    SELECT TOP 1 @requestId = ki.KennelImportId, @existingStatus = ki.RequestStatus
+    -- double submit) is the same request: no second row.
+    DECLARE @requestId UNIQUEIDENTIFIER, @existingStatus SMALLINT,
+            @existingCode NVARCHAR(10), @existingUpdatedAt DATETIME;
+    SELECT TOP 1 @requestId = ki.KennelImportId, @existingStatus = ki.RequestStatus,
+           @existingCode = ki.ConfirmCode, @existingUpdatedAt = ki.updatedAt
     FROM EXT.OfficeForms_KennelImport ki WITH (UPDLOCK, HOLDLOCK)
     WHERE ki.EmailAddress = @email
       AND ki.KennelShortName = @kennelShortName
@@ -195,7 +203,24 @@ BEGIN TRY
 
     IF (@requestId IS NOT NULL)
     BEGIN
-        IF (@existingStatus = 0)
+        -- Idempotent repeat (2026-10-14, audit W2): a repeat of an unconfirmed
+        -- request within 30 minutes of the row's last change KEEPS its code,
+        -- and the API emails that same code again. Rotating it killed the code
+        -- in the first email, so entering it counted as a wrong attempt (five
+        -- mark the request as spam). The row is not touched — neither
+        -- updatedAt (the window stays anchored, it cannot be stretched by
+        -- resubmitting) nor ConfirmAttempts (resubmitting must not buy more
+        -- guesses at the same code). Older than 30 minutes: a fresh code and
+        -- a fresh count, as before.
+        DECLARE @codeKept SMALLINT =
+            CASE WHEN @existingStatus = 0
+                       AND @existingCode IS NOT NULL
+                       AND @existingUpdatedAt > DATEADD(minute, -30, GETDATE())
+                 THEN 1 ELSE 0 END;
+
+        IF (@existingStatus = 0 AND @codeKept = 1)
+            SET @code = @existingCode;
+        ELSE IF (@existingStatus = 0)
             UPDATE EXT.OfficeForms_KennelImport
                SET ConfirmCode = @code, ConfirmAttempts = 0, updatedAt = GETDATE()
              WHERE KennelImportId = @requestId;
@@ -205,7 +230,8 @@ BEGIN TRY
         SELECT @requestId AS requestId, @email AS email, @firstName AS firstName,
                @kennelName AS kennelName,
                CASE WHEN @existingStatus = 0 THEN @code END AS confirmCode,
-               1 AS alreadySubmitted;
+               1 AS alreadySubmitted,
+               @codeKept AS codeKept;
         RETURN;
     END
 
