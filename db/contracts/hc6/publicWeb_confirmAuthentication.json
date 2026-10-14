@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "publicWeb_confirmAuthentication",
-  "version": "1.1.0",
-  "description": "The public web's half of the QR sign-in (E9.F7.S7). The page shows https://www.hashruns.org/login/UWP:<authCode>; the phone's app calls hcapp_authenticateWebPortal, which writes the HC.WebPortalAuthenticationRequests row. The Next.js server polls this SP until that row exists, then the browser is provisioned as an HC.Device (IsMobile = 0) bound to the hasher who scanned and the credentials are returned for the member cookie. Single-use (the request row is marked Removed) with a 5-minute TTL on WebPortalAuthenticationRequests.updatedAt — hcportal_confirmAuthentication minus the portal's service-account auth. No SP-level auth: the scanData match is the proof (a random value the page chose that only a signed-in phone can have recorded), and the SP is reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET, with @newDeviceId and @qrCodeData taken from a server-signed ticket.",
+  "version": "1.2.0",
+  "description": "The public web's half of the QR sign-in (E9.F7.S7). The page shows https://www.hashruns.org/login/UWP:<authCode>; the phone's app calls hcapp_authenticateWebPortal, which writes the HC.WebPortalAuthenticationRequests row. The Next.js server polls this SP until that row exists, then the browser is provisioned as an HC.Device (IsMobile = 0) bound to the hasher who scanned and the credentials are returned for the member cookie. Single-use (the request row is marked Removed) with a 5-minute TTL on WebPortalAuthenticationRequests.updatedAt — hcportal_confirmAuthentication minus the portal's service-account auth. No SP-level auth: the scanData match is the proof (a random value the page chose that only a signed-in phone can have recorded), and the SP is reachable only through PublicWebAdminApi behind HC_INTERNAL_SECRET, with @newDeviceId and @qrCodeData taken from a server-signed ticket. Idempotency: client-id (2026-10-14, audit W7). The request is looked up within the TTL whether or not it has been consumed (a live one preferred). The HC.Device read is WITH (UPDLOCK, HOLDLOCK) inside the transaction, so concurrent polls serialise instead of racing to a PK error. A consumed request returns the SAME credentials when HC.Device already holds @newDeviceId for that hasher (a poll whose reply was lost), else no rows; a @newDeviceId held by a different hasher always returns no rows. The request is marked Removed only when it was still live.",
   "parameters": [
     {
       "name": "newDeviceId",
@@ -86,7 +86,8 @@
   "sideEffects": [
     "INSERT HC.Device (id = @newDeviceId, UserId, DeviceSecret, TimeWindow, DeviceData, IsMobile = 0) when no row exists for @newDeviceId — inside the transaction.",
     "UPDATE HC.WebPortalAuthenticationRequests SET Removed = 1 for the matching scanData — single-use, same transaction.",
-    "INSERT HC.ErrorLog then THROW in the CATCH."
+    "INSERT HC.ErrorLog then THROW in the CATCH.",
+    "Repeat poll after consumption: no writes; returns the existing device's secret and time window (2026-10-14)"
   ],
   "codeSmells": [
     {

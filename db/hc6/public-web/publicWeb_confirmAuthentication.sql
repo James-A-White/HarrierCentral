@@ -28,6 +28,13 @@ AS
 --              hasherId, publicHasherId, hashName, displayName, photo.
 -- Author:      Harrier Central
 -- Created:     2026-09-16
+--              Repeat (2026-10-14, audit W7): a poll after the request
+--              was consumed returns the SAME credentials when HC.Device
+--              already holds @newDeviceId for that hasher (a lost reply),
+--              instead of "pending" until expiry; the device read is
+--              WITH (UPDLOCK, HOLDLOCK). A device id held by another
+--              hasher returns no rows.
+-- Idempotency: client-id — the web mints @newDeviceId once per QR flow; a locked device read makes a repeat poll return the existing credentials.
 -- HC5 Source:  none (portal flow: HC6.hcportal_confirmAuthentication)
 -- =====================================================================
 SET NOCOUNT ON;
@@ -38,22 +45,40 @@ BEGIN TRY
         RETURN; -- nothing to confirm; the caller treats no rows as "not yet"
 
     DECLARE @ttlSeconds INT = 300;
-    DECLARE @hasherId UNIQUEIDENTIFIER;
+    DECLARE @hasherId UNIQUEIDENTIFIER, @requestRemoved SMALLINT;
 
-    SELECT TOP 1 @hasherId = w.hasherId
+    -- The request is found whether or not it has been consumed (2026-10-14,
+    -- idempotency audit W7): a poll whose reply — the one that carried the
+    -- member cookie — was lost must be able to get the same answer again.
+    -- A live request is preferred over a consumed one.
+    SELECT TOP 1 @hasherId = w.hasherId, @requestRemoved = ISNULL(w.Removed, 0)
     FROM HC.WebPortalAuthenticationRequests w
     INNER JOIN HC.Hasher h ON h.id = w.hasherId AND h.Removed = 0
     WHERE TRIM(LOWER(w.scanData)) = TRIM(LOWER(@qrCodeData))
-      AND ISNULL(w.Removed, 0) = 0
-      AND w.updatedAt > DATEADD(SECOND, -@ttlSeconds, SYSDATETIMEOFFSET());
+      AND w.updatedAt > DATEADD(SECOND, -@ttlSeconds, SYSDATETIMEOFFSET())
+    ORDER BY ISNULL(w.Removed, 0);
 
     IF (@hasherId IS NULL) RETURN;
 
-    DECLARE @deviceSecret NVARCHAR(150), @timeWindow INT;
-    SELECT @deviceSecret = d.DeviceSecret, @timeWindow = d.TimeWindow
-    FROM HC.Device d WHERE d.id = @newDeviceId;
-
     BEGIN TRANSACTION;
+
+    -- Locked, so concurrent polls of one sign-in serialise here instead of
+    -- both inserting the same device id (a PK error).
+    DECLARE @deviceSecret NVARCHAR(150), @timeWindow INT, @deviceUserId UNIQUEIDENTIFIER;
+    SELECT @deviceSecret = d.DeviceSecret, @timeWindow = d.TimeWindow, @deviceUserId = d.UserId
+    FROM HC.Device d WITH (UPDLOCK, HOLDLOCK)
+    WHERE d.id = @newDeviceId;
+
+    -- A device id that belongs to someone else is never handed over.
+    -- A consumed request answers only when this browser's device already
+    -- exists for the hasher who scanned: the repeat of a completed sign-in.
+    -- Otherwise it is "not yet" (no rows), as before.
+    IF (@deviceSecret IS NOT NULL AND @deviceUserId IS DISTINCT FROM @hasherId)
+       OR (@requestRemoved = 1 AND @deviceSecret IS NULL)
+    BEGIN
+        COMMIT TRANSACTION;
+        RETURN;
+    END
 
     IF (@deviceSecret IS NULL)
     BEGIN
@@ -69,10 +94,12 @@ BEGIN TRY
         VALUES (@newDeviceId, @hasherId, @deviceSecret, @timeWindow, COALESCE(@deviceInfo, ''), 0);
     END
 
-    -- Single-use: consume the request so the code cannot be replayed.
-    UPDATE HC.WebPortalAuthenticationRequests
-    SET Removed = 1
-    WHERE TRIM(LOWER(scanData)) = TRIM(LOWER(@qrCodeData));
+    -- Single-use: consume the request so the code cannot be replayed into a
+    -- different device. (Already consumed on a repeat: nothing to do.)
+    IF (@requestRemoved = 0)
+        UPDATE HC.WebPortalAuthenticationRequests
+        SET Removed = 1
+        WHERE TRIM(LOWER(scanData)) = TRIM(LOWER(@qrCodeData));
 
     COMMIT TRANSACTION;
 
