@@ -13,6 +13,8 @@ AS
 --   RunsPageHash, LocalToday, TimeZoneName, LatestRunNumber, LatestRunDate,
 --   DefaultStartTime, CityName, CountryName, AnchorLat, AnchorLon }
 -- Changes: 2026-10-15 — kennels on Google Calendar (2) are read too (E3.F6.S5).
+--   2026-10-14 — the anchor is the kennel's point only when both halves are
+--   in range, else the city's (DH3's Latitude 999 failed every geocode).
 -- Author: Harrier Central
 -- Created: 2026-10-04
 -- =====================================================================
@@ -39,12 +41,19 @@ BEGIN TRY
             -- near the anchor (the kennel's own point, else its city's).
             c.CityName                                    AS CityName,
             co.CountryName                                AS CountryName,
-            CAST(COALESCE(k.Latitude, c.Latitude) AS FLOAT)   AS AnchorLat,
-            CAST(COALESCE(k.Longitude, c.Longitude) AS FLOAT) AS AnchorLon
+            -- The kennel's point only when BOTH halves are real: DH3 had
+            -- Latitude 999 (a "no position" sentinel) and no longitude, the
+            -- two COALESCEs paired 999 with the city's longitude, and Azure
+            -- Maps answered 400 to every lookup (2026-10-14).
+            CAST(CASE WHEN ok.KennelPoint = 1 THEN k.Latitude  ELSE c.Latitude  END AS FLOAT) AS AnchorLat,
+            CAST(CASE WHEN ok.KennelPoint = 1 THEN k.Longitude ELSE c.Longitude END AS FLOAT) AS AnchorLon
     FROM HC.Kennel k
     LEFT JOIN HC.City c ON c.id = k.CityId
     LEFT JOIN HC.Country co ON co.id = k.CountryId
     LEFT JOIN DomainValues.Timezone tz ON tz.id = c.TimezoneId
+    CROSS APPLY (SELECT CASE WHEN k.Latitude BETWEEN -90 AND 90 AND k.Longitude BETWEEN -180 AND 180
+                              AND NOT (k.Latitude = 0 AND k.Longitude = 0)
+                             THEN 1 ELSE 0 END AS KennelPoint) ok
     OUTER APPLY (
         SELECT TOP 1 e.EventNumber, e.EventStartLocal
         FROM HC.Event e
