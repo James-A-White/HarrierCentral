@@ -153,6 +153,8 @@ AS
 -- Idempotency: set-state — every column is written to the value sent; a
 --   repeat writes the same values again.
 -- Changes:
+--   - 2026-10-15: Google Calendar (inbound 2) refused without a Google
+--     Calendar link in @runsPageUrl (E3.F6.S5).
 --   - 2026-10-14: @packOffMinutes (E3.F1.S6) — refused outside 0..600.
 --   - 2026-10-14: @socialLinksJson (E12.F4.S4) — refused with the first
 --     problem HC6.SocialLinksProblem finds. Column added 2026-10-10.
@@ -218,6 +220,24 @@ BEGIN TRY
 	   AND (@packOffMinutes < 0 OR @packOffMinutes > 600)
 	BEGIN
 		SELECT 0 AS Success, 'The pack must leave within 10 hours of the gather.' AS ErrorMessage;
+		RETURN;
+	END
+
+	-- Validation: "Google Calendar" needs a Google Calendar link (E3.F6.S5,
+	-- James 2026-10-15). The runs-page reader reads it through the calendar's
+	-- public iCal feed. THE SAME test is GoogleCalendarIcsUrl in
+	-- api/Endpoints/RunsPageImport.cs and the portal's kennel editor.
+	DECLARE @gcalIntegration INT = COALESCE(@inboundIntegrationId,
+		(SELECT InboundIntegrationId FROM HC.Kennel WHERE PublicKennelId = @publicKennelId));
+	DECLARE @gcalUrl NVARCHAR(MAX) = CASE WHEN @runsPageUrl IS NULL
+		THEN (SELECT RunsPageUrl FROM HC.Kennel WHERE PublicKennelId = @publicKennelId)
+		ELSE NULLIF(LTRIM(RTRIM(@runsPageUrl)), N'') END;
+	IF @gcalIntegration = 2
+	   AND (@inboundIntegrationId IS NOT NULL OR @runsPageUrl IS NOT NULL)   -- only when this save touches either
+	   AND NOT (ISNULL(@gcalUrl, N'') LIKE N'https://calendar.google.com/calendar/%'
+	            AND (@gcalUrl LIKE N'%src=%' OR @gcalUrl LIKE N'%cid=%' OR @gcalUrl LIKE N'%/calendar/ical/%'))
+	BEGIN
+		SELECT 0 AS Success, 'Runs come from Google Calendar, so the address must be your Google Calendar''s link: in Google Calendar open Settings, choose the calendar, and copy "Public URL to this calendar" (it starts https://calendar.google.com/calendar/). The calendar must be public.' AS ErrorMessage;
 		RETURN;
 	END
 
