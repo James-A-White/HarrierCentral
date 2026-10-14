@@ -197,7 +197,14 @@ namespace HcWebApi.Endpoints
                         MovedIn = movedIn.Select(m => (object)new { hasherId = m.HasherId, name = m.Name, reasonWas = Member.ReasonText(m.ReasonCode) }).ToList(),
                         MovedOut = movedOut.Select(m => (object)new { hasherId = m.HasherId, name = m.Name }).ToList(),
                     });
-                    await RecordSentAsync(cs, ctx, finalList.Count, instruction, saveInstruction, subject: subject, auditPath: auditPath, movedIn: movedIn.Count, movedOut: movedOut.Count);
+                    // The composer's id for this send, minted once per composer and
+                    // sent on every attempt: a "try again" after a timeout whose first
+                    // attempt recorded the send is answered with that send's count and
+                    // emails nobody a second time (E14.G2.R5, 2026-10-14).
+                    Guid? sendId = Guid.TryParse(body.Value<string>("sendId"), out Guid sid) ? sid : null;
+                    int? alreadySent = await RecordSentAsync(cs, ctx, finalList.Count, instruction, saveInstruction, subject: subject, auditPath: auditPath, movedIn: movedIn.Count, movedOut: movedOut.Count, sendId: sendId);
+                    if (alreadySent is int previous)
+                        return new OkObjectResult(new { sent = previous, movedIn = movedIn.Count, movedOut = movedOut.Count, alreadySent = true });
                     _ = Task.Run(async () =>
                     {
                         int ok = 0;
@@ -390,8 +397,13 @@ namespace HcWebApi.Endpoints
             return false;
         }
 
-        private static async Task RecordSentAsync(string cs, RunContext ctx, int count, string instruction, bool saveInstruction,
-            string kind = "send", string subject = "", string? auditPath = null, int movedIn = 0, int movedOut = 0)
+        /// Records the send (and, for a send, the run's counters). Returns the
+        /// recipient count a previous record of the SAME [sendId] reported, or
+        /// null when this call recorded it — a repeat must email nobody
+        /// (E14.G2.R5, 2026-10-14).
+        private static async Task<int?> RecordSentAsync(string cs, RunContext ctx, int count, string instruction, bool saveInstruction,
+            string kind = "send", string subject = "", string? auditPath = null, int movedIn = 0, int movedOut = 0,
+            Guid? sendId = null)
         {
             using var conn = new SqlConnection(cs);
             await conn.OpenAsync();
@@ -406,7 +418,16 @@ namespace HcWebApi.Endpoints
             cmd.Parameters.Add("@auditPath", SqlDbType.NVarChar, 400).Value = (object?)auditPath ?? DBNull.Value;
             cmd.Parameters.Add("@movedIn", SqlDbType.Int).Value = movedIn;
             cmd.Parameters.Add("@movedOut", SqlDbType.Int).Value = movedOut;
-            await cmd.ExecuteNonQueryAsync();
+            cmd.Parameters.Add("@sendId", SqlDbType.UniqueIdentifier).Value = (object?)sendId ?? DBNull.Value;
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                int a = reader.GetOrdinal("alreadySent");
+                int r = reader.GetOrdinal("recipients");
+                if (!reader.IsDBNull(a) && Convert.ToInt32(reader.GetValue(a)) == 1 && !reader.IsDBNull(r))
+                    return Convert.ToInt32(reader.GetValue(r));
+            }
+            return null;
         }
 
         // ── Draft ──────────────────────────────────────────────────────────────
