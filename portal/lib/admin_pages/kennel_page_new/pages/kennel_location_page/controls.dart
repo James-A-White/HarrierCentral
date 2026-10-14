@@ -167,8 +167,8 @@ extension KennelLocationControlsExtension on KennelPageFormController {
   /// Handles latitude value updates with reset-to-default support.
   void _handleLatitudeUpdate(String fieldKey, String? value) {
     if (value == RESET_TO_LOOKTHROUGH_VALUE) {
-      // Reset to default value
-      editedData.value = editedData.value.copyWith(latitude: 999);
+      // Reset to the city's value: clear the kennel's own
+      editedData.value = editedData.value.copyWith(latitude: SET_DB_COORDINATE_TO_NULL);
       uiControls[fieldKey]?.editedFieldValue =
           originalData.defaultLatitude?.toStringAsFixed(5);
       return;
@@ -180,7 +180,7 @@ extension KennelLocationControlsExtension on KennelPageFormController {
     // Check if value matches the default
     final defaultValue = originalData.defaultLatitude?.toStringAsFixed(5);
     if (latitude.toStringAsFixed(5) == defaultValue) {
-      editedData.value = editedData.value.copyWith(latitude: 999);
+      editedData.value = editedData.value.copyWith(latitude: SET_DB_COORDINATE_TO_NULL);
     } else {
       editedData.value = editedData.value.copyWith(latitude: latitude);
     }
@@ -224,8 +224,8 @@ extension KennelLocationControlsExtension on KennelPageFormController {
   /// Handles longitude value updates with reset-to-default support.
   void _handleLongitudeUpdate(String fieldKey, String? value) {
     if (value == RESET_TO_LOOKTHROUGH_VALUE) {
-      // Reset to default value
-      editedData.value = editedData.value.copyWith(longitude: 999);
+      // Reset to the city's value: clear the kennel's own
+      editedData.value = editedData.value.copyWith(longitude: SET_DB_COORDINATE_TO_NULL);
       uiControls[fieldKey]?.editedFieldValue =
           originalData.defaultLongitude?.toStringAsFixed(5);
       return;
@@ -237,7 +237,7 @@ extension KennelLocationControlsExtension on KennelPageFormController {
     // Check if value matches the default
     final defaultValue = originalData.defaultLongitude?.toStringAsFixed(5);
     if (longitude.toStringAsFixed(5) == defaultValue) {
-      editedData.value = editedData.value.copyWith(longitude: 999);
+      editedData.value = editedData.value.copyWith(longitude: SET_DB_COORDINATE_TO_NULL);
     } else {
       editedData.value = editedData.value.copyWith(longitude: longitude);
     }

@@ -701,10 +701,11 @@ class KennelPageFormController extends TabUiController
 
     editedJson.forEach((key, value) {
       if (editedJson[key] != originalJson[key]) {
-        // Special handling for coordinates (use 999 as null indicator)
+        // Coordinates: an emptied one clears the kennel's position
+        // (hcportal_editKennel's -999; never HC5's 999 — DH3, 2026-10-14).
         if (key.toLowerCase() == 'latitude' ||
             key.toLowerCase() == 'longitude') {
-          changedData[key] = editedJson[key] ?? 999;
+          changedData[key] = editedJson[key] ?? SET_DB_COORDINATE_TO_NULL;
         } else if (key == 'packOffMinutes') {
           // hcportal_editKennel reads null as "unchanged": clearing the
           // default (back to "at the gather") must send -2 (E3.F1.S6).

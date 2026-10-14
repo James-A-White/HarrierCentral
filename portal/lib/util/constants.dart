@@ -15,6 +15,10 @@ const double ROW_HEIGHT = 20;
 
 const int SET_DB_NUMERIC_FIELD_TO_NULL = -2;
 const String SET_DB_STRING_FIELD_TO_NULL = '<null>';
+// hcportal_editKennel's "clear the kennel's position" (back to its city's).
+// HC5 used 999; until 2026-10-14 the portal still sent it, and HC6 stored it
+// as a real latitude (DH3).
+const double SET_DB_COORDINATE_TO_NULL = -999.0;
 
 const String HC_ADMIN_PORTAL_INTERNAL_USER_ID =
     '22222222-2222-2222-2222-222222222222';
