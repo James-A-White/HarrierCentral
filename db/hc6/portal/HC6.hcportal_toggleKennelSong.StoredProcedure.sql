@@ -10,6 +10,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_toggleKennelSong]
 AS
 -- =====================================================================
 -- Procedure: HC6.hcportal_toggleKennelSong
+-- Idempotency: set-state — sends the target (@isInKennel), never a flip; the add's existence check is locked (UPDLOCK, HOLDLOCK) so concurrent adds make one map row.
 -- Description: Toggles whether a song is associated with a kennel.
 --              If adding (@isInKennel=1), either creates a new
 --              KennelSongMap record or un-soft-deletes an existing one.
@@ -37,6 +38,10 @@ AS
 --   - All KennelSongMap operations now use resolved internal @kennelId
 --     instead of @publicKennelId directly (HC5 bug: EXISTS/UPDATE/INSERT
 --     all matched zero rows, songs were never actually toggled)
+--   - 2026-10-14 (idempotency audit P9; Idempotent writes: sets a state):
+--     the add path's existence check takes WITH (UPDLOCK, HOLDLOCK), so two
+--     concurrent adds cannot insert two KennelSongMap rows. No unique index
+--     on (KennelId, SongId) was added; that is James's call.
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -110,7 +115,10 @@ BEGIN TRY
 	IF @isInKennel = 1
 	BEGIN
 		-- Adding song to kennel: check if a row already exists
-		IF EXISTS (SELECT 1 FROM HC.KennelSongMap WHERE SongId = @songId AND KennelId = @kennelId)
+		-- Locked (idempotency audit P9, 2026-10-14): two concurrent adds
+		-- cannot both see "no row" and insert two map rows; the second waits
+		-- and then un-removes the first one's row.
+		IF EXISTS (SELECT 1 FROM HC.KennelSongMap WITH (UPDLOCK, HOLDLOCK) WHERE SongId = @songId AND KennelId = @kennelId)
 		BEGIN
 			-- Row exists -> un-remove it
 			UPDATE HC.KennelSongMap
@@ -141,6 +149,10 @@ BEGIN TRY
 
 END TRY
 BEGIN CATCH
+	-- Roll back FIRST, then log (2026-10-14: this CATCH did not log).
 	IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+	INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+	VALUES (NEWID(), '<unknown>', 'Unhandled error in hcportal_toggleKennelSong',
+	        ERROR_MESSAGE(), OBJECT_NAME(@@PROCID), @hasherId);
 	SELECT 0 AS Success, ERROR_MESSAGE() AS ErrorMessage;
 END CATCH

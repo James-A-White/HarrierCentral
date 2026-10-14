@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_toggleKennelSong",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Toggles whether a song is associated with a kennel. @publicKennelId is resolved to the internal HC.Kennel.id (@kennelId) before all KennelSongMap operations — fixing the HC5 bug where @publicKennelId was used directly and no songs were ever actually toggled. If adding (@isInKennel=1), either creates a new KennelSongMap record or un-soft-deletes an existing one (Removed=0). If removing (@isInKennel=0), soft-deletes the mapping (Removed=1). All writes wrapped in a transaction. Auth: HC6.ValidatePortalAuth with @songId in the token param string; there is NO kennel permission check — any signed-in portal user can change any kennel's songbook. Permission (2026-10-13): unknown kennel refused; HC6.nonApi_portalKennelAccess — AppAccessFlags 0x400000C1 (SuperAdmin, Admin, Manage songs 0x40, 0x80) or manageSongs; otherwise {Success 0, 'Not authorised to change this kennel''s songs'}.",
   "parameters": [
     {
@@ -84,7 +84,8 @@
     "INSERT into HC.KennelSongMap when adding a song that has no existing mapping (uses resolved internal @kennelId)",
     "UPDATE HC.KennelSongMap.Removed = 0 and updatedAt when adding a song that already has a mapping (un-soft-delete, uses resolved internal @kennelId)",
     "UPDATE HC.KennelSongMap.Removed = 1 and updatedAt when removing a song (soft-delete, uses resolved internal @kennelId)",
-    "Calls HC6.nonApi_portalKennelAccess (read-only) for its permission check."
+    "Calls HC6.nonApi_portalKennelAccess (read-only) for its permission check.",
+    "On an unhandled error: ROLLBACK, then INSERT HC.ErrorLog, then the error envelope."
   ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
@@ -108,5 +109,8 @@
       "issue": "Check-then-INSERT without UPDLOCK, HOLDLOCK",
       "detail": "Lines 94-106: IF EXISTS … ELSE INSERT with no lock hint; two concurrent adds can create two KennelSongMap rows for one song (the table has no unique key on KennelId, SongId)."
     }
+  ],
+  "changes": [
+    "1.3.0 (2026-10-14): idempotency audit P9 (Idempotent writes: sets a state). The add path's KennelSongMap existence check now takes WITH (UPDLOCK, HOLDLOCK), so two concurrent adds cannot insert two map rows. No parameter or rowset change; no index added. The CATCH now logs to HC.ErrorLog (after the rollback)."
   ]
 }
