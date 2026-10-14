@@ -82,6 +82,7 @@ const List<(String, String, List<String>)> socialPlatforms = [
   ('bluesky', 'Bluesky', ['bsky.app']),
   ('reddit', 'Reddit', ['reddit.com']),
   ('mailinglist', 'Mailing list', ['groups.google.com', 'groups.io']),
+  ('googlecalendar', 'Google Calendar', ['calendar.google.com']),
   ('other', 'Other', <String>[]),
 ];
 
@@ -121,6 +122,7 @@ IconData socialPlatformIcon(String platform) => switch (platform) {
   'signal' || 'kakaotalk' || 'zalo' => Icons.chat_outlined,
   'threads' || 'bluesky' => Icons.alternate_email,
   'mailinglist' => Icons.mail_outline,
+  'googlecalendar' => Icons.calendar_month,
   _ => Icons.link,
 };
 
@@ -142,6 +144,7 @@ Color socialPlatformColor(String platform) => switch (platform) {
   'x' || 'tiktok' || 'threads' => const Color(0xFF000000),
   'youtube' => const Color(0xFFFF0000),
   'bluesky' => const Color(0xFF1185FE),
+  'googlecalendar' => const Color(0xFF4285F4),
   'reddit' => const Color(0xFFFF4500),
   _ => const Color(0xFF455A64),
 };

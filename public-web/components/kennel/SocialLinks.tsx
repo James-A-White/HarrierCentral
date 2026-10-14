@@ -20,7 +20,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Check, Copy, Link as LinkIcon, Mail, X } from "lucide-react";
 import {
-  siBluesky, siDiscord, siFacebook, siInstagram, siKakaotalk, siLine, siMeetup, siReddit,
+  siBluesky, siDiscord, siFacebook, siGooglecalendar, siInstagram, siKakaotalk, siLine, siMeetup, siReddit,
   siSignal, siStrava, siTelegram, siThreads, siTiktok, siViber, siWechat, siWhatsapp, siX,
   siYoutube, siZalo,
 } from "simple-icons";
@@ -31,6 +31,7 @@ const BRAND: Partial<Record<SocialPlatform, { path: string }>> = {
   telegram: siTelegram, wechat: siWechat, line: siLine, kakaotalk: siKakaotalk, zalo: siZalo,
   viber: siViber, discord: siDiscord, strava: siStrava, meetup: siMeetup, x: siX, tiktok: siTiktok,
   youtube: siYoutube, threads: siThreads, bluesky: siBluesky, reddit: siReddit,
+  googlecalendar: siGooglecalendar,
 };
 
 export function SocialIcon({ platform, className }: { platform: SocialPlatform; className?: string }) {

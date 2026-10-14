@@ -129,6 +129,7 @@ const List<(String, String, List<String>)> socialPlatforms =
         'groups.google.com',
         'groups.io',
       ]),
+      ('googlecalendar', 'Google Calendar', <String>['calendar.google.com']),
       ('other', 'Other', <String>[]),
     ];
 
@@ -244,6 +245,7 @@ IconData socialPlatformIcon(String platform) => switch (platform) {
   'signal' || 'kakaotalk' || 'zalo' => Icons.chat_outlined,
   'threads' || 'bluesky' => Icons.alternate_email,
   'mailinglist' => Icons.mail_outline,
+  'googlecalendar' => Icons.calendar_month,
   _ => Icons.link,
 };
 
@@ -267,6 +269,7 @@ Color socialPlatformColor(String platform) => switch (platform) {
   'youtube' => const Color(0xFFFF0000),
   'threads' => const Color(0xFF000000),
   'bluesky' => const Color(0xFF1185FE),
+  'googlecalendar' => const Color(0xFF4285F4),
   'reddit' => const Color(0xFFFF4500),
   _ => const Color(0xFF455A64),
 };

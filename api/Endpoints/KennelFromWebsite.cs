@@ -1129,6 +1129,7 @@ namespace HcWebApi.Endpoints
             ["bluesky"] = new[] { "bsky.app" },
             ["reddit"] = new[] { "reddit.com" },
             ["mailinglist"] = new[] { "groups.google.com", "groups.io" },
+            ["googlecalendar"] = new[] { "calendar.google.com" },
         };
 
         /// <summary>Chat-group invite links are what spammers harvest: members-only unless an admin opens them.</summary>

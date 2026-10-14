@@ -48,7 +48,8 @@ BEGIN
         (N'threads', N'threads.net'), (N'threads', N'threads.com'),
         (N'bluesky', N'bsky.app'),
         (N'reddit', N'reddit.com'),
-        (N'mailinglist', N'groups.google.com'), (N'mailinglist', N'groups.io');
+        (N'mailinglist', N'groups.google.com'), (N'mailinglist', N'groups.io'),
+        (N'googlecalendar', N'calendar.google.com');   -- 2026-10-15: share runs via Google Calendar
 
     DECLARE @problem NVARCHAR(300);
     SELECT TOP 1 @problem = p.problem

@@ -20,7 +20,7 @@ const MEMBERS_BY_DEFAULT: ReadonlySet<string> = new Set([
 export type SocialPlatform =
   | "facebook" | "instagram" | "whatsapp" | "signal" | "telegram" | "wechat" | "line"
   | "kakaotalk" | "zalo" | "viber" | "discord" | "strava" | "meetup" | "x" | "tiktok"
-  | "youtube" | "threads" | "bluesky" | "reddit" | "mailinglist" | "other";
+  | "youtube" | "threads" | "bluesky" | "reddit" | "mailinglist" | "googlecalendar" | "other";
 
 export interface SocialLink {
   platform: SocialPlatform;
@@ -57,6 +57,7 @@ export const SOCIAL_PLATFORMS: ReadonlyArray<readonly [SocialPlatform, string, r
   ["bluesky", "Bluesky", ["bsky.app"]],
   ["reddit", "Reddit", ["reddit.com"]],
   ["mailinglist", "Mailing list", ["groups.google.com", "groups.io"]],
+  ["googlecalendar", "Google Calendar", ["calendar.google.com"]],
   ["other", "Other", []],
 ];
 
