@@ -1,3 +1,6 @@
+1.0.61+110
+    • PublicApi (kennels' Data APIs): a missing key's 400 says publicKennelId or apiKey (it said accessToken); the API key stays the only credential (E20.F1.S1)
+
 1.0.61+109
     • Runs-page import reads calendars: a Google Calendar link becomes its public iCal feed, any iCal becomes dated events in the import window; kennels on "Google Calendar" are read too (E3.F6.S5, Dayton H3)
     • Kennel from website: Google Calendar recognised as a social link
