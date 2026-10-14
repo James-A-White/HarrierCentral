@@ -41,6 +41,11 @@ abstract class DownDownFormController extends GetxController {
   final Rxn<String> linkedSongId = Rxn<String>();
   final RxList<SongResult> songResults = <SongResult>[].obs;
   final RxBool isSaving = false.obs;
+
+  /// A new charge's id, minted once per page and sent on every attempt
+  /// (E14.G2.R5, 2026-10-14): a Save repeated after "Failed to save" returns
+  /// the charge the first attempt made instead of adding a second.
+  final String _newDownDownId = const Uuid().v4();
   final RxBool isCapturingPhoto = false.obs;
   final Rxn<String> chargePhotoUrl = Rxn<String>();
   bool _suppressNextSongSearch = false;
@@ -319,6 +324,8 @@ class AddDownDownController extends DownDownFormController {
   }
 
   Future<void> submit() async {
+    // A second press while one is saving does nothing.
+    if (isSaving.value) return;
     // Fold in any name typed but not yet added via the + button.
     if (externalNameController.text.trim().isNotEmpty) addExternalName();
 
@@ -335,6 +342,7 @@ class AddDownDownController extends DownDownFormController {
     isSaving.value = true;
     try {
       final id = await service.addDownDown(
+        downDownId: _newDownDownId,
         kennelId: kennelId,
         eventId: eventId,
         hasherIds: selected.map((a) => a.hasherId).toList(),

@@ -73,6 +73,7 @@ class RunContentService {
     String? songChoice,
     String? songId,
     String? chargePhotoUrl,
+    String? downDownId,
   }) async {
     final deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
     final deviceSecret = getStringPref(StringPrefsEnum.deviceSecret) ?? '';
@@ -80,6 +81,9 @@ class RunContentService {
     final result = await ServiceCommon.sendHttpPost(
       () => jsonEncode(<String, dynamic>{
         'queryType': 'addDownDown',
+        // The charge's own id, minted once per Add page: a repeat after a
+        // lost reply returns this charge instead of adding a second one.
+        'downDownId': ?downDownId,
         'deviceId': deviceId,
         'accessToken': Utilities.generateToken(
           getStringPref(StringPrefsEnum.userId) ?? '',
