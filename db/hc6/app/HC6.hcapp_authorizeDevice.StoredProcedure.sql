@@ -70,6 +70,15 @@ AS
 --     columns, and HcVersion is 'HC Ver: x, Bld: n' when @buildNumber is
 --     sent; HC.Device gets Version/BuildNumber/Locale on insert. Additive —
 --     no parameter or rowset changed.
+--   2026-10-14: idempotent browser repeat (audit W4). Idempotent writes
+--     pattern: "creates a row" — the client (the web) mints the deviceId
+--     once per sign-in flow; the SP checks it WITH (UPDLOCK, HOLDLOCK) and a
+--     repeat (same @deviceId, same user, IsMobile = 0, live, updatedAt
+--     within 2 minutes, and @isMobile = 0) returns the existing secret and
+--     time window as success with no write: no Hasher update, no
+--     LaunchAndLogin row, no DELETE/INSERT. @isMobile = 1 (the app) is
+--     unchanged in every respect. No parameter or rowset changed.
+-- Idempotency: client-id — a browser repeat of the same deviceId for the same user within 2 min returns the existing secret.
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -185,6 +194,31 @@ BEGIN TRY
     -- ---------------------------------------------------------------
     BEGIN TRANSACTION;
 
+        -- Idempotent repeat of a BROWSER sign-in (2026-10-14, idempotency
+        -- audit W4). The web mints its deviceId once per sign-in flow, so a
+        -- double submit or a retry after a lost reply arrives with the same
+        -- @deviceId. When that device row already exists for the SAME user,
+        -- is a browser row (IsMobile = 0) that is live (not removed, not
+        -- signed out) and was written in the last 2 minutes, the call is the
+        -- same sign-in again: nothing is written and the existing secret and
+        -- time window are returned below as success. Rotating the secret
+        -- would orphan whichever reply the browser actually received.
+        -- Every other case — the phone app (@isMobile 1, which never takes
+        -- this branch or its lock), a different user, an older row — keeps
+        -- the original behaviour exactly: DELETE + INSERT with a new secret.
+        DECLARE @isRepeat SMALLINT = 0;
+        IF (COALESCE(@isMobile, 1) = 0)
+            SELECT @isRepeat = 1
+            FROM HC.Device d WITH (UPDLOCK, HOLDLOCK)
+            WHERE d.id = @deviceId
+              AND d.UserId = @userId
+              AND d.IsMobile = 0
+              AND d.removed = 0
+              AND d.SignedOutAt IS NULL
+              AND d.updatedAt > DATEADD(minute, -2, SYSDATETIMEOFFSET());
+
+    IF (@isRepeat = 0)
+    BEGIN
         UPDATE HC.Hasher
         SET LastLoginDateTime = GETDATE(),
             HcVersion         = @hcVersion,
@@ -238,6 +272,7 @@ BEGIN TRY
              CASE WHEN @buildNumber IS NOT NULL THEN LEFT(@hcVersion, 25) ELSE N'<unknown>' END,
              COALESCE(@buildNumber, N'<unknown>'),
              COALESCE(@locale, ''));
+    END
 
     COMMIT TRANSACTION;
 
