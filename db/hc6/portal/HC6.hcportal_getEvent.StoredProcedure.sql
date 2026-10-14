@@ -19,6 +19,10 @@ AS
 --             @publicEventId (the run)
 -- Returns: Rowset 0: EventDetails (single row)
 --          Rowset 1: AttendeeList (basic or with payment details)
+-- Idempotency: read-only — the nonApi_portalKennelAccess EXEC is a
+--   permission check that writes nothing.
+-- Changes:
+--   2026-10-14: packOffMinutes + kennelPackOffMinutes (E3.F1.S6).
 -- Author: Harrier Central
 -- Created: 2026-03-15
 -- HC5 Source: HC5.hcportal_getEvent
@@ -141,6 +145,10 @@ BEGIN TRY
 		-- TODO: Return DATETIMEOFFSET alongside DATETIME2 for timezone migration
 		, CONVERT(datetime2, evt.EventStartDatetime) AS extEventStartDatetime
 		, CONVERT(datetime2, evt.EventStartDatetime) AS eventStartDatetime
+		-- Pack-off (E3.F1.S6): the run's own override (NULL = the kennel's
+		-- default) and that default, for the editor's "Kennel default" choice.
+		, evt.PackOffMinutes AS packOffMinutes
+		, ken.PackOffMinutes AS kennelPackOffMinutes
 		, CONVERT(datetime2, evt.EventEndDatetime) AS eventEndDatetime
 
 		, COALESCE(evt.FbEventDescription, '') AS extEventDescription

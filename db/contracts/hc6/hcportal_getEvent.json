@@ -365,6 +365,18 @@
           "description": "Event.EventStartDatetime converted to DATETIME2 (local time; DATETIMEOFFSET timezone migration is a known TODO)"
         },
         {
+          "name": "packOffMinutes",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "This run's own pack-off override, minutes after the gather (E3.F1.S6); NULL = the kennel's default."
+        },
+        {
+          "name": "kennelPackOffMinutes",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "The kennel's default pack-off (E3.F1.S6), for the editor's 'kennel default' choice; NULL = at the gather."
+        },
+        {
           "name": "eventEndDatetime",
           "type": "DATETIME2",
           "nullable": true,

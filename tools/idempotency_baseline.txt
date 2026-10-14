@@ -74,7 +74,6 @@ NO-DECLARATION hcportal_generateWebAdminToken
 NO-DECLARATION hcportal_getCategoryDetail
 NO-DECLARATION hcportal_getCategoryDetail2
 NO-DECLARATION hcportal_getDeviceHealth
-NO-DECLARATION hcportal_getEvent
 NO-DECLARATION hcportal_getEventMessages
 NO-DECLARATION hcportal_getInviteEmailList
 NO-DECLARATION hcportal_getKennelRequests
