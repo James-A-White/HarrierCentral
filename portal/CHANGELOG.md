@@ -1,3 +1,8 @@
+## 2.0.87+769 (2026-10-14)
+### Improvements
+- **Saving a new run is safe to repeat.** If the reply to a Save was lost on a weak connection, saving again used to create a second copy of the run. The editor now gives a new run its id before the first save and sends the same one every time, so a repeat edits the run instead (needs SP build 63).
+- **Another run at this time?** Saving a new run, or changing a run's start, asks first when the kennel already has a run at the same date and time, and names it. Weekend events with several runs at once are a Save anyway away. Auto-save never saves past the question: it waits for your next Save.
+
 ## 2.0.87+768 (2026-10-13)
 ### Improvements
 - **Post to WhatsApp sends the whole description.** The run announcement cut the description at 300 characters (the app at 220); it now carries all of it, from the portal and the app alike.
