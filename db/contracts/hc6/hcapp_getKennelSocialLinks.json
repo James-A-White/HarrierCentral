@@ -1,0 +1,71 @@
+{
+  "schema": "HC6",
+  "name": "hcapp_getKennelSocialLinks",
+  "version": "1.0.0",
+  "description": "A kennel's social and chat links (E12.F4.S4, 2026-10-14) as the caller may see them, fetched when the app's kennel page (or the signed-in web's kennel page) opens — never synced. The kennels sync reaches every phone and members-only entries are chat-group invite links, so they are handed out here only to the kennel's members (MembershipExpirationDate in the future) and admins (AppAccessFlags & 0x40000081); everyone else gets the public entries. The visibility rule is HC6.KennelSocialLinksVisible, shared with publicWeb_getLandingPageData. Auth: HC6.ValidateAppAuth (spNumber 155, @param NULL — a standard token); the browser calls it as a device (E9.F7). Idempotency: read-only — reads the kennel and the caller's membership.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "The calling device."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Standard device token for hcapp_getKennelSocialLinks (paramString = device secret)."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "The kennel, by its public id (the web). Wins when both ids are sent."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.id",
+      "description": "The kennel, by its internal id (the app, whose synced kennels carry it)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "ref": "StandardErrorResult",
+      "description": "On auth failure only (ValidateAppAuth): the error detail alone, no envelope. Runtime errors are logged to HC.ErrorLog and re-thrown (THROW)."
+    },
+    {
+      "index": 0,
+      "name": "KennelSocialLinks",
+      "description": "Exactly one row. An unknown, deleted or removed kennel, or one with no links, gives socialLinksJson NULL.",
+      "columns": [
+        {
+          "name": "socialLinksJson",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "JSON array of {platform, url, handle, qrImageUrl, label, audience} in display order, filtered to what the caller may see; NULL when nothing is visible."
+        },
+        {
+          "name": "includesMembers",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 = the caller is a member or admin and the members-only entries are included; 0 = public entries only."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}

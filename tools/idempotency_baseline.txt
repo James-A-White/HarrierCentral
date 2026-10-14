@@ -69,7 +69,6 @@ NO-DECLARATION hcportal_confirmAuthentication
 NO-DECLARATION hcportal_deleteChatMessage
 NO-DECLARATION hcportal_deleteEvent
 NO-DECLARATION hcportal_deleteNewsflash
-NO-DECLARATION hcportal_editKennel
 NO-DECLARATION hcportal_editSong
 NO-DECLARATION hcportal_generateWebAdminToken
 NO-DECLARATION hcportal_getCategoryDetail
@@ -78,7 +77,6 @@ NO-DECLARATION hcportal_getDeviceHealth
 NO-DECLARATION hcportal_getEvent
 NO-DECLARATION hcportal_getEventMessages
 NO-DECLARATION hcportal_getInviteEmailList
-NO-DECLARATION hcportal_getKennel
 NO-DECLARATION hcportal_getKennelRequests
 NO-DECLARATION hcportal_getKennelWebsite
 NO-DECLARATION hcportal_getLandingPageData
