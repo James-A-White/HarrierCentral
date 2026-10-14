@@ -28,7 +28,8 @@ namespace HcWebApi.Endpoints
     /// each time; nothing is stored until "save".
     ///   read  { deviceId, accessToken*, url }            → { draft, reply, missing }
     ///   chat  { deviceId, accessToken*, draft, history, message } → { draft, reply, missing }
-    ///   save  { deviceId, accessToken*, createToken**, draft }    → { kennelImportId, warnings }
+    ///   save  { deviceId, accessToken*, createToken**, draft, kennelImportId? } → { kennelImportId, warnings }
+    ///         kennelImportId: minted once per draft page; a repeat returns it (2026-10-14).
     ///   *  minted for hcportal_kennelDraftLookup (the gate: a Platform Admin
     ///      with CanEditKennel) — checked before any page is fetched or any
     ///      model is called.
@@ -328,6 +329,10 @@ namespace HcWebApi.Endpoints
         {
             if (body["draft"] is not JObject draft) return Bad("Bad request.");
             string createToken = body.Value<string>("createToken") ?? "";
+            // Minted by the portal ONCE per draft page and sent on every Save
+            // (idempotency audit P4, 2026-10-14): a repeat after a lost reply
+            // returns the same request, and the logo copy below is keyed on it.
+            Guid? importId = Guid.TryParse(body.Value<string>("kennelImportId"), out Guid iid) ? iid : null;
             await LookupAsync(cs, deviceId, token, null, null, null, null, null, null); // the gate
             var warnings = new List<string>();
 
@@ -339,7 +344,7 @@ namespace HcWebApi.Endpoints
                 if (logo.StartsWith("https://harriercentral.blob.core.windows.net/", StringComparison.OrdinalIgnoreCase)) ours = logo;
                 else
                 {
-                    (ours, string? why) = await CopyLogoAsync(logo, draft.Value<string>("kennelShortName") ?? "kennel");
+                    (ours, string? why) = await CopyLogoAsync(logo, draft.Value<string>("kennelShortName") ?? "kennel", importId);
                     if (ours == null) warnings.Add($"The logo could not be copied ({why}); the kennel gets a Harrier Central coin until one is uploaded.");
                 }
             }
@@ -383,6 +388,7 @@ namespace HcWebApi.Endpoints
             P("@socialLinksJson", links.Count == 0 ? null : links.ToString(Newtonsoft.Json.Formatting.None));
             P("@sourceJson", sources.ToString(Newtonsoft.Json.Formatting.None));
             P("@comments", comments);
+            cmd.Parameters.Add("@kennelImportId", SqlDbType.UniqueIdentifier).Value = importId.HasValue ? importId.Value : DBNull.Value;
 
             using var r = await cmd.ExecuteReaderAsync();
             if (!await r.ReadAsync()) return Bad("Please try again.");
@@ -400,11 +406,30 @@ namespace HcWebApi.Endpoints
         /// (emails cannot show AVIF — HcEmail.EmailLogoAsync looks for the twin).
         /// Returns the URL to store, or null and why.
         /// </summary>
-        private async Task<(string? url, string? why)> CopyLogoAsync(string logo, string shortName)
+        /// With an <paramref name="importId"/> the blob name is keyed on it, so a
+        /// repeated Save finds the copy the first one made and does not redo it.
+        private async Task<(string? url, string? why)> CopyLogoAsync(string logo, string shortName, Guid? importId = null)
         {
             if (!IsWebUrl(logo, out Uri u)) return (null, "not a web address");
             try
             {
+                string? storageConn = Environment.GetEnvironmentVariable("HC_BLOB_STORAGE_CONNECTION_STRING")
+                                   ?? Environment.GetEnvironmentVariable("AzureWebJobsStorage");
+                if (string.IsNullOrEmpty(storageConn)) return (null, "storage is not configured");
+                string safe = Regex.Replace(shortName, "[^A-Za-z0-9]", "");
+                if (safe.Length == 0) safe = "kennel";
+                string stem = importId.HasValue ? $"{safe}_{importId.Value:N}" : $"{safe}_{DateTime.UtcNow:yyyyMMddHHmmss}";
+                BlobContainerClient container = new BlobServiceClient(storageConn).GetBlobContainerClient("harrier");
+                BlobClient pngBlob = container.GetBlobClient(stem + ".png");
+                BlobClient avifBlob = container.GetBlobClient(stem + ".avif");
+                if (importId.HasValue)
+                {
+                    // The PNG twin is written first, the AVIF last: an AVIF means the
+                    // earlier copy finished; a PNG alone is redone (it is overwritten).
+                    if (await avifBlob.ExistsAsync()) return (avifBlob.Uri.ToString(), null);
+                }
+
+
                 byte[]? best = null; string? why = null; long bestPixels = 0;
                 foreach (Uri candidate in LogoImage.LargerVersions(u).Append(u).Distinct())
                 {
@@ -417,17 +442,8 @@ namespace HcWebApi.Endpoints
 
                 (byte[]? avif, byte[] png) = LogoImage.Prepare(best);
 
-                string? storageConn = Environment.GetEnvironmentVariable("HC_BLOB_STORAGE_CONNECTION_STRING")
-                                   ?? Environment.GetEnvironmentVariable("AzureWebJobsStorage");
-                if (string.IsNullOrEmpty(storageConn)) return (null, "storage is not configured");
-                string safe = Regex.Replace(shortName, "[^A-Za-z0-9]", "");
-                if (safe.Length == 0) safe = "kennel";
-                string stem = $"{safe}_{DateTime.UtcNow:yyyyMMddHHmmss}";
-                BlobContainerClient container = new BlobServiceClient(storageConn).GetBlobContainerClient("harrier");
-                BlobClient pngBlob = container.GetBlobClient(stem + ".png");
                 await pngBlob.UploadAsync(new BinaryData(png), new BlobUploadOptions { HttpHeaders = new BlobHttpHeaders { ContentType = "image/png" } });
                 if (avif == null) return (pngBlob.Uri.ToString(), null);
-                BlobClient avifBlob = container.GetBlobClient(stem + ".avif");
                 await avifBlob.UploadAsync(new BinaryData(avif), new BlobUploadOptions { HttpHeaders = new BlobHttpHeaders { ContentType = "image/avif" } });
                 return (avifBlob.Uri.ToString(), null);
             }

@@ -30,8 +30,9 @@ namespace HcWebApi.Endpoints
     ///   hcportal_getInviteEmailList), publicKennelId, scope,
     ///   publicHasherIds: [...], send: false | true }
     /// send = false: the counts only, for the confirm dialog.
-    /// send = true: sends ONE ROUND (up to a minute), stamping InviteEmailedAt
-    ///   for each hasher as ACS accepts theirs, and keeps an audit copy of the
+    /// send = true: sends ONE ROUND (up to a minute), CLAIMING InviteEmailedAt
+    ///   for each hasher before their email goes (released if it fails —
+    ///   idempotency audit P3, 2026-10-14), and keeps an audit copy of the
     ///   round with the codes masked. more = true: time ran out with people
     ///   left — call again (they are now the only ones not stamped).
     /// Reply: 200 { toSend, sent, skippedRecent, skippedNoEmail,
@@ -131,33 +132,46 @@ namespace HcWebApi.Endpoints
             // them again. So each hasher is stamped the moment ACS accepts theirs,
             // a round stops after RoundBudget and the portal calls again for the
             // rest (more = true), and one send may not wait longer than SendDeadline.
+            //
+            // Claim, then send (idempotency audit P3, 2026-10-14): each hasher's
+            // InviteEmailedAt is CLAIMED before their email goes — a compare-and-set
+            // in nonApi_recordInviteEmailed that wins only where the stamp is still
+            // NULL or older than RecentWindow. Two overlapping rounds (two tabs, two
+            // admins) cannot both email one person, and a crash after a send cannot
+            // leave them unstamped. A send that fails gives the claim back.
             var sentIds = new List<Guid>();
             bool stoppedEarly = false, more = false;
             var round = System.Diagnostics.Stopwatch.StartNew();
             foreach (var p in toSend)
             {
                 if (round.Elapsed > RoundBudget) { more = true; break; }
+                var claim = await ClaimAsync(cs, kennel, p.HasherId);
+                if (claim == null) continue;              // the claim call failed: not sent, logged
+                if (!claim.Value.Claimed) { recent++; continue; } // another round has them
                 try
                 {
                     string greet = p.HashName.Length > 0 ? p.HashName : p.FirstName.Length > 0 ? p.FirstName : "there";
                     using var deadline = new CancellationTokenSource(SendDeadline);
                     await HcListMail.SendAsync(p.Email, subject, Html(kennelName, greet, p.Code!, logo), Plain(kennelName, greet, p.Code!), null, slug, shortName, deadline.Token);
                     sentIds.Add(p.HasherId);
-                    await RecordAsync(cs, kennel, new List<Guid> { p.HasherId });
                 }
                 catch (Exception ex) when (ex is OperationCanceledException || ex is Azure.RequestFailedException { Status: 429 })
                 {
                     // The sending quota (a 429, or the SDK still waiting out one at the
-                    // deadline): stop here. Everyone sent is already stamped, so the
-                    // next press picks up exactly where this one stopped.
+                    // deadline): give this one's claim back and stop. Everyone sent is
+                    // already stamped, so the next press picks up exactly here.
+                    await ReleaseAsync(cs, kennel, p.HasherId, claim.Value.ClaimedAt, claim.Value.PreviousAt);
                     stoppedEarly = true;
                     break;
                 }
                 catch (Exception ex)
                 {
+                    await ReleaseAsync(cs, kennel, p.HasherId, claim.Value.ClaimedAt, claim.Value.PreviousAt);
                     await HcListMail.LogFailureAsync("InviteEmails", p.Email, ex.Message);
                 }
             }
+
+            if (sentIds.Count > 0) await CallRecordAsync(cs, kennel, "log", string.Join('|', sentIds), null, null);
 
             if (sentIds.Count > 0) await EmailAudit.WriteAsync(new EmailAudit.Record
             {
@@ -193,23 +207,69 @@ namespace HcWebApi.Endpoints
             }
         }
 
-        private static async Task RecordAsync(string cs, JObject kennel, List<Guid> sent)
+        private readonly record struct Claim(bool Claimed, DateTimeOffset? ClaimedAt, DateTimeOffset? PreviousAt);
+
+        /// <summary>
+        /// Claims one hasher's invite before it is sent. Null when the call itself
+        /// failed (logged; the email is then not sent — a missed invite is retried by
+        /// the next press, a duplicate cannot be taken back).
+        /// </summary>
+        private static async Task<Claim?> ClaimAsync(string cs, JObject kennel, Guid hasherId)
         {
-            if (sent.Count == 0) return;
             try
             {
                 using var conn = new SqlConnection(cs);
                 await conn.OpenAsync();
-                using var cmd = new SqlCommand("[HC6].[nonApi_recordInviteEmailed]", conn) { CommandType = CommandType.StoredProcedure };
-                cmd.Parameters.Add("@kennelId", SqlDbType.UniqueIdentifier).Value = Guid.TryParse(kennel.Value<string>("kennelId"), out Guid k) ? k : DBNull.Value;
-                cmd.Parameters.Add("@adminId", SqlDbType.UniqueIdentifier).Value = Guid.TryParse(kennel.Value<string>("adminId"), out Guid a) ? a : DBNull.Value;
-                cmd.Parameters.Add("@hasherIds", SqlDbType.NVarChar, -1).Value = string.Join('|', sent);
+                using var cmd = RecordCommand(conn, kennel, "claim", hasherId.ToString(), null, null);
+                cmd.Parameters.Add("@recentDays", SqlDbType.Int).Value = (int)RecentWindow.TotalDays;
+                using var r = await cmd.ExecuteReaderAsync();
+                if (!await r.ReadAsync() || Convert.ToInt32(r["Success"]) != 1)
+                {
+                    await HcListMail.LogFailureAsync("InviteEmails.claim", "-", r.HasRows ? r["ErrorMessage"] as string ?? "claim refused" : "no reply");
+                    return null;
+                }
+                if (await r.NextResultAsync() && await r.ReadAsync())
+                    return new Claim(true,
+                        r["claimedAt"] is DBNull ? null : (DateTimeOffset)r["claimedAt"],
+                        r["previousAt"] is DBNull ? null : (DateTimeOffset)r["previousAt"]);
+                return new Claim(false, null, null);
+            }
+            catch (Exception ex)
+            {
+                await HcListMail.LogFailureAsync("InviteEmails.claim", "-", ex.Message);
+                return null;
+            }
+        }
+
+        /// <summary>Gives a failed send's claim back, if nobody has claimed it since.</summary>
+        private static Task ReleaseAsync(string cs, JObject kennel, Guid hasherId, DateTimeOffset? claimedAt, DateTimeOffset? previousAt) =>
+            CallRecordAsync(cs, kennel, "release", hasherId.ToString(), claimedAt, previousAt);
+
+        private static async Task CallRecordAsync(string cs, JObject kennel, string mode, string hasherIds, DateTimeOffset? claimedAt, DateTimeOffset? previousAt)
+        {
+            try
+            {
+                using var conn = new SqlConnection(cs);
+                await conn.OpenAsync();
+                using var cmd = RecordCommand(conn, kennel, mode, hasherIds, claimedAt, previousAt);
                 await cmd.ExecuteNonQueryAsync();
             }
             catch (Exception ex)
             {
-                await HcListMail.LogFailureAsync("InviteEmails.record", "-", ex.Message);
+                await HcListMail.LogFailureAsync($"InviteEmails.{mode}", "-", ex.Message);
             }
+        }
+
+        private static SqlCommand RecordCommand(SqlConnection conn, JObject kennel, string mode, string hasherIds, DateTimeOffset? claimedAt, DateTimeOffset? previousAt)
+        {
+            var cmd = new SqlCommand("[HC6].[nonApi_recordInviteEmailed]", conn) { CommandType = CommandType.StoredProcedure };
+            cmd.Parameters.Add("@kennelId", SqlDbType.UniqueIdentifier).Value = Guid.TryParse(kennel.Value<string>("kennelId"), out Guid k) ? k : DBNull.Value;
+            cmd.Parameters.Add("@adminId", SqlDbType.UniqueIdentifier).Value = Guid.TryParse(kennel.Value<string>("adminId"), out Guid a) ? a : DBNull.Value;
+            cmd.Parameters.Add("@hasherIds", SqlDbType.NVarChar, -1).Value = hasherIds;
+            cmd.Parameters.Add("@mode", SqlDbType.NVarChar, 10).Value = mode;
+            cmd.Parameters.Add("@claimedAt", SqlDbType.DateTimeOffset).Value = claimedAt.HasValue ? claimedAt.Value : DBNull.Value;
+            cmd.Parameters.Add("@previousAt", SqlDbType.DateTimeOffset).Value = previousAt.HasValue ? previousAt.Value : DBNull.Value;
+            return cmd;
         }
 
         private static string H(string s) => WebUtility.HtmlEncode(s);
