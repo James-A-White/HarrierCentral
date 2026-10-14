@@ -152,7 +152,9 @@ class DataApiTests(unittest.TestCase):
 
     def test_next_run(self):
         """'API call to return next run': one run, the first of the future list, with full details."""
-        first = self._get(LIVE, FUTURE_LIST)[0]
+        future = self._get(LIVE, FUTURE_LIST)
+        self.assertGreaterEqual(len(future), 1, f"{self.kennel} has no future runs, so there is no next run to check")
+        first = future[0]
         for base in (LIVE, LEGACY):
             with self.subTest(host=base):
                 rows = self._get(base, NEXT_RUN)
