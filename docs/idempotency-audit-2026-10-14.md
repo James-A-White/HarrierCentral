@@ -125,3 +125,58 @@ edit-another-run's-receipt hole.
 4. **Membership extension (5)**: compare-and-set; the shape most likely to
    recur elsewhere, so worth doing once well.
 5. **Share song (4)**, **haberdashery (7)**, **snooze (8)**.
+
+---
+
+# Part 2 — Portal (audited 2026-10-14)
+
+**Transport:** the portal does **not** retry. `ServiceCommon.sendHttpPostToHC6Api`
+(`portal/lib/services/service_common.dart:315-364`) is one `http.post` with a
+30 s timeout; the direct endpoints (invite emails 180 s, kennel-from-website
+200 s, runs-page test 90 s) are single attempts too. Every repeat is a person:
+a double click, or a second press after a timeout while the server is still
+working. Today's feedback fixes guard most double clicks; the risks below are
+the press-again-after-a-lost-reply and concurrent cases.
+
+## Real risks (most harmful first)
+
+| # | Feature | Caller | SP / endpoint | What duplicates | Fix | Schema? |
+|---|---|---|---|---|---|---|
+| P1 | **Runs-page Import** (creates runs) | `kennel_page_new/runs_page_test.dart:155`→`:199` | `RunsPageImport.cs:257` → `nonApi_importRunsPageRuns` (`:204-209`) | Upsert on (KennelId, `EventFacebookId='runspage:<n>'`), but NOT EXISTS → `NEWID()` → INSERT has no lock and no unique index. A second Import while the first (AI read can exceed 90 s) is still running, or the 4×/day timer at the same moment, inserts the same runs twice | `sp_getapplock` on the kennel inside the transaction (or UPDLOCK, HOLDLOCK on the check); a filtered unique index (KennelId, EventFacebookId) WHERE InboundIntegrationId = 6 AND deleted = 0 as a backstop | Lock: none. Index: James |
+| P2 | **Chat send** (push to the audience) | `chat_page/chat_page_controller.dart:1014`→`:1041` | `hcportal_sendEventMessage` (INSERT `:208`, no existence check); pushes in `PortalApiHC6.cs:159` | A failed send only marks the bubble; no Retry, so the admin retypes → new uuid → second message + second push. Re-sending the same id hits the PK and answers with an error | SP: existing `@messageId` under lock ⇒ return it as success with no recipients (as `hcapp_sendEventMessage` does); portal: Retry on the errored bubble, same uuid | None |
+| P3 | **Invite-code emails** | `kennel_hashers_page.dart:1208` | `InviteEmails.cs:137-147` | Stamped only after ACS accepts; two overlapping sends (two tabs/admins) both email everyone; a failed stamp (`RecordAsync` swallows, `:217`) or a crash between send and stamp re-emails on the next press | Claim first: compare-and-set `InviteEmailedAt` under UPDLOCK, HOLDLOCK (only if NULL or > 7 days), send only claimed rows, release the claim on a failed send | None |
+| P4 | **New kennel request from a website** | `kennel_requests/kennel_from_website_page.dart:166-176` | `KennelFromWebsite.cs:135` → `hcportal_createKennelRequestFromDraft` (`NEWID()` `:152`) | Save again after a timeout = a second request (approving both = two kennels, the second `LH3-GB`); logo blob re-copied | `@kennelImportId` minted once per draft page; locked existence check returns it as success | None (new optional param) |
+| P5 | **Add product** | `kennel_products_ui.dart:575-583` → `queries/product_query.dart:86` | `hcportal_addEditProduct` (`NEWID()` `:128`) | A repeat after a lost reply = a duplicate product, synced to every phone, twice at check-in | `@newProductId` minted once per dialog; unknown id + create intent ⇒ insert with it under lock (today an unknown id is refused, `:113`) | None |
+| P6 | **Add song** | `kennel_page_new_controller.dart:980-1023` | `hcportal_addSong` (`NEWID()` `:120` + KennelSongMap) | A repeat after a failure = a duplicate song | `@newSongId` once per add form; locked check returns it | None |
+| P7 | **Create newsflash** | `newsflash_management_page.dart:119-133` → `queries/newsflash_query.dart:147` | `hcportal_addEditNewsflash` (insert `:109`) | Lost reply + retyped = a duplicate (lower likelihood) | `@newNewsflashId` once per dialog — **if** the key is a GUID; if it is an INT identity, keying it needs a column (James) | Possibly |
+| P8 | **Import from file** (`@fromImport = 1`) | `kennel_hashers_page.dart:1984` | `hcportal_bulkAddHashers` `:246-251`, `:290-297` | Rows upsert by unique email — safe — except a row with no email, no hash name and not both names: each re-run mints a new `hc-…@noemail.invalid` and a duplicate hasher. The email lookup has no lock (a concurrent batch rolls back on the unique index — an error, not a duplicate) | A stable per-row key from the portal (hash of the file row), or a deterministic placeholder from (kennel, names); UPDLOCK, HOLDLOCK on the email lookup | None |
+| P9 | **Toggle kennel song** (concurrency) | `queries/song_query.dart:133` | `hcportal_toggleKennelSong` `:108-124` | Set-state, but check-then-INSERT on KennelSongMap with no lock and no unique (KennelId, SongId): two concurrent toggles = two map rows | UPDLOCK, HOLDLOCK or `MERGE … HOLDLOCK`; a unique index is James's | Optional |
+
+## Error-on-repeat (no duplicate, but a repeat answers with an error)
+
+- **Approve kennel request** (`kennel_requests_controller.dart:270-276`): the SP locks
+  the request and refuses "already approved" — no second kennel, no second welcome.
+  But `approve()` sets `isBusy` only after the await, and a lost reply shows "already
+  approved". If the SP is changed to return the original result on a repeat it must
+  flag it, or `PortalApiHC6.cs:165-177` would send the welcome email again.
+- **Merge hashers**: locks both and refuses a second run — no double move. It takes
+  **internal** hasher ids from the browser, against `/hc-primary-keys` (platform-admin only).
+- **Web admin token**: a repeat leaves a spare 10-minute token. Harmless.
+- **Regenerate ext API key**: a repeat rotates again; after a lost reply the screen shows a stale key until reload.
+
+## Safe
+
+`addEditEvent` (keyed), `updateKennelHasher` (absolute values), `editKennel`,
+`updateKennelWebsite`, `deleteEvent`, `batchUpdatePhotoStatus`, `deleteNewsflash`,
+`editSong`, `respondToNewsflash`, `setPlatformAdmin`, `savePermissionMatrix`,
+`markEventChatRead` (`MERGE … HOLDLOCK`), `reactToChatMessage`, `deleteChatMessage`,
+`clearEmailBounce`, `updateFcmToken`, `update/rejectKennelRequest`, `getKennelWebsite`'s
+default row (PK), `getLandingPageData` (access log by design), `confirmAuthentication`,
+`getInviteEmailList`, `RosterImport` (no writes), upload SAS (an orphan blob at most).
+The portal has no payment, credit, receipt, haberdashery or membership-by-months write.
+
+## Not verified
+
+`PortalNewsflash.NewsflashId`'s type (P7); whether the runs-page timer and a portal
+Import overlap in practice (P1); `nonApi_recordInviteEmailed` internals (P3); whether a
+duplicate KennelSongMap row shows twice anywhere (P9).
