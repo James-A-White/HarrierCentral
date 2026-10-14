@@ -1,3 +1,6 @@
+1.0.61+108
+    • Beta Testers assistant: case references (BT-<n>) in replies and emails, a case file per case (beta-cases/BT-n.json), addenda after a close, and several people per case (replies join, "me too" merges, stricter public-reply rules)
+
 1.0.61+107
     • Beta Testers assistant (E18.F9): answers testers in the app's Beta Testers room within seconds, asks follow-up questions until it understands a report, then emails James one proposal per case (Claude Opus 5.5, read-only code / log / database tools); kicked by the room message, 5-minute timer backstop; off unless BETA_ASSISTANT_ENABLED=1
     • BetaRoomTest: a dry run of one assistant turn that sends nothing (internal secret)
