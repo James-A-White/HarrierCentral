@@ -27,6 +27,7 @@ part 'pages/kennel_logo_page/layout.dart';
 part 'pages/kennel_platform_admin_page/layout.dart';
 part 'pages/kennel_trail_symbols_page/layout.dart';
 part 'pages/kennel_trail_types_page/layout.dart';
+part 'pages/kennel_social_links_page/layout.dart';
 part 'pages/kennel_page_new_widgets.dart';
 
 // ---------------------------------------------------------------------------
@@ -168,6 +169,7 @@ List<List<int>> _kennelTabGroups(KennelPageFormController controller) {
       KennelTabType.hashCash.index, // Hash Cash
       KennelTabType.kennelLogo.index, // Logo
       KennelTabType.other.index, // Other
+      KennelTabType.socialLinks.index, // Social Links
     ],
     [
       KennelTabType.songs.index, // Songs
@@ -351,6 +353,8 @@ class _KennelTabBarView extends StatelessWidget {
         return KennelTrailSymbolsTabContent(controller: controller);
       case KennelTabType.trailTypes:
         return KennelTrailTypesTabContent(controller: controller);
+      case KennelTabType.socialLinks:
+        return KennelSocialLinksTabContent(controller: controller);
     }
   }
 }

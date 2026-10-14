@@ -143,6 +143,7 @@ _KennelModel _$KennelModelFromJson(Map<String, dynamic> json) => _KennelModel(
   inboundIntegrationId: (json['inboundIntegrationId'] as num?)?.toInt(),
   trailSymbolsConfigJson: json['trailSymbolsConfigJson'] as String?,
   trailTypesConfigJson: json['trailTypesConfigJson'] as String?,
+  socialLinksJson: json['socialLinksJson'] as String?,
 );
 
 Map<String, dynamic> _$KennelModelToJson(
@@ -260,4 +261,5 @@ Map<String, dynamic> _$KennelModelToJson(
   'inboundIntegrationId': instance.inboundIntegrationId,
   'trailSymbolsConfigJson': instance.trailSymbolsConfigJson,
   'trailTypesConfigJson': instance.trailTypesConfigJson,
+  'socialLinksJson': instance.socialLinksJson,
 };

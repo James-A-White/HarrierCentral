@@ -24,6 +24,7 @@ part 'pages/kennel_songs_page/controls.dart';
 part 'pages/kennel_logo_page/controls.dart';
 part 'pages/kennel_trail_symbols_page/controls.dart';
 part 'pages/kennel_trail_types_page/controls.dart';
+part 'pages/kennel_social_links_page/controls.dart';
 
 // ---------------------------------------------------------------------------
 // Controller
@@ -181,6 +182,12 @@ class KennelPageFormController extends TabUiController
   /// Reactive list of trail-type configs for the trail types tab
   /// (built-ins 1–5 merged with kennel customisations).
   final RxList<TrailTypeConfig> _trailTypes = <TrailTypeConfig>[].obs;
+
+  /// The Social Links tab's rows (E12.F4.S4), and one text field per row.
+  final RxList<SocialLink> _socialLinks = <SocialLink>[].obs;
+  final List<TextEditingController> _socialLinkFields = <TextEditingController>[];
+  final List<TextEditingController> _socialLabelFields = <TextEditingController>[];
+  final RxBool _socialQrUploading = false.obs;
 
   // ---------------------------------------------------------------------------
   // State - Platform Admin Tab Settings
@@ -340,6 +347,7 @@ class KennelPageFormController extends TabUiController
     newSongVariantsController.dispose();
     newSongTagsController.dispose();
     _disposeTextControllers();
+    _disposeSocialLinkFields();
     super.onClose();
   }
 
@@ -405,6 +413,7 @@ class KennelPageFormController extends TabUiController
     initKennelLogoControls();
     initTrailSymbolsControls();
     initTrailTypesControls();
+    initSocialLinksControls();
 
     populateTextControllers();
   }
@@ -575,6 +584,7 @@ class KennelPageFormController extends TabUiController
     update(['kennelFormPageBuilder']);
 
     populateTextControllers();
+    initSocialLinksControls();
     final overrideTag = editedData.value.kennelPublicId.uuid;
     if (Get.isRegistered<KennelPermissionsController>(tag: overrideTag)) {
       Get.find<KennelPermissionsController>(tag: overrideTag).discardPending();

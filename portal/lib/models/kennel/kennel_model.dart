@@ -140,6 +140,11 @@ abstract class KennelModel with _$KennelModel {
     int? inboundIntegrationId,
     String? trailSymbolsConfigJson,
     String? trailTypesConfigJson,
+    /// The kennel's social and chat links (E12.F4.S4): a JSON array, every
+    /// entry including members-only ones — see lib/util/social_links.dart.
+    /// '' (not null) clears it on save: hcportal_editKennel reads NULL as
+    /// "unchanged".
+    String? socialLinksJson,
   }) = _KennelModel;
 
   factory KennelModel.empty() => KennelModel(

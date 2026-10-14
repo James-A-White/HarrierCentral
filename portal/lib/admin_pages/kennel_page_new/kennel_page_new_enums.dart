@@ -149,6 +149,24 @@ enum KennelTabType {
     isPlatformAdminOnly: false,
   ),
 
+  /// Every place the club talks (E12.F4.S4): Facebook, Instagram, the
+  /// WhatsApp / Signal / WeChat group and the rest.
+  socialLinks(
+    key: 'socialLinks',
+    title: 'Social Links',
+    description: 'List every place your club talks — Facebook, Instagram, '
+        'your WhatsApp, Signal or WeChat group, Strava and the rest — so '
+        'hashers and visitors find you wherever they are.\n\n'
+        'They appear as a row of icons on your kennel page in the app and '
+        'on your website. Chat-group invite links are shown to members only '
+        'unless you choose Everyone.',
+    icon: MaterialCommunityIcons.share_variant,
+    isTabLockable: true,
+    hasCustomTabStatusFunction: false,
+    showTabInSubmitSummary: false,
+    isPlatformAdminOnly: false,
+  ),
+
   /// Developer tools and API access.
   developer(
     key: 'developer',

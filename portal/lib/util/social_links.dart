@@ -6,8 +6,9 @@ import 'package:flutter/material.dart';
 /// entry of HC.Kennel.SocialLinksJson / the request's SocialLinksJson.
 ///
 /// THE SAME platform → hosts list as HC6.SocialLinksProblem
-/// (db/schema/functions) and SocialLinks in api/Endpoints/
-/// KennelFromWebsite.cs. Change all three together.
+/// (db/schema/functions), SocialLinks in api/Endpoints/
+/// KennelFromWebsite.cs, the app's mobile-app/lib/util/social_links.dart and
+/// the web's public-web/lib/social-links.ts. Change all five together.
 class SocialLink {
   SocialLink({required this.platform, this.url, this.handle, this.qrImageUrl, this.label, String? audience})
     : audience = audience ?? (socialMembersByDefault.contains(platform) ? 'members' : 'public');
