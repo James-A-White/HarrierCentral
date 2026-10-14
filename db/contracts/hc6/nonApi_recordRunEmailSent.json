@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "nonApi_recordRunEmailSent",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Records that a run email went out (E9.F6.S8). For @kind 'send': bumps HC.Event.EmailSendCount, stamps EmailLastSentAt and EmailLastSentCount (the Event updatedAt trigger fires, so the run re-syncs to phones), and when @saveInstruction = 1 stores @instruction on HC.Kennel.RunEmailInstruction as the kennel's default drafting instruction (blank clears it). For every kind ('send', 'preview', 'announcement') writes one LOG.GeneralLog row (LogSource 'RunEmail', StrParam1 = event id, Data = JSON {kind, sender, recipients, subject, audit, movedIn, movedOut}) for the audit trail and the Usage Data 'Email' row; 'preview' and 'announcement' log only. Called by the RunEmail API endpoint after the send was handed to the mail service — internal only, no device auth. @recipientCount is required (THROW ⇒ caught ⇒ Success 0 envelope, logged); @eventId is required for a send. Since 2026-10-13 the Event update, kennel instruction update and LOG.GeneralLog insert run in one transaction.",
   "parameters": [
     {
@@ -73,6 +73,13 @@
       "nullable": true,
       "mapsToColumn": null,
       "description": "Recipients the admin moved OUT for this send, logged. Default 0."
+    },
+    {
+      "name": "sendId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "The composer's id for this send (E14.G2.R5, 2026-10-14), stored in the GeneralLog row's Data JSON. A send with an id already recorded for this run in the last two days returns alreadySent = 1 and writes nothing; the API then emails nobody. Serialised per run by an UPDLOCK on its HC.Event row."
     }
   ],
   "rowsets": [
@@ -92,6 +99,18 @@
           "type": "NVARCHAR(MAX)",
           "nullable": true,
           "description": "NULL on success; ERROR_MESSAGE() from the CATCH block on failure."
+        },
+        {
+          "name": "alreadySent",
+          "type": "INT",
+          "nullable": true,
+          "description": "1 = this sendId was already recorded: nothing written, nothing should be sent. 0 = recorded now. Absent on an error."
+        },
+        {
+          "name": "recipients",
+          "type": "INT",
+          "nullable": true,
+          "description": "The recipient count recorded for this send (the earlier one on a repeat)."
         }
       ]
     }

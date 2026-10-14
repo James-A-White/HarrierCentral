@@ -9,7 +9,8 @@ CREATE OR ALTER PROCEDURE [HC6].[nonApi_recordRunEmailSent]
     @subject         NVARCHAR(200)    = NULL,
     @auditPath       NVARCHAR(400)    = NULL,     -- blob path of the audit copy (EmailAudit)
     @movedIn         INT              = 0,
-    @movedOut        INT              = 0
+    @movedOut        INT              = 0,
+    @sendId          UNIQUEIDENTIFIER = NULL      -- the composer's id for this send (E14.G2.R5)
 
 AS
 -- =====================================================================
@@ -42,6 +43,31 @@ BEGIN TRY
     -- with no audit row behind it. The CATCH already rolls back first.
     BEGIN TRANSACTION;
 
+    -- A send is recorded once per composer (E14.G2.R5, 2026-10-14). The app
+    -- and portal mint @sendId once per composer and send it on every attempt;
+    -- a "try again" after a timeout whose first attempt DID record finds that
+    -- record and is answered alreadySent = 1, and the API then emails nobody.
+    -- The run's own row is locked so two sends of one run queue; the lookup
+    -- is then a plain read of the last two days (IX_GeneralLog_Timestamp_
+    -- LogSource), never a locked scan of the whole log table.
+    IF (@kind = 'send' AND @sendId IS NOT NULL)
+    BEGIN
+        DECLARE @lockedRun INT, @previousCount INT;
+        SELECT @lockedRun = 1 FROM HC.Event WITH (UPDLOCK, ROWLOCK) WHERE id = @eventId;
+        SELECT TOP 1 @previousCount = TRY_CAST(JSON_VALUE(g.Data, '$.recipients') AS INT)
+        FROM LOG.GeneralLog g
+        WHERE g.[Timestamp] > DATEADD(DAY, -2, SYSDATETIMEOFFSET())
+          AND g.LogSource = 'RunEmail'
+          AND g.StrParam1 = LOWER(CAST(@eventId AS NVARCHAR(40)))
+          AND JSON_VALUE(g.Data, '$.sendId') = LOWER(CAST(@sendId AS NVARCHAR(40)));
+        IF (@previousCount IS NOT NULL)
+        BEGIN
+            COMMIT TRANSACTION;
+            SELECT 1 AS Success, NULL AS ErrorMessage, 1 AS alreadySent, @previousCount AS recipients;
+            RETURN;
+        END
+    END
+
     IF (@kind = 'send')
     BEGIN
         UPDATE HC.Event
@@ -65,13 +91,14 @@ BEGIN TRY
                     @recipientCount AS recipients,
                     LEFT(@subject, 200) AS subject,
                     @auditPath AS audit,
-                    @movedIn AS movedIn, @movedOut AS movedOut
+                    @movedIn AS movedIn, @movedOut AS movedOut,
+                    LOWER(CAST(@sendId AS NVARCHAR(40))) AS sendId
              FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
             SYSDATETIMEOFFSET());
 
     COMMIT TRANSACTION;
 
-    SELECT 1 AS Success, NULL AS ErrorMessage;
+    SELECT 1 AS Success, NULL AS ErrorMessage, 0 AS alreadySent, @recipientCount AS recipients;
 END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
