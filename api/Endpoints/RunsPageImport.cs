@@ -188,10 +188,22 @@ namespace HcWebApi.Endpoints
 
         private static async Task<(string text, string hash)> ReadPageAsync(string url)
         {
+            // A Google Calendar link (embed, share or iCal) is read through the
+            // calendar's public iCal feed: the embed page is drawn by JavaScript and
+            // has no text, the feed is plain text (Dayton H3, 2026-10-15).
+            string fetchUrl = GoogleCalendarIcsUrl(url) ?? url;
             string html;
-            try { html = await FetchAsync(url); }
+            try { html = await FetchAsync(fetchUrl); }
+            catch (HttpRequestException hx) when (fetchUrl != url && hx.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.Forbidden)
+            {
+                throw new StageException("fetch", "the Google Calendar is not public. In Google Calendar: Settings › the calendar › Access permissions › Make available to public, then try again");
+            }
             catch (Exception ex) { throw Stage("fetch", ex is TaskCanceledException ? new StageException("fetch", "the site did not answer within 30 seconds") : ex); }
-            string text = PageToText(html);
+            // Any iCal content (a Google feed or a kennel's own .ics) becomes one
+            // dated line per event in the import window; everything else is a page.
+            string text = html.TrimStart().StartsWith("BEGIN:VCALENDAR", StringComparison.OrdinalIgnoreCase)
+                ? IcsToText(html)
+                : PageToText(html);
             string hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text))).ToLowerInvariant();
             return (text, hash);
         }
@@ -387,6 +399,92 @@ namespace HcWebApi.Endpoints
             string html = await res.Content.ReadAsStringAsync();
             if (html.Length > 3_000_000) html = html[..3_000_000];
             return html;
+        }
+
+        // ── Calendars (E3.F6.S5, 2026-10-15) ────────────────────────────────
+
+        /// <summary>The public iCal feed of a Google Calendar link, or null when the
+        /// address is not a Google Calendar. Accepts an embed link (?src=), a share
+        /// link (?cid=, plain or base64) or an iCal link. THE SAME test of "is this
+        /// a Google Calendar link" is in hcportal_editKennel and the portal
+        /// (kennel_page_new); change them together.</summary>
+        public static string? GoogleCalendarIcsUrl(string url)
+        {
+            if (!Uri.TryCreate(url.Trim(), UriKind.Absolute, out var u)) return null;
+            if (!u.Host.Equals("calendar.google.com", StringComparison.OrdinalIgnoreCase)) return null;
+            if (u.AbsolutePath.Contains("/calendar/ical/", StringComparison.OrdinalIgnoreCase)) return u.GetLeftPart(UriPartial.Path);
+            var q = System.Web.HttpUtility.ParseQueryString(u.Query);
+            string? id = q.GetValues("src")?.FirstOrDefault() ?? q.GetValues("cid")?.FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(id)) return null;
+            if (!id.Contains('@'))
+            {
+                // A share link's cid is often the calendar id in base64.
+                try
+                {
+                    var pad = id.Replace('-', '+').Replace('_', '/');
+                    pad += new string('=', (4 - pad.Length % 4) % 4);
+                    var decoded = Encoding.UTF8.GetString(Convert.FromBase64String(pad));
+                    if (decoded.Contains('@')) id = decoded;
+                }
+                catch (FormatException) { }
+            }
+            return $"https://calendar.google.com/calendar/ical/{Uri.EscapeDataString(id)}/public/basic.ics";
+        }
+
+        /// <summary>An iCal calendar as text for the model: one line per event from
+        /// 14 days ago to 180 days ahead, in order, with its local date and time,
+        /// title, place and the start of its description. A feed is often years
+        /// long (Dayton's is 750 KB); only the window is sent.</summary>
+        public static string IcsToText(string ics)
+        {
+            string s = Regex.Replace(ics.Replace("\r\n", "\n"), @"\n[ \t]", "");   // unfold
+            string calName = Regex.Match(s, @"^X-WR-CALNAME:(.*)$", RegexOptions.Multiline).Groups[1].Value.Trim();
+            string calTz = Regex.Match(s, @"^X-WR-TIMEZONE:(.*)$", RegexOptions.Multiline).Groups[1].Value.Trim();
+            TimeZoneInfo? tz = null;
+            if (calTz.Length > 0) { try { tz = TimeZoneInfo.FindSystemTimeZoneById(calTz); } catch (Exception) { } }
+            DateTime from = DateTime.UtcNow.AddDays(-14), to = DateTime.UtcNow.AddDays(180);
+            static string Unescape(string v) => v.Replace("\\n", "\n").Replace("\\N", "\n").Replace("\\,", ",").Replace("\\;", ";").Replace("\\\\", "\\").Trim();
+
+            var events = new List<(DateTime sortUtc, string line)>();
+            foreach (Match ev in Regex.Matches(s, @"BEGIN:VEVENT(.*?)END:VEVENT", RegexOptions.Singleline))
+            {
+                string body = ev.Groups[1].Value;
+                string Prop(string name) => Regex.Match(body, $@"^{name}(?:;[^:\n]*)?:(.*)$", RegexOptions.Multiline).Groups[1].Value.Trim();
+                var dt = Regex.Match(body, @"^DTSTART(;[^:\n]*)?:(\d{8})(?:T(\d{6})(Z)?)?", RegexOptions.Multiline);
+                if (!dt.Success) continue;
+                string date = dt.Groups[2].Value, time = dt.Groups[3].Value;
+                bool isUtc = dt.Groups[4].Success, allDay = time.Length == 0;
+                var local = DateTime.ParseExact(date + (allDay ? "000000" : time), "yyyyMMddHHmmss", System.Globalization.CultureInfo.InvariantCulture);
+                DateTime sortUtc = local;
+                if (isUtc)
+                {
+                    sortUtc = DateTime.SpecifyKind(local, DateTimeKind.Utc);
+                    if (tz != null) local = TimeZoneInfo.ConvertTimeFromUtc(sortUtc, tz);
+                }
+                bool recurring = body.Contains("\nRRULE:", StringComparison.Ordinal) || body.StartsWith("RRULE:", StringComparison.Ordinal);
+                if (!recurring && (sortUtc < from || sortUtc > to)) continue;
+                string title = Unescape(Prop("SUMMARY"));
+                string where = Unescape(Prop("LOCATION"));
+                string desc = Unescape(Prop("DESCRIPTION"));
+                desc = Regex.Replace(Regex.Replace(desc, "<[^>]+>", " "), @"\s+", " ").Trim();
+                if (desc.Length > 500) desc = desc[..500] + "…";
+                string status = Prop("STATUS");
+                var line = new StringBuilder($"- {local:yyyy-MM-dd ddd}");
+                line.Append(allDay ? " (all day)" : $" {local:HH:mm}{(isUtc && tz == null ? " UTC" : "")}");
+                line.Append(" | ").Append(title.Length > 0 ? title : "(no title)");
+                if (status.Equals("CANCELLED", StringComparison.OrdinalIgnoreCase)) line.Append(" | CANCELLED");
+                if (recurring) line.Append(" | repeats: ").Append(Prop("RRULE"));
+                if (where.Length > 0) line.Append(" | Where: ").Append(where);
+                if (desc.Length > 0) line.Append(" | Details: ").Append(desc);
+                events.Add((sortUtc, line.ToString()));
+            }
+            var sb = new StringBuilder($"Calendar: {(calName.Length > 0 ? calName : "(unnamed)")}" +
+                                       $"{(calTz.Length > 0 ? $" — times are local ({calTz})" : "")}. " +
+                                       $"Events from {from:yyyy-MM-dd} to {to:yyyy-MM-dd}, one per line:\n");
+            foreach (var (_, line) in events.OrderBy(e => e.sortUtc)) sb.AppendLine(line);
+            if (events.Count == 0) sb.AppendLine("(no events in this window)");
+            var text = sb.ToString();
+            return text.Length > MaxPageChars ? text[..MaxPageChars] : text;
         }
 
         private static readonly Regex MapHost = new(
