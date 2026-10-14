@@ -1,0 +1,48 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_logBetaCase",
+  "version": "1.0.0",
+  "description": "The cloud Beta Testers assistant's memory (E18.F9.S3, 2026-10-14): one LOG.GeneralLog row (LogSource 'beta-room') saying a tester's case was CLOSED up to a room sequence (the proposal was emailed to James), or that messages up to a sequence were SEEN and needed no reply. The room's messages are the case; this only marks where each tester's case ends. Called by the API (BetaRoomAssistant) only. Idempotency: log-only \u2014 a repeated row says the same thing; readers take the MAX sequence per tester.",
+  "parameters": [
+    {
+      "name": "event",
+      "type": "NVARCHAR(20)",
+      "nullable": true,
+      "mapsToColumn": "GeneralLog.Message",
+      "description": "'closed' or 'seen'; anything else writes nothing."
+    },
+    {
+      "name": "reporterPublicId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "GeneralLog.StrParam1",
+      "description": "The tester's PUBLIC hasher id (the room's author id), stored lowercase."
+    },
+    {
+      "name": "lastSequence",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "GeneralLog.Data",
+      "description": "The room MessageSequenceCount the case ends at; stored as 'seq=<n>' at the start of Data."
+    },
+    {
+      "name": "data",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "GeneralLog.Data",
+      "description": "Optional summary (the proposal title), trimmed to fit 4000 characters with the seq prefix."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "INSERT LOG.GeneralLog (LogSource 'beta-room')"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
