@@ -296,6 +296,28 @@ the delimiter — never comma. Commas appear in natural language and some data f
 splitting the list. Use `STRING_SPLIT(@param, '|')` on the SQL side and
 `join('|')` / `split('|')` on the Dart side.
 
+**Every user action is acknowledged at once (every client):**
+
+Wherever a person taps, clicks or submits — app, portal or public web — the
+screen answers **in the same frame**: a spinner on the button, the button
+disabled or recoloured, a progress bar, an optimistic change. Never a pause
+in which nothing moves while a request, a check or a dialog is prepared
+(James, 2026-10-14). A press that shows nothing looks missed, and pressing
+again is how one run was saved twice, then four times.
+
+- **Show it before the first `await`.** Set the busy state, then do the
+  work; clear it in a `finally`. A save that first awaits a confirmation
+  dialog or a pre-check is exactly where the gap hides (the portal's Save
+  waited on the same-start check, E3.F1.S8, before showing "Saving...").
+- **The busy state also refuses a second press** until the first returns.
+  Portal: `HcButton(loading: …)` already spins and disables; the tabbed
+  editors' Save goes through `TabUiController.saveFromButton()` and its
+  `isSaving`. App and web: the same shape — a flag checked and set first.
+- **Feedback is not idempotency.** A reply can still be lost and retried,
+  so a write that creates something carries a client-minted GUID the SP
+  treats as "already done" (`WITH (UPDLOCK, HOLDLOCK)`) — chat sends and run
+  creation (E3.F1.S7) are the pattern. Do both.
+
 **Generated email addresses are shown in dark red and never sent to (every client):**
 
 An account's email is its key, so a hasher with no address still gets a

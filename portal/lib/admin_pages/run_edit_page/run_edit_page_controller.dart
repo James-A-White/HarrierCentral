@@ -1249,6 +1249,7 @@ class RunEditPageController extends TabUiController
         HcButton.primary(
           label: 'Save and send',
           icon: Icons.send_rounded,
+          loading: isSaving.value,
           onPressed: (dirty && valid) ? saveAndSend : null,
         ),
         const SizedBox(height: 8),
@@ -1325,7 +1326,7 @@ class RunEditPageController extends TabUiController
   Future<void> saveAndSend() async {
     if (isAddMode) return;
     if (isFormDirty.value) {
-      await save(true);
+      await saveFromButton(); // spinner on the press, as on Save
       if (isFormDirty.value) return; // the save was refused or cancelled
     }
     final String publicEventId = normalizeUuid(originalData.publicEventId ?? '');

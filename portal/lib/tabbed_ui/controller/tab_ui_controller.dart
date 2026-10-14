@@ -305,6 +305,26 @@ abstract class TabUiController extends GetxController {
   void undoChanges();
   void populateTextControllers();
   Future<void> save(bool showDialog);
+
+  /// True from the instant a Save button is pressed until the save returns,
+  /// so the button shows its spinner AT ONCE (James, 2026-10-14: a Save that
+  /// showed nothing looked unpressed, and a second press is how runs got
+  /// saved twice). Saves can wait on a dialog or a check before any
+  /// "Saving..." appears; this covers that gap. Read by the Save buttons in
+  /// TabPageStandardLayout.
+  final RxBool isSaving = false.obs;
+
+  /// The Save buttons' handler: acknowledges the press immediately and
+  /// ignores another while one is running.
+  Future<void> saveFromButton() async {
+    if (isSaving.value) return;
+    isSaving.value = true;
+    try {
+      await save(true);
+    } finally {
+      isSaving.value = false;
+    }
+  }
   Future<void> close();
 
   static const int MOBILE_SCREEN_WIDTH = 650;

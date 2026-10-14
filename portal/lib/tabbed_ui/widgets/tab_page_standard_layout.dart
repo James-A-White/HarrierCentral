@@ -104,11 +104,10 @@ class TabPageStandardLayoutState extends State<TabPageStandardLayout>
                             HcButton.primary(
                               label: 'Save',
                               icon: Icons.save_rounded,
+                              loading: widget.formController.isSaving.value,
                               onPressed: (widget.formController.isFormDirty.value &&
                                       widget.formController.allFieldsAreValid.value)
-                                  ? () async {
-                                      await widget.formController.save(true);
-                                    }
+                                  ? widget.formController.saveFromButton
                                   : null,
                             ),
                             const SizedBox(width: 12),
@@ -306,8 +305,9 @@ class TabPageStandardLayoutState extends State<TabPageStandardLayout>
                     HcButton.primary(
                       label: 'Save',
                       icon: Icons.save_rounded,
+                      loading: widget.formController.isSaving.value,
                       onPressed: (isFormDirty && allFieldsAreValid)
-                          ? () => onSave!(true)
+                          ? widget.formController.saveFromButton
                           : null,
                     ),
                   ],
