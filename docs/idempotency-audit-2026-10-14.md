@@ -180,3 +180,53 @@ The portal has no payment, credit, receipt, haberdashery or membership-by-months
 `PortalNewsflash.NewsflashId`'s type (P7); whether the runs-page timer and a portal
 Import overlap in practice (P1); `nonApi_recordInviteEmailed` internals (P3); whether a
 duplicate KennelSongMap row shows twice anywhere (P9).
+
+---
+
+# Part 3 — Public web (audited 2026-10-14)
+
+**Transport:** nothing retries a write by itself. `callAdminApi` / `callAppApi`
+(`public-web/lib/member-api.ts`) are single `fetch` calls; there are no Server
+Actions; components make one call behind a `busy`/`sending` flag. The one retry —
+a failed chat photo — correctly reuses its messageId (`ChatThread.tsx:337`).
+**The web sends no pushes** (`PublicWebAdminApi.cs:302-310` strips the push
+rowsets), so a duplicate web chat message is a duplicate row, not a push. Repeats
+come from a person, a link opened twice, or a **mail scanner fetching a GET link**.
+
+## Real risks (most harmful first)
+
+| # | Feature | Route / trigger | Chain | What goes wrong | Fix | Schema? |
+|---|---|---|---|---|---|---|
+| W1 | **Unsubscribe link in every run email** (GET with a side effect) | `api/Endpoints/EmailUnsubscribe.cs:25` (GET and POST; the plain link acts at once, `:73`) | `nonApi_setKennelEmailOff` (`&do=block` → `nonApi_setEmailBlocked`) | Set-state, so repeats are harmless — but a mail security scanner (Safe Links, Mimecast, Proofpoint) fetching the link silently unsubscribes the member from the kennel's run emails. The link sits in the run email's top bar and footer (`RunEmail.cs:598-613`) | GET of the plain link renders a confirm page; its button POSTs, and only the POST acts. RFC 8058 one-click already arrives as POST (`List-Unsubscribe-Post`), so Gmail's button is unaffected. Same for `do=block`. Also: the URL carries the internal hasher id (`h=`, signed) — `/hc-primary-keys` wants a public id | No |
+| W2 | **Kennel request resubmitted** (emails a code) | `public-web/app/api/kennel-request/route.ts:53` | `publicWeb_submitKennelRequest` → code email (`PublicWebAdminApi.cs:273-283`) | The row dedupes correctly (natural key under lock), but a repeat while unconfirmed **rotates the code** (`:198-200`) and emails the new one: the first email's code is now dead, entering it counts as a wrong attempt, and five mark the request as spam | A repeat within ~30 min keeps `ConfirmCode` and resends the same code (or sends nothing); `updatedAt` times it | No |
+| W3 | **Chat text and location send** | `components/member/ChatThread.tsx:239` (text), `:352` (location) → `app/api/member/chat/route.ts:47` | `publicWeb_sendChatMessage` → `hcapp_send*Message` (idempotent on `@messageId`) | The id is minted per press; after "Couldn't send", Send mints a new one, so a message whose first attempt committed appears twice for everyone | Keep the unconfirmed messageId (keyed to the draft text and reply target) and reuse it until success or the text changes; same for location. Client only | No |
+| W4 | **Sign in by emailed code** (creates a device) | `app/api/member/verify-code/route.ts:22` (`randomUUID()` per request) | `hcapp_authorizeDevice` — DELETE then INSERT `HC.Device` (`:228-233`); the code is not consumed | A double submit or retry creates a second device row with a live secret no browser holds — a phantom in Signed-in devices (no second account) | Mint the browser's deviceId once per sign-in flow (a signed httpOnly cookie set at request-code); the SP returns the existing secret for an existing device of the same user instead of DELETE/INSERT (as `confirmAuthentication` does) | No (SP behaviour) |
+| W5 | **Chat report** (emails the reviewers) — shared with the app | `app/api/member/chat/report/route.ts:16` | `publicWeb_reportChatMessage` → `hcapp_reportChatMessage` → `AbuseReportEmails` | Its dedupe (`:88-93`) is check-then-insert on `LOG.GeneralLog` with no lock or transaction: two concurrent reports = two log rows and **two reviewer emails** (sequential repeats are already refused) | `sp_getapplock` on the report key inside a transaction (a locked `LIKE` over the log table would be expensive) | No |
+| W6 | **Web admin token redeem** (GET, consumes the token) | `app/api/admin/auth/route.ts:26` | `publicWeb_redeemAdminToken` — `DELETE … OUTPUT` (`:35`) | Not a duplicate, the opposite: a link preview, a lost redirect or a reload burns the token and the admin is refused. Low (the portal opens it directly) | Make the page POST the token; or mark it redeemed and allow ~60 s re-redemption | POST: no. Grace window: a column (James) |
+| W7 | **QR sign-in poll** (low) | `app/api/member/qr/poll/route.ts` | `publicWeb_confirmAuthentication` | The request is marked removed (`:74`); if the reply with the cookie is lost, later polls say "pending" until expiry while the device row exists but cannot be reached. Its device check (`:53`) has no lock — concurrent polls hit the PK (an error, not a duplicate) | Find the request regardless of `Removed` when `HC.Device` already holds `@newDeviceId` for that hasher; UPDLOCK, HOLDLOCK on the device read | No |
+
+## UI-only
+
+- **Signup double click:** `hcapp_addEditUser` (lock + unique email) makes no second
+  hasher, but a concurrent second call returns its duplicate envelope with
+  `errorCode 1510, errorType 10005`, and `createMember` tests `errorCode === 10005`
+  (`member-api.ts:172`), so the person is told the account could not be created when it
+  just was. Test `errorType`.
+- Request code, signup, run-counts report: a repeat is another email to the caller; the
+  invite code stays the same for a week.
+- "I'm in / Can't make it" links: applied client-side only with a member cookie
+  (`RsvpPanel.tsx:81`), so a scanner cannot RSVP; repeats are set-state.
+
+## Safe
+
+RSVP, follow/home kennel, notification and email prefs, chat react, delete and mark
+read, photo upload (orphan blob at most), block, DM start/respond/end/mute/preference,
+passkey register/login/delete, sign out device, member logout, kennel request confirm,
+save layout (PK on KennelId), web-error log.
+
+## Not verified
+
+That every write button is actually `disabled={busy}` (the handlers set busy but do not
+test it first); whether a preview could fetch the admin token URL (W6); whether
+`AddKennelForm` says a resubmit replaced the code (W2); `PublicWebApi.cs` (read-only
+proxies seen, not read).
