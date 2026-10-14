@@ -46,6 +46,7 @@ AS
 --                        PublicEventId as deterministic tiebreakers for
 --                        stable pagination when concurrent events exist.
 --              On runtime error: logged to HC.ErrorLog, then re-raised.
+-- Changes: 2026-10-14 — PackOffMinutes (E3.F1.S6), effective minutes after the gather.
 -- Author:      Harrier Central
 -- Created:     2026-04-14
 -- Updated:     2026-10-08 — page on keys in a CTE, then join the wide columns
@@ -144,6 +145,8 @@ BEGIN TRY
 
         -- ── Timing ──────────────────────────────────────────────────────────
         CAST(e.EventStartDatetime AS datetime2(7)) AS EventStartDatetime,
+        -- Pack-off (E3.F1.S6): minutes after the gather, run else kennel; NULL = at the gather.
+        COALESCE(e.PackOffMinutes, (SELECT kp.PackOffMinutes FROM HC.Kennel kp WHERE kp.id = e.KennelId)) AS PackOffMinutes,
         CAST(e.EventEndDatetime   AS datetime2(7)) AS EventEndDatetime,
         -- COALESCE: use stored GMT value when available; fall back to computing
         -- it via AT TIME ZONE for older runs where the trigger column is NULL.

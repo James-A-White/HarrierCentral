@@ -84,6 +84,12 @@
           "description": "CAST(Event.EventStartDatetime AS datetime2(7)) — timezone offset stripped. Client receives local time without UTC offset. Use KennelIANATimezone to reconstruct the offset if needed."
         },
         {
+          "name": "PackOffMinutes",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Effective pack-off (E3.F1.S6): minutes after the gather — the run's own, else the kennel's default; NULL = the pack leaves at the gather."
+        },
+        {
           "name": "EventEndDatetime",
           "type": "DATETIME2(7)",
           "nullable": true,
