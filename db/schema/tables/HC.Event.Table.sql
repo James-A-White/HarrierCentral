@@ -149,6 +149,8 @@ CREATE TABLE [HC].[Event] (
 	[EmailSendCount] [smallint] NOT NULL CONSTRAINT [DF_Event_EmailSendCount] DEFAULT ((0)),
 	[EmailLastSentAt] [datetimeoffset](7) NULL,
 	[EmailLastSentCount] [int] NULL,
+	-- E3.F1.S6: this run's pack-off, minutes after the gather (EventStartDatetime). NULL = the kennel's HC.Kennel.PackOffMinutes (NULL there = at the gather). Minutes, not a clock time, so moving the start carries the pack-off with it.
+	[PackOffMinutes] [smallint] NULL,
 	CONSTRAINT [PK_Event] PRIMARY KEY CLUSTERED ([id])
 );
 GO
@@ -175,6 +177,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [UX_Event_RunsPageImport] ON [HC].[Event] ([Ken
 ALTER TABLE [HC].[Event] ADD CONSTRAINT [CK_Event_IsCountedRun] CHECK ([IsCountedRun]>=(0) AND [IsCountedRun]<=(1));
 ALTER TABLE [HC].[Event] ADD CONSTRAINT [CK_Event_IsPromotedEvent] CHECK ([IsPromotedEvent]>=(0) AND [IsPromotedEvent]<=(1));
 ALTER TABLE [HC].[Event] ADD CONSTRAINT [CK_Event_IsVisible] CHECK ([IsVisible]>=(0) AND [IsVisible]<=(1));
+ALTER TABLE [HC].[Event] ADD CONSTRAINT [CK_Event_PackOffMinutes] CHECK ([PackOffMinutes]>=(0) AND [PackOffMinutes]<=(600));
 GO
 
 -- Trigger [HC].[trgRecalculateRunCounts]

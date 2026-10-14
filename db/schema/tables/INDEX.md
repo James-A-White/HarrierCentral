@@ -37,7 +37,7 @@ legacy schemas, and TSA (defunct; its old files are left as they were).
 | [HC.EmailLog](HC.EmailLog.Table.sql) | 6 | 1 | 0 |
 | [HC.EmailTemplate](HC.EmailTemplate.Table.sql) | 17 | 1 | 0 |
 | [HC.ErrorLog](HC.ErrorLog.Table.sql) | 18 | 2 | 0 |
-| [HC.Event](HC.Event.Table.sql) | 145 | 21 | 3 |
+| [HC.Event](HC.Event.Table.sql) | 146 | 21 | 3 |
 | [HC.EventMessage](HC.EventMessage.Table.sql) | 22 | 4 | 2 |
 | [HC.EventMessageBadgeCounts](HC.EventMessageBadgeCounts.Table.sql) | 14 | 3 | 0 |
 | [HC.EventTrack](HC.EventTrack.Table.sql) | 5 | 1 | 0 |
@@ -51,7 +51,7 @@ legacy schemas, and TSA (defunct; its old files are left as they were).
 | [HC.HasherPromotionMap](HC.HasherPromotionMap.Table.sql) | 6 | 1 | 0 |
 | [HC.Integration](HC.Integration.Table.sql) | 23 | 1 | 1 |
 | [HC.IntegrationJob](HC.IntegrationJob.Table.sql) | 15 | 3 | 0 |
-| [HC.Kennel](HC.Kennel.Table.sql) | 140 | 6 | 7 |
+| [HC.Kennel](HC.Kennel.Table.sql) | 141 | 6 | 7 |
 | [HC.KennelAuthorization](HC.KennelAuthorization.Table.sql) | 17 | 1 | 0 |
 | [HC.KennelCredit](HC.KennelCredit.Table.sql) | 8 | 2 | 1 |
 | [HC.KennelPhotos](HC.KennelPhotos.Table.sql) | 17 | 2 | 1 |

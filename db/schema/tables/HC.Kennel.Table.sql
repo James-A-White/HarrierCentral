@@ -144,6 +144,8 @@ CREATE TABLE [HC].[Kennel] (
 	[RunsPageStatus] [nvarchar](500) NULL,
 	[RunEmailInstruction] [nvarchar](500) NULL,
 	[SocialLinksJson] [nvarchar](max) NULL,
+	-- E3.F1.S6: the pack leaves this many minutes after the gather (EventStartDatetime), by default for every run of the kennel. NULL = at the gather. A run overrides it with HC.Event.PackOffMinutes.
+	[PackOffMinutes] [smallint] NULL,
 	CONSTRAINT [IX_KennelUniqueShortName] UNIQUE NONCLUSTERED ([KennelUniqueShortName]),
 	CONSTRAINT [PK_PublicKennelId] PRIMARY KEY CLUSTERED ([id])
 );
@@ -158,6 +160,7 @@ ALTER TABLE [HC].[Kennel] ADD CONSTRAINT [FK_Kennel_Integration] FOREIGN KEY ([I
 ALTER TABLE [HC].[Kennel] ADD CONSTRAINT [FK_Kennel_KennelStatusEnum] FOREIGN KEY ([KennelStatus]) REFERENCES [DomainValues].[KennelStatusEnum] ([KennelStatusEnumId]);
 ALTER TABLE [HC].[Kennel] ADD CONSTRAINT [FK_Kennel_Region] FOREIGN KEY ([ProvinceStateId]) REFERENCES [HC].[Region] ([id]);
 ALTER TABLE [HC].[Kennel] ADD CONSTRAINT [CK_Kennel_CardPaymentProvider] CHECK ([CardPaymentProvider] IS NULL OR ([CardPaymentProvider]='zettle' OR [CardPaymentProvider]='sumup'));
+ALTER TABLE [HC].[Kennel] ADD CONSTRAINT [CK_Kennel_PackOffMinutes] CHECK ([PackOffMinutes]>=(0) AND [PackOffMinutes]<=(600));
 GO
 
 -- Trigger [HC].[GenerateExtApiKey]
