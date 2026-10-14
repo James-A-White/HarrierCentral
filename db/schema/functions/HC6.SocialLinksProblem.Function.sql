@@ -11,7 +11,9 @@
 --   pointing somewhere else). WeChat has no group links: a handle and/or a
 --   QR image instead. 'other' takes any https host and needs a label.
 --   THE SAME platform → hosts list is in api/Endpoints/KennelFromWebsite.cs
---   (SocialLinks) and portal/lib/util/social_links.dart. Change all three.
+--   (SocialLinks), portal/lib/util/social_links.dart,
+--   mobile-app/lib/util/social_links.dart and public-web/lib/social-links.ts.
+--   Change all five together.
 -- Parameters: @json - the array (NULL or '' = no links, fine)
 -- Returns: NVARCHAR(300) — the first problem, or NULL
 -- Author: Harrier Central
