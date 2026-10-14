@@ -231,6 +231,13 @@ class HasherKennelMapService {
     int mismanagementRoles = -1,
     int kennelStandingSet = -1,
     int kennelStandingClear = -1,
+    // Compare-and-set for monthsToAddToMembership (E14.G2.R5, 2026-10-14):
+    // when [compareExpiry] is true the months are added only while the
+    // member's expiry is still [expectedExpiry] (null = no membership), so a
+    // repeat after a lost reply cannot add them twice. The reply's
+    // membershipAlreadyChanged = 1 says nothing was added.
+    bool compareExpiry = false,
+    DateTime? expectedExpiry,
   }) async {
     List<dynamic> adHocData = <dynamic>[];
 
@@ -286,6 +293,9 @@ class HasherKennelMapService {
       'notificationState': notificationState,
       'emailAlertState': emailAlertState,
       'monthsToAddToMembership': monthsToAddToMembership,
+      if (compareExpiry) 'expectedExpiryKnown': 1,
+      if (compareExpiry && expectedExpiry != null)
+        'expectedExpiry': expectedExpiry.toUtc().toIso8601String(),
       if (kennelStandingSet != -1) 'kennelStandingSet': kennelStandingSet,
       if (kennelStandingClear != -1) 'kennelStandingClear': kennelStandingClear,
       'appAccessFlags': appAccessFlags,

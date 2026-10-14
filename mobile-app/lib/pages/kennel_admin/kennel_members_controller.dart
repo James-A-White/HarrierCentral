@@ -383,6 +383,13 @@ class KennelMembersController extends GetxController
   /// membership length.
   Future<void> addMember(String hasherId) async {
     kennelListAggregate.extensions.followingRequested = -1;
+    // Someone already on the roster is extended, so the add is a
+    // compare-and-set against the expiry shown (E14.G2.R5); someone with no
+    // row at all is a plain insert, which the server makes once.
+    KennelMemberResultsModel? existing;
+    for (final dynamic r in _members) {
+      if (r is KennelMemberResultsModel && r.hasherId == hasherId) existing = r;
+    }
     try {
       await HasherKennelMapService().updateHasherKennelStatus(
         _kennelId,
@@ -390,6 +397,8 @@ class KennelMembersController extends GetxController
         monthsToAddToMembership:
             kennelListAggregate.kennel.membershipDurationInMonths,
         targetUserId: hasherId,
+        compareExpiry: existing != null,
+        expectedExpiry: existing?.membershipExpirationDate,
       );
       if (isClosed) return;
       await refreshAll();
@@ -446,6 +455,8 @@ class KennelMembersController extends GetxController
   Future<void> modifyMembership(int index, int monthsToAddToMembership) async {
     final KennelMemberResultsModel? m = rowAt(index);
     if (m == null) return;
+    // A second swipe while this member is updating does nothing.
+    if (m.memberInfoBeingUpdated) return;
     final HasherKennelMapService srv = HasherKennelMapService();
     kennelListAggregate.extensions.followingRequested = -1;
     _replaceById(m.hasherId, (r) => r.copyWith(memberInfoBeingUpdated: true));
@@ -457,6 +468,8 @@ class KennelMembersController extends GetxController
         AppDomainType.kennel,
         monthsToAddToMembership: monthsToAddToMembership,
         targetUserId: m.hasherId,
+        compareExpiry: true,
+        expectedExpiry: m.membershipExpirationDate,
       );
     } catch (e, s) {
       debugPrint('_modifyMembership: updateHasherKennelStatus error: $e');
@@ -476,10 +489,18 @@ class KennelMembersController extends GetxController
     }
     if (isClosed) return;
 
+    final Map<String, dynamic>? reply = firstRow(result);
+    final bool alreadyChanged =
+        (reply?['membershipAlreadyChanged'] as num?)?.toInt() == 1;
     showHcSnackbar(
-      result.isNotEmpty
-          ? 'Membership updated.'
-          : 'Could not update membership — check your connection.',
+      result.isEmpty
+          ? 'Could not update membership — check your connection.'
+          : alreadyChanged
+          // The expiry had moved since this screen showed it: an earlier
+          // attempt landed, or another admin changed it. Nothing was added.
+          ? 'Membership had already been changed — nothing added. '
+                'Check the new expiry before extending again.'
+          : 'Membership updated.',
       isError: result.isEmpty,
     );
 
