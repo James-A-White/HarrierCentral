@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "nonApi_recordInviteEmailed",
-  "version": "1.0.0",
-  "description": "Stamps HC.Hasher.InviteEmailedAt = now for the hashers an 'Email invite codes' send reached (E2.F2.S6), so the next send skips anyone invited in the last 7 days. Called by the InviteEmails API endpoint after the emails are handed to ACS — internal, no device auth. Never touches updatedAt (the Hasher triggers fire only on updatedAt / name / photo / removed), so nothing re-syncs. One LOG.GeneralLog row per send (LogSource 'InviteEmail', StrParam1 = kennel id, Data = {admin, sent}). An empty or NULL list is a successful no-op with stamped = 0. Ids that do not parse as GUIDs are dropped silently by TRY_CAST.",
+  "version": "1.1.0",
+  "description": "Stamps HC.Hasher.InviteEmailedAt = now for the hashers an 'Email invite codes' send reached (E2.F2.S6), so the next send skips anyone invited in the last 7 days. Called by the InviteEmails API endpoint after the emails are handed to ACS — internal, no device auth. Never touches updatedAt (the Hasher triggers fire only on updatedAt / name / photo / removed), so nothing re-syncs. One LOG.GeneralLog row per send (LogSource 'InviteEmail', StrParam1 = kennel id, Data = {admin, sent}). An empty or NULL list is a successful no-op with stamped = 0. Ids that do not parse as GUIDs are dropped silently by TRY_CAST. Since 2026-10-14 (idempotency audit P3; Idempotent writes: sends something, compare-and-set) the API CLAIMS each hasher before sending (@mode 'claim'), gives a failed send's claim back (@mode 'release') and logs the round once (@mode 'log'); @mode NULL keeps the old stamp-all-now call.",
   "parameters": [
     {
       "name": "kennelId",
@@ -23,14 +23,42 @@
       "type": "NVARCHAR(MAX)",
       "nullable": true,
       "mapsToColumn": "Hasher.id",
-      "description": "'|'-separated HC.Hasher ids that were sent to. NULL or '' ⇒ no-op. Default NULL."
+      "description": "'|'-separated HC.Hasher ids. claim: the ids to try to claim; release: ONE id; log / NULL: the ids sent to. NULL or '' ⇒ no-op. Default NULL."
+    },
+    {
+      "name": "mode",
+      "type": "NVARCHAR(10)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "NULL (default) = the pre-2026-10-14 behaviour: stamp every id now and log. 'claim' = compare-and-set WITH (UPDLOCK, HOLDLOCK): stamp now only where InviteEmailedAt is NULL or older than @recentDays; rowset 1 lists the rows claimed. 'release' = reset ONE id to @previousAt while it still holds @claimedAt. 'log' = one LOG.GeneralLog row for the round, no stamp."
+    },
+    {
+      "name": "recentDays",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "claim only: the 'invited lately' window in days. Default 7; the API passes its RecentWindow so the rule lives in one place."
+    },
+    {
+      "name": "claimedAt",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.InviteEmailedAt",
+      "description": "release only: the stamp the claim wrote (rowset 1 claimedAt). The release applies only while the row still holds it. Default NULL."
+    },
+    {
+      "name": "previousAt",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.InviteEmailedAt",
+      "description": "release only: the value the claim replaced (rowset 1 previousAt), restored on release. Default NULL."
     }
   ],
   "rowsets": [
     {
       "index": 0,
       "name": "SuccessEnvelope",
-      "description": "Always exactly one row: { Success, ErrorMessage, stamped }, from the TRY (Success 1) or the CATCH (Success 0, stamped 0).",
+      "description": "Always exactly one row: { Success, ErrorMessage, stamped }. stamped = rows stamped (NULL mode), claimed (claim) or released (release); 0 for 'log' and on failure.",
       "columns": [
         {
           "name": "Success",
@@ -51,11 +79,36 @@
           "description": "Rows of HC.Hasher whose InviteEmailedAt was set (0 on a no-op or on failure)."
         }
       ]
+    },
+    {
+      "index": 1,
+      "name": "ClaimedRows",
+      "description": "@mode = 'claim' only (also on an empty list, with no rows): one row per hasher actually claimed. The API sends to these and no others.",
+      "columns": [
+        {
+          "name": "hasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.Hasher.id claimed."
+        },
+        {
+          "name": "previousAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "InviteEmailedAt before the claim (NULL = never invited); passed back on release."
+        },
+        {
+          "name": "claimedAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "The stamp the claim wrote; passed back on release."
+        }
+      ]
     }
   ],
   "sideEffects": [
-    "UPDATE HC.Hasher SET InviteEmailedAt = SYSDATETIMEOFFSET() for every id in the list, inside a transaction with the log insert. updatedAt is not stamped; trgUpdateModifiedOnDateForHasher does not fire for this column.",
-    "Inserts one LOG.GeneralLog row (LogSource 'InviteEmail').",
+    "NULL mode: UPDATE HC.Hasher SET InviteEmailedAt = SYSDATETIMEOFFSET() for every id. claim: the same, only where NULL or older than @recentDays, under UPDLOCK, HOLDLOCK. release: InviteEmailedAt = @previousAt for one id still holding @claimedAt. updatedAt is not stamped; trgUpdateModifiedOnDateForHasher does not fire for this column.",
+    "Inserts one LOG.GeneralLog row (LogSource 'InviteEmail') in NULL and 'log' modes; none for claim / release.",
     "On any runtime error: rolls back, inserts one HC.ErrorLog row (HcVersion '<api>', userId = @adminId, kennelId = @kennelId), returns the envelope with Success 0."
   ],
   "codeSmells": [],
@@ -65,5 +118,8 @@
     "Never change a parameter type",
     "Never change a sentinel value meaning",
     "Never change errorType integer codes without updating all callers"
+  ],
+  "changes": [
+    "1.1.0 (2026-10-14): optional @mode / @recentDays / @claimedAt / @previousAt and rowset 1 (claim only) — claim before send, release on a failed send (idempotency audit P3). NULL mode unchanged, so the live API keeps working until redeployed."
   ]
 }
