@@ -514,10 +514,19 @@ export function GlobalRunsList({ initialRuns, initialTotal }: GlobalRunsListProp
       }
       // If not done, pastStartedRef stays false so the [tab] effect restarts loading.
     }
-    const urlTab = new URLSearchParams(window.location.search).get("tab");
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlTab = urlParams.get("tab");
     if (urlTab === "past") {
       setTab("past");
       setSelectedRun(_pastCache.runs[0] ?? null);
+    }
+    // ?q= opens the list already searched — the portal's Developer tab links a
+    // kennel's city, region and country as hashruns.org/?q=<name> (E20.F2.S3).
+    // Set both so the filter applies now, not after the typing debounce.
+    const urlQuery = urlParams.get("q")?.trim().slice(0, 100);
+    if (urlQuery) {
+      setInputValue(urlQuery);
+      setQuery(urlQuery);
     }
   }, []);
 
