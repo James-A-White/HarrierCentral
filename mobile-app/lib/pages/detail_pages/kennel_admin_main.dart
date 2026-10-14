@@ -1026,7 +1026,10 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
 
         // QR codes panel — reactive
         Obx(() {
-          if (!controller.showShareQrs.value) {
+          // Both Rx read first, before the early return (Obx rule).
+          final bool showQrs = controller.showShareQrs.value;
+          final List<SocialLink> socialLinks = controller.socialLinks.toList();
+          if (!showQrs) {
             return const SizedBox.shrink();
           }
           return Column(
@@ -1071,6 +1074,24 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                           "This link takes you to the ${agg.kennel.kennelName} website — your go-to place for everything about Hashing with ${agg.kennel.kennelShortName}!",
                     ),
                   ],
+                  // One QR code per social link that has an address
+                  // (E12.F4.S4, James 2026-10-14), in the kennel's order. A
+                  // WeChat entry with only an ID or a QR image has nothing to
+                  // encode here — its icon below opens the club's own QR.
+                  for (final SocialLink link in socialLinks)
+                    if (link.url != null)
+                      QrGroup(
+                        context: context,
+                        title: '${agg.kennel.kennelShortName} ${link.displayName}',
+                        description:
+                            '${agg.kennel.kennelShortName} ${link.displayName}',
+                        url: link.url!,
+                        helpTitle:
+                            '${agg.kennel.kennelShortName} ${link.displayName}',
+                        helpText: link.isMembersOnly
+                            ? "This is ${agg.kennel.kennelShortName}'s ${link.displayName} link, for members only. Show it to fellow members — please don't post it publicly."
+                            : "This link takes you to ${agg.kennel.kennelShortName} on ${socialPlatformLabel(link.platform)}.",
+                      ),
                 ],
               ),
               const SizedBox(height: 40),
