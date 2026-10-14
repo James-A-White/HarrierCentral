@@ -22,6 +22,12 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
 
   bool _isLoading = false;
 
+  /// A new receipt's id, minted once per page and sent on every attempt
+  /// (E14.G2.R5, 2026-10-14): a Save repeated after a lost reply — by the
+  /// person or by the transport's own retries — edits the receipt the first
+  /// attempt created instead of filing a second one to reimburse.
+  final String _newReceiptId = const Uuid().v4();
+
   CachedNetworkImage? _receiptImageFromWeb;
 
   @override
@@ -121,74 +127,90 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
   }
 
   Future<void> _uploadReceipt() async {
+    // A second press while one is running does nothing.
+    if (_isLoading) return;
     if (_receiptFormKey.currentState != null) {
       if (_receiptFormKey.currentState!.validate()) {
         //    If all data are correct then save data to out variables
         _receiptFormKey.currentState!.save();
 
-        String receiptImageUrl = '';
-
-        if (_imageFromCamera != null) {
-          final String? uploaded = await _upload(
-            _imageFromCamera!,
-            // id-case-ok: a blob file name, never compared.
-            '${widget.eventId.toUpperCase()}_${DateTime.now().millisecondsSinceEpoch}.jpg',
-          );
-          // Don't file a receipt that points at an image which is not there —
-          // it would look filed and be useless at reimbursement time.
-          if (uploaded == null) {
-            await Utilities.showAlert(
-              'Receipt image not uploaded',
-              'The receipt photo could not be uploaded, so nothing has been '
-                  'saved. Please check your connection and try again.',
-              'OK',
-            );
-            return;
-          }
-          receiptImageUrl = uploaded;
-        }
-
-        final String userId = currentUserId;
-
-        final ReceiptsModel item = ReceiptsModel(
-          userId: userId,
-          receiptId: widget.receiptItem == null
-              ? GUID_EMPTY
-              : widget.receiptItem!['receiptId'],
-          eventId: widget.eventId,
-          receiptShortDesc: _shortDescription,
-          receiptAmount: double.parse(_receiptAmount ?? '0.0'),
-          notes: '',
-          reimbursedBy: GUID_EMPTY,
-          reimbursedAmount: -1,
-          reimbursedOn: '1999/1/1',
-          reimbursedNotes: '',
-          imageUrl: receiptImageUrl,
-          removed: 0,
-        );
-
+        // Busy from the press, BEFORE the image upload: it can take seconds,
+        // and a page that shows nothing looks unpressed (CLAUDE.md).
         setStateIfMounted(() {
           _isLoading = true;
         });
+        try {
+          String receiptImageUrl = '';
 
-        final ReceiptsService srv = ReceiptsService();
-        final String responseBody = await srv.uploadReceipt(item);
-        if (!responseBody.startsWith(ERROR_PREFIX)) {
-          await tableModel.baseService.bulkUpdateDatabase(
-            tableModel.receiptsTableHelper,
-            EnumDataTables.receipts.eventTableName,
-            responseBody,
-            database,
+          if (_imageFromCamera != null) {
+            final String? uploaded = await _upload(
+              _imageFromCamera!,
+              // id-case-ok: a blob file name, never compared.
+              '${widget.eventId.toUpperCase()}_${DateTime.now().millisecondsSinceEpoch}.jpg',
+            );
+            // Don't file a receipt that points at an image which is not there —
+            // it would look filed and be useless at reimbursement time.
+            if (uploaded == null) {
+              setStateIfMounted(() {
+                _isLoading = false;
+              });
+              await Utilities.showAlert(
+                'Receipt image not uploaded',
+                'The receipt photo could not be uploaded, so nothing has been '
+                    'saved. Please check your connection and try again.',
+                'OK',
+              );
+              return;
+            }
+            receiptImageUrl = uploaded;
+          }
+
+          final String userId = currentUserId;
+
+          final ReceiptsModel item = ReceiptsModel(
+            userId: userId,
+            receiptId: widget.receiptItem == null
+                ? _newReceiptId
+                : widget.receiptItem!['receiptId'],
+            eventId: widget.eventId,
+            receiptShortDesc: _shortDescription,
+            receiptAmount: double.parse(_receiptAmount ?? '0.0'),
+            notes: '',
+            reimbursedBy: GUID_EMPTY,
+            reimbursedAmount: -1,
+            reimbursedOn: '1999/1/1',
+            reimbursedNotes: '',
+            imageUrl: receiptImageUrl,
+            removed: 0,
           );
 
-          if (!mounted) return;
-          Navigator.of(context).pop();
-        } else {
-          await Utilities.showAlert(
-            'Error uploading receipt',
-            'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!',
-            'OK',
-          );
+          final ReceiptsService srv = ReceiptsService();
+          final String responseBody = await srv.uploadReceipt(item);
+          if (!responseBody.startsWith(ERROR_PREFIX)) {
+            await tableModel.baseService.bulkUpdateDatabase(
+              tableModel.receiptsTableHelper,
+              EnumDataTables.receipts.eventTableName,
+              responseBody,
+              database,
+            );
+
+            if (!mounted) return;
+            Navigator.of(context).pop();
+          } else {
+            setStateIfMounted(() {
+              _isLoading = false;
+            });
+            await Utilities.showAlert(
+              'Error uploading receipt',
+              'There was an error uploading the receipt. Check your Internet connection and try again.\r\n\r\nSorry for the inconvenience!',
+              'OK',
+            );
+          }
+        } catch (_) {
+          setStateIfMounted(() {
+            _isLoading = false;
+          });
+          rethrow;
         }
       } else {
         //    If all data are not valid then start auto validation.
@@ -454,8 +476,12 @@ class ReceiptDetailPageState extends State<ReceiptDetailPage> {
                         //margin: const EdgeInsets.only(right: 15),
                         width: 200,
                         child: ElevatedButton(
-                          onPressed: _uploadReceipt,
-                          child: Text('Save receipt', style: ts_button, textAlign: TextAlign.center),
+                          onPressed: _isLoading ? null : _uploadReceipt,
+                          child: Text(
+                            'Save receipt',
+                            style: ts_button,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ),
                     ],
