@@ -353,6 +353,13 @@
       "nullable": true,
       "mapsToColumn": "Event.TimezoneId",
       "description": "Event.TimezoneId manual timezone override, references DomainValues.Timezone.id (column added by db/hc6/portal/archive/HC.Event.AddTimezoneId_20260628.sql; missing from the schema file). NULL = no change; 0 = clear."
+    },
+    {
+      "name": "packOffMinutes",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.PackOffMinutes",
+      "description": "Pack-off (E3.F1.S6): minutes after the gather (the start time) that the pack leaves. NULL / -1 = keep, -2 = clear (the run then uses the kennel's default), 0..600 = this run's own. Outside 0..600 is refused. Refusal: Success 0."
     }
   ],
   "rowsets": [

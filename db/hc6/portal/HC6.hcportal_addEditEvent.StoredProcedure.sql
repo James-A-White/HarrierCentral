@@ -52,7 +52,11 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_addEditEvent]
 @countryId uniqueidentifier = null,
 @regionId uniqueidentifier = null,
 @cityId uniqueidentifier = null,
-@timezoneId int = null
+@timezoneId int = null,
+-- Pack-off (E3.F1.S6): minutes after the gather (@eventStartDatetime) that
+-- the pack leaves. NULL / -1 = keep, -2 = clear (use the kennel's default),
+-- 0..600 = this run's own pack-off. Same sentinels as the prices.
+@packOffMinutes smallint = null
 
 AS
 -- =====================================================================
@@ -71,6 +75,9 @@ AS
 -- Returns: On error: HC6 standard envelope (Success, ErrorMessage).
 --   On success: result message, resultCode, publicEventId.
 -- Idempotency: client-id — the portal mints @newPublicEventId once per editor; found in the kennel (UPDLOCK, HOLDLOCK) = an edit, never a second run (E3.F1.S7).
+-- Changes:
+--   2026-10-14: @packOffMinutes (E3.F1.S6) — refused outside 0..600; the same
+--     parameter and sentinels as hcapp_addEditEvent (portal/app parity).
 -- Author: Harrier Central
 -- Created: 2026-03-15
 -- HC5 Source: HC5.hcportal_addEditEvent2
@@ -177,6 +184,13 @@ IF (@evtDisseminationAudience = -1) SET @evtDisseminationAudience = NULL;
 IF (@evtDisseminateAllowWebLinks = -1) SET @evtDisseminateAllowWebLinks = NULL;
 IF (@evtDisseminateHashRunsDotOrg = -1) SET @evtDisseminateHashRunsDotOrg = NULL;
 IF (@evtDisseminateOnGlobalGoogleCalendar = -1) SET @evtDisseminateOnGlobalGoogleCalendar = NULL;
+IF (@packOffMinutes = -1) SET @packOffMinutes = NULL;
+IF (@packOffMinutes IS NOT NULL AND @packOffMinutes <> -2
+    AND (@packOffMinutes < 0 OR @packOffMinutes > 600))
+BEGIN
+    SELECT 0 AS Success, 'The pack must leave within 10 hours of the gather.' AS ErrorMessage;
+    RETURN;
+END
 
 -- ============================================
 -- MAIN TRANSACTION SECTION
@@ -299,6 +313,7 @@ DECLARE @resultInt int;
                         ExtrasDescription = CASE WHEN @extrasDescription = '<null>' THEN NULL ELSE COALESCE(@extrasDescription, ExtrasDescription) END,
                         ExtrasRsvpRequired = COALESCE(@extrasRsvpRequired, ExtrasRsvpRequired, 0),
                         AbsoluteEventNumber = CASE WHEN @absoluteEventNumber <= 0 THEN NULL ELSE COALESCE(@absoluteEventNumber, AbsoluteEventNumber) END,
+                        PackOffMinutes = CASE WHEN @packOffMinutes = -2 THEN NULL ELSE COALESCE(@packOffMinutes, PackOffMinutes) END,
                         UseFbLatLon = COALESCE(@useFbLatLon, UseFbLatLon),
                         UseFbRunDetails = COALESCE(@useFbRunDetails, UseFbRunDetails),
                         UseFbLocation = COALESCE(@useFbLocation, UseFbLocation),
@@ -423,7 +438,8 @@ DECLARE @resultInt int;
                                 MaximumParticipantsAllowed, MinimumParticipantsRequired,
                                 EvtDisseminationAudience, EvtDisseminateAllowWebLinks,
                                 EvtDisseminateHashRunsDotOrg, DisseminateOnGlobalGoogleCalendar,
-                                deleted, updatedAt, EventSource, CountryId, RegionId, CityId, TimezoneId
+                                deleted, updatedAt, EventSource, CountryId, RegionId, CityId, TimezoneId,
+                                PackOffMinutes
                         )
                         VALUES
                         (
@@ -484,7 +500,8 @@ DECLARE @resultInt int;
                                 -- Treat the empty-GUID clear sentinel as NULL on insert too.
                                 CASE WHEN @regionId = '00000000-0000-0000-0000-000000000000' THEN NULL ELSE @regionId END,
                                 CASE WHEN @cityId = '00000000-0000-0000-0000-000000000000' THEN NULL ELSE @cityId END,
-                                CASE WHEN @timezoneId = 0 THEN NULL ELSE @timezoneId END
+                                CASE WHEN @timezoneId = 0 THEN NULL ELSE @timezoneId END,
+                                CASE WHEN @packOffMinutes = -2 THEN NULL ELSE @packOffMinutes END
                         );
 
                         SET @resultStr = 'Run added to Harrier Central';
