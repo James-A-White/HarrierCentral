@@ -927,6 +927,7 @@ class _SongsPageState extends State<SongsPage> {
 
   Widget _buildLyricsHeader(SongsPageController c) {
     return Obx(() {
+      final bool sharing = c.isSharing.value;
       final SongsModel? song = c.selectedSong.value;
       final bool expanded = c.isLyricsExpanded.value;
       final bool canShare =
@@ -965,9 +966,22 @@ class _SongsPageState extends State<SongsPage> {
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                icon: const Icon(Icons.campaign, size: 16),
-                label: const Text('Share Now', style: TextStyle(fontSize: 13), textAlign: TextAlign.center),
-                onPressed: () => c.shareNow(context),
+                icon: sharing
+                    ? const SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.campaign, size: 16),
+                label: Text(
+                  sharing ? 'Sharing…' : 'Share Now',
+                  style: const TextStyle(fontSize: 13),
+                  textAlign: TextAlign.center,
+                ),
+                onPressed: sharing ? null : () => c.shareNow(context),
               ),
             if (expanded)
               IconButton(

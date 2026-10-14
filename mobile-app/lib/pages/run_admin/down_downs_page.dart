@@ -145,6 +145,8 @@ class DownDownsPage extends StatelessWidget {
         body: Container(
           decoration: Backgrounds.defaultHcBackground(),
           child: Obx(() {
+            // Read before the early return so the spinner swap rebuilds.
+            final String? sharingId = c.sharingDownDownId.value;
             if (c.isLoading.value) {
               return const HcAppCircularProgressIndicator(
                 key: Key('dd_loading'),
@@ -186,6 +188,7 @@ class DownDownsPage extends StatelessWidget {
                   onShareTap: dd.songId != null
                       ? () => unawaited(c.shareSong(dd))
                       : null,
+                  isSharing: sharingId == dd.downDownId,
                 );
               },
             );
@@ -204,6 +207,7 @@ class _DownDownTile extends StatelessWidget {
     required this.onCheckTap,
     required this.onEditTap,
     this.onShareTap,
+    this.isSharing = false,
   });
 
   final DownDownModel dd;
@@ -212,6 +216,7 @@ class _DownDownTile extends StatelessWidget {
   final VoidCallback onCheckTap;
   final VoidCallback onEditTap;
   final VoidCallback? onShareTap;
+  final bool isSharing;
 
   @override
   Widget build(BuildContext context) {
@@ -285,14 +290,23 @@ class _DownDownTile extends StatelessWidget {
                         ),
                         if (onShareTap != null)
                           GestureDetector(
-                            onTap: onShareTap,
-                            child: const Padding(
-                              padding: EdgeInsets.only(left: 8),
-                              child: Icon(
-                                Icons.ios_share,
-                                size: 20,
-                                color: Colors.yellow,
-                              ),
+                            onTap: isSharing ? null : onShareTap,
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 8),
+                              child: isSharing
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.yellow,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.ios_share,
+                                      size: 20,
+                                      color: Colors.yellow,
+                                    ),
                             ),
                           ),
                       ],

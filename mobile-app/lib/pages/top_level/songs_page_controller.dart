@@ -16,6 +16,10 @@ class SongsPageController extends GetxController
   final RxList<SongsModel> filteredSongs = <SongsModel>[].obs;
   final Rxn<SongsModel> selectedSong = Rxn<SongsModel>();
   final RxBool isLoading = true.obs;
+
+  /// True from the Share press until the server answers: the button spins
+  /// and refuses a second press, which would push the pack twice.
+  final RxBool isSharing = false.obs;
   final RxBool isLyricsExpanded = false.obs;
 
   // Interactive mode state
@@ -181,11 +185,18 @@ class SongsPageController extends GetxController
   Future<void> shareNow(BuildContext context) async {
     final SongsModel? song = selectedSong.value;
     if (song == null || eventId == null) return;
+    if (isSharing.value) return;
 
-    final SelectSongResult? result = await SongSessionService.selectSong(
-      eventId: eventId!,
-      songId: song.songId,
-    );
+    isSharing.value = true;
+    final SelectSongResult? result;
+    try {
+      result = await SongSessionService.selectSong(
+        eventId: eventId!,
+        songId: song.songId,
+      );
+    } finally {
+      if (!isClosed) isSharing.value = false;
+    }
 
     if (result != null && context.mounted) {
       final int? count = result.recipientCount;

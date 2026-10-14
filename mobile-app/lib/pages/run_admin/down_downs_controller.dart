@@ -18,6 +18,10 @@ class DownDownsController extends GetxController {
   final RunContentService _service = RunContentService();
 
   final RxBool isLoading = true.obs;
+
+  /// The charge whose song is being shared, from the press until the server
+  /// answers: its share icon spins and a second press does nothing.
+  final RxnString sharingDownDownId = RxnString();
   final RxList<DownDownModel> downDowns = <DownDownModel>[].obs;
   Timer? _pollTimer;
 
@@ -166,10 +170,17 @@ class DownDownsController extends GetxController {
 
   Future<void> shareSong(DownDownModel dd) async {
     if (dd.songId == null) return;
-    final result = await SongSessionService.selectSong(
-      eventId: eventId,
-      songId: dd.songId!,
-    );
+    if (sharingDownDownId.value != null) return;
+    sharingDownDownId.value = dd.downDownId;
+    final SelectSongResult? result;
+    try {
+      result = await SongSessionService.selectSong(
+        eventId: eventId,
+        songId: dd.songId!,
+      );
+    } finally {
+      if (!isClosed) sharingDownDownId.value = null;
+    }
     if (isClosed) return;
     if (result != null) {
       final count = result.recipientCount;
