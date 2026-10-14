@@ -158,7 +158,31 @@ IF (@reimbursedOnDate IS NOT NULL AND @reimbursedOnDate < '2000-01-01') SET @rei
 BEGIN TRY
     BEGIN TRANSACTION;
 
-        IF (@receiptId IS NOT NULL AND EXISTS (SELECT 1 FROM HC.Receipt r WHERE r.id = @receiptId))
+        -- Idempotent create (E14.G2.R5, 2026-10-14): the app mints a new
+        -- receipt's id once per page and sends it on every attempt, so a
+        -- repeat after a lost reply lands here as an edit of the receipt the
+        -- first attempt created — never a second receipt to reimburse.
+        -- UPDLOCK + HOLDLOCK: two copies arriving together cannot both
+        -- insert. Scoped to this run: an id that belongs to another run's
+        -- receipt is refused, never edited.
+        IF (@receiptId IS NOT NULL AND EXISTS (SELECT 1 FROM HC.Receipt r WITH (UPDLOCK, HOLDLOCK)
+                                               WHERE r.id = @receiptId AND r.EventId <> @eventId))
+        BEGIN
+            SET @errorCode = 1244; SET @errorType = 13; SET @errorId = NEWID();
+            ROLLBACK TRANSACTION;
+            INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, eventId)
+            VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Receipt belongs to another run',
+                    'receiptId exists for a different event', @procName, @userId, @eventId);
+            SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+            SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+                   'Receipt not found' AS errorTitle,
+                   'That receipt could not be found for this run.' AS errorUserMessage,
+                   @procName AS errorProc;
+            RETURN;
+        END
+
+        IF (@receiptId IS NOT NULL AND EXISTS (SELECT 1 FROM HC.Receipt r WITH (UPDLOCK, HOLDLOCK)
+                                               WHERE r.id = @receiptId AND r.EventId = @eventId))
         BEGIN
             -- Update existing receipt
             UPDATE HC.Receipt SET
