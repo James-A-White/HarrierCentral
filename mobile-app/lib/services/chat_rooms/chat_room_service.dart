@@ -6,6 +6,20 @@ const int kRoomParticipatePush = 0;
 const int kRoomParticipateBadgesOnly = 1;
 const int kRoomOptOut = 2;
 
+/// The Beta Testers room — row 8 of HC6.ChatRoomCatalog() (E18.F9). The one
+/// room the app knows by number, because it alone carries a control of its
+/// own: "Send my logs", for the assistant that answers testers there. Every
+/// other room stays catalog-driven, as below.
+const int kBetaTestersRoomType = 8;
+
+/// True for the Beta Testers room only; false for every other room and for
+/// a run, kennel or DM thread (no room type).
+bool isBetaTestersRoom(int? roomType) => roomType == kBetaTestersRoomType;
+
+/// What the room shows after a successful "Send my logs": a real message,
+/// sent as the hasher, so the assistant sees the logs have arrived.
+const String kLogsSentMessage = '📎 Logs sent';
+
 /// One platform-wide chat room, exactly as the SERVER describes it.
 ///
 /// Deliberately NOT an enum and not a hard-coded list. The rooms live in

@@ -997,6 +997,14 @@ class ChatPageController extends GetxController {
     // in flight must not quote the same message again.
     final core.Message? target = replyingTo.value;
     replyingTo.value = null;
+    await _sendText(text, target: target);
+  }
+
+  /// One text message to this thread: the optimistic bubble, the post, the
+  /// tick. The id is minted ONCE here, per send, and [_postMessage]'s
+  /// transport resends the same id on every retry, so a lost reply can never
+  /// post the message twice (CLAUDE.md, Idempotent writes).
+  Future<void> _sendText(String text, {core.Message? target}) async {
     final Map<String, dynamic>? replyMeta = target == null
         ? null
         : <String, dynamic>{
@@ -1032,6 +1040,56 @@ class ChatPageController extends GetxController {
     // a closed controller.
     if (isClosed) return;
     await _settle(uuid, ok: ok);
+  }
+
+  // ── Send my logs (Beta Testers room, E18.F9) ───────────────────────────────
+
+  /// True while "Send my logs" is in flight. Set before the first await so
+  /// the button spins in the same frame as the tap, and refuses a second
+  /// press until the first has answered (CLAUDE.md, every gesture).
+  final RxBool sendingLogs = false.obs;
+
+  /// This page is the Beta Testers room — the only chat with Send my logs.
+  bool get isBetaTestersRoomPage => isBetaTestersRoom(roomType);
+
+  /// Upload this session's log NOW (the harvest otherwise sends it at the
+  /// next app start), then say so in the room as the hasher — "📎 Logs
+  /// sent", through the ordinary send path, so the assistant answering the
+  /// room sees a real message and knows to look. A failed upload says so in
+  /// a toast and posts nothing. The upload only reads the log; the next
+  /// boot still sends the whole session (AppBootService).
+  Future<void> sendMyLogs() async {
+    if (sendingLogs.value || !isBetaTestersRoomPage) return;
+    sendingLogs.value = true;
+    try {
+      // Into the session log itself as well, so the next-boot copy shows
+      // when the hasher pressed it.
+      BootLogger.logBreadcrumb('Send my logs pressed (Beta Testers room)');
+      final SessionLogUpload outcome =
+          await AppBootService.uploadCurrentSessionLog(
+            '=== Send my logs pressed in the Beta Testers room ===',
+            timeout: const Duration(seconds: 30),
+          );
+      if (isClosed) return;
+      switch (outcome) {
+        case SessionLogUpload.sent:
+          await _sendText(kLogsSentMessage);
+        case SessionLogUpload.nothingToSend:
+          hcSnack(
+            "This phone isn't keeping a log yet, so there is nothing to "
+            'send. Ask James to switch logging on for you.',
+            error: true,
+            seconds: 6,
+          );
+        case SessionLogUpload.failed:
+          hcSnack(
+            'Your logs could not be sent. Please try again.',
+            error: true,
+          );
+      }
+    } finally {
+      if (!isClosed) sendingLogs.value = false;
+    }
   }
 
   // ── The 📎 sheet ──────────────────────────────────────────────────────────

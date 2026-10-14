@@ -10,6 +10,12 @@ import 'package:harrier_central/services/metrickit_service.dart';
 /// user out far more thoroughly than one more failed retry ever could.
 enum ReauthorizeOutcome { success, deadCode, transientFailure }
 
+/// Outcome of [AppBootService.uploadCurrentSessionLog].
+///
+/// [nothingToSend]: this device keeps no session log (its harvest flag,
+/// Preferences 0x100, is off), so there was nothing to upload.
+enum SessionLogUpload { sent, nothingToSend, failed }
+
 /// Owns all app startup logic — previously embedded in AppEntryPageState._handleStartup.
 ///
 /// Call [boot] once from AppEntryPage. The service handles every boot path and
@@ -223,15 +229,6 @@ class AppBootService {
   // Error log persistence
   // ---------------------------------------------------------------------------
 
-  /// Reads the previous session's error log, sends it to the server, then
-  /// clears the pref so it doesn't repeat on the next boot.
-  ///
-  /// Cleared BEFORE the send so an app death mid-send can't double-upload —
-  /// but a FAILED send re-appends the log to the pref so the next boot
-  /// retries. Without the requeue, one flaky POST at boot silently erased a
-  /// whole session's log (the 2026-08-06 run log died this way), and the
-  /// long flaky-network sessions worth diagnosing are exactly the ones most
-  /// likely to boot next on a bad connection.
   /// Upload this session's persisted log before a wipe removes it.
   ///
   /// Same payload shape as [_sendPreviousSessionErrors] — the breadcrumbs plus
@@ -243,30 +240,75 @@ class AppBootService {
   /// Reload Data path connectivity has already been proven a few lines above,
   /// so in the case that matters this almost always lands.
   static Future<void> _flushErrorLogBeforeWipe(String reason) async {
+    // Losing the log is bad; blocking the reset is worse — the upload never
+    // throws, and its outcome is not waited on beyond the timeout.
+    await uploadCurrentSessionLog(
+      '=== $reason pressed — log flushed before the device was wiped ===',
+    );
+  }
+
+  /// The current session's log as ONE upload body: the breadcrumbs, the
+  /// metrics ring + peaks, and a marker line saying why it went up now —
+  /// joined with the same separator the next-boot upload uses. Empty when
+  /// the session has persisted nothing (harvest off), so nothing is sent.
+  ///
+  /// Pure, so the shape is pinned by test/unit/send_my_logs_test.dart.
+  static String composeSessionLogUpload({
+    required String errors,
+    required String series,
+    required String marker,
+  }) {
+    if (errors.isEmpty && series.isEmpty) return '';
+    return <String>[
+      errors,
+      series,
+      marker,
+    ].where((String s) => s.isNotEmpty).join('\n===\n');
+  }
+
+  /// Upload the CURRENT session's log now, on demand (E18.F9: "Send my logs"
+  /// in the Beta Testers room; also the flush before a wipe).
+  ///
+  /// READS the persisted log and never clears it: the normal next-boot
+  /// upload ([_sendPreviousSessionErrors]) still sends the whole session,
+  /// so the server holds an overlapping copy — harmless, and nothing is
+  /// lost or truncated. Same SP, same body and the same build stamp as the
+  /// boot upload ([ServiceCommon.recordClientErrorLog]; during a session
+  /// `lastSessionErrorLogVersion` is this build). Nothing is added to the
+  /// log but [marker], a `[TRACE]` line naming why it was sent.
+  ///
+  /// Only what the harvest already keeps is sent: a device whose harvest
+  /// flag is off persists nothing, and gets [SessionLogUpload.nothingToSend]
+  /// rather than an upload of anything else. Never throws.
+  static Future<SessionLogUpload> uploadCurrentSessionLog(
+    String marker, {
+    Duration timeout = const Duration(seconds: 10),
+  }) async {
     try {
-      final String errors =
-          getStringPref(StringPrefsEnum.lastSessionErrorLog) ?? '';
-      final String series =
-          getStringPref(StringPrefsEnum.lastSessionMetricsSeries) ?? '';
-      if (errors.isEmpty && series.isEmpty) return;
-
-      final String marker =
-          '[${DateTime.now().toIso8601String()}] [TRACE] '
-          '=== $reason pressed — log flushed before the device was wiped ===';
-      final String log = <String>[
-        errors,
-        series,
-        marker,
-      ].where((String s) => s.isNotEmpty).join('\n===\n');
-
-      await ServiceCommon.recordClientErrorLog(
+      final String log = composeSessionLogUpload(
+        errors: getStringPref(StringPrefsEnum.lastSessionErrorLog) ?? '',
+        series: getStringPref(StringPrefsEnum.lastSessionMetricsSeries) ?? '',
+        marker: '[${DateTime.now().toIso8601String()}] [TRACE] $marker',
+      );
+      if (log.isEmpty) return SessionLogUpload.nothingToSend;
+      final bool ok = await ServiceCommon.recordClientErrorLog(
         log,
-      ).timeout(const Duration(seconds: 10), onTimeout: () => false);
+      ).timeout(timeout, onTimeout: () => false);
+      return ok ? SessionLogUpload.sent : SessionLogUpload.failed;
     } catch (_) {
-      // Losing the log is bad; blocking the reset is worse.
+      return SessionLogUpload.failed;
     }
   }
 
+  /// Reads the previous session's error log, sends it to the server, then
+  /// clears the pref so it doesn't repeat on the next boot.
+  ///
+  /// Cleared BEFORE the send so an app death mid-send can't double-upload —
+  /// but a FAILED send re-appends the log to the pref so the next boot
+  /// retries. Without the requeue, one flaky POST at boot silently erased a
+  /// whole session's log (the 2026-08-06 run log died this way), and the
+  /// long flaky-network sessions worth diagnosing are exactly the ones most
+  /// likely to boot next on a bad connection.
   static Future<void> _sendPreviousSessionErrors() async {
     final String errors =
         getStringPref(StringPrefsEnum.lastSessionErrorLog) ?? '';

@@ -170,7 +170,18 @@ class ChatPage extends StatelessWidget {
                 // Purple, not the theme's blue, once there is something to
                 // send (James, 2026-09-29); greyed while the field is empty.
                 sendIconColor: themeAppBarBackground,
-                topWidget: _replyBar(controller),
+                // The Beta Testers room alone puts Send my logs above the
+                // reply bar (E18.F9) — inside the slot, never around the
+                // Composer (see above).
+                topWidget: controller.isBetaTestersRoomPage
+                    ? Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          _SendLogsBar(controller: controller),
+                          _replyBar(controller),
+                        ],
+                      )
+                    : _replyBar(controller),
               )
             : Obx(() {
                 // Both Rx reads come first, before the branch (obx_scan).
@@ -274,6 +285,76 @@ class ChatPage extends StatelessWidget {
                 ),
               );
             },
+      ),
+    );
+  }
+}
+
+/// "Send my logs" — the Beta Testers room only (E18.F9). Uploads this
+/// session's app log now, rather than at the next app start, and posts
+/// "📎 Logs sent" in the room, so the assistant answering testers there can
+/// read it. The line under the button says what it does, so it asks for no
+/// confirmation. Spins and refuses a second press while in flight.
+class _SendLogsBar extends StatelessWidget {
+  const _SendLogsBar({required this.controller});
+
+  final ChatPageController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Obx(() {
+              // The Rx read comes first, before any branch (obx_scan).
+              final bool sending = controller.sendingLogs.value;
+              return Tooltip(
+                message:
+                    "Uploads this session's app log so James's assistant "
+                    'can look at it.',
+                child: ElevatedButton.icon(
+                  key: const Key('chat-send-my-logs'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: hc_red,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: Colors.blueGrey,
+                    disabledForegroundColor: Colors.white,
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  onPressed: sending
+                      ? null
+                      : () => unawaited(controller.sendMyLogs()),
+                  icon: sending
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.upload_file, size: 18),
+                  label: Text(
+                    sending ? 'Sending logs…' : 'Send my logs',
+                    style: ts_button,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              );
+            }),
+            const SizedBox(height: 2),
+            const Text(
+              "Uploads this session's app log so James's assistant can look "
+              'at it.',
+              style: TextStyle(fontSize: 12, color: Colors.black54),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
