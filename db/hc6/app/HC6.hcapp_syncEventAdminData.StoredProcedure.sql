@@ -321,6 +321,7 @@ BEGIN
         CASE WHEN evt.UseFbRunDetails = 1 THEN evt.FbEventName          ELSE evt.EventName          END AS eventName,
         CONVERT(DATETIME2, evt.EventStartDatetime) AS eventStartDatetime,
         COALESCE(evt.EventStartDatetimeGmt, evt.EventStartDatetime)        AS eventStartDatetimeGmt,
+        evt.PackOffMinutes                                                 AS packOffMinutes,
         CASE WHEN evt.UseFbRunDetails = 1 THEN evt.FbEventDescription   ELSE evt.EventDescription   END AS eventDescription,
         CASE WHEN evt.UseFbRunDetails = 1 THEN evt.FbLocationOneLineDesc ELSE evt.LocationOneLineDesc END AS locationOneLineDesc,
         evt.EventUrl                                                        AS eventUrl,

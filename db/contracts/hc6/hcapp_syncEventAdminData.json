@@ -809,6 +809,12 @@
           "description": "COALESCE(Event.EventStartDatetimeGmt, Event.EventStartDatetime) — UTC start time."
         },
         {
+          "name": "packOffMinutes",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.PackOffMinutes (E3.F1.S6) raw column, minutes after the gather; NULL = the kennel's default."
+        },
+        {
           "name": "eventDescription",
           "type": "NVARCHAR(4000)",
           "nullable": true,
