@@ -1,5 +1,9 @@
 import 'package:harrier_central/imports.dart';
 
+/// A run count report email is in flight (page is stateless and its
+/// controller is shared, so the flag lives here).
+bool _sendingRunCountReport = false;
+
 /// A hasher's runs for one kennel, with the kennel's header card and the
 /// My Runs / All Runs tab. Stateless over [UserRunHistoryController]; the
 /// list itself is [UserRunHistoryList], shared with the country page.
@@ -132,28 +136,36 @@ class UserRunHistoryListPage extends StatelessWidget {
     required String kennelId,
     required String kennelName,
   }) async {
-    final Future<Map<String, String>> sending = tableModel.hasherEventMapService
-        .sendRunCountReportByEmail(kennelId: kennelId, kennelName: kennelName);
-    if (navigatorKey.currentContext != null) {
-      IveCoreUtilities.showInSnackBar(
-        navigatorKey.currentContext!,
-        'Run count report being processed...',
-        durationInSeconds: 10,
-      );
-    }
-    final Map<String, String> result = await sending;
-    final BuildContext? ctx = navigatorKey.currentContext;
-    // The context is fetched AFTER the await, which is the safe order; the
-    // lint cannot see that navigatorKey.currentContext is fresh.
-    // ignore: use_build_context_synchronously
-    if (ctx != null) ScaffoldMessenger.of(ctx).hideCurrentSnackBar();
-    if ((result['result'] != null) &&
-        (result['result']!.toLowerCase().startsWith('success'))) {
-      await Utilities.showAlert(
-        'E-mail successfully sent',
-        'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
-        'OK',
-      );
+    // One report at a time: a second press while the first is in flight
+    // is refused (the toast below is already up).
+    if (_sendingRunCountReport) return;
+    _sendingRunCountReport = true;
+    try {
+      final Future<Map<String, String>> sending = tableModel.hasherEventMapService
+          .sendRunCountReportByEmail(kennelId: kennelId, kennelName: kennelName);
+      if (navigatorKey.currentContext != null) {
+        IveCoreUtilities.showInSnackBar(
+          navigatorKey.currentContext!,
+          'Run count report being processed...',
+          durationInSeconds: 10,
+        );
+      }
+      final Map<String, String> result = await sending;
+      final BuildContext? ctx = navigatorKey.currentContext;
+      // The context is fetched AFTER the await, which is the safe order; the
+      // lint cannot see that navigatorKey.currentContext is fresh.
+      // ignore: use_build_context_synchronously
+      if (ctx != null) ScaffoldMessenger.of(ctx).hideCurrentSnackBar();
+      if ((result['result'] != null) &&
+          (result['result']!.toLowerCase().startsWith('success'))) {
+        await Utilities.showAlert(
+          'E-mail successfully sent',
+          'Your run count report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+          'OK',
+        );
+      }
+    } finally {
+      _sendingRunCountReport = false;
     }
   }
 

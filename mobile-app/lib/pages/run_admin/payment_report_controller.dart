@@ -115,6 +115,9 @@ class PaymentReportController extends GetxController {
   final RxBool isLoading = true.obs;
   final RxInt filterValue = ALL_PAYMENTS_FILTER_VALUE.obs;
 
+  /// "Email me payment report" is in flight: a second press is refused.
+  bool emailingReport = false;
+
   /// Indexed by paymentType (row 0 is "not paid"); the chips read it.
   final RxList<Map<String, dynamic>> paymentTotals =
       <Map<String, dynamic>>[].obs;
@@ -174,6 +177,23 @@ class PaymentReportController extends GetxController {
   /// A row's own spinner while its write is in flight.
   void markRowLoading(PaymentAggregate item) {
     item.isLoading = true;
+    filteredList.refresh();
+  }
+
+  /// Claims a row for one write, in the frame of the press: false when a
+  /// write is already in flight on it (a second swipe or tap is refused),
+  /// otherwise its spinner goes up. Pair with [endRowWrite] in a finally.
+  bool beginRowWrite(PaymentAggregate item) {
+    if (item.isLoading) return false;
+    markRowLoading(item);
+    return true;
+  }
+
+  /// Clears a row's spinner however its write ended — a cancelled extras
+  /// dialog, an error. A reload has usually replaced the row already.
+  void endRowWrite(PaymentAggregate item) {
+    if (isClosed) return;
+    item.isLoading = false;
     filteredList.refresh();
   }
 

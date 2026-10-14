@@ -51,12 +51,24 @@ class PaymentReportPage extends StatelessWidget {
                 label: 'Email me payment report',
                 labelStyle: const TextStyle(fontSize: 18.0),
                 onTap: () async {
-                  final Map<String, String?> result = await tableModel
-                      .paymentsService
-                      .sendPaymentReportByEmail(
-                        eventId: eventAggregate.event.eventId,
-                        eventName: eventAggregate.event.eventName,
-                      );
+                  // One send at a time; the toast answers the press at once.
+                  if (c.emailingReport) return;
+                  c.emailingReport = true;
+                  IveCoreUtilities.showInSnackBar(
+                    context,
+                    'Sending payment report…',
+                    durationInSeconds: 30,
+                  );
+                  final Map<String, String?> result;
+                  try {
+                    result = await tableModel.paymentsService
+                        .sendPaymentReportByEmail(
+                          eventId: eventAggregate.event.eventId,
+                          eventName: eventAggregate.event.eventName,
+                        );
+                  } finally {
+                    c.emailingReport = false;
+                  }
 
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(
@@ -76,12 +88,6 @@ class PaymentReportPage extends StatelessWidget {
                       'OK',
                     );
                   }
-
-                  IveCoreUtilities.showInSnackBar(
-                    navigatorKey.currentContext!,
-                    'Payment Report being processed...',
-                    durationInSeconds: 10,
-                  );
                 },
               ),
             ],
@@ -322,38 +328,46 @@ class PaymentReportPage extends StatelessWidget {
                                       confirmDismiss:
                                           (DismissDirection direction) async {
                                             //print(direction.toString() + ' ' + index.toString() + ' ' + eventAggregate.extensions.nonMemberPrice.toString());
-                                            c.markRowLoading(filtered[index]);
-                                            if (needsConfirm) {
-                                              await c.payForEvent(
-                                                filtered[index],
-                                                paymentConfirmBankTransfer
-                                                    .value,
-                                                -1,
-                                              );
-                                              await c.reload();
-                                            } else {
-                                              final double paymentAmount =
-                                                  (filtered[index]
+                                            final PaymentAggregate row =
+                                                filtered[index];
+                                            // One write per row: a second swipe while the
+                                            // first is in flight is refused.
+                                            if (!c.beginRowWrite(row)) return false;
+                                            try {
+                                              if (needsConfirm) {
+                                                await c.payForEvent(
+                                                  filtered[index],
+                                                  paymentConfirmBankTransfer
+                                                      .value,
+                                                  -1,
+                                                );
+                                                await c.reload();
+                                              } else {
+                                                final double paymentAmount =
+                                                    (filtered[index]
+                                                            .extensions
+                                                            .isMember !=
+                                                        0)
+                                                    ? filtered[index]
                                                           .extensions
-                                                          .isMember !=
-                                                      0)
-                                                  ? filtered[index]
-                                                        .extensions
-                                                        .eventPriceForMembers
-                                                  : filtered[index]
-                                                        .extensions
-                                                        .eventPriceForNonMembers;
-                                              await _showExtrasDialog(
-                                                context,
-                                                c,
-                                                direction ==
-                                                        DismissDirection
-                                                            .endToStart
-                                                    ? paymentCash.value
-                                                    : paymentBankTransfer.value,
-                                                filtered[index],
-                                                paymentAmount,
-                                              );
+                                                          .eventPriceForMembers
+                                                    : filtered[index]
+                                                          .extensions
+                                                          .eventPriceForNonMembers;
+                                                await _showExtrasDialog(
+                                                  context,
+                                                  c,
+                                                  direction ==
+                                                          DismissDirection
+                                                              .endToStart
+                                                      ? paymentCash.value
+                                                      : paymentBankTransfer.value,
+                                                  filtered[index],
+                                                  paymentAmount,
+                                                );
+                                              }
+                                            } finally {
+                                              c.endRowWrite(row);
                                             }
                                             return Future<bool>.value(false);
                                           },
@@ -712,6 +726,8 @@ class PaymentReportPage extends StatelessWidget {
         digitsAfterDecimal: eventAggregate.extensions.digAfterDec,
         paymentReportItem: item,
         onTap: () async {
+          // A write is already in flight on this row: refuse the tap.
+          if (item.isLoading) return;
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
           if ((item.payment == null) ||
               (item.payment!.paymentType == paymentTypeUnknown.value) ||
@@ -747,32 +763,40 @@ class PaymentReportPage extends StatelessWidget {
 
             if (ppResult != null) {
               if (ppResult.transactionType != -1) {
-                c.markRowLoading(item);
-
-                //final num paymentAmount = (item.extensions.isMember != 0) ? item.extensions.eventPriceForMembers : item.extensions.eventPriceForNonMembers;
                 if (!context.mounted) return;
-                await _showExtrasDialog(
-                  context,
-                  c,
-                  ppResult.transactionType,
-                  item,
-                  ppResult.transactionValue,
-                  otherPaymentPopupResult: ppResult.otherPayment,
-                );
+                if (!c.beginRowWrite(item)) return;
+                try {
+                  await _showExtrasDialog(
+                    context,
+                    c,
+                    ppResult.transactionType,
+                    item,
+                    ppResult.transactionValue,
+                    otherPaymentPopupResult: ppResult.otherPayment,
+                  );
+                } finally {
+                  c.endRowWrite(item);
+                }
               }
             }
           } else {
             final String action =
                 await _displayPaymentDetails(item, context) ?? 'close';
 
-            if (action == 'cancel') {
-              c.markRowLoading(item);
-              await c.payForEvent(item, paymentNotPaid.value, 0);
-              await c.reload();
-            } else if (action == 'confirm') {
-              c.markRowLoading(item);
-              await c.payForEvent(item, paymentConfirmBankTransfer.value, -1);
-              await c.reload();
+            if (action == 'cancel' || action == 'confirm') {
+              if (!c.beginRowWrite(item)) return;
+              try {
+                await c.payForEvent(
+                  item,
+                  action == 'cancel'
+                      ? paymentNotPaid.value
+                      : paymentConfirmBankTransfer.value,
+                  action == 'cancel' ? 0 : -1,
+                );
+                await c.reload();
+              } finally {
+                c.endRowWrite(item);
+              }
             }
           }
         },

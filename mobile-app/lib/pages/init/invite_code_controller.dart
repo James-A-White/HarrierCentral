@@ -19,6 +19,10 @@ class InviteCodeController extends QrScanController {
   final RxBool isLoading = false.obs;
   final RxBool showQrScanner = false.obs;
 
+  /// "Email me a new invite code" is in flight: the button spins and a
+  /// second press is refused.
+  final RxBool isEmailing = false.obs;
+
   /// Failed "code not found" attempts. Mistyping a six-letter code is easy, so
   /// there is no attempt limit — this only decides when to also *offer* a way
   /// onward, for someone who has checked the code and knows it is right.
@@ -89,9 +93,16 @@ class InviteCodeController extends QrScanController {
   }
 
   /// "Email me a new invite code" — remembers the address for next time.
-  Future<String> emailNewCode(String email) {
+  /// Null when a send is already in flight (the press is refused).
+  Future<String?> emailNewCode(String email) async {
+    if (isEmailing.value) return null;
+    isEmailing.value = true;
     emailAddress = email;
-    return HashersService.sendInviteCodeByEmail(email);
+    try {
+      return await HashersService.sendInviteCodeByEmail(email);
+    } finally {
+      if (!isClosed) isEmailing.value = false;
+    }
   }
 
   /// The Get Started button — also run unprompted when the page opened with

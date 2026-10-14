@@ -76,6 +76,11 @@ class RunDetailQueryExtensions {
   AppAccess get appAccess => AppAccess(appAccessFlags);
 }
 
+/// "Email hashers" is fetching the email context or has its composer open:
+/// the button spins and refuses presses. The page is stateless and its
+/// controller is not this button's, so the flag lives here.
+final RxBool _openingRunEmail = false.obs;
+
 class RunAdminPage extends StatelessWidget {
   const RunAdminPage({super.key, required this.eventId, this.isHare = false});
 
@@ -413,39 +418,52 @@ class RunAdminPage extends StatelessWidget {
         ),
       );
       planButtons.add(
-        _buildButton(
-          label: 'Email\r\nhashers',
-          iconAsset: 'images/icons/email_icon.png',
-          size: btnSize,
-          onPressed: () async {
-            if (aggregate.event.isVisible != 1) {
-              hcSnack('The run is hidden, so it cannot be emailed.');
-              return;
-            }
-            RunEmailContext emailContext;
-            try {
-              emailContext = await const RunEmailService().context(
-                HcId(aggregate.event.eventId),
-              );
-            } on RunEmailException catch (e) {
-              hcSnack(e.message, error: true);
-              return;
-            } catch (e, s) {
-              BootLogger.logError('[RunAdmin.emailHashers]', e, s);
-              hcSnack('Email is not available just now.', error: true);
-              return;
-            }
-            final int? sent = await Get.to<int>(
-              () => RunEmailComposerPage(
-                eventAggregate: aggregate,
-                emailContext: emailContext,
-              ),
-            );
-            if (sent != null && sent > 0) {
-              hcSnack('Email sent to $sent ${sent == 1 ? 'hasher' : 'hashers'}.');
-            }
-          },
-        ),
+        Obx(() {
+          // Read first: the spinner and the refusal both follow it.
+          final bool opening = _openingRunEmail.value;
+          return _buildButton(
+            label: 'Email\r\nhashers',
+            iconAsset: 'images/icons/email_icon.png',
+            size: btnSize,
+            busy: opening,
+            onPressed: () async {
+              if (_openingRunEmail.value) return;
+              if (aggregate.event.isVisible != 1) {
+                hcSnack('The run is hidden, so it cannot be emailed.');
+                return;
+              }
+              // Spinner now, before the context call; held until the
+              // composer closes, so two composers cannot stack.
+              _openingRunEmail.value = true;
+              try {
+                RunEmailContext emailContext;
+                try {
+                  emailContext = await const RunEmailService().context(
+                    HcId(aggregate.event.eventId),
+                  );
+                } on RunEmailException catch (e) {
+                  hcSnack(e.message, error: true);
+                  return;
+                } catch (e, s) {
+                  BootLogger.logError('[RunAdmin.emailHashers]', e, s);
+                  hcSnack('Email is not available just now.', error: true);
+                  return;
+                }
+                final int? sent = await Get.to<int>(
+                  () => RunEmailComposerPage(
+                    eventAggregate: aggregate,
+                    emailContext: emailContext,
+                  ),
+                );
+                if (sent != null && sent > 0) {
+                  hcSnack('Email sent to $sent ${sent == 1 ? 'hasher' : 'hashers'}.');
+                }
+              } finally {
+                _openingRunEmail.value = false;
+              }
+            },
+          );
+        }),
       );
     }
 
@@ -593,6 +611,7 @@ class RunAdminPage extends StatelessWidget {
     required String iconAsset,
     required double size,
     required VoidCallback onPressed,
+    bool busy = false,
   }) {
     final double iconSize = size * 0.48;
     return Padding(
@@ -604,17 +623,29 @@ class RunAdminPage extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.only(top: 2.0, left: 0.0, bottom: 0.0),
           ),
-          onPressed: onPressed,
+          // Busy: disabled, with a spinner where the icon was.
+          onPressed: busy ? null : onPressed,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.only(top: 5),
-                child: Image.asset(
-                  iconAsset,
-                  height: iconSize,
-                  width: iconSize,
-                ),
+                child: busy
+                    ? SizedBox(
+                        height: iconSize,
+                        width: iconSize,
+                        child: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                          ),
+                        ),
+                      )
+                    : Image.asset(
+                        iconAsset,
+                        height: iconSize,
+                        width: iconSize,
+                      ),
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 10, right: 10, top: 10),

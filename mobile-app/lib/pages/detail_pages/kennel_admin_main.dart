@@ -19,6 +19,9 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
   // synchronously in onChanged without forcing a controller rebuild.
   double _sliderValue = 5.0;
 
+  /// "Email run stats" is in flight: the button is disabled until it ends.
+  bool _emailingRunStats = false;
+
   late final KennelAdminController controller;
 
   @override
@@ -414,6 +417,54 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                 bottom: 0.0,
                               ),
                             ),
+                            // Disabled while a send is in flight: one report per press.
+                            onPressed: _emailingRunStats
+                                ? null
+                                : () async {
+                                  if (_emailingRunStats) return;
+                                  if (Utilities.isConnected(showDialog: true)) {
+                                    setState(() => _emailingRunStats = true);
+                                    try {
+                                      final EmailReportsService svc =
+                                          EmailReportsService();
+                                      if (navigatorKey.currentContext != null) {
+                                        IveCoreUtilities.showInSnackBar(
+                                          navigatorKey.currentContext!,
+                                          'Run stats being processed...',
+                                          durationInSeconds: 10,
+                                        );
+                                      }
+                                      await svc
+                                          .sendKennelRunStatsReportByEmail(
+                                            kennelId: agg.kennel.kennelId,
+                                            kennelName: agg.kennel.kennelName,
+                                            digitsAfterDecimal:
+                                                agg.extensions.digitsAfterDecimal ??
+                                                2,
+                                            currencySymbol:
+                                                agg.extensions.currencySymbol ?? r'$',
+                                          )
+                                          .then((Map<String, String> result) async {
+                                            ScaffoldMessenger.of(
+                                              navigatorKey.currentContext!,
+                                            ).hideCurrentSnackBar();
+                                            if ((result['result'] ?? '')
+                                                .toLowerCase()
+                                                .startsWith('success')) {
+                                              await Utilities.showAlert(
+                                                'E-mail successfully sent',
+                                                'Your Kennel run stats report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
+                                                'OK',
+                                              );
+                                            }
+                                          });
+                                    } finally {
+                                      if (mounted) {
+                                        setState(() => _emailingRunStats = false);
+                                      }
+                                    }
+                                  }
+                                },
                             // Scales down only if taller than the tile (1.5x text).
                             child: FitHeight(
                               child: Column(
@@ -444,43 +495,6 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                                 ],
                               ),
                             ),
-                            onPressed: () async {
-                              if (Utilities.isConnected(showDialog: true)) {
-                                final EmailReportsService svc =
-                                    EmailReportsService();
-                                if (navigatorKey.currentContext != null) {
-                                  IveCoreUtilities.showInSnackBar(
-                                    navigatorKey.currentContext!,
-                                    'Run stats being processed...',
-                                    durationInSeconds: 10,
-                                  );
-                                }
-                                await svc
-                                    .sendKennelRunStatsReportByEmail(
-                                      kennelId: agg.kennel.kennelId,
-                                      kennelName: agg.kennel.kennelName,
-                                      digitsAfterDecimal:
-                                          agg.extensions.digitsAfterDecimal ??
-                                          2,
-                                      currencySymbol:
-                                          agg.extensions.currencySymbol ?? r'$',
-                                    )
-                                    .then((Map<String, String> result) async {
-                                      ScaffoldMessenger.of(
-                                        navigatorKey.currentContext!,
-                                      ).hideCurrentSnackBar();
-                                      if ((result['result'] ?? '')
-                                          .toLowerCase()
-                                          .startsWith('success')) {
-                                        await Utilities.showAlert(
-                                          'E-mail successfully sent',
-                                          'Your Kennel run stats report has been successfully e-mailed to:\r\n\r\n${result['email']}\r\n\r\nIf you do not see it in the next few minutes, check your spam folder.',
-                                          'OK',
-                                        );
-                                      }
-                                    });
-                              }
-                            },
                           ),
                         ),
                       ),

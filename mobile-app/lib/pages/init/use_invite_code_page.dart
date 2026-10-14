@@ -238,37 +238,55 @@ class UseInviteCodePageContent extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 30),
                   child: SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
-                      style: text_button_style,
-                      onPressed: () async {
-                        final EmailPopup emailPopup = EmailPopup(
-                          initialEmailAddress: c.emailAddress,
-                        );
-                        final Map<String, String?>? x =
-                            await showDialog<Map<String, String>>(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (BuildContext context) => emailPopup,
-                            );
-                        if (x == null) return;
-                        final String email = x['email'] ?? '';
-                        final String type = x['type'] ?? '';
-                        if (type == 'cancel') return;
-                        final String userMessage = await c.emailNewCode(email);
-                        await Utilities.showAlert(
-                          'Instructions',
-                          userMessage,
-                          'OK',
-                        );
-                      },
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          'Email me a new invite code',
-                          style: ts_button,
-                        ),
-                      ),
-                    ),
+                    child: Obx(() {
+                      final bool emailing = c.isEmailing.value;
+                      return ElevatedButton(
+                        style: text_button_style,
+                        onPressed: emailing
+                            ? null
+                            : () async {
+                                final EmailPopup emailPopup = EmailPopup(
+                                  initialEmailAddress: c.emailAddress,
+                                );
+                                final Map<String, String?>? x =
+                                    await showDialog<Map<String, String>>(
+                                      context: context,
+                                      barrierDismissible: false,
+                                      builder: (BuildContext context) => emailPopup,
+                                    );
+                                if (x == null) return;
+                                final String email = x['email'] ?? '';
+                                final String type = x['type'] ?? '';
+                                if (type == 'cancel') return;
+                                final String? userMessage = await c.emailNewCode(
+                                  email,
+                                );
+                                if (userMessage == null) return; // already sending
+                                await Utilities.showAlert(
+                                  'Instructions',
+                                  userMessage,
+                                  'OK',
+                                );
+                              },
+                        child: emailing
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  'Email me a new invite code',
+                                  style: ts_button,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                      );
+                    }),
                   ),
                 ),
                 const SizedBox(height: 8),

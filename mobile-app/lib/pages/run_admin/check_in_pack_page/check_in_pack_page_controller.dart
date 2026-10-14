@@ -48,6 +48,12 @@ class CheckInPackController extends GetxController
   final RxnInt attendanceIndexUpdating = RxnInt();
   final RxnInt paymentIndexUpdating = RxnInt();
 
+  /// Hashers (hemId) whose payment is in flight — see [payForEvent].
+  final Set<String> _paymentsInFlight = <String>{};
+
+  /// "Add Virgin / Visitor" is creating a hasher: a second one is refused.
+  bool _addingVisitor = false;
+
   // ── Domain state ──────────────────────────────────────────────────────────
   // Member data, attendance/payment counts, filter configuration.
 
@@ -756,11 +762,14 @@ class CheckInPackController extends GetxController
         },
         onPaidCallback: (updated, paymentType, {userInput}) async {
           messenger.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-          paymentIndexUpdating.value = index;
 
           if (showMultiSelect.value) {
+            paymentIndexUpdating.value = index;
             await bulkPayForEvent(messenger, paymentType);
+            if (!isClosed) paymentIndexUpdating.value = null;
           } else {
+            // Sets and clears the row's spinner itself, and refuses a
+            // second payment for a hasher whose first is in flight.
             await payForEvent(
               messenger,
               paymentType,
@@ -772,8 +781,6 @@ class CheckInPackController extends GetxController
               useSpecialPriceAsDefault: userInput?.useSpecialPriceAsDefault,
             );
           }
-
-          paymentIndexUpdating.value = null;
         },
       );
 
@@ -820,47 +827,59 @@ class CheckInPackController extends GetxController
     bool? useSpecialPriceAsDefault,
   }) async {
     messenger.removeCurrentSnackBar(reason: SnackBarClosedReason.hide);
-    final dynamic payForExtras = await _askPayForExtras(
-      member,
-      paymentType,
-      specialRunPrice: specialRunPrice,
-    );
-    // Cancel answers followTypeCancel, not an EnumPayForExtras; passing it on
-    // threw a TypeError in _processPayment (1465, 2026-10-12).
-    if (payForExtras is! EnumPayForExtras) return; // cancelled
-    final List<dynamic>? results = await _processPayment(
-      index,
-      member,
-      paymentType,
-      otherAmount: otherAmount,
-      doPayForExtras: payForExtras,
-      specialRunPrice: specialRunPrice,
-      specialRunPriceReason: specialRunPriceReason,
-      useSpecialPriceAsDefault: useSpecialPriceAsDefault,
-    );
-    // Empty is what an error envelope or a dropped reply looks like — the
-    // refresh below must still run, so no [0] on it.
-    final Map<String, dynamic>? paid = firstRow(results);
-    if (results != null && paid != null) {
-      if ((paid['terminalWasUsedForPayment'] == null) ||
-          (!paid['terminalWasUsedForPayment'])) {
-        BankTransferQr.showBankTransferSnackbar(
-          eventAggregate,
-          results,
-          paymentType,
-          navigatorKey.currentContext!,
-          member.nameForDisplay,
-          member.isMember,
-          otherAmount,
-        );
+    // One payment per hasher at a time: a second swipe or tap while the
+    // first (or its extras dialog) is still open is refused. The row's
+    // spinner goes up NOW, before the dialog, and comes down however the
+    // payment ends — cancelled, failed or done.
+    final String payKey = member.hemId ?? member.hasherId ?? 'row-$index';
+    if (!_paymentsInFlight.add(payKey)) return;
+    paymentIndexUpdating.value = index;
+    try {
+      final dynamic payForExtras = await _askPayForExtras(
+        member,
+        paymentType,
+        specialRunPrice: specialRunPrice,
+      );
+      // Cancel answers followTypeCancel, not an EnumPayForExtras; passing it on
+      // threw a TypeError in _processPayment (1465, 2026-10-12).
+      if (payForExtras is! EnumPayForExtras) return; // cancelled
+      final List<dynamic>? results = await _processPayment(
+        index,
+        member,
+        paymentType,
+        otherAmount: otherAmount,
+        doPayForExtras: payForExtras,
+        specialRunPrice: specialRunPrice,
+        specialRunPriceReason: specialRunPriceReason,
+        useSpecialPriceAsDefault: useSpecialPriceAsDefault,
+      );
+      // Empty is what an error envelope or a dropped reply looks like — the
+      // refresh below must still run, so no [0] on it.
+      final Map<String, dynamic>? paid = firstRow(results);
+      if (results != null && paid != null) {
+        if ((paid['terminalWasUsedForPayment'] == null) ||
+            (!paid['terminalWasUsedForPayment'])) {
+          BankTransferQr.showBankTransferSnackbar(
+            eventAggregate,
+            results,
+            paymentType,
+            navigatorKey.currentContext!,
+            member.nameForDisplay,
+            member.isMember,
+            otherAmount,
+          );
+        }
+      }
+      rsvpIndexUpdating.value = null;
+      attendanceIndexUpdating.value = null;
+      await refreshPackListFromTables(false);
+      await _refreshCounters(forceRefresh: true);
+    } finally {
+      _paymentsInFlight.remove(payKey);
+      if (!isClosed && paymentIndexUpdating.value == index) {
+        paymentIndexUpdating.value = null;
       }
     }
-
-    paymentIndexUpdating.value = null;
-    rsvpIndexUpdating.value = null;
-    attendanceIndexUpdating.value = null;
-    await refreshPackListFromTables(false);
-    await _refreshCounters(forceRefresh: true);
   }
 
   /// Hands [member]'s run fee to the kennel's SumUp app (E8.F7.S1). The
@@ -1492,6 +1511,11 @@ class CheckInPackController extends GetxController
   }
 
   Future<void> showVirginVisitorPopup(BuildContext parentContext) async {
+    // joinEventAsVisitor creates a hasher: never two at once.
+    if (_addingVisitor) {
+      hcSnack('Still adding the last visitor…');
+      return;
+    }
     //int? scrollIndex = -1;
 
     const AddVisitorVirginPopup addVirginVisitorPopup = AddVisitorVirginPopup();
@@ -1516,21 +1540,30 @@ class CheckInPackController extends GetxController
       }
 
       if (type != 'cancel') {
-        await tableModel
-            //final List<dynamic> adHocData = await tableModel
-            .hasherEventMapService
-            .joinEventAsVisitor(
-              eventAggregate.event.eventId,
-              name,
-              evv.value,
-              attendenceUnknown.value,
-              email,
-              phoneNumber,
-              AppDomainType.event,
-            );
+        // Answer the press now; the toast stays up until the add returns.
+        _addingVisitor = true;
+        hcSnack('Adding ${name.isEmpty ? 'visitor' : name}…', seconds: 30);
+        try {
+          await tableModel
+              //final List<dynamic> adHocData = await tableModel
+              .hasherEventMapService
+              .joinEventAsVisitor(
+                eventAggregate.event.eventId,
+                name,
+                evv.value,
+                attendenceUnknown.value,
+                email,
+                phoneNumber,
+                AppDomainType.event,
+              );
 
-        await refreshPackListFromTables(false);
-        await _refreshCounters(forceRefresh: true);
+          if (isClosed) return;
+          await refreshPackListFromTables(false);
+          await _refreshCounters(forceRefresh: true);
+        } finally {
+          _addingVisitor = false;
+          closeAllSnackbarsSafely();
+        }
 
         //           navigatorKey.currentContext!,
         //           _ScaffoldKey.currentState!,

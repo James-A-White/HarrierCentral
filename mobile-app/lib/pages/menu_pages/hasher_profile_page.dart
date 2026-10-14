@@ -676,7 +676,10 @@ class HasherProfilePage extends StatelessWidget {
                                                                 .spaceAround,
                                                         children: <Widget>[
                                                           StyleForConnected(
-                                                            child: ElevatedButton(
+                                                            child: Obx(() {
+                                                              // Read the Rx first: the spinner and the guard both use it.
+                                                              final bool gettingCode = c.gettingCode.value;
+                                                              return ElevatedButton(
                                                               style: ElevatedButton.styleFrom(
                                                                 padding:
                                                                     const EdgeInsets.only(
@@ -686,7 +689,10 @@ class HasherProfilePage extends StatelessWidget {
                                                                       right: 20,
                                                                     ),
                                                               ),
-                                                              onPressed: () async {
+                                                              onPressed: gettingCode
+                                                                  ? null
+                                                                  : () async {
+                                                                      if (c.gettingCode.value) return;
                                                                 final SingleResultModel?
                                                                 result = await c
                                                                     .getInviteCode();
@@ -731,15 +737,25 @@ class HasherProfilePage extends StatelessWidget {
                                                                   );
                                                                 }
                                                               },
-                                                              child: Text(
-                                                                'Get invite code',
-                                                                style:
-                                                                    ts_button,
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
-                                                              ),
-                                                            ),
+                                                              child: gettingCode
+                                                                  ? const SizedBox(
+                                                                      height: 20,
+                                                                      width: 20,
+                                                                      child: CircularProgressIndicator(
+                                                                        strokeWidth: 2,
+                                                                        color: Colors.white,
+                                                                      ),
+                                                                    )
+                                                                  : Text(
+                                                                    'Get invite code',
+                                                                    style:
+                                                                        ts_button,
+                                                                    textAlign:
+                                                                        TextAlign
+                                                                            .center,
+                                                                  ),
+                                                              );
+                                                            }),
                                                           ),
                                                         ],
                                                       ),

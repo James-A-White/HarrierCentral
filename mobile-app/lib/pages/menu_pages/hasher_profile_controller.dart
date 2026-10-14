@@ -43,6 +43,9 @@ class HasherProfileController extends GetxController {
   final RxBool isDirty = false.obs;
   final RxBool addAsKennelFollower = false.obs;
   final RxBool userRunHistoryLoading = false.obs;
+
+  /// [deleteAccount] is running (dialogs included).
+  bool _deleting = false;
   final RxInt nameDisplayPreference = 1.obs;
   final RxString newPhoto = bundledAvatarUrl(
     Random.secure().nextInt(49) + 1,
@@ -399,8 +402,17 @@ class HasherProfileController extends GetxController {
     return h;
   }
 
-  Future<SingleResultModel?> getInviteCode() =>
-      GetInviteCodeService().getInviteCode(hasherId);
+  /// "Get invite code" is in flight: the button spins and refuses presses.
+  final RxBool gettingCode = false.obs;
+
+  Future<SingleResultModel?> getInviteCode() async {
+    gettingCode.value = true;
+    try {
+      return await GetInviteCodeService().getInviteCode(hasherId);
+    } finally {
+      if (!isClosed) gettingCode.value = false;
+    }
+  }
 
   /// Loads this hasher's history for [kennelId] and pulls their attendance
   /// and payments into the kennel domain. Null when there is no history —
@@ -429,45 +441,56 @@ class HasherProfileController extends GetxController {
   /// GDPR delete: two confirmations, the server call, then everything local
   /// is wiped and the app restarts at the entry page.
   Future<void> deleteAccount() async {
-    final bool? result = await Utilities.showAlert(
-      'Delete Account',
-      'Deleting your account will permanently remove your personal information from Harrier Central. Information associated with financial transactions and run attendence will be retained on behalf of the respective Kennels, but will be fully anonymized.\r\n\r\nWARNING:\r\nTHIS ACTION IS PERMANENT AND CANNOT BE REVERSED. Please proceed with caution.',
-      'Delete Account',
-      showCancelButton: true,
-      cancelButtonText: 'Keep Account',
-    );
-    if (!(result ?? false)) return;
-
-    await Future<void>.delayed(const Duration(milliseconds: 1500));
-
-    final bool? result2 = await Utilities.showAlert(
-      'Delete Account',
-      'Just to double check since this cannot be undone. Are you sure you want to PERMANENTLY DELETE your account?',
-      'Delete Account',
-      showCancelButton: true,
-      cancelButtonText: 'Keep Account',
-    );
-    if (!(result2 ?? false)) return;
-
-    final SingleResultModel? deleted = await GdprDeleteService().gdprDelete();
-    if ((deleted?.result ?? '') == 'success') {
-      await Utilities.showAlert(
-        'Successful',
-        'Your account has been deleted. Thanks for using Harrier Central. We hope to see you back one day in the future!\r\n\r\nPlease note, the Harrier Central app must restart after you hit OK. We suggest closing the app and deleting it as it is useless without an account.',
-        'OK',
+    // One delete at a time: a second press while the first is anywhere in
+    // its dialogs or the server call is refused.
+    if (_deleting) return;
+    _deleting = true;
+    try {
+      final bool? result = await Utilities.showAlert(
+        'Delete Account',
+        'Deleting your account will permanently remove your personal information from Harrier Central. Information associated with financial transactions and run attendence will be retained on behalf of the respective Kennels, but will be fully anonymized.\r\n\r\nWARNING:\r\nTHIS ACTION IS PERMANENT AND CANNOT BE REVERSED. Please proceed with caution.',
+        'Delete Account',
+        showCancelButton: true,
+        cancelButtonText: 'Keep Account',
       );
-    } else {
-      await Utilities.showAlert(
-        'Contact us',
-        'For some reason, we were unable to delete your account. Please contact us at harriercentral@gmail.com to request us to manually delete your account. Our apologies for the inconvenience. Meanwhile, we will remove all of your personal information related to Harrier Central from your phone.\r\n\r\nOnce the information has been deleted, the Harrier Central app will restart. We suggest closing the app and deleting it as it is useless without an account.',
-        'OK',
+      if (!(result ?? false)) return;
+
+      await Future<void>.delayed(const Duration(milliseconds: 1500));
+
+      final bool? result2 = await Utilities.showAlert(
+        'Delete Account',
+        'Just to double check since this cannot be undone. Are you sure you want to PERMANENTLY DELETE your account?',
+        'Delete Account',
+        showCancelButton: true,
+        cancelButtonText: 'Keep Account',
       );
+      if (!(result2 ?? false)) return;
+
+      // Confirmed: the page goes to its spinner now, before the server call.
+      isLoading.value = true;
+      final SingleResultModel? deleted = await GdprDeleteService().gdprDelete();
+      if ((deleted?.result ?? '') == 'success') {
+        await Utilities.showAlert(
+          'Successful',
+          'Your account has been deleted. Thanks for using Harrier Central. We hope to see you back one day in the future!\r\n\r\nPlease note, the Harrier Central app must restart after you hit OK. We suggest closing the app and deleting it as it is useless without an account.',
+          'OK',
+        );
+      } else {
+        await Utilities.showAlert(
+          'Contact us',
+          'For some reason, we were unable to delete your account. Please contact us at harriercentral@gmail.com to request us to manually delete your account. Our apologies for the inconvenience. Meanwhile, we will remove all of your personal information related to Harrier Central from your phone.\r\n\r\nOnce the information has been deleted, the Harrier Central app will restart. We suggest closing the app and deleting it as it is useless without an account.',
+          'OK',
+        );
+      }
+
+      // The logout path: wipe, then restart the widget tree. Get.offAll left
+      // the old session's controllers alive on a closed database, so signing
+      // in again in the same run hit database_closed and a red screen
+      // ('_dependents.isEmpty'), 2026-09-25. See project-logout-restart-pattern.
+      await AppBootService.resetAndReboot(keepResetCode: false);
+    } finally {
+      _deleting = false;
+      if (!isClosed) isLoading.value = false;
     }
-
-    // The logout path: wipe, then restart the widget tree. Get.offAll left
-    // the old session's controllers alive on a closed database, so signing
-    // in again in the same run hit database_closed and a red screen
-    // ('_dependents.isEmpty'), 2026-09-25. See project-logout-restart-pattern.
-    await AppBootService.resetAndReboot(keepResetCode: false);
   }
 }

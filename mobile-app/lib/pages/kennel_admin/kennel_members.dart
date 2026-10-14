@@ -2,6 +2,9 @@
 
 import 'package:harrier_central/imports.dart';
 
+/// "Find Hasher and add" is writing: a second add is refused until it ends.
+bool _addingMember = false;
+
 /// The kennel admin's members list. Stateless over [KennelMembersController];
 /// navigation to the profile, access and role pages stays here, every read
 /// and write lives there.
@@ -55,6 +58,8 @@ class KennelMembersList extends StatelessWidget {
               label: 'Find Hasher and add',
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () async {
+                // One add at a time: refused while the last is in flight.
+                if (_addingMember) return;
                 final Map<String, dynamic>? result =
                     await Navigator.push<Map<String, dynamic>>(
                       context,
@@ -70,7 +75,18 @@ class KennelMembersList extends StatelessWidget {
                 final hasher = result['hasher'];
                 final String? hasherId = hasher?.hasherId as String?;
                 if (hasherId == null) return;
-                await c.addMember(hasherId);
+                if (_addingMember) return;
+                // The list spins from the moment the hasher is picked;
+                // refreshAll clears it, and the finally does when the add
+                // failed and nothing refreshed.
+                _addingMember = true;
+                c.isLoading.value = true;
+                try {
+                  await c.addMember(hasherId);
+                } finally {
+                  _addingMember = false;
+                  if (!c.isClosed) c.isLoading.value = false;
+                }
               },
             ),
             SpeedDialChild(

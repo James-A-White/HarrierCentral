@@ -77,47 +77,65 @@ class ReceiptsListController extends GetxController {
     }
   }
 
+  /// Receipts whose swipe is still uploading. Checked and set in the frame
+  /// of the swipe, before any await: the GUID_8/GUID_9 marker is written
+  /// to the table only after an await, and while it is on the row the
+  /// row's own fields read as the OPPOSITE state — a second swipe would
+  /// send the reverse change. Held in memory rather than read from the
+  /// marker, because a failed upload leaves the marker on the row.
+  final Set<String> _inFlight = <String>{};
+
   Future<void> setReimbursementStatus(
     String receiptId,
     bool cancelReimbursement,
   ) async {
-    final String userId = currentUserId;
-    await _markPending(receiptId, cancelReimbursement);
-    await _upload(
-      ReceiptsModel(
-        userId: userId,
-        receiptId: receiptId,
-        eventId: _eventId,
-        receiptShortDesc: '',
-        receiptAmount: -1,
-        notes: '',
-        reimbursedBy: cancelReimbursement ? GUID_MAX : userId,
-        reimbursedAmount: 0,
-        reimbursedOn: '1999/1/1',
-        reimbursedNotes: '',
-        imageUrl: '',
-        removed: -1,
-      ),
-    );
+    if (!_inFlight.add(receiptId)) return;
+    try {
+      final String userId = currentUserId;
+      await _markPending(receiptId, cancelReimbursement);
+      await _upload(
+        ReceiptsModel(
+          userId: userId,
+          receiptId: receiptId,
+          eventId: _eventId,
+          receiptShortDesc: '',
+          receiptAmount: -1,
+          notes: '',
+          reimbursedBy: cancelReimbursement ? GUID_MAX : userId,
+          reimbursedAmount: 0,
+          reimbursedOn: '1999/1/1',
+          reimbursedNotes: '',
+          imageUrl: '',
+          removed: -1,
+        ),
+      );
+    } finally {
+      _inFlight.remove(receiptId);
+    }
   }
 
   Future<void> setRemovedStatus(String receiptId, bool removed) async {
-    await _markPending(receiptId, removed);
-    await _upload(
-      ReceiptsModel(
-        userId: currentUserId,
-        receiptId: receiptId,
-        eventId: _eventId,
-        receiptShortDesc: '',
-        receiptAmount: -1,
-        notes: '',
-        reimbursedBy: GUID_EMPTY,
-        reimbursedAmount: -1,
-        reimbursedOn: '1999/1/1',
-        reimbursedNotes: '',
-        imageUrl: '',
-        removed: removed ? 0 : 1,
-      ),
-    );
+    if (!_inFlight.add(receiptId)) return;
+    try {
+      await _markPending(receiptId, removed);
+      await _upload(
+        ReceiptsModel(
+          userId: currentUserId,
+          receiptId: receiptId,
+          eventId: _eventId,
+          receiptShortDesc: '',
+          receiptAmount: -1,
+          notes: '',
+          reimbursedBy: GUID_EMPTY,
+          reimbursedAmount: -1,
+          reimbursedOn: '1999/1/1',
+          reimbursedNotes: '',
+          imageUrl: '',
+          removed: removed ? 0 : 1,
+        ),
+      );
+    } finally {
+      _inFlight.remove(receiptId);
+    }
   }
 }

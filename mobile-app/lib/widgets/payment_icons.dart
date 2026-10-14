@@ -364,13 +364,33 @@ class PaymentIcons extends StatelessWidget {
                       -1,
                       -1,
                     ); // call setState on the parent to indicate we are updating
-                    final List<dynamic> adHocItems = await payForEvent(
-                      eventPrice + extrasPrice,
-                      didPayForExtras,
-                      surcharge,
-                      paymentProvider,
-                    );
-                    stateSetter(adHocItems[0]['rsvpState'], 1);
+                    // The spinner comes down on every path. An empty reply
+                    // (dropped socket, error envelope) or a throw puts the
+                    // RSVP back as it was and leaves "paid" untouched.
+                    Map<String, dynamic>? paid;
+                    try {
+                      final List<dynamic> adHocItems = await payForEvent(
+                        eventPrice + extrasPrice,
+                        didPayForExtras,
+                        surcharge,
+                        paymentProvider,
+                      );
+                      paid = firstRow(adHocItems);
+                    } catch (e, s) {
+                      BootLogger.logError('[PaymentIcons.selfPay]', e, s);
+                    } finally {
+                      if (paid != null) {
+                        stateSetter(paid['rsvpState'] ?? rsvpState, 1);
+                      } else {
+                        stateSetter(rsvpState, -1);
+                      }
+                    }
+                    if (paid == null) {
+                      hcSnack(
+                        "Couldn't record the payment — please try again.",
+                        error: true,
+                      );
+                    }
                   } else {
                     await Utilities.showAlert(
                       'Please pay for the Hash',
