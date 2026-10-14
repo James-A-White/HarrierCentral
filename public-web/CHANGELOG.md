@@ -1,5 +1,9 @@
 # public-web Changelog
 
+## 0.21.74 (2026-10-15 redeploy — Google Calendar link)
+
+- A kennel's Google Calendar can be one of its social links (calendar icon)
+
 ## 0.21.74 (2026-10-14 redeploy — pack-off time)
 
 - Run cards, run pages, calendars and member run lists show "Pack off" when the pack leaves after the gather

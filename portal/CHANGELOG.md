@@ -1,3 +1,8 @@
+## 2.0.87+775 (2026-10-15)
+### New Features
+- **Google Calendar as a run source**: choose "Google Calendar" under "Runs come from" and paste the calendar's public link; runs are read from it four times a day. Save refuses a link that is not a Google Calendar and says how to copy the right one.
+- **Social Links**: Google Calendar added as a platform, so a kennel can share its runs calendar.
+
 ## 2.0.87+774 (2026-10-14)
 ### New Features
 - **Pack-off time**: the kennel editor's Other tab sets when the pack leaves after the gather; the run editor's **Pack off** overrides it for one run (kennel default, or a time). The run list and run details show "Pack off" when it differs from the start.

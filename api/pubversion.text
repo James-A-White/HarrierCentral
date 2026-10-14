@@ -1,3 +1,7 @@
+1.0.61+109
+    • Runs-page import reads calendars: a Google Calendar link becomes its public iCal feed, any iCal becomes dated events in the import window; kennels on "Google Calendar" are read too (E3.F6.S5, Dayton H3)
+    • Kennel from website: Google Calendar recognised as a social link
+
 1.0.61+108
     • Beta Testers assistant: case references (BT-<n>) in replies and emails, a case file per case (beta-cases/BT-n.json), addenda after a close, and several people per case (replies join, "me too" merges, stricter public-reply rules)
 
