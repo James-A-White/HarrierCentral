@@ -171,6 +171,7 @@ CREATE NONCLUSTERED INDEX [IX_EvtRunCount] ON [HC].[Event] ([EventStartDatetimeI
 CREATE NONCLUSTERED INDEX [IX_EvtRunCount_Local] ON [HC].[Event] ([EventStartLocal]) INCLUDE ([KennelId], [EventNumber]) WHERE ([IsCountedRun]=(1) AND [IsVisible]=(1) AND [removed]=(0));
 CREATE UNIQUE NONCLUSTERED INDEX [IX_PublicEventId] ON [HC].[Event] ([PublicEventId]);
 CREATE NONCLUSTERED INDEX [nci_wi_Event_1F80FB5C5AEF569B3EBDA0D44A1F8718] ON [HC].[Event] ([deleted], [IsCountedRun], [KennelId], [removed], [IsVisible]);
+CREATE UNIQUE NONCLUSTERED INDEX [UX_Event_RunsPageImport] ON [HC].[Event] ([KennelId], [EventFacebookId]) WHERE ([InboundIntegrationId]=(6) AND [deleted]=(0) AND [EventFacebookId] IS NOT NULL);
 ALTER TABLE [HC].[Event] ADD CONSTRAINT [CK_Event_IsCountedRun] CHECK ([IsCountedRun]>=(0) AND [IsCountedRun]<=(1));
 ALTER TABLE [HC].[Event] ADD CONSTRAINT [CK_Event_IsPromotedEvent] CHECK ([IsPromotedEvent]>=(0) AND [IsPromotedEvent]<=(1));
 ALTER TABLE [HC].[Event] ADD CONSTRAINT [CK_Event_IsVisible] CHECK ([IsVisible]>=(0) AND [IsVisible]<=(1));

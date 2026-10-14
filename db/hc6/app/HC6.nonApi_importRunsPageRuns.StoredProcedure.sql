@@ -170,6 +170,19 @@ BEGIN TRY
     -- inside someone else's transaction.
     SAVE TRANSACTION runsPageImport;
 
+    -- One import per kennel at a time (E14.G2.R5, 2026-10-14). The portal's
+    -- Import, a second press while the first AI read is still running, the
+    -- 4x/day timer and RunsPageImportNow can all reach here together; each
+    -- would see a run as new and insert it. The second now waits here and
+    -- then finds the first one's runs. UX_Event_RunsPageImport (unique on
+    -- KennelId + EventFacebookId for imported, undeleted runs) is the
+    -- backstop. Held until the transaction ends.
+    DECLARE @importLock INT;
+    DECLARE @importLockName NVARCHAR(255) = N'runsPageImport:' + CAST(@kennelId AS NVARCHAR(40));
+    EXEC @importLock = sp_getapplock @Resource = @importLockName,
+         @LockMode = 'Exclusive', @LockOwner = 'Transaction', @LockTimeout = 180000;
+    IF (@importLock < 0) THROW 50000, 'Another runs-page import for this kennel did not finish in time', 1;
+
     -- Refresh the runs this page already brought in.
     DECLARE @updated INT, @matched INT;
     SELECT @matched = COUNT(*) FROM #runs r JOIN HC.Event e
