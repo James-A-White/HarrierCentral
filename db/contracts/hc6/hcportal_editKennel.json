@@ -620,6 +620,13 @@
       "nullable": true,
       "mapsToColumn": "Kennel.SocialLinksJson",
       "description": "The kennel's social and chat links (E12.F4.S4), a JSON array; NULL = no change, '' clears. Refused (Success = 0) with the first problem HC6.SocialLinksProblem finds: unknown platform, non-https link, a host that does not belong to its platform, more than 20 entries."
+    },
+    {
+      "name": "packOffMinutes",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PackOffMinutes",
+      "description": "The kennel's default pack-off (E3.F1.S6): its runs leave this many minutes after the gather. NULL = unchanged, -2 = clear (at the gather), 0..600 otherwise; outside that is refused (Success 0)."
     }
   ],
   "rowsets": [

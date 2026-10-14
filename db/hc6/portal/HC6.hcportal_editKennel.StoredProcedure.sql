@@ -106,7 +106,11 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_editKennel]
 	-- The kennel's social and chat links (E12.F4.S4): a JSON array checked
 	-- by HC6.SocialLinksProblem. NVARCHAR(MAX) like the column, so nothing
 	-- is truncated. NULL = unchanged; '' clears.
-	@socialLinksJson NVARCHAR(MAX) = NULL
+	@socialLinksJson NVARCHAR(MAX) = NULL,
+	-- Pack-off default (E3.F1.S6): the kennel's runs leave this many minutes
+	-- after the gather. NULL = unchanged; -2 = clear (the pack leaves at the
+	-- gather); 0..600 otherwise. -2 matches the run SPs' clear sentinel.
+	@packOffMinutes SMALLINT = NULL
 
 AS
 -- =====================================================================
@@ -149,6 +153,7 @@ AS
 -- Idempotency: set-state — every column is written to the value sent; a
 --   repeat writes the same values again.
 -- Changes:
+--   - 2026-10-14: @packOffMinutes (E3.F1.S6) — refused outside 0..600.
 --   - 2026-10-14: @socialLinksJson (E12.F4.S4) — refused with the first
 --     problem HC6.SocialLinksProblem finds. Column added 2026-10-10.
 --   - 2026-10-05: @inboundIntegrationId — the editor's Inbound Integration
@@ -206,6 +211,14 @@ BEGIN TRY
 			SELECT 0 AS Success, @socialProblem AS ErrorMessage;
 			RETURN;
 		END
+	END
+
+	-- Validation: pack-off default (minutes after the gather)
+	IF @packOffMinutes IS NOT NULL AND @packOffMinutes <> -2
+	   AND (@packOffMinutes < 0 OR @packOffMinutes > 600)
+	BEGIN
+		SELECT 0 AS Success, 'The pack must leave within 10 hours of the gather.' AS ErrorMessage;
+		RETURN;
 	END
 
 	-- Validation: inbound integration (an inbound HC.Integration row)
@@ -410,6 +423,8 @@ BEGIN TRY
 		CardPaymentMerchantCode = CASE WHEN @cardPaymentMerchantCode IS NULL THEN CardPaymentMerchantCode
 		                               ELSE NULLIF(@cardPaymentMerchantCode, N'') END,
 		-- NULL = unchanged; '' clears.
+		PackOffMinutes = CASE WHEN @packOffMinutes = -2 THEN NULL
+		                      ELSE COALESCE(@packOffMinutes, PackOffMinutes) END,
 		SocialLinksJson = CASE WHEN @socialLinksJson IS NULL THEN SocialLinksJson
 		                       ELSE NULLIF(@socialLinksJson, N'') END,
 		updatedAt = SYSUTCDATETIME()
