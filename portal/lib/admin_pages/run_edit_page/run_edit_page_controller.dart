@@ -131,6 +131,15 @@ class RunEditPageController extends TabUiController
   /// save would silently discard whatever the user typed most recently.
   Future<void>? _saveInFlight;
 
+  /// The public id a NEW run is created with, minted once per editor
+  /// (E3.F1.S7, 2026-10-14). [_saveInFlight] stops two overlapping saves; this
+  /// stops a save whose reply was LOST — `isAddMode` is still true, and Save
+  /// again used to create a second run. Every add-mode save sends it as
+  /// `newPublicEventId`; `hcportal_addEditEvent` edits the run that already
+  /// carries it in this kennel instead of inserting another. A public id, not
+  /// the internal one: a browser never holds internal ids (/hc-primary-keys).
+  final String _newRunPublicId = const Uuid().v4();
+
   // ---------------------------------------------------------------------------
   // State - Integration Flags
   // ---------------------------------------------------------------------------
@@ -908,6 +917,8 @@ class RunEditPageController extends TabUiController
           originalData.publicEventId != null &&
           originalData.publicEventId!.length > 10) {
         bodyJson['publicEventId'] = normalizeUuid(originalData.publicEventId);
+      } else if (isAddMode) {
+        bodyJson['newPublicEventId'] = _newRunPublicId;
       }
 
       bodyJson.addAll(changes);

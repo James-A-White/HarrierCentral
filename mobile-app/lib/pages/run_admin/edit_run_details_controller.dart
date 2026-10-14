@@ -417,7 +417,7 @@ class EditRunDetailsController extends GetxController
     final DateFormat formatter = DateFormat('E, d MMM, yyyy, h:mm a');
     final EventsService nSvc = EventsService();
     final String eventId = await nSvc.addEditEvent(
-      eventId: eventAggregate.event.eventId,
+      eventId: saveEventId,
       kennelId: eventAggregate.event.kennelId,
       eventName: eventNameController.text,
       eventStartDatetime: formatter.tryParse(eventDatetimeController.text),
@@ -489,6 +489,19 @@ class EditRunDetailsController extends GetxController
   bool get isUnsaved =>
       eventAggregate.event.eventId.isEmpty ||
       eventAggregate.event.eventId == GUID_EMPTY;
+
+  /// The id a NEW run is created with, minted once per editor (E3.F1.S7).
+  /// Every save of a run that has no id yet sends this one, so a Save
+  /// repeated after a lost reply edits the run the first send created
+  /// instead of making a second (10 such pairs since 2025-07, up to four
+  /// copies). `hcapp_addEditEvent` inserts under a supplied id and treats
+  /// one that exists in the kennel as an edit.
+  final HcId _newRunId = HcId(const Uuid().v4());
+
+  /// The id every `addEditEvent` call saves under: the run's own once it has
+  /// one, else [_newRunId].
+  String get saveEventId =>
+      isUnsaved ? _newRunId : eventAggregate.event.eventId;
 
   void onTabTapped(int index) {
     if (isUnsaved && index > EditingTabEnum.address.index) {
@@ -778,7 +791,7 @@ class EditRunDetailsController extends GetxController
     });
     final EventsService nSvc = EventsService();
     final String eventId = await nSvc.addEditEvent(
-      eventId: eventAggregate.event.eventId,
+      eventId: saveEventId,
       kennelId: eventAggregate.event.kennelId,
       useFbRunDetails: 1,
     );

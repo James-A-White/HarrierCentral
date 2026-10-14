@@ -938,7 +938,7 @@ class EditRunDetailsPage extends StatelessWidget {
                       }
                       final EventsService nSvc = EventsService();
                       final String eventId = await nSvc.addEditEvent(
-                        eventId: c.eventAggregate.event.eventId,
+                        eventId: c.saveEventId,
                         kennelId: c.eventAggregate.event.kennelId,
                         eventImageUrl: BASE_EVENT_IMAGE_URL + fileName,
                         useFbImage: 0,
@@ -1030,7 +1030,7 @@ class EditRunDetailsPage extends StatelessWidget {
                       }
                       final EventsService nSvc = EventsService();
                       final String eventId = await nSvc.addEditEvent(
-                        eventId: c.eventAggregate.event.eventId,
+                        eventId: c.saveEventId,
                         kennelId: c.eventAggregate.event.kennelId,
                         useFbImage: 1,
                       );
@@ -1212,7 +1212,7 @@ class EditRunDetailsPage extends StatelessWidget {
                                         final String
                                         eventId = await nSvc.addEditEvent(
                                           eventId:
-                                              c.eventAggregate.event.eventId,
+                                              c.saveEventId,
                                           kennelId:
                                               c.eventAggregate.event.kennelId,
                                           deleteEventImage: true,
@@ -1281,7 +1281,7 @@ class EditRunDetailsPage extends StatelessWidget {
                                           final String
                                           eventId = await nSvc.addEditEvent(
                                             eventId:
-                                                c.eventAggregate.event.eventId,
+                                                c.saveEventId,
                                             // The SP needs the kennel even for a one-field edit (2026-09-30):
                                             // without it the call was refused before the procedure ran.
                                             kennelId:
@@ -1651,7 +1651,7 @@ class EditRunDetailsPage extends StatelessWidget {
                                       .center;
                                 }
                                 final String eventId = await nSvc.addEditEvent(
-                                  eventId: c.eventAggregate.event.eventId,
+                                  eventId: c.saveEventId,
                                   kennelId: c.eventAggregate.event.kennelId,
                                   lat: c.mapCenter.latitude,
                                   lon: c.mapCenter.longitude,
@@ -1733,7 +1733,7 @@ class EditRunDetailsPage extends StatelessWidget {
                                 }
                                 final EventsService nSvc = EventsService();
                                 final String eventId = await nSvc.addEditEvent(
-                                  eventId: c.eventAggregate.event.eventId,
+                                  eventId: c.saveEventId,
                                   // The SP needs the kennel even for a one-field edit (2026-09-30):
                                   // without it the call was refused before the procedure ran.
                                   kennelId: c.eventAggregate.event.kennelId,
