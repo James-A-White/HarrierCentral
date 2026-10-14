@@ -34,6 +34,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_addEditEvent]
 @maximumParticipantsAllowed smallint = null,
 @minimumParticipantsRequired smallint = null,
 @publicEventId uniqueidentifier = null,
+@newPublicEventId uniqueidentifier = null,
 @saveTagsAsKennelDefault smallint = null,
 @eventStartDatetime datetimeoffset(7) = null,
 @tags1 int = null,
@@ -62,7 +63,11 @@ AS
 --   defaults, and triggers run number recalculation.
 -- Parameters: @deviceId, @accessToken, @publicKennelId,
 --   @publicEventId (NULL=insert, non-NULL=update), plus ~40 optional
---   event fields.
+--   event fields. @newPublicEventId (2026-10-14, E3.F1.S7): the public id
+--   the portal minted for a NEW run, sent on every save of it — a repeat
+--   finds the run the first send created and edits it, so a lost reply
+--   and Save again never makes a second run. NULL = the old behaviour
+--   (the SP mints both ids).
 -- Returns: On error: HC6 standard envelope (Success, ErrorMessage).
 --   On success: result message, resultCode, publicEventId.
 -- Author: Harrier Central
@@ -229,6 +234,21 @@ DECLARE @resultInt int;
                         RETURN;
                 END
         END
+        ELSE IF @newPublicEventId IS NOT NULL
+        BEGIN
+                -- A new run, saved under the public id the portal minted
+                -- for it (E3.F1.S7). Found in this kennel = a repeat of a
+                -- save whose reply was lost: edit that run. Locked so two
+                -- copies of one send cannot both insert. A public id from
+                -- another kennel is not found here and its INSERT is refused
+                -- by the unique index — never an edit across kennels.
+                SELECT @eventId = id
+                FROM HC.Event WITH (UPDLOCK, HOLDLOCK)
+                WHERE PublicEventId = @newPublicEventId
+                  AND KennelId = @kennelId;
+
+                IF @eventId IS NOT NULL SET @publicEventId = @newPublicEventId;
+        END
 
         -- ============================================
         -- UPDATE EXISTING EVENT
@@ -385,7 +405,7 @@ DECLARE @resultInt int;
                         END
 
                         SET @eventId = NEWID();
-                        SET @publicEventId = NEWID();
+                        SET @publicEventId = COALESCE(@newPublicEventId, NEWID());
 
                         INSERT HC.Event WITH (ROWLOCK)
                         (

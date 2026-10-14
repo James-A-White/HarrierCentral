@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_addEditEvent",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Creates a new run/event or updates an existing one for a kennel from the Flutter portal run editor. @publicEventId NULL = insert, non-NULL = update (the event must belong to @publicKennelId). Handles name, description, location, structured CountryId/RegionId/CityId, manual TimezoneId, pricing, tags, dissemination settings; optionally saves the tags as the kennel's defaults; then renumbers runs (HC6.nonApi_updateRunNumbers) and refreshes attendees' run counts (HC6.nonApi_updateRunCountsForEventUsers) inside the same transaction. On update, a run imported by the AI runs-page import is 'adopted' (HC6.nonApi_adoptImportedRun) and its UseFb* mirror flags are forced to 0 so the import stops overwriting it. Auth: HC6.ValidatePortalAuth with @publicKennelId as callerParamString (token = UPPER(deviceSecret):UPPER(publicKennelId)). There is NO kennel permission gate — any authenticated portal device can write events for any kennel (see codeSmells). Renamed from HC5 hcportal_addEditEvent2; @deleted removed — deletion is exclusively via hcportal_deleteEvent. Permission (2026-10-13): HC6.nonApi_portalKennelAccess — AppAccessFlags 0x40000085 (SuperAdmin, Admin, public-web 0x80, Manage runs 0x4), createEditRuns, or platform CanEditKennel; otherwise {Success 0, ErrorMessage 'Not authorised to edit runs for this kennel'} after rollback.",
   "parameters": [
     {
@@ -220,6 +220,13 @@
       "nullable": true,
       "mapsToColumn": "Event.PublicEventId",
       "description": "If provided, identifies an existing event to update (UPDATE path). If NULL, a new event is inserted (INSERT path). Generated internally on insert and returned in the success rowset."
+    },
+    {
+      "name": "newPublicEventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.PublicEventId",
+      "description": "Public id the portal minted for a NEW run (E3.F1.S7, 2026-10-14), sent on every save of it. A run in this kennel with that public id is a repeated save and is edited; otherwise the run is inserted with it. NULL = the SP mints both ids (the old behaviour). Ignored when @publicEventId is given."
     },
     {
       "name": "saveTagsAsKennelDefault",
