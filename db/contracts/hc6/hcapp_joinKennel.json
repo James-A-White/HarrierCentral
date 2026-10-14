@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcapp_joinKennel",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Creates or updates a HasherKennelMap row for a target user at a kennel: follow state, home kennel, membership duration, notification and email preferences, app access flags, mismanagement roles and manual KennelStanding bits. Auth: device-bound token via HC6.ValidateAppAuth (spNumber 50, @param NULL). Permission gates (HC6.CheckKennelPermission in @kennelId): @appAccessFlags / @kennelStandingSet / @kennelStandingClear need 'assignAppAccessFlags'; @mismanagementRoles needs 'assignMismanagementRoles'; editing another user, @monthsToAddToMembership or @paymentAmount needs 'manageMembers'. Self-service (own row, follow / home kennel / preferences only) needs no role — a hasher cannot alter their own membership. After commit, when roles changed, HC.Kennel.KennelMismanagementTeam is rebuilt inline from HC.HasherKennelMap + DomainValues.MismanagementRoles. On success the SP then delegates to hcapp_syncUserData (self) or hcapp_syncKennelAdminData (another user) and streams those rowsets after its own. Sentinel -1 on most parameters means 'keep'. Bit 0x0001 of KennelStanding (the old automated MEMBER bit) is retired since 2026-10-13: membership is MembershipExpirationDate and nothing else, and this SP no longer calls HC6.nonApi_syncMemberStandingBit (dropped). HC.HasherKennelMap.IsMember is still written here but is DEPRECATED (2026-10-13): never read it.",
   "parameters": [
     {
@@ -122,6 +122,20 @@
       "nullable": true,
       "mapsToColumn": null,
       "description": "Sync watermark for Hashers, passed through to the delegate. NULL and omitted both become 'ignore'."
+    },
+    {
+      "name": "expectedExpiryKnown",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "1 = compare-and-set for monthsToAddToMembership (E14.G2.R5, 2026-10-14): add the months only while the stored expiry equals @expectedExpiry. 0 (default) = the old unconditional add."
+    },
+    {
+      "name": "expectedExpiry",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": "HasherKennelMap.MembershipExpirationDate",
+      "description": "The expiry the app showed (UTC); NULL = no membership. Compared to the second. Ignored unless expectedExpiryKnown = 1 and the months are a real delta (not 0, 9999 or -9999)."
     }
   ],
   "rowsets": [
@@ -227,6 +241,18 @@
           "type": "INT",
           "nullable": false,
           "description": "1 if this kennel equals Hasher.HomeKennelId, else 0 — derived from the joined Hasher row, not from HasherKennelMap.IsHomeKennel."
+        },
+        {
+          "name": "membershipAlreadyChanged",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 = the compare-and-set found the expiry already moved, so no months were added (an earlier attempt, or another admin)."
+        },
+        {
+          "name": "membershipExpirationDate",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": true,
+          "description": "The expiry after this call."
         }
       ]
     },

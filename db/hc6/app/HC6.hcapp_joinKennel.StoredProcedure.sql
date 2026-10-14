@@ -16,7 +16,9 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_joinKennel]
     @paymentAmount               DECIMAL(12,6)    = NULL,
     @kennelsUpdatedAfter         NVARCHAR(50) = 'ignore',
     @hasherKennelMapUpdatedAfter NVARCHAR(50) = 'ignore',
-    @hashersUpdatedAfter         NVARCHAR(50)     = 'ignore'
+    @hashersUpdatedAfter         NVARCHAR(50)     = 'ignore',
+    @expectedExpiryKnown         SMALLINT         = 0,
+    @expectedExpiry              DATETIMEOFFSET(7) = NULL
 
 AS
 -- =====================================================================
@@ -55,7 +57,12 @@ AS
 -- Returns:
 --   Write SP success envelope (rowset 0): success, errorCode, errorType
 --   On success (rowset 1): { adHocDataId, following, kennelNotificationPreference,
---                             kennelEmailAlertPreference, isHomeKennel }
+--                             kennelEmailAlertPreference, isHomeKennel,
+--                             membershipAlreadyChanged, membershipExpirationDate }
+--   @expectedExpiryKnown / @expectedExpiry (2026-10-14, E14.G2.R5): compare-
+--     and-set for @monthsToAddToMembership — the months are added only while
+--     the stored expiry equals the one the app showed; otherwise nothing is
+--     added and membershipAlreadyChanged = 1.
 --   On success (rowset 2+): sync SP rowsets
 --   On error (rowset 1): standard HC6 error detail
 -- Author: Harrier Central
@@ -220,7 +227,30 @@ BEGIN TRY
         DECLARE @newExpirationDate  DATETIMEOFFSET(7);
         DECLARE @memberSince        DATETIMEOFFSET(7);
 
-        SELECT @hkmId = id FROM HC.HasherKennelMap WHERE UserId = @targetUserId AND KennelId = @kennelId;
+        SELECT @hkmId = id FROM HC.HasherKennelMap WITH (UPDLOCK, HOLDLOCK)
+        WHERE UserId = @targetUserId AND KennelId = @kennelId;
+
+        -- Compare-and-set for "add N months" (E14.G2.R5, 2026-10-14). A bare
+        -- delta repeated by a retry or a second swipe after a lost reply gave
+        -- 24 months for 12. With @expectedExpiryKnown = 1 the app sends the
+        -- expiry it showed the admin; the months are added only while the
+        -- stored expiry still matches it (to the second, both NULL = no
+        -- membership). Otherwise an earlier attempt — or another admin —
+        -- already moved it: nothing is added and the reply says so
+        -- (membershipAlreadyChanged). 9999 / -9999 set an absolute value and
+        -- are safe to repeat, so they are never compared.
+        DECLARE @membershipAlreadyChanged SMALLINT = 0;
+        IF (@hkmId IS NOT NULL AND @expectedExpiryKnown = 1
+            AND @monthsToAddToMembership IS NOT NULL
+            AND @monthsToAddToMembership NOT IN (0, 9999, -9999)
+            AND NOT EXISTS (SELECT 1 FROM HC.HasherKennelMap hk
+                            WHERE hk.id = @hkmId
+                              AND (   (hk.MembershipExpirationDate IS NULL AND @expectedExpiry IS NULL)
+                                   OR ABS(DATEDIFF(SECOND, hk.MembershipExpirationDate, @expectedExpiry)) <= 1)))
+        BEGIN
+            SET @monthsToAddToMembership = NULL;
+            SET @membershipAlreadyChanged = 1;
+        END
 
         IF (@hkmId IS NULL)
         BEGIN
@@ -321,7 +351,9 @@ BEGIN TRY
         hkm.Following                                                      AS following,
         hkm.KennelNotificationPreference                                   AS kennelNotificationPreference,
         hkm.KennelEmailAlertPreference                                     AS kennelEmailAlertPreference,
-        CASE WHEN hkm.KennelId = h.HomeKennelId THEN 1 ELSE 0 END         AS isHomeKennel
+        CASE WHEN hkm.KennelId = h.HomeKennelId THEN 1 ELSE 0 END         AS isHomeKennel,
+        @membershipAlreadyChanged                                          AS membershipAlreadyChanged,
+        hkm.MembershipExpirationDate                                       AS membershipExpirationDate
     FROM HC.HasherKennelMap hkm
     INNER JOIN HC.Hasher h ON h.id = hkm.UserId
     WHERE hkm.id = @hkmId;
