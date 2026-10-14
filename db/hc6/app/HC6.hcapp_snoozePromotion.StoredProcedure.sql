@@ -70,8 +70,19 @@ END
 BEGIN TRY
     BEGIN TRANSACTION;
 
-        INSERT INTO HC.HasherPromotionMap ([UserId], [PromotionId], [SnoozeUntilDate])
-        VALUES (@userId, @promotionId, @snoozeUntilDate);
+        -- One row per hasher and promotion (E14.G2.R5, 2026-10-14): a repeat
+        -- or a later snooze moves the date on that row instead of adding
+        -- another (the account merge already treats the pair as unique).
+        -- Locked so two concurrent snoozes cannot both insert.
+        UPDATE HC.HasherPromotionMap WITH (UPDLOCK, HOLDLOCK)
+        SET    SnoozeUntilDate = @snoozeUntilDate,
+               removed         = 0,
+               updatedAt       = GETDATE()
+        WHERE  UserId = @userId AND PromotionId = @promotionId;
+
+        IF (@@ROWCOUNT = 0)
+            INSERT INTO HC.HasherPromotionMap ([UserId], [PromotionId], [SnoozeUntilDate])
+            VALUES (@userId, @promotionId, @snoozeUntilDate);
 
     COMMIT TRANSACTION;
 
