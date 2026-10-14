@@ -165,12 +165,24 @@ SELECT @selectedByName = COALESCE(
 )
 FROM HC.Hasher h WHERE h.id = @userId;
 
--- Insert the song session record
+-- Insert the song session record.
+-- A repeat is not a second share (E14.G2.R5, 2026-10-14): the same person
+-- choosing the same song for the same run within a minute — a double tap, or
+-- "Share" again after a lost reply — records nothing and pushes nobody (the
+-- recipient rowset below comes back empty), while the caller still gets its
+-- success and song details. Locked so two copies cannot both insert.
+DECLARE @isRepeat SMALLINT = 0;
 BEGIN TRY
     BEGIN TRANSACTION;
 
-    INSERT INTO HC.SongSession (EventId, SongId, SelectedByUserId, SelectedAt)
-    VALUES (@eventId, @songId, @userId, SYSUTCDATETIME());
+    IF EXISTS (SELECT 1 FROM HC.SongSession ss WITH (UPDLOCK, HOLDLOCK)
+               WHERE ss.EventId = @eventId AND ss.SongId = @songId
+                 AND ss.SelectedByUserId = @userId
+                 AND ss.SelectedAt > DATEADD(SECOND, -60, SYSUTCDATETIME()))
+        SET @isRepeat = 1;
+    ELSE
+        INSERT INTO HC.SongSession (EventId, SongId, SelectedByUserId, SelectedAt)
+        VALUES (@eventId, @songId, @userId, SYSUTCDATETIME());
 
     COMMIT TRANSACTION;
 END TRY
@@ -212,7 +224,8 @@ INNER JOIN HC.Device d ON d.UserId = hem.UserId
 INNER JOIN HC.Hasher h ON h.id     = hem.UserId
 LEFT  JOIN HC.HasherKennelMap hkm
       ON hkm.UserId = hem.UserId AND hkm.KennelId = @kennelId
-WHERE hem.EventId  = @eventId
+WHERE @isRepeat = 0
+  AND hem.EventId  = @eventId
   -- >= 20, not >= 3. The 3 was borrowed from the RSVP enum (where 3 is
   -- Yes); the attendance enum has nothing between 0 and 10, so >= 3 read
   -- as "has any attendance row" and swept in state 10 — marked NOT at the
