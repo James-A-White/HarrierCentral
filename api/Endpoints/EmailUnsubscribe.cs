@@ -12,9 +12,14 @@ namespace HcWebApi.Endpoints
     /// The unsubscribe link in every run email (E19.F3.S2). One tap, no sign-in:
     /// the signed token names the hasher and the kennel, and all this does is
     /// set that hasher's email-alert setting for that kennel to off — the same
-    /// value the app's dialog writes. GET is the link in the body; POST is the
-    /// RFC 8058 one-click that Gmail's own Unsubscribe button sends. Both do the
-    /// same thing and both answer with a plain page.
+    /// value the app's dialog writes.
+    ///
+    /// ONLY a POST acts (E14.G2.R5, 2026-10-14). Mail security scanners (Safe
+    /// Links, Mimecast, Proofpoint) open every link in an email before the
+    /// person does, so a GET that acted silently unsubscribed members nobody
+    /// asked about. A GET now shows the choice with a button that POSTs back to
+    /// the same address; RFC 8058 one-click (Gmail's own Unsubscribe button)
+    /// already arrives as a POST, so it still takes one step.
     /// </summary>
     public class EmailUnsubscribe
     {
@@ -40,14 +45,31 @@ namespace HcWebApi.Endpoints
             (string kennelName, string slug, string logo) = await KennelAsync(cs, Guid.Parse(k!));
 
             // The preferences page: choices, nothing acted on yet. This is the link under
-            // "<admin> has requested that you receive this email".
+            // "<admin> has requested that you receive this email". Its buttons POST.
             if (action == "prefs")
             {
                 return Page(200, "Your email preferences",
                     $"Choose what you want from Harrier Central.<br><br>" +
-                    $"<a href=\"{WebUtility.HtmlEncode(baseUrl)}\" style=\"display:inline-block;margin:4px;padding:10px 16px;background:#2b6cb0;color:#fff;border-radius:6px;text-decoration:none\">Stop run emails from {WebUtility.HtmlEncode(kennelName)}</a><br>" +
-                    $"<a href=\"{blockUrl}\" style=\"display:inline-block;margin:4px;padding:10px 16px;background:#9b2c2c;color:#fff;border-radius:6px;text-decoration:none\">Block all email from Harrier Central</a>" +
+                    PostButton(baseUrl, $"Stop run emails from {kennelName}", "#2b6cb0") +
+                    PostButton(baseUrl + "&do=block", "Block all email from Harrier Central", "#9b2c2c") +
                     "<br><span style=\"font-size:13px;color:#6b7785\">Blocking stops every email, including run emails an admin asks us to send you. Invite codes you ask for yourself still arrive.</span>",
+                    logo, kennelName);
+            }
+
+            // A GET never acts: it asks (see the class comment — mail scanners
+            // open links). The button POSTs to this same address.
+            if (!HttpMethods.IsPost(req.Method))
+            {
+                if (action == "block")
+                    return Page(200, "Block all email?",
+                        "Harrier Central will not email you about runs again, from any kennel, even when an admin asks us to. " +
+                        "Invite codes you request yourself still arrive.<br><br>" +
+                        PostButton(baseUrl + "&do=block", "Block all email from Harrier Central", "#9b2c2c"),
+                        logo, kennelName);
+                return Page(200, "Stop run emails?",
+                    $"You will stop getting run emails from <strong>{WebUtility.HtmlEncode(kennelName)}</strong>. " +
+                    "You can turn them back on in the app: tap the envelope on the kennel.<br><br>" +
+                    PostButton(baseUrl, $"Stop run emails from {kennelName}", "#2b6cb0"),
                     logo, kennelName);
             }
 
@@ -94,9 +116,14 @@ namespace HcWebApi.Endpoints
             return Page(200, "You're unsubscribed",
                 $"You will not get run emails from <strong>{WebUtility.HtmlEncode(kennelName)}</strong> any more. " +
                 "Changed your mind? Open the Harrier Central app and tap the envelope on the kennel to turn them back on." +
-                $"<br><br><span style=\"font-size:13px\">Want nothing at all from Harrier Central? <a href=\"{blockUrl}\" style=\"color:#9b2c2c\">Block all email</a>.</span>" + back,
+                $"<br><br><span style=\"font-size:13px\">Want nothing at all from Harrier Central? <a href=\"{blockUrl}\" style=\"color:#9b2c2c\">Block all email</a> (you will be asked to confirm).</span>" + back,
                 logo, kennelName);
         }
+
+        /// A button that POSTs to [url] — the only way this endpoint acts.
+        private static string PostButton(string url, string label, string colour) =>
+            $"<form method=\"post\" action=\"{WebUtility.HtmlEncode(url)}\" style=\"display:inline-block;margin:4px\">" +
+            $"<button type=\"submit\" style=\"padding:10px 16px;background:{colour};color:#fff;border:0;border-radius:6px;font-size:15px;cursor:pointer\">{WebUtility.HtmlEncode(label)}</button></form>";
 
         private static async Task<(string name, string slug, string logo)> KennelAsync(string cs, Guid kennelId)
         {
