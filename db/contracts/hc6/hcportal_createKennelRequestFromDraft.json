@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_createKennelRequestFromDraft",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "New kennel from a website (E12.F1.S10): turns the platform admin's finished AI draft into an ordinary kennel request in EXT.OfficeForms_KennelImport (RequestStatus 1 — new and already confirmed, ConfirmedAt set, RequestSource 'website', SubmitterEmail = the caller's email), which is then reviewed and approved on the request page like any other (hcportal_approveKennelRequest). Nothing outside the request table is written. Called by the KennelFromWebsite API after it has copied the logo into blob storage. Auth: HC6.ValidatePortalAuth with a NULL callerParamString. Gate: an HC.PlatformAdmin row (removed = 0) with CanEditKennel = 1. User text arrives NVARCHAR(MAX), is trimmed (blank becomes NULL) and checked with LEN against the column widths before anything is written. EXT.OfficeForms_KennelImport has no file in db/schema/tables; its newer columns (LogoUrl, FoundedOn, RunDayOfWeek, RunStartTime, RunsPageUrl, SocialLinksJson, SourceJson, RequestSource) come from db/hc6/portal/archive/2026-10-10_kennel_from_website_columns.sql.",
   "parameters": [
     {
@@ -192,6 +192,13 @@
       "nullable": true,
       "mapsToColumn": "OfficeForms_KennelImport.comments",
       "description": "The site's fee wording."
+    },
+    {
+      "name": "kennelImportId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "OfficeForms_KennelImport.KennelImportId",
+      "description": "Minted by the portal ONCE per draft page and sent on every Save (via the KennelFromWebsite API). Unknown id => the new request is stored under it; an id already stored for a website draft => success with that id, nothing written (a repeat after a lost reply); an id on a request that is not a website draft => error envelope. Default NULL = a fresh NEWID() as before."
     }
   ],
   "rowsets": [
@@ -230,7 +237,8 @@
   ],
   "sideEffects": [
     "INSERT EXT.OfficeForms_KennelImport (one row, RequestStatus 1, ConfirmAttempts 0, IsKennelAdmin 'Yes', NameToUse 'My Hash Name', HowDidYouLearnAboutHc 'Platform admin: New kennel from a website')",
-    "INSERT HC.ErrorLog on an unhandled error"
+    "INSERT HC.ErrorLog on an unhandled error",
+    "A repeated @kennelImportId writes nothing. Note: EXT.OfficeForms_KennelImport has no index on KennelImportId, so the locked check scans and range-locks the (small, platform-admin-only) table; a unique index would be James's call."
   ],
   "codeSmells": [
     {
@@ -250,5 +258,8 @@
     "Never change a parameter type",
     "Never change a sentinel value meaning",
     "Never change errorType integer codes without updating all callers"
+  ],
+  "changes": [
+    "1.2.0 (2026-10-14): optional @kennelImportId (idempotency audit P4; Idempotent writes: creates a row, client-id). The portal mints it once per draft page; an id already stored for a website draft (checked WITH (UPDLOCK, HOLDLOCK) inside the new transaction) returns success with that id and writes nothing; an id held by a non-website request is refused. NULL = the old behaviour (NEWID())."
   ]
 }

@@ -25,10 +25,14 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_createKennelRequestFromDraft]
     @runsPageUrl       NVARCHAR(MAX)    = NULL,
     @socialLinksJson   NVARCHAR(MAX)    = NULL,
     @sourceJson        NVARCHAR(MAX)    = NULL,
-    @comments          NVARCHAR(MAX)    = NULL
+    @comments          NVARCHAR(MAX)    = NULL,
+    -- 2026-10-14 (idempotency audit P4): minted by the portal ONCE per draft
+    -- page. NULL = the old behaviour (a new id every call).
+    @kennelImportId    UNIQUEIDENTIFIER = NULL
 AS
 -- =====================================================================
 -- Procedure: HC6.hcportal_createKennelRequestFromDraft
+-- Idempotency: client-id — @kennelImportId minted once per draft page; a repeat returns it, nothing inserted.
 -- Description: "New kennel from a website" (E12.F1.S10, James 2026-10-10):
 --   a platform admin has had the AI read a club's website and chatted in
 --   what it lacked; Next turns that draft into an ordinary kennel request
@@ -48,6 +52,12 @@ AS
 -- Returns:
 --   rowset 0 — { Success, ErrorMessage }
 --   rowset 1 (success only) — { KennelImportId }
+-- Idempotent writes ("creates a row", 2026-10-14, idempotency audit P4):
+--   the portal mints @kennelImportId once per draft page and sends it on
+--   every Save. Found WITH (UPDLOCK, HOLDLOCK) inside the transaction =>
+--   a repeat after a lost reply: success with that id, nothing written (the
+--   API's logo copy is keyed on the same id, so it is not redone either).
+--   An id held by a request that is not a website draft is refused.
 -- Author: Harrier Central
 -- Created: 2026-10-10
 -- =====================================================================
@@ -146,8 +156,34 @@ ELSE IF (@countryId IS NOT NULL)
     SELECT @countryText = co.CountryName FROM HC.Country co WHERE co.id = @countryId;
 
 BEGIN TRY
-    DECLARE @requestId UNIQUEIDENTIFIER = NEWID();
+    DECLARE @requestId UNIQUEIDENTIFIER = COALESCE(@kennelImportId, NEWID());
     DECLARE @callerEmail NVARCHAR(250) = (SELECT h.Email FROM HC.Hasher h WHERE h.id = @callerId);
+
+    BEGIN TRANSACTION;
+
+    IF (@kennelImportId IS NOT NULL)
+    BEGIN
+        DECLARE @existingSource NVARCHAR(20);
+        DECLARE @found SMALLINT = 0;
+        SELECT @found = 1, @existingSource = ki.RequestSource
+        FROM EXT.OfficeForms_KennelImport ki WITH (UPDLOCK, HOLDLOCK)
+        WHERE ki.KennelImportId = @kennelImportId;
+
+        IF (@found = 1)
+        BEGIN
+            IF (ISNULL(@existingSource, N'') <> N'website')
+            BEGIN
+                ROLLBACK TRANSACTION;
+                SELECT 0 AS Success, 'kennelImportId is already in use' AS ErrorMessage;
+                RETURN;
+            END
+            -- A repeat of a Save that already committed: the same answer.
+            COMMIT TRANSACTION;
+            SELECT 1 AS Success, NULL AS ErrorMessage;
+            SELECT LOWER(CAST(@requestId AS NVARCHAR(40))) AS KennelImportId;
+            RETURN;
+        END
+    END
 
     INSERT EXT.OfficeForms_KennelImport
         (KennelImportId, FirstName, LastName, HashName, NameToUse, EmailAddress, IsKennelAdmin,
@@ -169,6 +205,8 @@ BEGIN TRY
          1, 0, SYSDATETIMEOFFSET(),
          @logoUrl, @foundedOn, @runDayOfWeek, TRY_CAST(@runStartTime AS TIME(0)), @runsPageUrl,
          @socialLinksJson, @sourceJson, N'website', GETDATE());
+
+    COMMIT TRANSACTION;
 
     SELECT 1 AS Success, NULL AS ErrorMessage;
     SELECT LOWER(CAST(@requestId AS NVARCHAR(40))) AS KennelImportId;
