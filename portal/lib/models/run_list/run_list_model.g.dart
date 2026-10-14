@@ -31,6 +31,7 @@ _RunListModel _$RunListModelFromJson(Map<String, dynamic> json) =>
       eventImage: json['eventImage'] as String?,
       extEventImage: json['extEventImage'] as String?,
       useFbImage: (json['useFbImage'] as num?)?.toInt(),
+      packOffMinutes: (json['packOffMinutes'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$RunListModelToJson(_RunListModel instance) =>
@@ -58,4 +59,5 @@ Map<String, dynamic> _$RunListModelToJson(_RunListModel instance) =>
       'eventImage': instance.eventImage,
       'extEventImage': instance.extEventImage,
       'useFbImage': instance.useFbImage,
+      'packOffMinutes': instance.packOffMinutes,
     };

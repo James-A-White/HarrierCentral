@@ -39,6 +39,10 @@ abstract class KennelModel with _$KennelModel {
     required double defaultEventPriceForNonMembers,
     required DateTime defaultRunStartTime,
     @Default(1) int defaultRunDayOfWeek,
+    /// When the pack sets off, in minutes after the gather (E3.F1.S6).
+    /// null = at the gather. hcportal_editKennel reads null as "unchanged",
+    /// so clearing it sends -2 (see _buildChangedDataPayload).
+    int? packOffMinutes,
     required int allowSelfPayment,
     required int allowNegativeCredit,
     @Default(1) int allowCredit,

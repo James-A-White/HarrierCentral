@@ -160,6 +160,17 @@ class RunDetailWidget extends StatelessWidget {
     return url;
   }
 
+  /// The run's start time, plus " · Pack off …" when the pack sets off after
+  /// the gather (E3.F1.S6).
+  String _startTimeText() {
+    final start =
+        ((rdm.useFbRunDetails != 1) || (rdm.extEventStartDatetime == null))
+            ? rdm.eventStartDatetime
+            : rdm.extEventStartDatetime!;
+    return DateFormat('h:mm a').format(start) +
+        packOffSuffix(start, rdm.effectivePackOffMinutes);
+  }
+
   @override
   Widget build(BuildContext context) {
     // final screenWidth = Get.mediaQuery.size.width / 1180.1;
@@ -465,12 +476,7 @@ class RunDetailWidget extends StatelessWidget {
                 Expanded(
                   flex: flexRight,
                   child: Text(
-                    DateFormat('h:mm a').format(
-                      ((rdm.useFbRunDetails != 1) ||
-                              (rdm.extEventStartDatetime == null))
-                          ? rdm.eventStartDatetime
-                          : rdm.extEventStartDatetime!,
-                    ),
+                    _startTimeText(),
                     style: textThemeIsLight
                         ? listValueStyle
                         : listValueStyle.copyWith(color: Colors.black),

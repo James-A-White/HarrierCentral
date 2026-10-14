@@ -352,6 +352,10 @@ class RunBasicInfoTabContent extends StatelessWidget {
           ],
         ),
 
+        // Pack-off (E3.F1.S6): kennel default or this run's own time.
+        const SizedBox(height: 16),
+        _buildPackOffLine(context),
+
         // City line (effective Country, Region, City — event override or
         // kennel default) with a "Set" button to override. Drives timezone +
         // gazetteer hints; placed before Place Description so it's set first.
@@ -459,6 +463,73 @@ class RunBasicInfoTabContent extends StatelessWidget {
             ),
           ),
         ));
+  }
+
+  /// "Pack off" line (E3.F1.S6): the kennel default or this run's own clock
+  /// time, with buttons to pick a time or go back to the kennel default.
+  /// The same choice as the app's run editor (label "Pack off", options
+  /// "Kennel default" / a time).
+  Widget _buildPackOffLine(BuildContext context) {
+    return Obx(() {
+      final run = controller.editedData.value;
+      final start = run.eventStartDatetime;
+      final own = run.packOffMinutes;
+      final kennelDefault = run.kennelPackOffMinutes;
+
+      final String summary;
+      if (own == null) {
+        // A new run has no getEvent reply, so the kennel's minutes are unknown
+        // there; say "Kennel default" alone rather than guess.
+        final known = controller.initialData.publicEventId != null ||
+            kennelDefault != null;
+        final kennelTime = packOffTime(start, kennelDefault);
+        summary = !known
+            ? 'Kennel default'
+            : kennelTime == null
+                ? 'Kennel default (at the gather)'
+                : 'Kennel default (${packOffMinutesLabel(kennelDefault)}: '
+                    '${DateFormat('h:mm a').format(kennelTime)})';
+      } else {
+        final t = packOffTime(start, own) ?? start;
+        summary = '${DateFormat('h:mm a').format(t)} '
+            '(${packOffMinutesLabel(own)})';
+      }
+
+      return Wrap(
+        spacing: 12,
+        runSpacing: 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 260, maxWidth: 520),
+            child: InputDecorator(
+              decoration: const InputDecoration(
+                labelText: 'Pack off',
+                helperText: 'Kept as minutes after the start: moving the '
+                    'start time moves the pack-off with it.',
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+              child: Text(
+                summary,
+                style: const TextStyle(color: Color(0xFF0F172A)),
+              ),
+            ),
+          ),
+          OutlinedButton.icon(
+            onPressed: () => controller.pickPackOffTime(context),
+            icon: const Icon(Icons.schedule, size: 18),
+            label: const Text('Set time', textAlign: TextAlign.center),
+          ),
+          if (own != null)
+            OutlinedButton.icon(
+              onPressed: controller.usePackOffKennelDefault,
+              icon: const Icon(Icons.undo, size: 18),
+              label: const Text('Kennel default', textAlign: TextAlign.center),
+            ),
+        ],
+      );
+    });
   }
 
   /// Builds the "Lookup" button that opens the location lookup dialog.

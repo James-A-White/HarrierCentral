@@ -1072,6 +1072,49 @@ class RunEditPageController extends TabUiController
     checkIfFormIsDirty();
   }
 
+  // ---------------------------------------------------------------------------
+  // Pack-off (E3.F1.S6)
+  // ---------------------------------------------------------------------------
+
+  /// Puts the run back on the kennel's default pack-off (saved as -2).
+  void usePackOffKennelDefault() {
+    editedData.value = editedData.value.copyWith(packOffMinutes: null);
+    checkIfFormIsDirty();
+  }
+
+  /// Lets the admin pick this run's own pack-off clock time. Stored as
+  /// minutes after the run's start (0..[kMaxPackOffMinutes]), so a later
+  /// change to the start time carries the pack-off with it.
+  Future<void> pickPackOffTime(BuildContext context) async {
+    final start = editedData.value.eventStartDatetime;
+    final shown =
+        packOffTime(start, editedData.value.effectivePackOffMinutes) ?? start;
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(shown),
+      helpText: 'Pack off',
+    );
+    if (picked == null) return;
+
+    // Minutes from the start's clock time; a time "before" the start wraps
+    // past midnight and is then refused by the limit below.
+    var minutes =
+        (picked.hour * 60 + picked.minute) - (start.hour * 60 + start.minute);
+    if (minutes < 0) minutes += 24 * 60;
+    if (minutes > kMaxPackOffMinutes) {
+      await CoreUtilities.showAlert(
+        'Pack off',
+        'The pack must set off at or after the start time '
+            '(${DateFormat('h:mm a').format(start)}) and no more than '
+            '${kMaxPackOffMinutes ~/ 60} hours later.',
+        'OK',
+      );
+      return;
+    }
+    editedData.value = editedData.value.copyWith(packOffMinutes: minutes);
+    checkIfFormIsDirty();
+  }
+
   /// Checks if the form has unsaved changes.
   @override
   void checkIfFormIsDirty() {
@@ -1461,6 +1504,15 @@ class RunEditPageController extends TabUiController
     if (isAddMode || edited.eventStartDatetime != original.eventStartDatetime) {
       changes['eventStartDatetime'] = edited.eventStartDatetime
           .toIso8601String();
+    }
+
+    // Pack-off (E3.F1.S6): minutes after the gather. null in the model means
+    // "kennel default", which the SP takes as -2 (it reads null / -1 as
+    // "keep"); a new run always sends -2 or its own minutes. Unchanged on an
+    // edit = not sent = kept.
+    if (isAddMode || edited.packOffMinutes != original.packOffMinutes) {
+      changes['packOffMinutes'] =
+          edited.packOffMinutes ?? SET_DB_NUMERIC_FIELD_TO_NULL;
     }
 
     // -------------------------------------------------------------------------

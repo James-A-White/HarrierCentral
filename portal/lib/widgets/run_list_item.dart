@@ -219,7 +219,8 @@ class RunListItem extends StatelessWidget {
 
   Widget _buildBody() {
     final dateStr =
-        DateFormat("E, MMM d 'at' h:mm a").format(event.eventStartDatetime);
+        DateFormat("E, MMM d 'at' h:mm a").format(event.eventStartDatetime) +
+            packOffSuffix(event.eventStartDatetime, event.packOffMinutes);
     final relStr = _relativeTime(event.daysUntilEvent);
 
     return Padding(

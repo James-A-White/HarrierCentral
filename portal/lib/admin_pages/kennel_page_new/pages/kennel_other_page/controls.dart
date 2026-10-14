@@ -23,6 +23,7 @@ extension KennelOtherControlsExtension on KennelPageFormController {
 
     // Run Start settings
     _registerDefaultDayOfWeekControl(tabKey, tabIndex);
+    _registerPackOffControl(tabKey, tabIndex);
 
     // Sharing settings
     _registerDisseminateHashRunsControl(tabKey, tabIndex);
@@ -85,6 +86,46 @@ extension KennelOtherControlsExtension on KennelPageFormController {
       },
       onUndo: () {
         defaultRunStartTime.value = originalData.defaultRunStartTime;
+      },
+    );
+  }
+
+  /// Registers the kennel's default pack-off (E3.F1.S6): when the pack sets
+  /// off, in minutes after the gather. The dropdown's -1 entry stands for
+  /// null ("At the gather"); the save sends -2 to clear a set default.
+  void _registerPackOffControl(String tabKey, int tabIndex) {
+    final fieldKey = '${tabKey}_packOffMinutes';
+    final current = (originalData.packOffMinutes ?? -1).toString();
+
+    uiControls[fieldKey] = UiControlDefinition(
+      controlType: UiControlType.dropdown,
+      sidebarEntryKey: fieldKey,
+      sidebarExitKey: '${tabKey}_generic',
+      sidebarData: const SideBarData(
+        'Pack Off',
+        FontAwesome5Solid.running,
+        'When the pack sets off, if that is later than the gather. '
+            '"Gather 12:00, pack off 12:30" is 30 minutes after the gather.\n\n'
+            'This is the default for every run; a run admin can give one run '
+            'its own pack-off time. It is kept as minutes after the start, so '
+            'moving a run\'s start time moves its pack-off with it.',
+      ),
+      editedFieldValue: current,
+      originalFieldValue: current,
+      globalKey: GlobalKey<FormFieldState>(),
+      label: 'Pack off',
+      includeOverrideButton: false,
+      tabIndex: tabIndex,
+      updateEditedValue: (String? value) {
+        final parsed = int.tryParse(value ?? '-1') ?? -1;
+        final minutes =
+            (parsed < 0 || parsed > kMaxPackOffMinutes) ? null : parsed;
+        packOffMinutes.value = minutes;
+        editedData.value = editedData.value.copyWith(packOffMinutes: minutes);
+        uiControls[fieldKey]?.editedFieldValue = (minutes ?? -1).toString();
+      },
+      onUndo: () {
+        packOffMinutes.value = originalData.packOffMinutes;
       },
     );
   }

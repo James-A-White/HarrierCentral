@@ -31,6 +31,9 @@ abstract class RunListModel with _$RunListModel {
     String? eventImage,
     String? extEventImage,
     int? useFbImage,
+    /// EFFECTIVE pack-off (E3.F1.S6): minutes after the gather, the run's
+    /// own else the kennel's; null = the pack sets off at the gather.
+    int? packOffMinutes,
   }) = _RunListModel;
 
   factory RunListModel.fromJson(Map<String, dynamic> json) =>

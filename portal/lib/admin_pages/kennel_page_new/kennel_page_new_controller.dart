@@ -147,6 +147,10 @@ class KennelPageFormController extends TabUiController
     0,
   ).obs;
 
+  /// Kennel default pack-off, minutes after the gather (E3.F1.S6); null = at
+  /// the gather. Mirrors editedData.packOffMinutes for the dropdown.
+  final RxnInt packOffMinutes = RxnInt();
+
   /// Show runs on Hashruns.org (0 = off, 5 = on).
   final RxBool disseminateHashRunsDotOrg = false.obs;
 
@@ -421,6 +425,7 @@ class KennelPageFormController extends TabUiController
   /// Initializes the Other tab reactive state from original data.
   void _initializeOtherTabSettings() {
     defaultRunStartTime.value = originalData.defaultRunStartTime;
+    packOffMinutes.value = originalData.packOffMinutes;
     disseminateHashRunsDotOrg.value =
         originalData.disseminateHashRunsDotOrg > 0;
     messagingPlatform.value = originalData.defaultMessagingPlatform.clamp(1, 5);
@@ -689,6 +694,10 @@ class KennelPageFormController extends TabUiController
         if (key.toLowerCase() == 'latitude' ||
             key.toLowerCase() == 'longitude') {
           changedData[key] = editedJson[key] ?? 999;
+        } else if (key == 'packOffMinutes') {
+          // hcportal_editKennel reads null as "unchanged": clearing the
+          // default (back to "at the gather") must send -2 (E3.F1.S6).
+          changedData[key] = editedJson[key] ?? SET_DB_NUMERIC_FIELD_TO_NULL;
         } else {
           changedData[key] = editedJson[key];
         }

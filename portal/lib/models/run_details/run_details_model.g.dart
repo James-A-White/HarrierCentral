@@ -120,6 +120,8 @@ _RunDetailsModel _$RunDetailsModelFromJson(
       : DateTime.parse(json['eventPaymentUrlExpires'] as String),
   eventPriceForExtras: json['eventPriceForExtras'] as num?,
   extrasDescription: json['extrasDescription'] as String?,
+  packOffMinutes: (json['packOffMinutes'] as num?)?.toInt(),
+  kennelPackOffMinutes: (json['kennelPackOffMinutes'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$RunDetailsModelToJson(
@@ -221,4 +223,6 @@ Map<String, dynamic> _$RunDetailsModelToJson(
   'eventPaymentUrlExpires': instance.eventPaymentUrlExpires?.toIso8601String(),
   'eventPriceForExtras': instance.eventPriceForExtras,
   'extrasDescription': instance.extrasDescription,
+  'packOffMinutes': instance.packOffMinutes,
+  'kennelPackOffMinutes': instance.kennelPackOffMinutes,
 };

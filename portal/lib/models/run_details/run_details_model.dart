@@ -110,6 +110,14 @@ abstract class RunDetailsModel with _$RunDetailsModel {
     DateTime? eventPaymentUrlExpires,
     num? eventPriceForExtras,
     String? extrasDescription,
+    /// Pack-off, in minutes after the gather (E3.F1.S6). From
+    /// hcportal_getEvent it is the run's OWN override (null = kennel
+    /// default); from hcportal_getEvents it is already the effective value.
+    /// Read the effective value through [effectivePackOffMinutes].
+    int? packOffMinutes,
+    /// The kennel's default pack-off (hcportal_getEvent only); null = at the
+    /// gather.
+    int? kennelPackOffMinutes,
   }) = _RunDetailsModel;
 
   factory RunDetailsModel.fromJson(Map<String, dynamic> json) =>
@@ -302,4 +310,11 @@ abstract class RunDetailsModel with _$RunDetailsModel {
         "useFbRunDetails":0}
         ''') as Map<String, dynamic>,
       );
+}
+
+/// Pack-off helpers (E3.F1.S6).
+extension RunDetailsPackOff on RunDetailsModel {
+  /// Minutes after the gather that the pack sets off: the run's own, else the
+  /// kennel's. null = at the gather.
+  int? get effectivePackOffMinutes => packOffMinutes ?? kennelPackOffMinutes;
 }

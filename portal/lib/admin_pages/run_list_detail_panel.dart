@@ -373,7 +373,12 @@ class RunListDetailPanel extends StatelessWidget {
       label: 'When',
       children: [
         _infoRow(null, DateFormat('EEEE, d MMMM yyyy').format(rdm.eventStartDatetime)),
-        _infoRow(null, DateFormat('h:mm a').format(rdm.eventStartDatetime), muted: true),
+        _infoRow(
+          null,
+          DateFormat('h:mm a').format(rdm.eventStartDatetime) +
+              packOffSuffix(rdm.eventStartDatetime, rdm.effectivePackOffMinutes),
+          muted: true,
+        ),
       ],
     );
   }

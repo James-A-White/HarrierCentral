@@ -68,14 +68,83 @@ class KennelOtherTabContent extends StatelessWidget {
 
   /// Builds the Run Start section with time picker and day dropdown.
   Widget _buildRunStartSection(bool isMobileScreen) {
-    return RowColumn(
-      isRow: !isMobileScreen,
-      rowFlexValues: const [1, 1],
-      rowLeftPaddingValues: const [0.0, 10.0],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        _buildDefaultRunStartTimeTile(),
-        _buildDefaultDayDropdown(isMobileScreen),
+        RowColumn(
+          isRow: !isMobileScreen,
+          rowFlexValues: const [1, 1],
+          rowLeftPaddingValues: const [0.0, 10.0],
+          children: [
+            _buildDefaultRunStartTimeTile(),
+            _buildDefaultDayDropdown(isMobileScreen),
+          ],
+        ),
+        const SizedBox(height: 10),
+        _buildPackOffDropdown(isMobileScreen),
       ],
+    );
+  }
+
+  /// Minutes offered for the kennel's default pack-off (E3.F1.S6).
+  static const List<int> _packOffChoices = [5, 10, 15, 20, 30, 45, 60, 90, 120];
+
+  /// Builds the default pack-off dropdown (E3.F1.S6): "At the gather" or
+  /// "N minutes after the gather". -1 stands for null (at the gather).
+  Widget _buildPackOffDropdown(bool isMobileScreen) {
+    final controlKey = '${KennelTabType.other.key}_packOffMinutes';
+    final uiControl = controller.uiControls[controlKey];
+    if (uiControl == null) return const SizedBox.shrink();
+
+    return MouseRegion(
+      onEnter: (_) => controller.setSidebarData(controlKey),
+      onExit: (_) =>
+          controller.setSidebarData('${KennelTabType.other.key}_generic'),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: SizedBox(
+          width: isMobileScreen ? double.infinity : 300,
+          child: InputDecorator(
+            decoration: const InputDecoration(
+              labelText: 'Pack off',
+              helperText: 'Default for every run; a run can set its own.',
+              border: OutlineInputBorder(),
+            ),
+            child: Obx(() {
+              final current = controller.packOffMinutes.value ?? -1;
+              // The saved value, even when it is not one of the choices
+              // (another client, or 0 = at the gather), so it shows as is.
+              final values = <int>{-1, ..._packOffChoices, current}.toList()
+                ..sort();
+              return DropdownButtonHideUnderline(
+                child: DropdownButton<int>(
+                  value: current,
+                  isDense: true,
+                  isExpanded: true,
+                  items: [
+                    for (final v in values)
+                      DropdownMenuItem(
+                        value: v,
+                        child: Text(
+                          v < 0
+                              ? 'At the gather'
+                              : v == 0
+                              ? 'At the gather (0 minutes)'
+                              : '$v minutes after the gather',
+                        ),
+                      ),
+                  ],
+                  onChanged: (value) {
+                    if (value == null) return;
+                    uiControl.updateEditedValue(value.toString());
+                    controller.checkIfFormIsDirty();
+                  },
+                ),
+              );
+            }),
+          ),
+        ),
+      ),
     );
   }
 
