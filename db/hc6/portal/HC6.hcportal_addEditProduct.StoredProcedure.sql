@@ -17,11 +17,16 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_addEditProduct]
     -- Supplier detail. Never syncs to phones.
     @sourceJson          NVARCHAR(4000)   = NULL,
     @isActive            SMALLINT         = 1,
-    @sortOrder           INT              = 0
+    @sortOrder           INT              = 0,
+    -- Create only (@productId NULL): the new product's id, minted by the
+    -- portal ONCE per Add dialog (2026-10-14, idempotency audit P5). NULL =
+    -- the old behaviour (NEWID()).
+    @newProductId        UNIQUEIDENTIFIER = NULL
 
 AS
 -- =====================================================================
 -- Procedure: HC6.hcportal_addEditProduct
+-- Idempotency: client-id — @newProductId minted once per Add dialog; a repeat returns it, nothing inserted.
 -- Description: Creates or edits one entry in a kennel's catalogue from the
 --              portal's Products view. The portal twin of
 --              HC6.hcapp_addEditProduct — same table, same rules, portal
@@ -42,6 +47,13 @@ AS
 -- Created: 2026-09-13
 -- HC5 Source: none (new)
 -- Breaking Changes: none
+-- Idempotent writes ("creates a row", 2026-10-14, idempotency audit P5):
+--   HC.Product.id is a CLIENT-SUPPLIED GUID key (/hc-primary-keys: "the
+--   caller supplies the id"). A create with @newProductId checks it WITH
+--   (UPDLOCK, HOLDLOCK) inside the transaction: unknown => insert with it;
+--   already this kennel's => a repeat after a lost reply, success with that
+--   id and nothing written; another kennel's => refused. An edit
+--   (@productId set) was already idempotent (absolute values).
 -- =====================================================================
 
 -- Emoji-safe blank test. The database collates SQL_Latin1_General_CP1_CI_AS,
@@ -123,9 +135,32 @@ BEGIN TRY
 
     DECLARE @now DATETIMEOFFSET(7) = SYSDATETIMEOFFSET();
 
+    IF (@productId IS NULL AND @newProductId IS NOT NULL)
+    BEGIN
+        DECLARE @existingKennelId UNIQUEIDENTIFIER;
+        SELECT @existingKennelId = p.KennelId
+        FROM HC.Product p WITH (UPDLOCK, HOLDLOCK)
+        WHERE p.id = @newProductId;
+
+        IF (@existingKennelId IS NOT NULL)
+        BEGIN
+            IF (@existingKennelId <> @kennelId)
+            BEGIN
+                ROLLBACK TRANSACTION;
+                SELECT 0 AS Success, 'That product id is already in use.' AS ErrorMessage;
+                RETURN;
+            END
+            -- A repeat of a create that already committed: the same answer.
+            COMMIT TRANSACTION;
+            SELECT 1 AS Success, NULL AS ErrorMessage;
+            SELECT @newProductId AS productId;
+            RETURN;
+        END
+    END
+
     IF (@productId IS NULL)
     BEGIN
-        SET @productId = NEWID();
+        SET @productId = COALESCE(@newProductId, NEWID());
         INSERT HC.Product (id, KennelId, ProductType, Name, Description,
                            PricingJson, ProductDetailsJson, SourceJson,
                            IsActive, SortOrder, CreatedByUserId, createdAt,

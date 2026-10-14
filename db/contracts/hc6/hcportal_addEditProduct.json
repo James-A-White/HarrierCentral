@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_addEditProduct",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Creates or edits one catalogue entry (HC.Product) from the portal Products view. Portal twin of hcapp_addEditProduct: same table and rules, portal auth instead of app auth. Auth: HC6.ValidatePortalAuth with @publicKennelId as callerParamString. Permission gate: HC6.CheckKennelPermission functionKey 'manageProducts' on the kennel. Editing requires the product to belong to the same kennel and not be Removed. Never deletes — taking something off sale is @isActive = 0, so payments that reference the product still resolve. Pricing lives in one PricingJson field since the 2026-09-13 json rework (db/hc6/app/archive/2026-09-13_product_json_rework.sql dropped PriceCharged/PromotionalCredit/UnitCost/RunCount/PhotoUrls; photos moved into ProductDetailsJson). HC.Product is defined in db/hc6/app/archive/2026-09-13_create_Product.sql, not in db/schema/tables.",
   "parameters": [
     {
@@ -87,6 +87,13 @@
       "nullable": true,
       "mapsToColumn": "Product.SortOrder",
       "description": "Defaults to 0. Display order within the kennel."
+    },
+    {
+      "name": "newProductId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Product.id",
+      "description": "Create only (@productId NULL): the new product's id, minted by the portal ONCE per Add dialog and resent on every attempt. Unknown => the product is inserted with it; already this kennel's => a repeat, success with rowset 1 = that id and nothing written; held by another kennel => error envelope. Ignored on an edit. Default NULL = NEWID()."
     }
   ],
   "rowsets": [
@@ -126,7 +133,8 @@
   "sideEffects": [
     "INSERT one HC.Product row (create; CreatedByUserId = caller, updatedAtBias 0, Removed 0) or UPDATE one (edit; every editable column is overwritten)",
     "Sets Product.updatedAt explicitly; HC.trgUpdateModifiedOnDateForProduct (db/hc6/app/archive/2026-09-13_create_Product_updatedAt_trigger.sql) also stamps it with the updatedAtBias offset, so the row reaches phones either way",
-    "On a runtime error: INSERT HC.ErrorLog (after ROLLBACK)"
+    "On a runtime error: INSERT HC.ErrorLog (after ROLLBACK)",
+    "A create repeated with the same @newProductId inserts nothing."
   ],
   "codeSmells": [
     {
@@ -140,5 +148,8 @@
     "Never rename a parameter",
     "Never change a parameter type",
     "This SP must never delete a product; retirement is isActive = 0"
+  ],
+  "changes": [
+    "1.2.0 (2026-10-14): optional @newProductId (idempotency audit P5; Idempotent writes: creates a row, client-id). HC.Product.id is a client-supplied GUID key. A create with @newProductId checks it WITH (UPDLOCK, HOLDLOCK) inside the transaction: unknown => inserted under that id; already this kennel's => success with that id, nothing written; another kennel's => error envelope. NULL = NEWID() as before."
   ]
 }
