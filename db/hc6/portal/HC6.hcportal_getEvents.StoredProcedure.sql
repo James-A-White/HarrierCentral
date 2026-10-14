@@ -44,6 +44,8 @@ AS
 --             @weeksToDisplay (time window), @pastOrFuture (direction)
 -- Returns: Rowset 0: EventSummaryList (when @fullDetails IS NULL or 0)
 --                  OR EventFullDetails (when @fullDetails = 1)
+-- Changes:
+--   2026-10-14: packOffMinutes — effective minutes after the gather (E3.F1.S6).
 -- Author: Harrier Central
 -- Created: 2026-03-15
 -- HC5 Source: HC5.hcportal_getEvents
@@ -186,6 +188,9 @@ BEGIN TRY
 			, CASE WHEN (evt.UseFbRunDetails = 1) THEN evt.FbEventName ELSE evt.EventName END AS eventName
 			-- TODO: Return DATETIMEOFFSET alongside DATETIME2 for timezone migration
 			, CONVERT(datetime2, evt.EventStartDatetime) AS eventStartDatetime
+			-- Pack-off (E3.F1.S6): effective minutes after the gather (run, else
+			-- kennel); NULL = the pack leaves at the gather.
+			, COALESCE(evt.PackOffMinutes, ken.PackOffMinutes) AS packOffMinutes
 			, DATEDIFF(DAY, GETDATE(), CONVERT(datetime2, evt.EventStartDatetime)) AS daysUntilEvent
 
 			, '~'
@@ -372,6 +377,9 @@ BEGIN TRY
 			, CASE WHEN (evt.UseFbRunDetails = 1) THEN evt.FbEventName ELSE evt.EventName END AS eventName
 			-- TODO: Return DATETIMEOFFSET alongside DATETIME2 for timezone migration
 			, CONVERT(datetime2, evt.EventStartDatetime) AS eventStartDatetime
+			-- Pack-off (E3.F1.S6): effective minutes after the gather (run, else
+			-- kennel); NULL = the pack leaves at the gather.
+			, COALESCE(evt.PackOffMinutes, ken.PackOffMinutes) AS packOffMinutes
 			, COALESCE(CASE WHEN (evt.UseFbRunDetails = 1) THEN evt.FbEventDescription ELSE evt.EventDescription END, '') AS eventDescription
 			, CASE WHEN (evt.UseFbRunDetails = 1) THEN evt.FbLocationOneLineDesc ELSE evt.LocationOneLineDesc END AS locationOneLineDesc
 

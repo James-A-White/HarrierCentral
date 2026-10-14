@@ -321,6 +321,12 @@
           "description": "FbEventStartDatetime if UseFbRunDetails=1, else EventStartDatetime. Converted to DATETIME2 (local time; DATETIMEOFFSET migration is a known TODO)."
         },
         {
+          "name": "packOffMinutes",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Effective pack-off (E3.F1.S6): minutes after the gather — the run's own, else the kennel's default; NULL = the pack leaves at the gather."
+        },
+        {
           "name": "daysUntilEvent",
           "type": "INT",
           "nullable": true,
@@ -645,6 +651,12 @@
           "type": "DATETIME2",
           "nullable": true,
           "description": "FbEventStartDatetime if UseFbRunDetails=1, else EventStartDatetime. Converted to DATETIME2 (local time; DATETIMEOFFSET migration is a known TODO)."
+        },
+        {
+          "name": "packOffMinutes",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Effective pack-off (E3.F1.S6): minutes after the gather — the run's own, else the kennel's default; NULL = the pack leaves at the gather."
         },
         {
           "name": "eventDescription",
