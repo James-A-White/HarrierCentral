@@ -25,6 +25,7 @@ AS
 --                        (Hc) counts, credit, currency; for a country:
 --                        the country name and flag.
 --              Rowset 2: runs, newest first, the app's columns.
+-- Changes: 2026-10-14 — packOffMinutes (E3.F1.S6), effective minutes after the gather.
 -- Author:      Harrier Central
 -- Created:     2026-09-16
 -- HC5 Source:  none
@@ -120,6 +121,8 @@ BEGIN TRY
         COALESCE(k.DigitsAfterDecimal, n.DigitsAfterDecimal, 2)          AS digitsAfterDecimal,
         COALESCE(k.CurrencySymbol, n.CurrencySymbol, '$^')               AS currencySymbol,
         CAST(e.EventStartDatetime AS datetime2(7))                       AS eventStartDatetime,
+        -- Pack-off (E3.F1.S6): minutes after the gather, run else kennel; NULL = at the gather.
+        COALESCE(e.PackOffMinutes, (SELECT kp.PackOffMinutes FROM HC.Kennel kp WHERE kp.id = e.KennelId)) AS packOffMinutes,
         e.ExtrasDescription                                              AS extrasDescription,
         e.EventPriceForExtras                                            AS extrasPrice,
         hem.id                                                           AS hemId,

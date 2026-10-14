@@ -331,6 +331,12 @@
           "description": "CAST(Event.EventStartDatetime AS datetime2(7)) — local wall clock."
         },
         {
+          "name": "packOffMinutes",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Effective pack-off (E3.F1.S6): minutes after the gather — the run's own, else the kennel's default; NULL = the pack leaves at the gather."
+        },
+        {
           "name": "extrasDescription",
           "type": "NVARCHAR(250)",
           "nullable": true,
