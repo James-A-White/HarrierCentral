@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_reportChatMessage",
-  "version": "1.1.0",
-  "description": "A hasher reports a chat message of any thread kind to the platform reviewers (E9.F1.S17, James 2026-09-29). Harrier Central is a letterbox, not a moderator: the report is written to LOG.GeneralLog and the API emails it, from rowsets 1–2 which it strips before replying, to the platform admins who may edit kennels plus the shared mailbox — the same list as kennel requests (publicWeb_confirmKennelRequest). Nothing is hidden or removed by this SP; Block (hcapp_setHasherBlock) is the hasher's own tool for that. Auth: HC6.ValidateAppAuth (spNumber 127, @param NULL — a standard token). Permission gate: none beyond auth — any hasher may report any message that is not their own. Reporting the same message twice (same reporter) is a success that writes and sends nothing new (AlreadyReported 1). Reason is optional and capped at 1,000 characters. Uses the two-rowset error shape: {success 0, errorCode, errorType} then the standard error detail.",
+  "version": "1.2.0",
+  "description": "A hasher reports a chat message of any thread kind to the platform reviewers (E9.F1.S17, James 2026-09-29). Harrier Central is a letterbox, not a moderator: the report is written to LOG.GeneralLog and the API emails it, from rowsets 1–2 which it strips before replying, to the platform admins who may edit kennels plus the shared mailbox — the same list as kennel requests (publicWeb_confirmKennelRequest). Nothing is hidden or removed by this SP; Block (hcapp_setHasherBlock) is the hasher's own tool for that. Auth: HC6.ValidateAppAuth (spNumber 127, @param NULL — a standard token). Permission gate: none beyond auth — any hasher may report any message that is not their own. Reporting the same message twice (same reporter) is a success that writes and sends nothing new (AlreadyReported 1). Reason is optional and capped at 1,000 characters. Uses the two-rowset error shape: {success 0, errorCode, errorType} then the standard error detail. Idempotency: locked-upsert (2026-10-14, audit W5) — the 'already reported' check and the LOG.GeneralLog insert run in one transaction under sp_getapplock on 'hcapp_reportChatMessage:<messageId>:<userId>' (Exclusive, @LockOwner = 'Transaction', 10 s timeout), so two concurrent reports of the same message by the same hasher cannot both insert: the second waits, then returns success with AlreadyReported = 1 and the API sends no second reviewer email. A lock timeout throws into the CATCH (1988 / 5).",
   "parameters": [
     {
       "name": "deviceId",
@@ -44,9 +44,24 @@
       "name": "ErrorEnvelope",
       "description": "Every other refusal: {success 0, errorCode, errorType} at index 0, then the StandardErrorResult detail at index 1. Codes: 1987 bad request — own message, message not found, or reason over 1,000 (errorType 2; errorUserMessage says which); 1988 unhandled error from the CATCH (5).",
       "columns": [
-        { "name": "success", "type": "INT", "nullable": false, "description": "Always 0." },
-        { "name": "errorCode", "type": "INT", "nullable": false, "description": "1987 or 1988." },
-        { "name": "errorType", "type": "INT", "nullable": false, "description": "2 validation, 5 unhandled." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0."
+        },
+        {
+          "name": "errorCode",
+          "type": "INT",
+          "nullable": false,
+          "description": "1987 or 1988."
+        },
+        {
+          "name": "errorType",
+          "type": "INT",
+          "nullable": false,
+          "description": "2 validation, 5 unhandled."
+        }
       ]
     },
     {
@@ -59,8 +74,18 @@
       "name": "Envelope",
       "description": "On success: the standard success envelope. success is 1 whether the report was new or a repeat.",
       "columns": [
-        { "name": "success", "type": "INT", "nullable": false, "description": "Always 1." },
-        { "name": "errorMessage", "type": "NVARCHAR(MAX)", "nullable": true, "description": "Always NULL." }
+        {
+          "name": "success",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 1."
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Always NULL."
+        }
       ]
     },
     {
@@ -68,17 +93,72 @@
       "name": "Report",
       "description": "On success, API ONLY (stripped from the client reply): the report for the email. One row (reporter × sender).",
       "columns": [
-        { "name": "MessageId", "type": "NVARCHAR(40)", "nullable": false, "description": "UPPER(@messageId)." },
-        { "name": "ReporterName", "type": "NVARCHAR(250)", "nullable": false, "description": "The caller's Hasher.DisplayName." },
-        { "name": "ReporterEmail", "type": "NVARCHAR(250)", "nullable": false, "description": "The caller's Hasher.Email (NOT NULL in the table; may be a generated address — the API mailer refuses those, GeneratedEmail.Is)." },
-        { "name": "SenderName", "type": "NVARCHAR(250)", "nullable": false, "description": "The message author's Hasher.DisplayName." },
-        { "name": "SenderPublicHasherId", "type": "NVARCHAR(40)", "nullable": false, "description": "UPPER(author's Hasher.PublicHasherId)." },
-        { "name": "ThreadLabel", "type": "NVARCHAR(400)", "nullable": true, "description": "'<KennelShortName> — <EventName>' for a run, '<KennelShortName> kennel chat', 'DM: <sender> ↔ <other>' for a DM (from the SENDER's HasherFriendMap row), or the room's RoomName. NULL if the lookup finds nothing." },
-        { "name": "MessageKind", "type": "SMALLINT", "nullable": false, "description": "EventMessage.MessageKind: 0 text, 1 photo, 2 location." },
-        { "name": "MessageContent", "type": "NVARCHAR(4000)", "nullable": false, "description": "EventMessage.MessageContent — the text, or the photo/location URL (raw, not the preview)." },
-        { "name": "MessageAt", "type": "DATETIMEOFFSET(7)", "nullable": false, "description": "EventMessage.createdAt." },
-        { "name": "Reason", "type": "NVARCHAR(MAX)", "nullable": true, "description": "@reason as given." },
-        { "name": "AlreadyReported", "type": "SMALLINT", "nullable": false, "description": "1 when this reporter already reported this message (a LOG.GeneralLog row with LogSource 'HC6.hcapp_reportChatMessage' whose Data starts with 'message=<id> reporter=<id>'); the API then sends no email." }
+        {
+          "name": "MessageId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "UPPER(@messageId)."
+        },
+        {
+          "name": "ReporterName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "The caller's Hasher.DisplayName."
+        },
+        {
+          "name": "ReporterEmail",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "The caller's Hasher.Email (NOT NULL in the table; may be a generated address — the API mailer refuses those, GeneratedEmail.Is)."
+        },
+        {
+          "name": "SenderName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "The message author's Hasher.DisplayName."
+        },
+        {
+          "name": "SenderPublicHasherId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "UPPER(author's Hasher.PublicHasherId)."
+        },
+        {
+          "name": "ThreadLabel",
+          "type": "NVARCHAR(400)",
+          "nullable": true,
+          "description": "'<KennelShortName> — <EventName>' for a run, '<KennelShortName> kennel chat', 'DM: <sender> ↔ <other>' for a DM (from the SENDER's HasherFriendMap row), or the room's RoomName. NULL if the lookup finds nothing."
+        },
+        {
+          "name": "MessageKind",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "EventMessage.MessageKind: 0 text, 1 photo, 2 location."
+        },
+        {
+          "name": "MessageContent",
+          "type": "NVARCHAR(4000)",
+          "nullable": false,
+          "description": "EventMessage.MessageContent — the text, or the photo/location URL (raw, not the preview)."
+        },
+        {
+          "name": "MessageAt",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "EventMessage.createdAt."
+        },
+        {
+          "name": "Reason",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "@reason as given."
+        },
+        {
+          "name": "AlreadyReported",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 when this reporter already reported this message (a LOG.GeneralLog row with LogSource 'HC6.hcapp_reportChatMessage' whose Data starts with 'message=<id> reporter=<id>'); the API then sends no email."
+        }
       ]
     },
     {
@@ -86,14 +166,20 @@
       "name": "Reviewers",
       "description": "On success, API ONLY: who receives the email. HC.PlatformAdmin rows (removed 0, CanEditKennel 1) joined to a live Hasher with a non-empty Email, UNION the shared mailbox literal. Same rule as publicWeb_confirmKennelRequest.",
       "columns": [
-        { "name": "reviewerEmail", "type": "NVARCHAR(250)", "nullable": false, "description": "Hasher.Email, or 'harriercentral@gmail.com'." }
+        {
+          "name": "reviewerEmail",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Hasher.Email, or 'harriercentral@gmail.com'."
+        }
       ]
     }
   ],
   "sideEffects": [
     "INSERT LOG.GeneralLog (LogSource 'HC6.hcapp_reportChatMessage', Message 'Chat message reported', StrParam1 = reporter id, Data = key + sender + thread label + reason + text, LEFT(…, 4000)) — first report per (message, reporter) only.",
     "INSERT HC.ErrorLog on 1987 and in the CATCH (1988).",
-    "The API emails rowset 1 to every rowset-2 address unless AlreadyReported = 1; nothing is queued in the database."
+    "The API emails rowset 1 to every rowset-2 address unless AlreadyReported = 1; nothing is queued in the database.",
+    "sp_getapplock (Exclusive, transaction-owned) on reporter + message around the dedupe check and insert; released at COMMIT (2026-10-14)"
   ],
   "codeSmells": [
     {

@@ -16,6 +16,9 @@ AS
 --
 --   Reporting the same message twice is a success that sends nothing new.
 --   Reason is optional and capped at 1,000 characters.
+-- Idempotency: locked-upsert — sp_getapplock on reporter+message; a concurrent second report gets AlreadyReported.
+--   (2026-10-14, audit W5: the check-then-insert on LOG.GeneralLog now runs
+--   in one transaction under that applock, @LockOwner = 'Transaction'.)
 -- Returns: rowset 0 — standard success envelope { success, errorMessage }
 --          rowset 1 — the report for the email (the API strips it):
 --            { MessageId, ReporterName, ReporterEmail, SenderName,
@@ -85,11 +88,30 @@ DECLARE @threadLabel NVARCHAR(400) =
          ELSE (SELECT c.RoomName FROM HC6.ChatRoomCatalog() c WHERE c.RoomType = @roomType) END;
 
 DECLARE @key NVARCHAR(200) = 'message=' + CAST(@messageId AS NVARCHAR(40)) + ' reporter=' + CAST(@userId AS NVARCHAR(40));
-DECLARE @alreadyReported SMALLINT =
-    CASE WHEN EXISTS (SELECT 1 FROM LOG.GeneralLog g
-                      WHERE g.LogSource = 'HC6.hcapp_reportChatMessage' AND g.Data LIKE @key + '%') THEN 1 ELSE 0 END;
+DECLARE @alreadyReported SMALLINT = 0;
 
 BEGIN TRY
+    -- The "not yet reported" check and the insert are one unit (2026-10-14,
+    -- idempotency audit W5). Without it two concurrent reports both passed
+    -- the check: two log rows and two reviewer emails. An application lock
+    -- on reporter + message serialises exactly those two calls and nothing
+    -- else — locking the LIKE scan over LOG.GeneralLog would hold range
+    -- locks on the whole log. The second caller waits, then sees the first's
+    -- row and gets AlreadyReported = 1 (the API sends no email for it).
+    BEGIN TRANSACTION;
+
+    DECLARE @lockResult INT;
+    DECLARE @lockName NVARCHAR(255) =
+        N'hcapp_reportChatMessage:' + CAST(@messageId AS NVARCHAR(40)) + N':' + CAST(@userId AS NVARCHAR(40));
+    EXEC @lockResult = sp_getapplock @Resource = @lockName, @LockMode = 'Exclusive',
+                                     @LockOwner = 'Transaction', @LockTimeout = 10000;
+    IF (@lockResult < 0)
+        THROW 51987, 'reportChatMessage: could not take the report lock', 1;
+
+    SET @alreadyReported =
+        CASE WHEN EXISTS (SELECT 1 FROM LOG.GeneralLog g
+                          WHERE g.LogSource = 'HC6.hcapp_reportChatMessage' AND g.Data LIKE @key + '%') THEN 1 ELSE 0 END;
+
     IF (@alreadyReported = 0)
         INSERT LOG.GeneralLog (LogSource, Message, StrParam1, Data, Timestamp)
         VALUES ('HC6.hcapp_reportChatMessage', 'Chat message reported',
@@ -99,6 +121,8 @@ BEGIN TRY
                      + ' reason=' + COALESCE(@reason, '')
                      + ' text=' + COALESCE(@content, ''), 4000),
                 SYSDATETIMEOFFSET());
+
+    COMMIT TRANSACTION;   -- releases the applock (owner = Transaction)
 
     SELECT 1 AS success, NULL AS errorMessage;
 
