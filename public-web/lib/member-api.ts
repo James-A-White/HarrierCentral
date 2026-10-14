@@ -970,3 +970,26 @@ export async function getReportContext(s: MemberSession, publicKennelId?: string
   if (envelopeOf(rowsets).success !== 1) return null;
   return (rowsets[1]?.[0] as unknown as ReportContext) ?? null;
 }
+
+// ── Social links (E12.F4.S4) ──────────────────────────────────────────────────
+
+/**
+ * The kennel's social and chat links as this member may see them, through
+ * the app's own hcapp_getKennelSocialLinks (a read; the browser is a
+ * device). Members and admins of the kennel also get the members-only
+ * entries (chat-group invites). Returns the raw SocialLinksJson (parse
+ * with parseSocialLinks), or null when the call failed — the caller then
+ * falls back to the public list.
+ */
+export async function getKennelSocialLinks(s: MemberSession, publicKennelId: string): Promise<{ json: string | null; includesMembers: boolean } | null> {
+  const rowsets = await callAppApi({
+    queryType: "getKennelSocialLinks",
+    deviceId: s.deviceId,
+    accessToken: tokenFor(s, "hcapp_getKennelSocialLinks"),
+    publicKennelId,
+  });
+  const r = rowsets?.[0]?.[0] as { socialLinksJson?: string | null; includesMembers?: number; errorId?: string; success?: number } | undefined;
+  // Auth failure: rowset 0 is the error-detail row; the normalised flat error has success 0.
+  if (!r || r.errorId != null || r.success === 0) return null;
+  return { json: typeof r.socialLinksJson === "string" ? r.socialLinksJson : null, includesMembers: Number(r.includesMembers) === 1 };
+}

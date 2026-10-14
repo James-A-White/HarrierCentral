@@ -142,7 +142,7 @@ export default async function KennelPage({ params }: PageProps) {
         </main>
 
         {/* ── Fixed footer — always present, not configurable ─────────── */}
-        <SiteFooter />
+        <SiteFooter socialLinks={kennel.socialLinks} />
 
       </body>
     </html>

@@ -73,6 +73,9 @@ export interface KennelLandingData {
 
   // Page features
   PageFeaturesJson: string | null;
+
+  /** E12.F4.S4: JSON array of the kennel's PUBLIC social links only (members-only entries are never sent here). Parse with parseSocialLinks. */
+  SocialLinksJson?: string | null;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

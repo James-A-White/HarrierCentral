@@ -1,3 +1,5 @@
+import type { SocialLink } from "@/lib/social-links";
+
 export type KennelTheme = "light" | "dark";
 
 export interface KennelPageFeatures {
@@ -57,12 +59,8 @@ export interface KennelContext {
   menuBackgroundOpacity: number;       // 0–1, opacity of nav background at full scroll
   menuTextColor: string;               // CSS color string for sticky nav text (hex or any valid CSS color)
   pageFeatures: KennelPageFeatures;
-  socialLinks: {
-    facebook?: string;
-    instagram?: string;
-    strava?: string;
-    meetup?: string;
-  };
+  /** The kennel's PUBLIC social and chat links (E12.F4.S4), validated, in display order; [] when none. */
+  socialLinks: SocialLink[];
   stats: {
     totalRuns: number;
     activeMembers: number;

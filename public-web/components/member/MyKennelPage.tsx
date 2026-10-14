@@ -21,12 +21,14 @@ import { RunCard, rsvpChoices, type Answer, type PrefKind } from "@/components/m
 import { ChoicePopup, runBellChoices, runEnvelopeChoices } from "@/components/member/ChoicePopup";
 import { KennelMap } from "@/components/member/KennelMap";
 import { QrGroup } from "@/components/member/QrGroup";
+import { SocialLinksRow } from "@/components/kennel/SocialLinks";
+import type { SocialLink } from "@/lib/social-links";
 
 const RSVP = { no: 1, maybe: 2, yes: 3 } as const;
 const PLATFORM: Record<number, string> = { 1: "WhatsApp", 2: "Telegram", 3: "Signal", 4: "Messenger", 5: "WeChat" };
 const BASE_URL = "https://www.hashruns.org/";
 
-export function MyKennelPage({ kennel, nextRuns, back }: { kennel: MyKennel; nextRuns: MyRun[]; back: string }) {
+export function MyKennelPage({ kennel, nextRuns, back, socialLinks = [] }: { kennel: MyKennel; nextRuns: MyRun[]; back: string; socialLinks?: SocialLink[] }) {
   const [runs, setRuns] = useState(nextRuns);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [pref, setPref] = useState<{ kind: PrefKind; run: MyRun } | null>(null);
@@ -144,6 +146,14 @@ export function MyKennelPage({ kennel, nextRuns, back }: { kennel: MyKennel; nex
                 onRsvp={rsvp} onPref={(run, kind) => setPref({ kind, run })} onState={setRsvpFor} busy={busy?.id === r.PublicEventId} busyOn={busy?.on} />
             ))}
           </ul>
+        </>
+      )}
+
+      {/* The kennel's social and chat links (E12.F4.S4); members-only ones carry a tag */}
+      {socialLinks.length > 0 && (
+        <>
+          <FancyDivider />
+          <SocialLinksRow links={socialLinks} variant="chips" className="px-3" />
         </>
       )}
 

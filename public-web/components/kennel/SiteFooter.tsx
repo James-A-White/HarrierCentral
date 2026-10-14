@@ -1,9 +1,18 @@
 "use client";
 
-export function SiteFooter() {
+import { SocialLinksRow } from "@/components/kennel/SocialLinks";
+import type { SocialLink } from "@/lib/social-links";
+
+/** The landing page footer: the kennel's public social links (E12.F4.S4, when it has any), then "Powered by". */
+export function SiteFooter({ socialLinks = [] }: { socialLinks?: SocialLink[] }) {
   const year = new Date().getFullYear();
   return (
     <footer className="relative z-10 mt-16 border-t dark:border-white/[0.08] border-zinc-200">
+      {socialLinks.length > 0 && (
+        <div className="mx-auto max-w-7xl px-4 pt-8 md:px-6">
+          <SocialLinksRow links={socialLinks} className="justify-center dark:text-white/80 text-zinc-600" />
+        </div>
+      )}
       <div className="mx-auto max-w-7xl px-4 md:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}

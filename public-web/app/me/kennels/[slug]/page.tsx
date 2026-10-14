@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getEvents } from "@/lib/api";
-import { getMyKennels, getMyRuns, type MyRun } from "@/lib/member-api";
+import { getEvents, getKennelLandingData } from "@/lib/api";
+import { getKennelSocialLinks, getMyKennels, getMyRuns, type MyRun } from "@/lib/member-api";
+import { parseSocialLinks, type SocialLink } from "@/lib/social-links";
 import { requireMember } from "@/lib/member-server";
 import { MyKennelPage } from "@/components/member/MyKennelPage";
 
@@ -24,6 +25,8 @@ export default async function MemberKennelPage({ params, searchParams }: { param
   const kennel = mine.find((k) => k.KennelSlug.toLowerCase() === slug.toLowerCase()) ?? null;
   if (!kennel) notFound();
   const publicKennelId = kennel.PublicKennelId.toLowerCase();
+  // Started now so it runs alongside the next-runs fetch below.
+  const mineLinksP = getKennelSocialLinks(s, publicKennelId).catch(() => null);
 
   // Next runs: from my runs when I follow the kennel (they carry my RSVP,
   // bell and envelope); otherwise the kennel's public list.
@@ -45,6 +48,17 @@ export default async function MemberKennelPage({ params, searchParams }: { param
     }));
   }
 
+  // Social links (E12.F4.S4): the member's view (members-only entries for
+  // the kennel's members and admins); if that call fails, the public list.
+  let socialLinks: SocialLink[];
+  const mineLinks = await mineLinksP;
+  if (mineLinks) {
+    socialLinks = parseSocialLinks(mineLinks.json);
+  } else {
+    const landing = await getKennelLandingData(kennel.KennelSlug).catch(() => null);
+    socialLinks = parseSocialLinks(landing?.SocialLinksJson);
+  }
+
   const safeBack = back && back.startsWith("/") && !back.startsWith("//") ? back : "/me/kennels";
-  return <MyKennelPage kennel={kennel} nextRuns={nextRuns.slice(0, 5)} back={safeBack} />;
+  return <MyKennelPage kennel={kennel} nextRuns={nextRuns.slice(0, 5)} back={safeBack} socialLinks={socialLinks} />;
 }

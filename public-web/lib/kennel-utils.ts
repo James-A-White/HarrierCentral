@@ -1,6 +1,7 @@
 import type { KennelLandingData } from "./api";
 import type { KennelContext, KennelPageFeatures } from "./types/kennel";
 import { DEFAULT_PAGE_FEATURES } from "./types/kennel";
+import { parseSocialLinks } from "./social-links";
 
 /**
  * Normalises a DB colour value to 8-digit hex (#RRGGBBAA).
@@ -108,7 +109,7 @@ export function toKennelContext(data: KennelLandingData): KennelContext {
     ...parseMenuBackground(data.MenuBackgroundColor ?? null, theme),
     menuTextColor: data.MenuTextColor ?? (theme === "light" ? "#18181b" : "#ffffff"),
     pageFeatures: parsePageFeatures(data.PageFeaturesJson),
-    socialLinks: {},
+    socialLinks: parseSocialLinks(data.SocialLinksJson),
     stats: { totalRuns: 0, activeMembers: 0, photosUploaded: 0, yearsRunning: 0 },
   };
 }

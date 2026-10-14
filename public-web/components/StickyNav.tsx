@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SignInLink } from "@/components/member/SignInLink";
 import { motion, AnimatePresence, useTransform, useMotionValueEvent } from "framer-motion";
-import { Menu, X, MapPin, ArrowRight, Globe } from "lucide-react";
+import { Menu, X, MapPin, ArrowRight, Globe, MessagesSquare } from "lucide-react";
+import { SocialLinksRow } from "@/components/kennel/SocialLinks";
 import Link from "next/link";
 import type { KennelContext, KennelPageFeatures } from "@/lib/types/kennel";
 import type { RunEvent } from "@/lib/api";
@@ -52,6 +53,29 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false, navIte
   const scrollY = useWindowScrollMotionValue();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // Desktop: the kennel's social links (E12.F4.S4) sit behind one icon; on phones they are in the menu panel.
+  const [linksOpen, setLinksOpen] = useState(false);
+  const socialLinks = kennel.socialLinks ?? [];
+  const linksRef = useRef<HTMLDivElement>(null);
+  const linksButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Close the links panel on a click outside it or Escape. (A fixed backdrop
+  // would not work here: the header's backdrop-filter makes it the containing
+  // block for fixed children.)
+  useEffect(() => {
+    if (!linksOpen) return;
+    const onDown = (e: PointerEvent) => {
+      const t = e.target as Node;
+      if (linksRef.current?.contains(t) || linksButtonRef.current?.contains(t)) return;
+      // The WeChat dialog is portalled to <body>; a tap in it must not close the panel that owns it.
+      if (t instanceof Element && t.closest("[data-social-dialog]")) return;
+      setLinksOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setLinksOpen(false); };
+    document.addEventListener("pointerdown", onDown);
+    window.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("pointerdown", onDown); window.removeEventListener("keydown", onKey); };
+  }, [linksOpen]);
 
   const visibleNavItems: { label: string; href: string }[] = navItems
     ?? NAV_ITEMS
@@ -209,6 +233,21 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false, navIte
                 Member login
               </Button> */}
 
+              {/* Social and chat links — desktop only; the mobile menu lists them */}
+              {socialLinks.length > 0 && (
+                <button
+                  ref={linksButtonRef}
+                  type="button"
+                  onClick={() => setLinksOpen((o) => !o)}
+                  aria-label="Social and chat links"
+                  aria-expanded={linksOpen}
+                  title="Social and chat links"
+                  className="hidden lg:flex items-center justify-center h-10 w-10 rounded-md transition-opacity opacity-60 hover:opacity-100"
+                >
+                  <MessagesSquare className="h-6 w-6" />
+                </button>
+              )}
+
               {/* Globe — desktop: far-right item; mobile: left of hamburger */}
               <Link
                 href="/"
@@ -239,6 +278,17 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false, navIte
         </motion.div>
       </div>
 
+      {/* Desktop social links panel — drops below the nav, right-aligned */}
+      {linksOpen && socialLinks.length > 0 && (
+        <div
+          ref={linksRef}
+          className="absolute right-4 top-full z-50 mt-2 hidden max-w-sm rounded-xl border border-white/10 p-3 shadow-xl lg:block md:right-6"
+          style={{ backgroundColor: hexToRgba(kennel.menuBackgroundColor, Math.max(kennel.menuBackgroundOpacity, 0.9)), color: kennel.menuTextColor }}
+        >
+          <SocialLinksRow links={socialLinks} />
+        </div>
+      )}
+
       {/* Mobile menu panel — slides down below the nav bar */}
       <AnimatePresence>
         {mobileMenuOpen && (
@@ -262,6 +312,11 @@ export function StickyNav({ kennel, nextRun, slug, alwaysVisible = false, navIte
                   {item.label}
                 </a>
               ))}
+              {socialLinks.length > 0 && (
+                <div className="pt-3 pb-1 mt-1 px-3 border-t dark:border-white/[0.08] border-zinc-200/50">
+                  <SocialLinksRow links={socialLinks} />
+                </div>
+              )}
               <div className="pt-2 mt-1 border-t dark:border-white/[0.08] border-zinc-200/50">
                 <Link
                   href="/"
