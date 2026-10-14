@@ -949,6 +949,12 @@
           "description": "Kennel.DefaultRunStartTime combined with sentinel date 1900-01-01 via DATETIME arithmetic."
         },
         {
+          "name": "packOffMinutes",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Kennel.PackOffMinutes (E3.F1.S6) raw column, minutes after the gather; NULL = at the gather."
+        },
+        {
           "name": "runCountStartDate",
           "type": "DATETIMEOFFSET(7)",
           "nullable": true,
@@ -1779,6 +1785,12 @@
           "description": "COALESCE(Event.EventStartDatetimeGmt, Event.EventStartDatetime) — the UTC instant."
         },
         {
+          "name": "packOffMinutes",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.PackOffMinutes (E3.F1.S6) raw column, minutes after the gather; NULL = the kennel's default."
+        },
+        {
           "name": "eventDescription",
           "type": "NVARCHAR(4000)",
           "nullable": true,
@@ -2284,6 +2296,12 @@
           "type": "DATETIME2",
           "nullable": false,
           "description": "CONVERT(DATETIME2, Event.EventStartDatetimeGmt) — UTC instant with the offset dropped."
+        },
+        {
+          "name": "packOffMinutes",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.PackOffMinutes (E3.F1.S6) raw column, minutes after the gather; NULL = the kennel's default."
         },
         {
           "name": "eventDescription",
