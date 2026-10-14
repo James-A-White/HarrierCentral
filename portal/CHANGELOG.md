@@ -1,3 +1,10 @@
+## 2.0.87+776 (2026-10-14)
+### Fixes
+- **Developer tab — Data APIs**: the links now point at the live API (`harriercentralpublicapi.azurewebsites.net/api/PublicApi`); the old host was deleted in August. The run-counts link uses `getLeaderboard` (it asked for a query that never existed).
+- **Kennel location**: resetting a kennel's position to its city now clears it (sends -999); it used to store 999 as a latitude.
+### Improvements
+- **Publish to Google Calendars**: when it is on, the editor shows how to share the calendar with harriercentral@gmail.com ("Make changes to events") and where to find the Calendar ID.
+
 ## 2.0.87+775 (2026-10-15)
 ### New Features
 - **Google Calendar as a run source**: choose "Google Calendar" under "Runs come from" and paste the calendar's public link; runs are read from it four times a day. Save refuses a link that is not a Google Calendar and says how to copy the right one.
