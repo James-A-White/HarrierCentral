@@ -1,3 +1,9 @@
+## 2.0.87+771 (2026-10-14)
+### Improvements
+- **Chat**: a message that did not send has Retry, which resends the same message (no second push).
+- **Safe repeats**: kennel drafts, products, songs and newsflashes keep one id per form, so saving again after a lost reply never makes a copy.
+- **Every button that starts work spins and ignores a second press** (members, songs, runs, products, newsflash, email).
+
 ## 2.0.87+770 (2026-10-14)
 ### Improvements
 - **Save answers at once**: Save and "Save and send" show a spinner the moment they are pressed, and a second press is ignored until the first finishes. Every tabbed editor, not just runs.

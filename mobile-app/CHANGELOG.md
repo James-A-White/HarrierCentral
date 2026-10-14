@@ -1,3 +1,18 @@
+## 3.1.9+1474 (2026-10-14)
+
+### Improvements
+
+- **Every action answers at once and ignores a second press**: payments, check-in,
+  receipts, live run (start, end, help), RSVPs, emails, shares and more.
+
+### Fixes
+
+- **No duplicates after a lost reply**: saving a receipt, a down-down charge, a
+  membership extension or a sale again no longer makes a second one.
+- **Help / I'm Lost / Back on trail**: trying again sends the same message, so the
+  pack is pushed once.
+- **Share song**: sharing twice in a row pushes the pack once.
+
 ## 3.1.9+1473 (2026-10-14)
 
 ### Improvements

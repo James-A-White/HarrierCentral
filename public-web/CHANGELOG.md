@@ -1,5 +1,13 @@
 # public-web Changelog
 
+## 0.21.74 (2026-10-14 redeploy — safe repeats)
+
+- Chat: a failed text or location send keeps its id, so trying again cannot post it twice
+- Sign in by code: one device per sign-in, however often the code is submitted
+- Admin link: the token is redeemed by a POST, so a link preview cannot use it up
+- Every action shows it is working: chat photo, page-builder publish and page saves, sign out, card RSVP/follow/alerts
+- Sign-up: an account that already exists continues to sign-in instead of saying it could not be created
+
 ## 0.21.74 (2026-10-10 redeploy — kennel app links)
 
 - Apple app-link rules (`apple-app-site-association`): `/<kennel>` now opens the app

@@ -1,3 +1,9 @@
+1.0.61+106
+    • Unsubscribe link acts only on POST: mail scanners can no longer unsubscribe members (one-click still works)
+    • Run email: a repeated send with the same send id emails nobody
+    • Invite emails: each hasher is claimed before sending, so overlapping sends cannot email twice
+    • Kennel from a website: saves keyed on the draft; a repeat neither duplicates the request nor re-copies the logo
+
 1.0.61+105
     • App and portal APIs write a procedure's thrown error to HC.ErrorLog (was Azure log only: empty 500, no row)
     • Public-web replies never carry a phone's push token (chat send and react)
