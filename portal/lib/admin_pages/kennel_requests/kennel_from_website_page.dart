@@ -25,6 +25,13 @@ class KennelFromWebsiteController extends GetxController {
   final RxBool saving = false.obs;
   final RxString error = ''.obs;
 
+  /// The request this draft will become, minted ONCE per draft and sent on
+  /// every Next: a second press after a lost reply returns the same request
+  /// instead of making a second one (idempotency audit P4). A new draft
+  /// (read, start without a website, start over) gets a new id.
+  String _kennelImportId = const Uuid().v4();
+  void _newDraftId() => _kennelImportId = const Uuid().v4();
+
   @override
   void onClose() {
     url.dispose();
@@ -83,6 +90,7 @@ class KennelFromWebsiteController extends GetxController {
     if (u.isEmpty || reading.value) return;
     reading.value = true;
     error.value = '';
+    _newDraftId();
     try {
       _take(await _post(<String, dynamic>{'action': 'read', 'url': u}));
     } on Object catch (e) {
@@ -95,6 +103,7 @@ class KennelFromWebsiteController extends GetxController {
   /// No website (or one that cannot be read): the chat starts from nothing.
   void startWithoutWebsite() {
     error.value = '';
+    _newDraftId();
     draft.value = <String, dynamic>{'socialLinks': <dynamic>[], 'sources': <String, dynamic>{}};
     missing.assignAll(<String>['kennel name', 'city', "first admin's email"]);
     chat.assignAll(<(String, String)>[
@@ -159,6 +168,7 @@ class KennelFromWebsiteController extends GetxController {
   }
 
   void startOver() {
+    _newDraftId();
     draft.value = null;
     chat.clear();
     missing.clear();
@@ -174,6 +184,7 @@ class KennelFromWebsiteController extends GetxController {
         'action': 'save',
         'draft': draft.value,
         'createToken': _token('hcportal_createKennelRequestFromDraft'),
+        'kennelImportId': _kennelImportId,
       });
       final String id = ((j['kennelImportId'] as String?) ?? '').toLowerCase();
       final List<String> warnings = ((j['warnings'] as List<dynamic>?) ?? <dynamic>[]).map((e) => e.toString()).toList();

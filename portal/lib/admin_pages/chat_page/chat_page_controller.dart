@@ -59,6 +59,11 @@ class ChatSheetController extends GetxController {
   // for a second FCM event that will never come.
   final _pendingDeliveryIds = <String>{};
 
+  /// Sends the server has not confirmed, by message id: what Retry sends
+  /// again. The id is kept, never re-minted — the SP answers a repeated id
+  /// with the stored message and no second push (idempotency audit P2).
+  final _unconfirmedSends = <String, _UnconfirmedSend>{};
+
   bool get _isSafari {
     final ua = web.window.navigator.userAgent.toLowerCase();
     return ua.contains('safari') &&
@@ -636,7 +641,10 @@ class ChatSheetController extends GetxController {
     required int index,
     required TapUpDetails details,
   }) {
-    if (message is core.ImageMessage) {
+    if (canRetry(message)) {
+      // A tap on a bubble marked "Not sent" sends it again, same id.
+      unawaited(retrySend(message));
+    } else if (message is core.ImageMessage) {
       openPhoto(message);
     } else if (_locationUrlOf(message) case final url?) {
       unawaited(launchUrl(Uri.parse(url), webOnlyWindowName: '_blank'));
@@ -674,6 +682,11 @@ class ChatSheetController extends GetxController {
     core.ImageMessage() => m.source,
     _ => _locationUrlOf(m) ?? '',
   };
+
+  /// A send of mine that failed and can be sent again with the same id.
+  bool canRetry(core.Message m) =>
+      m.status == core.MessageStatus.error &&
+      _unconfirmedSends.containsKey(m.id);
 
   bool canDelete(core.Message m) =>
       _canDeleteIds.contains(m.id) &&
@@ -747,6 +760,15 @@ class ChatSheetController extends GetxController {
   }
 
   List<PopupMenuEntry<String>> menuItemsFor(core.Message m) => [
+    if (canRetry(m))
+      const PopupMenuItem(
+        value: 'retry',
+        child: ListTile(
+          dense: true,
+          leading: Icon(Icons.refresh),
+          title: Text('Retry'),
+        ),
+      ),
     if (m.status != core.MessageStatus.sending &&
         m.status != core.MessageStatus.error) ...[
       _reactionRow(m),
@@ -785,6 +807,8 @@ class ChatSheetController extends GetxController {
       return;
     }
     switch (choice) {
+      case 'retry':
+        await retrySend(m);
       case 'reply':
         replyingTo.value = m;
       case 'copy':
@@ -1009,7 +1033,8 @@ class ChatSheetController extends GetxController {
       _send(kind: chatKindText, content: text);
 
   /// Sends one message of [kind]. It appears at once (sending), then turns
-  /// sent / delivered, or error if the SP refuses.
+  /// sent / delivered, or error if the SP refuses. The id is minted HERE,
+  /// once per message; a Retry resends the same id (retrySend).
   Future<void> _send({required int kind, required String content}) async {
     final uuid = const Uuid().v4();
     // The reply target is taken now and the bar cleared, so a second send
@@ -1028,8 +1053,38 @@ class ChatSheetController extends GetxController {
           : _quoteMetaFor(target),
     );
     _canDeleteIds.add(uuid);
+    _unconfirmedSends[uuid] = _UnconfirmedSend(
+      kind: kind,
+      content: content,
+      replyToMessageId: target?.id,
+    );
 
     unawaited(chatController.insertMessage(newMsg));
+    await _post(uuid);
+  }
+
+  /// Sends a "Not sent" bubble again with its ORIGINAL id. If the first try
+  /// did reach the server (only the reply was lost), the SP returns the
+  /// stored message as success and pushes nobody a second time.
+  Future<void> retrySend(core.Message m) async {
+    if (!_unconfirmedSends.containsKey(m.id)) return;
+    final shown = chatController.messages.firstWhereOrNull((x) => x.id == m.id);
+    if (shown == null || shown.status != core.MessageStatus.error) return;
+    // Spinner first, so the tap is answered at once and a second tap finds
+    // the bubble no longer in error (canRetry false).
+    final sending = _withStatus(shown, core.MessageStatus.sending);
+    if (sending != null) await chatController.updateMessage(shown, sending);
+    if (isClosed) return;
+    _canDeleteIds.add(m.id);
+    await _post(m.id);
+  }
+
+  /// One attempt at sending the unconfirmed message [uuid].
+  Future<void> _post(String uuid) async {
+    final pending = _unconfirmedSends[uuid];
+    if (pending == null) return;
+    final kind = pending.kind;
+    final content = pending.content;
 
     final deviceId = box.get(HIVE_DEVICE_ID) as String;
     final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
@@ -1053,7 +1108,8 @@ class ChatSheetController extends GetxController {
       'messageTitle': messageTitle,
       // Only sent when not text, so a text send is exactly as before.
       if (kind != chatKindText) 'messageKind': kind,
-      if (target != null) 'replyToMessageId': target.id,
+      if (pending.replyToMessageId != null)
+        'replyToMessageId': pending.replyToMessageId,
     };
 
     final sendResult = await ServiceCommon.sendHttpPostToHC6Api(body);
@@ -1065,12 +1121,15 @@ class ChatSheetController extends GetxController {
             : 'SP 17 [sendEventMessage] called — success',
       );
     }
+    // Confirmed: the id is done with. Unconfirmed: it stays for Retry.
+    if (!failed) _unconfirmedSends.remove(uuid);
     if (isClosed) return;
 
     final sent = chatController.messages.firstWhereOrNull((m) => m.id == uuid);
     if (sent == null) return;
 
     if (failed) {
+      // The id is KEPT in _unconfirmedSends: Retry sends it again.
       _canDeleteIds.remove(uuid);
       final errored = _withStatus(sent, core.MessageStatus.error);
       if (errored != null) await chatController.updateMessage(sent, errored);
@@ -1114,4 +1173,17 @@ class ChatSheetController extends GetxController {
       }
     }
   }
+}
+
+/// What a send that has not been confirmed needs to be sent again.
+class _UnconfirmedSend {
+  const _UnconfirmedSend({
+    required this.kind,
+    required this.content,
+    required this.replyToMessageId,
+  });
+
+  final int kind;
+  final String content;
+  final String? replyToMessageId;
 }

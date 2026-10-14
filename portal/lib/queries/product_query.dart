@@ -63,11 +63,16 @@ Future<List<ProductModel>> queryKennelProducts(
 
 /// Creates or edits one product. Returns its id, or null on failure.
 ///
+/// [newProductId] (create only) is minted ONCE per Add dialog and sent on
+/// every attempt: a repeat after a lost reply returns the same product
+/// instead of adding a second one (idempotency audit P5).
+///
 /// There is no delete. Retiring something is [isActive] = false, which keeps
 /// the row syncing so a payment made against it still resolves its product.
 Future<String?> addEditProduct({
   required String publicKennelId,
   String? productId,
+  String? newProductId,
   required int productType,
   required String name,
   String? description,
@@ -86,6 +91,8 @@ Future<String?> addEditProduct({
     'accessToken': _kennelToken('hcportal_addEditProduct', publicKennelId),
     'publicKennelId': publicKennelId,
     if (productId != null && productId.isNotEmpty) 'productId': productId,
+    if ((productId == null || productId.isEmpty) && newProductId != null)
+      'newProductId': newProductId,
     'productType': productType,
     'name': name,
     'description': ?description,
@@ -113,7 +120,7 @@ Future<String?> addEditProduct({
         if (id != null) return id.toLowerCase();
       }
     }
-    return productId ?? '';
+    return productId ?? newProductId ?? '';
   }
   return null;
 }

@@ -450,6 +450,10 @@ class _ProductFormState extends State<_ProductForm> {
   late bool _isActive;
   bool _saving = false;
 
+  /// The id a NEW product will have, minted once for this dialog and sent on
+  /// every Save, so a second Save after a lost reply cannot add it twice.
+  final String _newProductId = const Uuid().v4();
+
   static const String _pricing = 'pricing';
   static const String _details = 'details';
 
@@ -571,6 +575,7 @@ class _ProductFormState extends State<_ProductForm> {
   }
 
   Future<void> _submit() async {
+    if (_saving) return;
     if (!(_formKey.currentState?.validate() ?? false)) return;
     setState(() => _saving = true);
 
@@ -582,6 +587,7 @@ class _ProductFormState extends State<_ProductForm> {
 
     final bool ok = await widget.controller.saveProduct(
       productId: widget.existing?.productId,
+      newProductId: widget.existing == null ? _newProductId : null,
       // The tab decides the type, so nothing can be filed under the wrong
       // group. There is no type picker here on purpose.
       productType: widget.tab.productType,

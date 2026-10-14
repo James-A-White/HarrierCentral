@@ -235,6 +235,15 @@ class KennelRequestDetailController extends GetxController {
   Future<bool> save() async {
     if (isBusy.value) return false;
     isBusy.value = true;
+    try {
+      return await _save();
+    } finally {
+      isBusy.value = false;
+    }
+  }
+
+  /// The save itself; the caller owns [isBusy].
+  Future<bool> _save() async {
     final ok = await updateKennelRequest(request.id, <String, String?>{
       'firstName': firstName.text,
       'lastName': lastName.text,
@@ -258,7 +267,6 @@ class KennelRequestDetailController extends GetxController {
       'runsPageUrl': runsPageUrl.text,
       'socialLinksJson': socialLinksToJson(_socialsNow),
     });
-    isBusy.value = false;
     if (ok) {
       isDirty.value = false;
       changed = true;
@@ -267,13 +275,21 @@ class KennelRequestDetailController extends GetxController {
   }
 
   /// Saves any edits, then approves. Returns what was made, or null.
+  /// Busy is checked and set BEFORE the first await (the unsaved-changes
+  /// save included), so a second press while the first is working is
+  /// refused rather than answered "already approved" (idempotency audit,
+  /// approve kennel request).
   Future<ApprovedKennel?> approve() async {
-    if (isDirty.value && !await save()) return null;
+    if (isBusy.value) return null;
     isBusy.value = true;
-    final approved = await approveKennelRequest(request.id);
-    isBusy.value = false;
-    if (approved != null) changed = true;
-    return approved;
+    try {
+      if (isDirty.value && !await _save()) return null;
+      final approved = await approveKennelRequest(request.id);
+      if (approved != null) changed = true;
+      return approved;
+    } finally {
+      isBusy.value = false;
+    }
   }
 
   Future<bool> setStatus(int newStatus) async {

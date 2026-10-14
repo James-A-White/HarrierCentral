@@ -138,6 +138,7 @@ class KennelProductsController extends TabUiController
   /// Creates or edits one product and reloads. Returns true on success.
   Future<bool> saveProduct({
     String? productId,
+    String? newProductId,
     required int productType,
     required String name,
     String? description,
@@ -150,6 +151,7 @@ class KennelProductsController extends TabUiController
     final String? id = await addEditProduct(
       publicKennelId: publicKennelId,
       productId: productId,
+      newProductId: newProductId,
       productType: productType,
       name: name,
       description: description,

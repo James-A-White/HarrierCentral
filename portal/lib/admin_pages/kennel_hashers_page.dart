@@ -870,7 +870,10 @@ class KennelHashersController extends TabUiController
       rows.any((TrinaRow r) => isGeneratedEmail(r.cells['eMail']?.value?.toString()));
 
   /// A unique address for a hasher with none, in the same shape the SP
-  /// makes: hc-<12 hex>@noemail.invalid.
+  /// makes: hc-<12 hex>@noemail.invalid. It is what the grid shows; for
+  /// someone NEW the SP stores one derived from the kennel and the names
+  /// instead, so re-importing the same file cannot add them twice
+  /// (idempotency audit P8) — the save's results carry the address used.
   static String _placeholderEmail() {
     final Random r = Random.secure();
     final String hex = List<String>.generate(12, (_) => r.nextInt(16).toRadixString(16)).join();

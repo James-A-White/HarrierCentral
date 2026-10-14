@@ -264,6 +264,12 @@ class KennelPageFormController extends TabUiController
   /// Whether the "Add New Song" form is currently displayed.
   final RxBool isAddingSong = false.obs;
 
+  /// The id the song being added will have: minted once per add form
+  /// (startAddNewSong) and sent on every Save, so a Save repeated after a
+  /// lost reply returns the same song instead of adding a second
+  /// (idempotency audit P6).
+  String _newSongId = const Uuid().v4();
+
   /// Whether the "Edit Song" form is currently displayed.
   final RxBool isEditingSong = false.obs;
 
@@ -890,6 +896,7 @@ class KennelPageFormController extends TabUiController
 
   /// Enters the "Add New Song" mode, showing the editable form.
   void startAddNewSong() {
+    _newSongId = const Uuid().v4();
     selectedSongId.value = '';
     isAddingSong.value = true;
     isEditingSong.value = false;
@@ -1019,6 +1026,7 @@ class KennelPageFormController extends TabUiController
       'variants': newSongVariantsController.text.trim(),
       'tags': newSongTagsController.text.trim(),
       'bawdyRating': newSongBawdyRating.value,
+      'newSongId': _newSongId,
     };
 
     final addSongResult = await ServiceCommon.sendHttpPostToHC6Api(body);
