@@ -153,6 +153,8 @@ AS
 -- Idempotency: set-state — every column is written to the value sent; a
 --   repeat writes the same values again.
 -- Changes:
+--   - 2026-10-15: refused when it would import from and publish to the
+--     same Google Calendar (a feedback loop, James).
 --   - 2026-10-15: Google Calendar (inbound 2) refused without a Google
 --     Calendar link in @runsPageUrl (E3.F6.S5).
 --   - 2026-10-14: @packOffMinutes (E3.F1.S6) — refused outside 0..600.
@@ -239,6 +241,39 @@ BEGIN TRY
 	BEGIN
 		SELECT 0 AS Success, 'Runs come from Google Calendar, so the address must be your Google Calendar''s link: in Google Calendar open Settings, choose the calendar, and copy "Public URL to this calendar" (it starts https://calendar.google.com/calendar/). The calendar must be public.' AS ErrorMessage;
 		RETURN;
+	END
+
+	-- Validation: no FEEDBACK LOOP (James, 2026-10-15). A kennel that reads its
+	-- runs from a Google Calendar must not also publish its runs to that same
+	-- calendar: every published run would come back as an import. Checked on
+	-- every save, whichever of the settings changed. The import calendar's id
+	-- comes from the link (/calendar/ical/<id>/, or src=<id>); a share link's
+	-- cid= is often base64 and cannot be compared here, so with publishing on
+	-- it is refused and the public URL asked for instead.
+	DECLARE @publishOn SMALLINT = COALESCE(@publishToGoogleCalendar,
+		(SELECT PublishToGoogleCalendar FROM HC.Kennel WHERE PublicKennelId = @publicKennelId));
+	DECLARE @publishTo NVARCHAR(MAX) = LOWER(COALESCE(@publishToGoogleCalendarAddresses,
+		(SELECT PublishToGoogleCalendarAddresses FROM HC.Kennel WHERE PublicKennelId = @publicKennelId)));
+	IF @gcalIntegration = 2 AND @publishOn = 1 AND LEN(ISNULL(@gcalUrl, N'')) > 0
+	BEGIN
+		DECLARE @link NVARCHAR(MAX) = LOWER(REPLACE(@gcalUrl, N'%40', N'@'));
+		DECLARE @importCal NVARCHAR(500) = NULL;
+		IF CHARINDEX(N'/calendar/ical/', @link) > 0
+			SET @importCal = SUBSTRING(@link, CHARINDEX(N'/calendar/ical/', @link) + 15, 500);
+		ELSE IF CHARINDEX(N'src=', @link) > 0
+			SET @importCal = SUBSTRING(@link, CHARINDEX(N'src=', @link) + 4, 500);
+		IF @importCal IS NOT NULL
+			SET @importCal = LEFT(@importCal, PATINDEX(N'%[/&#?]%', @importCal + N'/') - 1);
+		IF @importCal IS NULL OR CHARINDEX(N'@', @importCal) = 0
+		BEGIN
+			SELECT 0 AS Success, 'Runs come from Google Calendar and are also published to Google Calendar. To make sure they are not the same calendar (which would import every published run back again), use the calendar''s "Public URL to this calendar" link rather than a share link.' AS ErrorMessage;
+			RETURN;
+		END
+		IF CHARINDEX(@importCal, ISNULL(@publishTo, N'')) > 0
+		BEGIN
+			SELECT 0 AS Success, 'This kennel reads its runs from the Google Calendar ' + @importCal + ' and also publishes its runs to it. That would import every published run back again. Turn off publishing to that calendar, or read runs from a different one.' AS ErrorMessage;
+			RETURN;
+		END
 	END
 
 	-- Validation: inbound integration (an inbound HC.Integration row)
