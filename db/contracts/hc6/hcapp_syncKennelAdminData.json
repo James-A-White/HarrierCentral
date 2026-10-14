@@ -413,6 +413,12 @@
           "description": "Default run start time of day."
         },
         {
+          "name": "packOffMinutes",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Kennel.PackOffMinutes (E3.F1.S6) raw column, minutes after the gather; NULL = at the gather."
+        },
+        {
           "name": "runCountStartDate",
           "type": "DATETIMEOFFSET(7)",
           "nullable": true,
@@ -1283,6 +1289,12 @@
           "type": "DATETIMEOFFSET(7)",
           "nullable": true,
           "description": "COALESCE(Event.EventStartDatetimeGmt, Event.EventStartDatetime). Raw DATETIMEOFFSET, not cast to DATETIME2. Duplicate of hemEventStartDatetimeGmt with different derivation."
+        },
+        {
+          "name": "packOffMinutes",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Event.PackOffMinutes (E3.F1.S6) raw column, minutes after the gather; NULL = the kennel's default."
         },
         {
           "name": "hemCanEditRunAttendence",
