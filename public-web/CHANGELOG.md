@@ -1,5 +1,11 @@
 # public-web Changelog
 
+## 0.21.74 (2026-10-14 redeploy — social links)
+
+- A kennel's social and chat links appear as icons in the footer and the menu
+- A signed-in member's kennel page also shows the members-only chat groups
+- Admin sign-in with no kennel in the link goes home instead of to a broken page
+
 ## 0.21.74 (2026-10-14 redeploy — safe repeats)
 
 - Chat: a failed text or location send keeps its id, so trying again cannot post it twice

@@ -5,6 +5,8 @@ feedback across every client. It carries everything in 3.1.9+1472 to +1474:
 
 ### New Features
 
+- **Kennel social links**: the kennel page shows a row of the club's social and
+  chat links; members also see the members-only chat groups.
 - **Another run at this time?** Saving a run whose start matches another of the
   kennel's runs asks first and names it (weekend events are a "Save anyway" away).
 - **Runs on iOS 18 again**: the minimum is iOS 18.0 (was 26).

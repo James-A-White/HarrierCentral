@@ -1,3 +1,7 @@
+## 2.0.87+772 (2026-10-14)
+### New Features
+- **Social Links**: a new kennel editor tab listing every place the club talks — Facebook, Instagram, WhatsApp / Signal / WeChat groups, Strava and more. Each link is shown to everyone or to members only; WeChat takes an ID and a QR code; drag to reorder.
+
 ## 2.0.87+771 (2026-10-14)
 ### Improvements
 - **Chat**: a message that did not send has Retry, which resends the same message (no second push).
