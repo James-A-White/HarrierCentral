@@ -8,8 +8,10 @@
 --     publicWeb_getLandingPageData  — @includeMembers = 0 (a public page)
 --     hcapp_getKennelSocialLinks    — the app and the signed-in web; the SP
 --                                     decides @includeMembers per caller
---   An entry with no audience is public (HC6.SocialLinksProblem accepts
---   that, and the clients default it the same way).
+--   An entry with no audience takes its platform's default, as the portal's
+--   SocialLink does: chat groups (whatsapp, signal, telegram, wechat, line,
+--   kakaotalk, zalo, viber, discord) are members-only, the rest public. The
+--   safe side: a missing flag never exposes an invite link.
 -- Parameters: @json           - HC.Kennel.SocialLinksJson (NULL / '' = none)
 --             @includeMembers - 1 = also the members-only entries
 -- Returns: NVARCHAR(MAX) — a JSON array in the stored order, or NULL when
@@ -29,7 +31,11 @@ BEGIN
                          WITHIN GROUP (ORDER BY CAST(o.[key] AS INT)) + N']'
     FROM OPENJSON(@json) o
     WHERE o.type = 5   -- objects only
-      AND ISNULL(JSON_VALUE(o.value, '$.audience'), N'public') <> N'members';
+      AND COALESCE(JSON_VALUE(o.value, '$.audience'),
+                   CASE WHEN JSON_VALUE(o.value, '$.platform') IN
+                             (N'whatsapp', N'signal', N'telegram', N'wechat', N'line',
+                              N'kakaotalk', N'zalo', N'viber', N'discord')
+                        THEN N'members' ELSE N'public' END) <> N'members';
     RETURN @out;   -- NULL when no entry survives (STRING_AGG over no rows)
 END
 GO
