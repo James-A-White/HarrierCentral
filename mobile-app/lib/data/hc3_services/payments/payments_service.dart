@@ -225,9 +225,13 @@ class PaymentsService {
     EnumProductType productType = productTypeEvent,
     String? notes,
     bool alsoPayRunFee = false,
+    // A caller that may repeat the SAME sale (a sheet left open after an
+    // unconfirmed attempt) passes its own id, minted once per intent, so the
+    // repeat is recognised server-side (E14.G2.R5). Default: a fresh id.
+    String? clientPaymentId,
   }) {
     return PendingPayment(
-      clientPaymentId: const Uuid().v4(),
+      clientPaymentId: clientPaymentId ?? const Uuid().v4(),
       createdAtMs: DateTime.now().millisecondsSinceEpoch,
       eventId: eventId,
       hasherId: (hasherId ?? '').isEmpty ? GUID_EMPTY : hasherId,

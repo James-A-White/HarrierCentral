@@ -58,6 +58,11 @@ class HaberdasherySaleController extends GetxController {
   final Future<void> Function()? onSold;
 
   final RxBool isSaving = false.obs;
+
+  /// This sale's payment id, minted once per sheet (E14.G2.R5, 2026-10-14):
+  /// pressing Sell again after an unconfirmed attempt resends the SAME sale,
+  /// which hcapp_processPayment recognises, instead of making a second one.
+  final String _saleId = const Uuid().v4();
   final RxInt paymentMethod = RxInt(paymentCash.value);
   final RxnString currencySymbol = RxnString();
   final RxInt digitsAfterDecimal = 2.obs;
@@ -129,6 +134,7 @@ class HaberdasherySaleController extends GetxController {
               productType: productTypeHaberdashery,
               notes: description,
               displayLabel: 'Haberdashery — $displayName ($description)',
+              clientPaymentId: _saleId,
             ),
           );
 
@@ -143,6 +149,13 @@ class HaberdasherySaleController extends GetxController {
       }
       final List<dynamic> results = outcome.results;
       if (results.isEmpty) {
+        // Sent, but no confirmation came back. Say so — pressing Sell again
+        // resends this same sale (same id), so it cannot be charged twice.
+        showHcSnackbar(
+          'The sale was not confirmed. Tap Sell again — it will not be '
+          'charged twice.',
+          isError: true,
+        );
         isSaving.value = false;
         return;
       }
