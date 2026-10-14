@@ -1,3 +1,28 @@
+## 3.1.10+1475 (2026-10-14)
+
+Version 3.1.10 marks the 2026-10-14 work (James): safe repeats and immediate
+feedback across every client. It carries everything in 3.1.9+1472 to +1474:
+
+### New Features
+
+- **Another run at this time?** Saving a run whose start matches another of the
+  kennel's runs asks first and names it (weekend events are a "Save anyway" away).
+- **Runs on iOS 18 again**: the minimum is iOS 18.0 (was 26).
+
+### Improvements
+
+- **Every action answers at once and ignores a second press**: payments,
+  check-in, receipts, live run (start, end, help), RSVPs, emails, shares and more.
+- **No duplicates after a lost reply or a retry**: new runs, receipts, down-down
+  charges, membership extensions, sales, help messages and song shares are each
+  written once, however often they are sent.
+- **Run announcement carries the whole description.**
+
+### Fixes
+
+- **Cancel on Payment options no longer crashes a payment.**
+- **Clearer crash reports**: a repeating error is counted, not logged hundreds of times.
+
 ## 3.1.9+1474 (2026-10-14)
 
 ### Improvements
