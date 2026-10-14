@@ -1,3 +1,23 @@
+## 3.1.9+1473 (2026-10-14)
+
+### Improvements
+
+- **Saving a new run is safe to repeat**: if a save's reply is lost on a weak
+  connection, saving again edits the same run instead of creating a second copy.
+- **Another run at this time?** Saving a new run, or changing a run's start,
+  asks first when the kennel already has a run then, and names it. Weekend
+  events with several runs at once are a "Save anyway" away.
+- **Runs on iOS 18 again**: the minimum is now iOS 18.0 (was 26), so iPhones
+  that could not update past 2.1.2 can install it.
+- **Run announcement carries the whole description** (it was cut at 220 characters).
+
+### Fixes
+
+- **Cancel on Payment options no longer crashes a payment** (check-in and the
+  payment report).
+- **Clearer crash reports**: a repeating error is counted rather than logged
+  hundreds of times, and screens record what closed them.
+
 ## 3.1.9+1472 (2026-10-13)
 
 ### Fixes

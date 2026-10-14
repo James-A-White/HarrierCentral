@@ -1,3 +1,7 @@
+## 2.0.87+770 (2026-10-14)
+### Improvements
+- **Save answers at once**: Save and "Save and send" show a spinner the moment they are pressed, and a second press is ignored until the first finishes. Every tabbed editor, not just runs.
+
 ## 2.0.87+769 (2026-10-14)
 ### Improvements
 - **Saving a new run is safe to repeat.** If the reply to a Save was lost on a weak connection, saving again used to create a second copy of the run. The editor now gives a new run its id before the first save and sends the same one every time, so a repeat edits the run instead (needs SP build 63).
