@@ -150,6 +150,17 @@ These are firm decisions that must not be revisited or worked around:
   deploys it, and `tools/contract_check.py` does not scan it. Removing its
   code, endpoint or tables is a separate decision for James, not a clean-up
   to do in passing.
+  **Ignore it everywhere it surfaces, without mentioning it (James,
+  2026-10-14):** the `TsaApi` / `tsaapi` endpoint that every
+  `func azure functionapp publish` lists (it is compiled into the API
+  project — leave it, never filter, test or call it), the
+  `harriercentraltsaeats` web app and any other TSA Azure resource, TSA rows
+  in logs, `HC.ErrorLog`, sweeps and triage, and TSA objects in schema
+  dumps or `sys.*` listings. Do not print, quote, count or report any of
+  it; leave it out of command output you show James (filter it before
+  printing, e.g. `grep -vi tsa`), and never include it in an inventory,
+  a cost review or a "what is deployed" answer. TSA's own deploy
+  (`reference_tsaeats_deploy`) is never run.
 
 - **Never convert a `StatelessWidget` to `StatefulWidget` without consulting
   James first.** The preferred direction is the opposite — migrate
