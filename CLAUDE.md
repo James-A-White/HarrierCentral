@@ -298,12 +298,17 @@ splitting the list. Use `STRING_SPLIT(@param, '|')` on the SQL side and
 
 **Every user gesture is acknowledged at once (every client):**
 
-Every gesture the system acts on — a tap, click, double-tap, long-press,
-swipe, drag, pull-to-refresh, toggle, checkbox, slider, menu or picker
-choice, key press or form submit, in the app, the portal or the public web —
-is answered **in the same frame**: a spinner on the button, the control
-disabled or recoloured, a row spinner, a progress bar, a "Sending…" toast,
-an optimistic change (James, 2026-10-14). Never a pause in which nothing
+Every gesture that starts work — a tap, click, double-tap, long-press, a
+swipe-to-act, a drag that drops something, pull-to-refresh, toggle,
+checkbox, slider, menu or picker choice, key press or form submit, in the
+app, the portal or the public web — is answered **in the same frame**: a
+spinner on the button, the control disabled or recoloured, a row spinner, a
+progress bar, a "Sending…" toast, an optimistic change (James, 2026-10-14).
+**Gestures whose own movement is the feedback need nothing more** —
+scrolling, panning or zooming a map, swiping between tabs or pages, dragging
+a thing that moves under the finger. The rule is about gestures that ask the
+system to DO something: a write, a send, a fetch, a check, a navigation that
+waits. Never a pause in which nothing
 moves while a request, a check, a GPS fix, an upload or a dialog is
 prepared. A gesture that shows nothing looks missed, and repeating it is how
 one run was saved twice, then four times, and how a swipe paid twice.
