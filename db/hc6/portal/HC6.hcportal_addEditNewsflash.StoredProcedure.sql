@@ -33,6 +33,7 @@ AS
 --                              a lost reply: success, nothing inserted.
 --                              Idempotent writes pattern: creates a row.
 -- Returns: Standard success envelope
+-- Idempotency: client-id — @newNewsflashId minted once per dialog; already there (UPDLOCK, HOLDLOCK) = success, nothing inserted. Edits are set-state.
 -- Author: Harrier Central
 -- Created: 2026-04-10
 -- HC5 Source: n/a — new feature

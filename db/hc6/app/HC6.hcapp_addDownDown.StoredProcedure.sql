@@ -41,6 +41,7 @@ AS
 --   On success (rowset 0): { downDownId }
 --   On error  (rowset 0): { success=0, errorCode, errorType }
 --   On error  (rowset 1): standard HC6 error detail
+-- Idempotency: client-id — @downDownId minted once per Add page; already on this run (UPDLOCK, HOLDLOCK) = returned, nothing inserted.
 -- Author: Harrier Central
 -- Created: 2026-06-08
 -- HC5 Source: None — new feature

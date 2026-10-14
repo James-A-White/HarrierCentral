@@ -20,6 +20,7 @@ AS
 --   Write SP success envelope (rowset 0): success, errorCode, errorType
 --   On success: no additional rowset
 --   On error (rowset 1): standard HC6 error detail
+-- Idempotency: locked-upsert — one row per hasher and promotion, updated under UPDLOCK, HOLDLOCK, inserted only when absent.
 -- Author: Harrier Central
 -- Created: 2026-05-10
 -- HC5 Source: HC5.hcapp_snoozePromotion

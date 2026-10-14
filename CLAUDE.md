@@ -356,8 +356,28 @@ Rules that go with it:
   the client must not show "already exists" for its own lost reply.
 - A write that cannot be made idempotent opts out of the transport's
   automatic retries (`noRetries: true`) and says why in a comment.
-- New and changed write SPs say in their header and contract which row of
-  the table above they follow.
+- **A GET never acts.** A link in an email, a QR code or a share is fetched
+  by mail security scanners (Safe Links, Mimecast), link previews and
+  prefetchers before — or instead of — the person. A link may show a page;
+  only a POST (a button on that page, RFC 8058 one-click) may write, send or
+  consume a token. The run email's unsubscribe link silently unsubscribed
+  members until 2026-10-14 (W1).
+- **Every write SP declares its pattern** on one header line,
+  `-- Idempotency: <pattern> — <why>`, with `<pattern>` one of `client-id`,
+  `set-state`, `compare-and-set`, `send-id`, `locked-upsert`, `log-only`,
+  `read-only`, `exempt` — and its contract says the same. Enforced:
+  ```bash
+  python3 tools/idempotency_scan.py     # MUST print nothing
+  ```
+  It flags a write SP with no declaration and a check-then-INSERT whose
+  `EXISTS` takes no `UPDLOCK` (silence one deliberately with
+  `-- idem-ok: <why>`). The commit hook runs it when `db/hc6` changes and
+  `tools/deploy_hc6.sh` refuses to deploy while it prints. Procedures written
+  before the rule are grandfathered in `tools/idempotency_baseline.txt`,
+  which only shrinks: touch one, declare it, fix its lock, and
+  `--update-baseline`. Never add to it by hand.
+- The audits behind this (app, portal, public web — what each client
+  retries, and every fix) are `docs/idempotency-audit-2026-10-14.md`.
 
 **Generated email addresses are shown in dark red and never sent to (every client):**
 

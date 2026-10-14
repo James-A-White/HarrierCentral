@@ -38,6 +38,7 @@ AS
 --          unchanged | already in Harrier Central | unreadable
 --   @dryRun = 1 (the portal's Test button, 2026-10-04) does everything
 --   inside the transaction, reports, and rolls it back.
+-- Idempotency: locked-upsert — keyed on (kennel, EventFacebookId); one import per kennel at a time (sp_getapplock), UX_Event_RunsPageImport as the backstop.
 -- Author: Harrier Central
 -- Created: 2026-10-04
 -- =====================================================================

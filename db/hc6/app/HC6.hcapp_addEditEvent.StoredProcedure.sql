@@ -85,6 +85,7 @@ AS
 --   Write SP success envelope (rowset 0): success, errorCode, errorType
 --   On success (rowset 1+): syncUserData rowsets
 --   On error (rowset 1): standard HC6 error detail
+-- Idempotency: client-id — the app mints a new run's @eventId once per editor; an existing id in the kennel is an edit (UPDLOCK, HOLDLOCK), never a second run (E3.F1.S7).
 -- Author: Harrier Central
 -- Created: 2026-05-10
 -- HC5 Source: HC5.hcapp_addEditEvent

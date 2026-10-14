@@ -37,12 +37,30 @@ except Exception:
 [ -n "$cwd" ] && [ -d "$cwd" ] || cwd="${CLAUDE_PROJECT_DIR:-$PWD}"
 root="$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null)" || exit 0
 
+report=""
+
+# Stored procedures (CLAUDE.md "Idempotent writes" and "TRY/CATCH is
+# mandatory", 2026-10-14): when db/hc6 SQL is part of the commit, every write
+# procedure must declare how it is safe to arrive twice, no check-then-insert
+# may run unlocked, and every CATCH must leave an HC.ErrorLog row.
+sql_changed="$(git -C "$root" status --porcelain -- db/hc6 2>/dev/null | grep -E '\.sql"?$' || true)"
+if [ -n "$sql_changed" ]; then
+    for scan in idempotency_scan.py catch_log_scan.py; do
+        [ -f "$root/tools/$scan" ] || continue
+        out="$(python3 "$root/tools/$scan" 2>&1)"
+        rc=$?
+        if [ -n "$out" ] || [ "$rc" -ne 0 ]; then
+            report+="── tools/$scan (exit $rc) ──"$'\n'"${out:-<no output>}"$'\n'
+        fi
+    done
+fi
+
 # Only when mobile Dart files are part of what is about to be committed.
 changed="$(git -C "$root" status --porcelain -- mobile-app/lib 2>/dev/null | grep -E '\.dart"?$' || true)"
-[ -n "$changed" ] || exit 0
+[ -n "$changed" ] || { [ -n "$report" ] || exit 0; }
 
-report=""
 for scan in button_text_scan.py id_case_scan.py; do
+    [ -n "$changed" ] || break
     [ -f "$root/tools/$scan" ] || continue
     out="$(python3 "$root/tools/$scan" 2>&1)"
     rc=$?
@@ -54,10 +72,13 @@ done
 
 {
     echo "Commit blocked: these scans must print nothing before a commit that"
-    echo "touches mobile-app Dart code (.claude/rules/flutter.md)."
+    echo "touches mobile-app Dart code (.claude/rules/flutter.md) or HC6 stored"
+    echo "procedures (CLAUDE.md \"Idempotent writes\", \"TRY/CATCH is mandatory\")."
     echo
     printf '%s' "$report"
     echo
+    echo "A write SP needs a '-- Idempotency: <pattern> — <why>' header line and"
+    echo "a locked check-then-insert (see tools/idempotency_scan.py)."
     echo "Fix each finding, or run 'python3 tools/button_text_scan.py --fix' for"
     echo "button labels, then commit again. A deliberate id upper-case carries"
     echo "'// id-case-ok: <why>'."

@@ -28,6 +28,7 @@ AS
 --   @instruction + @saveInstruction = 1: store the drafting instruction on
 --   HC.Kennel.RunEmailInstruction as the kennel's default (blank clears it).
 -- Returns: { Success, ErrorMessage } envelope.
+-- Idempotency: send-id — @sendId recorded with the send; a repeat (the run's HC.Event row locked) returns alreadySent = 1 and the API emails nobody.
 -- Author: Harrier Central
 -- Created: 2026-10-09
 -- =====================================================================

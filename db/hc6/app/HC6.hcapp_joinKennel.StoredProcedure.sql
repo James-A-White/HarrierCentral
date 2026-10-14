@@ -65,6 +65,7 @@ AS
 --     added and membershipAlreadyChanged = 1.
 --   On success (rowset 2+): sync SP rowsets
 --   On error (rowset 1): standard HC6 error detail
+-- Idempotency: compare-and-set — months are added only while the expiry still equals @expectedExpiry; follow/notification fields are set-state; the membership row is read WITH (UPDLOCK, HOLDLOCK).
 -- Author: Harrier Central
 -- Created: 2026-05-10
 -- HC5 Source: HC5.hcapp_joinKennel

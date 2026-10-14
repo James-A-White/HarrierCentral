@@ -28,6 +28,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_yourProcName]
 -- Created: YYYY-MM-DD
 -- HC5 Source: HC5.hcportal_yourProcName
 -- Breaking Changes: List any vs HC5
+-- Idempotency: client-id | set-state | compare-and-set | send-id | locked-upsert | log-only | read-only | exempt — why
 -- =====================================================================
 
 -- 3. SET NOCOUNT and XACT_ABORT
@@ -175,6 +176,7 @@ NULL`), run once, then archived. Never an ALTER with the trigger live.
 - **`INSERT HC.ErrorLog` before a `ROLLBACK TRANSACTION` in the same block** — the
   rollback erases the log row it just wrote; the client gets an `errorId` for a row
   that does not exist (see "Never roll back an error log" above). Flag on sight.
+- **A write SP with no `-- Idempotency:` header line**, or a create that mints `NEWID()` for a row the client asked for, or a bare delta (`+ @n`) a retry can double — see CLAUDE.md "Idempotent writes"; `python3 tools/idempotency_scan.py` MUST print nothing.
 - Check-then-`INSERT` on a UNIQUE key without `WITH (UPDLOCK, HOLDLOCK)` on the existence
   check (concurrent duplicate-key 500), or a non-idempotent insert on a client-supplied id
 

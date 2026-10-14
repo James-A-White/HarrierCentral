@@ -70,6 +70,7 @@ AS
 --   (the SP mints both ids).
 -- Returns: On error: HC6 standard envelope (Success, ErrorMessage).
 --   On success: result message, resultCode, publicEventId.
+-- Idempotency: client-id — the portal mints @newPublicEventId once per editor; found in the kennel (UPDLOCK, HOLDLOCK) = an edit, never a second run (E3.F1.S7).
 -- Author: Harrier Central
 -- Created: 2026-03-15
 -- HC5 Source: HC5.hcportal_addEditEvent2

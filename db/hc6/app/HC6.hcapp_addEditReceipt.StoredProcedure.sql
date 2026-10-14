@@ -43,6 +43,7 @@ AS
 --   Write SP success envelope (rowset 0): success, errorCode, errorType
 --   On success (rowset 1+): syncEventAdminData rowsets
 --   On error (rowset 1): standard HC6 error detail
+-- Idempotency: client-id — the app mints @receiptId once per page; an existing id on this run is an edit (UPDLOCK, HOLDLOCK), another run's is refused.
 -- Author: Harrier Central
 -- Created: 2026-05-10
 -- HC5 Source: HC5.hcapp_addEditReceipt

@@ -24,6 +24,7 @@ AS
 --   rowset 1 — adHocData { adHocDataId, songTitle, selectedByName }
 --   rowset 2 — FCM recipients [{ FcmToken, UserId }] for Azure Function fan-out
 --   On error (rowsets 0+1): standard HC6 error detail
+-- Idempotency: send-id — the same person, run and song within 60 s is a repeat (UPDLOCK, HOLDLOCK): no row, no push.
 -- Author: Harrier Central
 -- Created: 2026-06-02
 -- Changed: 2026-09-25 — recipients (and their count) skip deleted hashers

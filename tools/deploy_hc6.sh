@@ -185,6 +185,21 @@ printf   "  Build %s  ·  commit %s  ·  %s\n" "$DEPLOY_BUILD" "$DEPLOY_COMMIT" 
 echo "══════════════════════════════════════════════════════════════"
 echo ""
 
+# Idempotency gate (CLAUDE.md "Idempotent writes", James 2026-10-14): every
+# write procedure declares how it is safe to arrive twice, and no check-then-
+# insert runs without a lock. A new finding stops the deploy BEFORE anything
+# reaches production; grandfathered ones live in tools/idempotency_baseline.txt.
+if command -v python3 >/dev/null 2>&1; then
+    if ! python3 "$REPO_ROOT/tools/idempotency_scan.py" >/tmp/hc_idem.$$ 2>&1; then
+        echo "  ✗ Idempotency scan found write procedures that are not safe to repeat:"
+        sed 's/^/      /' /tmp/hc_idem.$$ | head -30
+        echo "    Fix them (CLAUDE.md \"Idempotent writes\"), then deploy again. Nothing was deployed."
+        rm -f /tmp/hc_idem.$$
+        exit 1
+    fi
+    rm -f /tmp/hc_idem.$$
+fi
+
 echo "── Step 1: Schema ───────────────────────────────────────────"
 run_query "HC6 schema" \
     "IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = 'HC6') EXEC('CREATE SCHEMA HC6');"
