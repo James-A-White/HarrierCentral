@@ -1,0 +1,104 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getRunsAtStart",
+  "version": "1.0.0",
+  "description": "The portal's half of E3.F1.S8 (run editing parity): the kennel's other runs at the same local date and time as a run about to be saved, so the editor confirms 'Another run at this time?' on a manual Save. Rule: HC6.RunsAtLocalStart. Missing input or a caller without createEditRuns gets an empty list, never an error.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal device."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Standard portal token."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "The run's kennel, resolved to the internal id at the door."
+    },
+    {
+      "name": "publicEventId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Event.PublicEventId",
+      "description": "The run being saved (the public id the portal minted for a new run); never matches itself."
+    },
+    {
+      "name": "eventStartDatetime",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": "Event.EventStartDatetime",
+      "description": "The start exactly as hcportal_addEditEvent will receive it; local wall clock compared, to the minute."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "Success = 0 with ErrorMessage on auth failure only; otherwise Success = 1.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1, or 0 on auth failure"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(255)",
+          "nullable": true,
+          "description": "NULL unless auth failed"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "RunsAtStart",
+      "description": "One row per other run of the kennel at that local start; empty = no clash.",
+      "columns": [
+        {
+          "name": "publicEventId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "HC.Event.PublicEventId, lower-case."
+        },
+        {
+          "name": "eventName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "The run's name."
+        },
+        {
+          "name": "eventNumber",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "HC.Event.EventNumber."
+        },
+        {
+          "name": "isVisible",
+          "type": "BIT",
+          "nullable": false,
+          "description": "Hidden runs are included."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
