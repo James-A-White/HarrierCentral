@@ -62,14 +62,10 @@ NO-DECLARATION hcapp_updateDownDown
 NO-DECLARATION hcapp_updatePhotoCaption
 NO-DECLARATION hcapp_updatePhotoStatus
 NO-DECLARATION hcapp_updateRunPhotoEditedBlob
-NO-DECLARATION hcportal_addEditProduct
-NO-DECLARATION hcportal_addSong
 NO-DECLARATION hcportal_approveKennelRequest
 NO-DECLARATION hcportal_batchUpdatePhotoStatus
-NO-DECLARATION hcportal_bulkAddHashers
 NO-DECLARATION hcportal_clearEmailBounce
 NO-DECLARATION hcportal_confirmAuthentication
-NO-DECLARATION hcportal_createKennelRequestFromDraft
 NO-DECLARATION hcportal_deleteChatMessage
 NO-DECLARATION hcportal_deleteEvent
 NO-DECLARATION hcportal_deleteNewsflash
@@ -99,7 +95,6 @@ NO-DECLARATION hcportal_respondToNewsflash
 NO-DECLARATION hcportal_savePermissionMatrix
 NO-DECLARATION hcportal_setHasherNotesSuppression
 NO-DECLARATION hcportal_setPlatformAdmin
-NO-DECLARATION hcportal_toggleKennelSong
 NO-DECLARATION hcportal_updateFcmToken
 NO-DECLARATION hcportal_updateKennelHasher
 NO-DECLARATION hcportal_updateKennelRequest
@@ -131,7 +126,6 @@ NO-DECLARATION nonApi_updateRunCountsForAllUsers
 NO-DECLARATION nonApi_updateRunCountsForEventUsers
 NO-DECLARATION nonApi_updateRunNumbers
 NO-DECLARATION nonApi_updateTrackImport
-NO-DECLARATION publicWeb_confirmAuthentication
 NO-DECLARATION publicWeb_confirmKennelRequest
 NO-DECLARATION publicWeb_createMember
 NO-DECLARATION publicWeb_deleteChatMessage
@@ -173,6 +167,5 @@ UNLOCKED-CHECK hcportal_approveKennelRequest (HC.HasherKennelMap)
 UNLOCKED-CHECK hcportal_bulkAddHashers (HC.Hasher)
 UNLOCKED-CHECK hcportal_getKennelWebsite (HC.KennelWebsite)
 UNLOCKED-CHECK hcportal_setPlatformAdmin (HC.PlatformAdmin)
-UNLOCKED-CHECK hcportal_toggleKennelSong (HC.KennelSongMap)
 UNLOCKED-CHECK nonApi_ensureTrackAttendance (HC.HasherEventMap)
 UNLOCKED-CHECK publicWeb_savePageLayout (HC.KennelWebsite)

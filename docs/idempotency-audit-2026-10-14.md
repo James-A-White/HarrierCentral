@@ -130,6 +130,8 @@ edit-another-run's-receipt hole.
 
 # Part 2 — Portal (audited 2026-10-14)
 
+**All nine fixed on dev 2026-10-14** (P1 lock + UX_Event_RunsPageImport live; P2 `49df43c9`/`17955288`; P3 `f6f0c285`/`82ec87e6`; P4 `59bdec9f`; P5 `bb2503f1`; P6 `bbe2bd5f`; P7 `17ba36a2` — the key was a GUID, no column; P8 `e3a8673c`; P9 `c8da87f3`). Not deployed.
+
 **Transport:** the portal does **not** retry. `ServiceCommon.sendHttpPostToHC6Api`
 (`portal/lib/services/service_common.dart:315-364`) is one `http.post` with a
 30 s timeout; the direct endpoints (invite emails 180 s, kennel-from-website
@@ -184,6 +186,8 @@ duplicate KennelSongMap row shows twice anywhere (P9).
 ---
 
 # Part 3 — Public web (audited 2026-10-14)
+
+**All seven fixed on dev 2026-10-14** (W1 `ff526678`; W2 `a2b85322`; W3/W4/W6 `2b2f92e4` + W4 `30f6dd4f`; W5 `0a0a20a3`; W7 `939aaf63`, which also stopped a QR poll handing another hasher's device secret over; the signup message `2b2f92e4`). Not deployed.
 
 **Transport:** nothing retries a write by itself. `callAdminApi` / `callAppApi`
 (`public-web/lib/member-api.ts`) are single `fetch` calls; there are no Server
