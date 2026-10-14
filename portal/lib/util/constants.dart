@@ -49,7 +49,13 @@ const String BASE_KENNEL_LOGOS_URL =
 // TODO: move to a dedicated kennel-website/ container when one is provisioned.
 const String BASE_KENNEL_WEBSITE_IMAGES_URL =
     'https://harriercentral.blob.core.windows.net/harrier/';
-const String BASE_API_URL = 'https://hcwebapi.azurewebsites.net';
+// The kennels' data APIs (PublicApi: getEvents, getEvent, getLeaderboard),
+// authorised by the kennel's ExtApiKey. Until 2026-10-14 this was
+// hcwebapi.azurewebsites.net, a site deleted in the August 2026 cost
+// clean-up; that name now only redirects here, for links already pasted
+// into kennel websites.
+const String BASE_API_URL =
+    'https://harriercentralpublicapi.azurewebsites.net/api';
 
 const String BASE_AF_API_URL =
     'https://harriercentralpublicapi.azurewebsites.net/api/PortalApi/';

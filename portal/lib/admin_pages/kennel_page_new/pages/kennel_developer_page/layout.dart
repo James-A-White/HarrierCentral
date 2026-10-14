@@ -202,7 +202,9 @@ class KennelDeveloperTabContent extends StatelessWidget {
     final nextRunApiUrl =
         '$baseUrl/PublicApi?PublicKennelId=${data.kennelPublicId}&ApiKey=${data.extApiKey}&queryType=getEvents&numberOfRecords=1&pastOrFuture=future&sortOrder=ASC&fullDetails=1&weeksToDisplay=104';
     final leaderboardApiUrl =
-        '$baseUrl/PublicApi?PublicKennelId=${data.kennelPublicId}&ApiKey=${data.extApiKey}&queryType=getRunCounts&numberOfRecords=10&pastOrFuture=past&sortOrder=ASC&fullDetails=1&weeksToDisplay=104';
+        '$baseUrl/PublicApi?PublicKennelId=${data.kennelPublicId}&ApiKey=${data.extApiKey}&queryType=getLeaderboard&numberOfRecords=10';
+    // getLeaderboard, as the old kennel form had it: there is no
+    // hcpublicapi_getRunCounts, so that link always answered 500.
 
     return _DeveloperCard(
       title: 'Data APIs',
