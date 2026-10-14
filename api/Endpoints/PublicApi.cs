@@ -34,7 +34,7 @@ namespace HcWebApi.Endpoints
             if (string.IsNullOrEmpty(req.Query["publicKennelId"]) || string.IsNullOrEmpty(req.Query["apiKey"]))
             {
                 log.LogInformation("Missing required parameters: publicKennelId or apiKey.");
-                return new BadRequestObjectResult("Missing required parameters: publicKennelId or accessToken.");
+                return new BadRequestObjectResult("Missing required parameters: publicKennelId or apiKey.");
             }
             string publicKennelId = req.Query["publicKennelId"]!;
             string apiKey = req.Query["apiKey"]!;
