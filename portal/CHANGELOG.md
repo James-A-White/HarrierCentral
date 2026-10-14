@@ -1,3 +1,7 @@
+## 2.0.87+774 (2026-10-14)
+### New Features
+- **Pack-off time**: the kennel editor's Other tab sets when the pack leaves after the gather; the run editor's **Pack off** overrides it for one run (kennel default, or a time). The run list and run details show "Pack off" when it differs from the start.
+
 ## 2.0.87+773 (2026-10-14)
 ### Improvements
 - **Social Links**: each row shows the platform's logo in its brand colour in a square on the left — a placeholder until a platform is chosen; new rows start with no platform.

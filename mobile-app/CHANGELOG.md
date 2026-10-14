@@ -1,3 +1,19 @@
+## 3.1.10+1476 (2026-10-14)
+
+### New Features
+
+- **Pack-off time**: a run can say when the pack actually leaves, not just when
+  it gathers ("Gather 12:00 · Pack off 12:30"). Kennels set a default; the run
+  editor's new **Pack off** choice overrides it for one run. Shown on run cards
+  and the run page. PackTrack's auto start now counts from the pack-off.
+- **Links QR codes**: "Show <kennel> Links" has a QR code for each of the
+  kennel's social and chat links.
+
+### Improvements
+
+- **Run editor**: Save shows it is working the moment it is tapped, before the
+  "another run at this time?" check, and ignores a second press.
+
 ## 3.1.10+1475 (2026-10-14)
 
 Version 3.1.10 marks the 2026-10-14 work (James): safe repeats and immediate
