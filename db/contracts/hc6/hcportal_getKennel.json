@@ -172,6 +172,12 @@
           "description": "Every social and chat link (E12.F4.S4), members-only entries included — the editor's list. JSON array or NULL."
         },
         {
+          "name": "packOffMinutes",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "The kennel's default pack-off, minutes after the gather (E3.F1.S6); NULL = at the gather."
+        },
+        {
           "name": "kennelCoverPhoto",
           "type": "NVARCHAR(500)",
           "nullable": true,

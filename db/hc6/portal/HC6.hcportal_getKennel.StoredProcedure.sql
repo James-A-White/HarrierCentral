@@ -35,6 +35,7 @@ AS
 -- Idempotency: read-only — reads the kennel; the nonApi_portalKennelAccess
 --   EXEC is a permission check that writes nothing.
 -- Changes:
+--   - 2026-10-14: packOffMinutes (E3.F1.S6).
 --   - 2026-10-14: socialLinksJson (E12.F4.S4), every entry — the editor
 --     shows members-only links too.
 --   - 2026-09-26: returns cardPaymentProvider, cardPaymentMerchantCode
@@ -125,6 +126,7 @@ BEGIN TRY
 		, k.CardPaymentProvider as cardPaymentProvider
 		, k.CardPaymentMerchantCode as cardPaymentMerchantCode
 		, k.SocialLinksJson as socialLinksJson
+		, k.PackOffMinutes as packOffMinutes
 		, k.KennelCoverPhoto as kennelCoverPhoto
 		, c.CityName as cityName
 		, r.RegionName as regionName
