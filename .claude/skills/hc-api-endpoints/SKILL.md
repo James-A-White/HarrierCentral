@@ -1,3 +1,8 @@
+---
+name: hc-api-endpoints
+description: "How the Azure Functions API shim routes generically on queryType to HC6 stored procedures, and when an API change is really needed. Use before adding a stored procedure, adding a service method, or touching any .cs file under api/. A new HC6 SP almost never needs an API change."
+---
+
 # HC API Endpoints
 
 > **Load this skill before working on any code that calls the API shim from

@@ -1,3 +1,8 @@
+---
+name: tabbed-ui
+description: "The Flutter portal's tabbed UI framework: TabUiController, tab definitions, field widgets and the file layout for a new tabbed page. Use when creating or modifying a tabbed UI in the portal."
+---
+
 # Tabbed UI Framework — Context for New Implementations
 
 Load this skill at the start of any session that involves creating or modifying

@@ -1,3 +1,8 @@
+---
+name: hc-chat
+description: "Event chat reference: notification preference modes, the push dispatch rowsets, releasability flags and FCM delta fetch across the app, portal, SPs and API shim. Use for any work on chat send or receive, or on chat push notifications. A wrong preference resolution silently pushes to users who opted out."
+---
+
 # HC Chat — Notification Modes & Push Dispatch Reference
 
 > **Load this skill when working on any part of the event chat feature.**

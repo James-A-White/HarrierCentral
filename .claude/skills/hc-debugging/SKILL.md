@@ -1,3 +1,8 @@
+---
+name: hc-debugging
+description: "On-device debug logging and log harvest in the mobile app: the per-user server flag, how session logs are captured, persisted and uploaded one boot late, the Copy Boot Log button, and how to read a tester's logs in HC.ClientErrorLog. Use when touching error logging, the harvest flag or log upload, or when reading a tester's logs."
+---
+
 # HC — On-Device Debug Logging & Harvest
 
 > **Load this skill whenever you touch on-device error logging, the debug-harvest

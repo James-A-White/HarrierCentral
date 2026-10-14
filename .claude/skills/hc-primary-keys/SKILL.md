@@ -1,3 +1,8 @@
+---
+name: hc-primary-keys
+description: "Primary key strategy: every PK is a GUID unless James agreed otherwise and it is documented here; Public*Id (Hasher, Kennel, Event) is identification only, never a foreign key, a join or a copy in another table, so it can be rotated if compromised. Use when designing a table or column, writing an SP that takes or returns an id, adding a client field that holds an id, or putting an id somewhere new (URL, QR, push, browser)."
+---
+
 # HC Primary Keys — Key Strategy
 
 > **Load this skill whenever you design a table or column, write an SP that

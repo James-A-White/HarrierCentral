@@ -1,3 +1,8 @@
+---
+name: hc6-adhoc-data
+description: "The adHocData pattern for returning non-sync data (a generated id, status flags, a server message) from an HC6 app SP to the Flutter caller. Use when designing or consuming any SP response that carries something other than sync rowsets."
+---
+
 # HC6 adHocData Pattern — Returning Non-Sync Data from App SPs
 
 Load this skill whenever an HC6 app SP needs to return data back to the Flutter

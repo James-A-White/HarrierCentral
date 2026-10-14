@@ -1,3 +1,8 @@
+---
+name: packtrack
+description: "PackTrack live run tracking reference: GPS sending and upload cadence, the GetPositions and StorePositions endpoints, the nightly track archive, track import, map display and point types. Use for any work on run tracking in the mobile app, the API or the public web."
+---
+
 # HC Mobile App — PackTrack Feature Reference
 
 > **Load this skill when working on any part of the live run tracking feature.**

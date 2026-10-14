@@ -1,3 +1,8 @@
+---
+name: hc-beta-room
+description: "The Beta Testers chat room (E18.F9): polling it with tools/beta_room.py, the rules for the one permitted write (a reply tagged 'Claude, for James:'), the read-only investigation of a tester's report, and the digest to James. Use when James says 'check the beta room' or /hc-beta-room, or when a loop or routine is working the room."
+---
+
 # HC — The Beta Testers room (E18.F9)
 
 > **Load this skill when James says "check the beta room", "/hc-beta-room",

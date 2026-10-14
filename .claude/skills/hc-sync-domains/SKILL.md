@@ -1,3 +1,8 @@
+---
+name: hc-sync-domains
+description: "The three local SQLite domains in the mobile app (common_, kennel_, event_), which tables live in each, and how they map to the sync SPs. Use for any mobile-app work that reads or writes the local database, writes or reviews a SQLite query, or diagnoses missing or wrongly-scoped data. Domain mistakes are silent: a wrong-domain query returns empty rows, not an error."
+---
+
 # HC Mobile App — Sync Domain Architecture
 
 > **Always apply this skill when working on the mobile app.** Domain mistakes

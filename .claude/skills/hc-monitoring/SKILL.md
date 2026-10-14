@@ -1,3 +1,8 @@
+---
+name: hc-monitoring
+description: "Read-only rollout health checks: the portal Usage Data dashboard, tools/log_triage.py, tools/log_sweep.sh, and how to interpret HC.ErrorLog, HC.ClientErrorLog and HC.Device. Use when James asks how a rollout is looking, 'any errors?' or 'check the logs', and before a release is called healthy."
+---
+
 # HC — Continuous Monitoring & Rollout Health
 
 > **Load this skill whenever James asks "how is the rollout looking", "any
