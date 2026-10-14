@@ -10,6 +10,10 @@ abstract class EventModel with _$EventModel implements BaseModel {
     required String publicEventId,
     required DateTime eventStartDatetime,
     required DateTime eventStartDatetimeGmt,
+    // Pack-off (E3.F1.S6): this run's own minutes after the gather
+    // (eventStartDatetime); null = the kennel's default. Read through
+    // RunPackOff, never on its own.
+    int? packOffMinutes,
     required String kennelId,
     required int isVisible,
     required int isCountedRun,

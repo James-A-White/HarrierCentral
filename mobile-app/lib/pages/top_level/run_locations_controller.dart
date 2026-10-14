@@ -656,6 +656,7 @@ class RunAndKennelMapController extends GetxController {
         coalesce(hem.${tableModel.hasherEventMapTableHelper.colRsvpState},0) as rsvpState,
         coalesce(hem.${tableModel.hasherEventMapTableHelper.colIsHare},0) as isHare,
         k.*,
+        ${RunPackOff.joinedColumns()}
         ${QueryRuns.searchRunsField}
         FROM ${EnumDataTables.events.commonTableName} evt
         INNER JOIN ${EnumDataTables.kennels.commonTableName} k on evt.${tableModel.eventsTableHelper.colKennelId} = k.${tableModel.kennelsTableHelper.colKennelId}
@@ -691,7 +692,12 @@ class RunAndKennelMapController extends GetxController {
 
           if (lat != null && lon != null) {
             if (lat <= 90.0 && lat >= -90.0 && lon <= 180.0 && lon >= -180.0) {
-              final EventModel em = EventModel.fromJson(results[i]);
+              // copyWith: evt.* and k.* both carry packOffMinutes; the run's
+              // own is in the alias (RunPackOff.joinedColumns).
+              final EventModel em = EventModel.fromJson(results[i]).copyWith(
+                packOffMinutes:
+                    (results[i][RunPackOff.evtAlias] as num?)?.toInt(),
+              );
               final DateTime dt =
                   DateTime.tryParse(
                     (results[i]['eventStartDatetime']?.toString() ?? '')
@@ -732,7 +738,10 @@ class RunAndKennelMapController extends GetxController {
                       results[i]['searchRunsText'] +
                       RunQueryExtensionsModel.getSearchDateString(dt),
                 ),
-                kennel: KennelsModel.fromJson(results[i]),
+                kennel: KennelsModel.fromJson(results[i]).copyWith(
+                  packOffMinutes:
+                      (results[i][RunPackOff.kennelAlias] as num?)?.toInt(),
+                ),
               );
               _allRuns.add(item);
             }

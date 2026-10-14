@@ -108,6 +108,55 @@ class EditRunDetailsController extends GetxController
   int eventGeographicScope = 1;
   bool trueNorthLock = true;
 
+  /// Pack-off (E3.F1.S6): this run's own minutes after the gather, or null
+  /// for the kennel's default. Minutes, not a clock time, so moving the start
+  /// moves the pack-off with it.
+  int? packOffOverride;
+
+  /// The kennel's default pack-off minutes; null = at the gather.
+  int? get kennelPackOffMinutes => eventAggregate.kennel.packOffMinutes;
+
+  /// The gather as typed in the Details field, null while it cannot parse.
+  DateTime? get gatherFromField => DateFormat(
+    'E, d MMM, yyyy, h:mm a',
+  ).tryParse(eventDatetimeController.text);
+
+  /// Minutes the pack leaves after the gather with the editor's choice now.
+  int get effectivePackOffMinutes => RunPackOff.effectiveMinutes(
+    runMinutes: packOffOverride,
+    kennelMinutes: kennelPackOffMinutes,
+  );
+
+  /// Sets this run's own pack-off from a picked clock time. Returns an error
+  /// to show, or null when it was taken. A time earlier than the gather is
+  /// read as after midnight (a 23:30 gather, 00:15 pack-off); anything over
+  /// [RunPackOff.maxMinutes] is refused here, as the SP would (1227).
+  String? setPackOffFromTime(TimeOfDay picked) {
+    final DateTime? gather = gatherFromField;
+    if (gather == null) return 'Set the run\'s date and time first.';
+    int minutes =
+        (picked.hour * 60 + picked.minute) - (gather.hour * 60 + gather.minute);
+    if (minutes < 0) minutes += 24 * 60;
+    if (minutes > RunPackOff.maxMinutes) {
+      return 'The pack-off must be within ${RunPackOff.maxMinutes ~/ 60} hours '
+          'of the gather.';
+    }
+    mutate(() => packOffOverride = minutes);
+    return null;
+  }
+
+  void usePackOffKennelDefault() => mutate(() => packOffOverride = null);
+
+  /// What `hcapp_addEditEvent @packOffMinutes` gets: a new run sends its
+  /// choice (-2 = the kennel's default); an existing run sends nothing when
+  /// unchanged (keep), -2 when an override was removed, else the minutes.
+  /// Every value is a STATE, so a retried save cannot drift it.
+  int? get packOffMinutesToSend {
+    if (isUnsaved) return packOffOverride ?? RunPackOff.sendClear;
+    if (packOffOverride == eventAggregate.event.packOffMinutes) return null;
+    return packOffOverride ?? RunPackOff.sendClear;
+  }
+
   Future<File?> imageFromGallery = Future<File?>.value(null);
 
   Map<String, String> _savedSnapshot = <String, String>{};
@@ -285,6 +334,7 @@ class EditRunDetailsController extends GetxController
     extrasDescriptionController.text =
         eventAggregate.event.extrasDescription ?? '';
     eventGeographicScope = eventAggregate.event.eventGeographicScope;
+    packOffOverride = eventAggregate.event.packOffMinutes;
 
     // The four checkbox-backed fields are also assigned by their
     // CheckboxFormField validators, but those only run when the Other tab is
@@ -328,6 +378,7 @@ class EditRunDetailsController extends GetxController
     'isPromotedEvent': '$isPromotedEvent',
     'usersCanEditRunAttendence': '$usersCanEditRunAttendence',
     'eventGeographicScope': '$eventGeographicScope',
+    'packOffOverride': '$packOffOverride',
   };
 
   void recomputeDirty() {
@@ -384,6 +435,8 @@ class EditRunDetailsController extends GetxController
   /// and Image tabs keep their own buttons — they act on a picked point or an
   /// uploaded file rather than on form content.
   Future<bool> saveAll() async {
+    // A second press while a save (or its pre-checks) is running is refused.
+    if (isUpdating.value) return false;
     final String? validationError = _validateForSave();
     if (validationError != null) {
       if (currentTab.value != EditingTabEnum.details) {
@@ -402,82 +455,90 @@ class EditRunDetailsController extends GetxController
     // Other tab happens to be built.
     otherDetailsFormKey.currentState?.validate();
 
-    // An AI-imported run stops syncing with the kennel's website once saved
-    // here — ask first (AiRunGuard).
-    if (!isNewRun &&
-        !await AiRunGuard.confirmEdit(
-          eventId: eventAggregate.event.eventId,
-          inboundIntegrationId: eventAggregate.event.eventInboundIntegrationId,
-        )) {
-      return false;
-    }
-
-    // Another run of this kennel at the same local date and time? Weekend
-    // events have several runs at once, so this asks; it never refuses.
-    if (eventDatetimeController.text != _savedStartText &&
-        !await _confirmAnotherRunAtThisTime()) {
-      return false;
-    }
-
+    // Busy from the tap, before the pre-checks below: the "another run at
+    // this time?" check is a server call, and a Save that shows nothing
+    // while it runs looks missed (CLAUDE.md, every gesture acknowledged).
     FocusManager.instance.primaryFocus?.unfocus();
     mutate(() {
       isUpdating.value = true;
     });
+    try {
+      // An AI-imported run stops syncing with the kennel's website once saved
+      // here — ask first (AiRunGuard).
+      if (!isNewRun &&
+          !await AiRunGuard.confirmEdit(
+            eventId: eventAggregate.event.eventId,
+            inboundIntegrationId:
+                eventAggregate.event.eventInboundIntegrationId,
+          )) {
+        return false;
+      }
 
-    final DateFormat formatter = DateFormat('E, d MMM, yyyy, h:mm a');
-    final EventsService nSvc = EventsService();
-    final String eventId = await nSvc.addEditEvent(
-      eventId: saveEventId,
-      kennelId: eventAggregate.event.kennelId,
-      eventName: eventNameController.text,
-      eventStartDatetime: formatter.tryParse(eventDatetimeController.text),
-      eventDescription: eventDescriptionController.text,
-      locationOneLineDesc: locationOneLineDescController.text,
-      useFbRunDetails: 0,
-      locationStreet: locationStreetController.text,
-      locationCity: locationCityController.text,
-      locationRegion: locationRegionController.text,
-      locationSubRegion: locationSubRegionController.text,
-      locationPostCode: locationPostCodeController.text,
-      locationCountry: locationCountryController.text,
-      eventPriceForMembers: eventPriceForMembersController.text.isEmpty
-          ? -2
-          : double.tryParse(
-              eventPriceForMembersController.text.replaceAll(',', '.'),
-            ),
-      eventPriceForNonMembers: eventPriceForNonMembersController.text.isEmpty
-          ? -2
-          : double.tryParse(
-              eventPriceForNonMembersController.text.replaceAll(',', '.'),
-            ),
-      eventPriceForExtras: eventPriceForExtrasController.text.isEmpty
-          ? -2
-          : double.tryParse(
-              eventPriceForExtrasController.text.replaceAll(',', '.'),
-            ),
-      // note for "auto" the value we send to the server is '0' because this will
-      // remove any previous absoluteEventNumber that is stored there
-      absoluteEventNumber: absoluteEventNumberController.text.isEmpty
-          ? 0
-          : int.tryParse(absoluteEventNumberController.text),
-      extrasDescription: extrasDescriptionController.text.isEmpty
-          ? '<none>'
-          : extrasDescriptionController.text,
-      hares: haresController.text,
-      isCountedRun: isCountedRun,
-      isVisible: isVisible,
-      isPromotedEvent: isPromotedEvent,
-      eventGeographicScope: eventGeographicScope,
-      usersCanEditRunAttendence: usersCanEditRunAttendence,
-    );
+      // Another run of this kennel at the same local date and time? Weekend
+      // events have several runs at once, so this asks; it never refuses.
+      if (eventDatetimeController.text != _savedStartText &&
+          !await _confirmAnotherRunAtThisTime()) {
+        return false;
+      }
 
-    await refreshAfterSave(eventId);
-    _savedStartText = eventDatetimeController.text;
-    mutate(() {
-      isUpdating.value = false;
-      captureSavedSnapshot();
-    });
-    return true;
+      final DateFormat formatter = DateFormat('E, d MMM, yyyy, h:mm a');
+      final EventsService nSvc = EventsService();
+      final String eventId = await nSvc.addEditEvent(
+        eventId: saveEventId,
+        kennelId: eventAggregate.event.kennelId,
+        eventName: eventNameController.text,
+        eventStartDatetime: formatter.tryParse(eventDatetimeController.text),
+        eventDescription: eventDescriptionController.text,
+        locationOneLineDesc: locationOneLineDescController.text,
+        useFbRunDetails: 0,
+        locationStreet: locationStreetController.text,
+        locationCity: locationCityController.text,
+        locationRegion: locationRegionController.text,
+        locationSubRegion: locationSubRegionController.text,
+        locationPostCode: locationPostCodeController.text,
+        locationCountry: locationCountryController.text,
+        eventPriceForMembers: eventPriceForMembersController.text.isEmpty
+            ? -2
+            : double.tryParse(
+                eventPriceForMembersController.text.replaceAll(',', '.'),
+              ),
+        eventPriceForNonMembers: eventPriceForNonMembersController.text.isEmpty
+            ? -2
+            : double.tryParse(
+                eventPriceForNonMembersController.text.replaceAll(',', '.'),
+              ),
+        eventPriceForExtras: eventPriceForExtrasController.text.isEmpty
+            ? -2
+            : double.tryParse(
+                eventPriceForExtrasController.text.replaceAll(',', '.'),
+              ),
+        // note for "auto" the value we send to the server is '0' because this will
+        // remove any previous absoluteEventNumber that is stored there
+        absoluteEventNumber: absoluteEventNumberController.text.isEmpty
+            ? 0
+            : int.tryParse(absoluteEventNumberController.text),
+        extrasDescription: extrasDescriptionController.text.isEmpty
+            ? '<none>'
+            : extrasDescriptionController.text,
+        hares: haresController.text,
+        isCountedRun: isCountedRun,
+        isVisible: isVisible,
+        isPromotedEvent: isPromotedEvent,
+        eventGeographicScope: eventGeographicScope,
+        usersCanEditRunAttendence: usersCanEditRunAttendence,
+        packOffMinutes: packOffMinutesToSend,
+      );
+
+      await refreshAfterSave(eventId);
+      _savedStartText = eventDatetimeController.text;
+      mutate(captureSavedSnapshot);
+      return true;
+    } finally {
+      // Cleared on every path: a cancelled pre-check, a failed save, a throw.
+      mutate(() {
+        isUpdating.value = false;
+      });
+    }
   }
 
   /// True to go ahead and save. Asks only when the kennel already has a run
@@ -506,9 +567,7 @@ class EditRunDetailsController extends GetxController
               '${number > 0 ? ' (#$number)' : ''}';
         })
         .join('\n');
-    final String more = runs.length > 5
-        ? '\n…and ${runs.length - 5} more'
-        : '';
+    final String more = runs.length > 5 ? '\n…and ${runs.length - 5} more' : '';
     final bool? ok = await Utilities.showAlert(
       'Another run at this time?',
       '${eventAggregate.kennel.kennelShortName} already has '
@@ -667,7 +726,8 @@ class EditRunDetailsController extends GetxController
                 children: <Widget>[
                   CheckboxListTile(
                     value: doPost,
-                    onChanged: (bool? v) => setDialog(() => doPost = v ?? false),
+                    onChanged: (bool? v) =>
+                        setDialog(() => doPost = v ?? false),
                     controlAffinity: ListTileControlAffinity.leading,
                     secondary: MessagingPlatformGlyph(platform, size: 26),
                     title: Text('Post to ${platform.label}'),
@@ -689,7 +749,9 @@ class EditRunDetailsController extends GetxController
                           ? 'Email hashers'
                           : 'Email $n ${n == 1 ? 'hasher' : 'hashers'}',
                     ),
-                    subtitle: Text(_emailSubtitle(emailContext, emailUnavailable)),
+                    subtitle: Text(
+                      _emailSubtitle(emailContext, emailUnavailable),
+                    ),
                   ),
                 ],
               ),
@@ -730,15 +792,19 @@ class EditRunDetailsController extends GetxController
     if (c.recipientCount == 0) {
       b.write('Nobody in the kennel has run emails switched on.');
     } else {
-      b.write('Written for you, with the date, venue, hares, price and '
-          'I\'m-in / can\'t-make-it buttons.');
+      b.write(
+        'Written for you, with the date, venue, hares, price and '
+        'I\'m-in / can\'t-make-it buttons.',
+      );
     }
     if (c.alreadySent) {
       final String when = c.emailLastSentAt == null
           ? ''
           : ' on ${DateFormat('d MMM').format(c.emailLastSentAt!)}';
-      b.write('\n⚠ Already emailed to ${c.emailLastSentCount ?? '?'}$when · '
-          '${c.emailSendCount} ${c.emailSendCount == 1 ? 'email' : 'emails'} so far.');
+      b.write(
+        '\n⚠ Already emailed to ${c.emailLastSentCount ?? '?'}$when · '
+        '${c.emailSendCount} ${c.emailSendCount == 1 ? 'email' : 'emails'} so far.',
+      );
     }
     return b.toString();
   }

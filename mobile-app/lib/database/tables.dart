@@ -414,6 +414,22 @@ class Tables {
       appliedAtInt: 0,
     ),
 
+    // MIGRATION 544 — a run's pack-off time (E3.F1.S6): the kennel's default
+    // minutes after the gather, and a run's own override. Kennels and events
+    // are common-only tables (the admin syncs write the same common table),
+    // so one ALTER each. No updatedAtValue reset: every server row was NULL
+    // when the columns were added, so nothing already synced is missing a
+    // value. The 3.2 train takes the same ALTERs as its 563 (trains stay 20
+    // apart, see DB_VERSION).
+    MigrationsModel(
+      dbVersion: 544,
+      migrationText: '''
+        ALTER TABLE ${EnumDataTables.kennels.commonTableName} ADD COLUMN ${tableModel.kennelsTableHelper.colPackOffMinutes} INT;
+        ALTER TABLE ${EnumDataTables.events.commonTableName} ADD COLUMN ${tableModel.eventsTableHelper.colPackOffMinutes} INT;
+      ''',
+      appliedAtInt: 0,
+    ),
+
     // MIGRATION 543 — a +10 jump that forces a WIPE AND RELOAD (James,
 
     // 2026-09-26). Syncs could skip silently on a failed 3-second reachability

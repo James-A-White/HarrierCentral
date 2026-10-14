@@ -28,6 +28,9 @@ class EventsTableHelper extends BaseTableHelper<AppDomainType> with BaseFields {
   final String colPublicEventId = 'publicEventId';
   final String colEventStartDatetime = 'eventStartDatetime';
   final String colEventStartDatetimeGmt = 'eventStartDatetimeGmt';
+  // Pack-off (E3.F1.S6): this run's own minutes after the gather; NULL =
+  // the kennel's default (kennels.packOffMinutes). See RunPackOff.
+  final String colPackOffMinutes = 'packOffMinutes';
   final String colKennelId = 'kennelId';
   final String colIsVisible = 'isVisible';
   final String colIsCountedRun = 'isCountedRun';
@@ -97,6 +100,7 @@ class EventsTableHelper extends BaseTableHelper<AppDomainType> with BaseFields {
             $colPublicEventId TEXT NOT NULL,
             $colEventStartDatetime TEXT NOT NULL,
             $colEventStartDatetimeGmt TEXT NOT NULL,
+            $colPackOffMinutes INT,
             $colKennelId TEXT NOT NULL,
             $colIsVisible INT NOT NULL,
             $colIsCountedRun INT NOT NULL,
@@ -195,6 +199,13 @@ class EventsTableHelper extends BaseTableHelper<AppDomainType> with BaseFields {
   @override
   EventModel fromMap(Map<String, dynamic> map) {
     EventModel item = EventModel.fromJson(map);
+    // A joined row (evt.*, k.*) carries the kennel's packOffMinutes under the
+    // plain name; the run's own is in the alias (RunPackOff.joinedColumns).
+    if (map.containsKey(RunPackOff.evtAlias)) {
+      item = item.copyWith(
+        packOffMinutes: (map[RunPackOff.evtAlias] as num?)?.toInt(),
+      );
+    }
 
     // NOTE: Event images can either be full URLs or they can be partial URLs in the case
     // when events have been uploaded directly to the DB using the HcWeb application.
@@ -248,6 +259,9 @@ class EventsService extends BaseService {
     String? locationCountry,
     String? locationRegion,
     String? locationSubRegion,
+    // Pack-off (E3.F1.S6): null / -1 keep, -2 clear (the kennel's default),
+    // 0..600 this run's own minutes after the gather. See RunPackOff.
+    int? packOffMinutes,
   }) async {
     if (Utilities.isNotConnected()) {
       return '';
@@ -448,6 +462,12 @@ class EventsService extends BaseService {
 
     if (extrasDescription != null) {
       bodyMap.addAll(<String, String>{'extrasDescription': extrasDescription});
+    }
+
+    if (packOffMinutes != null) {
+      bodyMap.addAll(<String, String>{
+        'packOffMinutes': packOffMinutes.toString(),
+      });
     }
 
     final String responseBody = await ServiceCommon.sendHttpPost(() {

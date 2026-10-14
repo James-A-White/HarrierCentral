@@ -32,6 +32,10 @@ const Duration kAutoStartPreciseBefore = Duration(minutes: 5);
 /// * Both rules need you to be moving AWAY from the start, so the walk in
 ///   from a station or car park never starts it (LH3 #2854, 2026-10-10).
 ///
+/// "The start" throughout is the run's PACK-OFF instant (E3.F1.S6): the
+/// caller passes `RunPackOff.packOffGmt` as `startGmt`, which is the gather
+/// when no pack-off is set. Saved and restored the same way.
+///
 /// Owned by [LocationService], like the On-Inn auto-stop monitor.
 class AutoStartMonitor {
   AutoStartMonitor(this._ls);

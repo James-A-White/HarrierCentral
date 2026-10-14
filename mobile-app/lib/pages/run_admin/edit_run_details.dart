@@ -806,6 +806,7 @@ class EditRunDetailsPage extends StatelessWidget {
                       //   },
                       // ),
                     ),
+                    _buildPackOff(context, c),
                     Container(
                       margin: const EdgeInsets.only(top: 25.0, bottom: 5.0),
                       padding: const EdgeInsets.only(
@@ -2330,6 +2331,108 @@ class CheckboxFormField extends FormField<bool> {
 /// header and selection, red for the buttons) rather than Material's stock
 /// blue. Scoped to the pickers: changing the app's colour scheme would also
 /// restyle every text field's focus colour.
+/// The run's pack-off (E3.F1.S6): the kennel's default, or a time of this
+/// run's own. Stored as minutes after the gather, so moving the start moves
+/// the pack-off with it — the hint says so. Sits on the same white field
+/// panel as the Date / Time box above it, so its text is dark.
+Widget _buildPackOff(BuildContext context, EditRunDetailsController c) {
+  final int? kennelMin = c.kennelPackOffMinutes;
+  final String kennelLabel = (kennelMin ?? 0) > 0
+      ? 'Kennel default ($kennelMin min)'
+      : 'Kennel default (at the gather)';
+  final int? own = c.packOffOverride;
+  final DateTime? gather = c.gatherFromField;
+  final DateTime? ownAt = (own != null && gather != null)
+      ? gather.add(Duration(minutes: own))
+      : null;
+  final String ownLabel = own == null
+      ? 'Set a time'
+      : ownAt == null || own == 0
+      ? 'At the gather'
+      : 'At ${DateFormat('h:mm a').format(ownAt)}';
+  final String hint = own == null
+      ? 'The pack sets off at the kennel\'s usual time. Set a time for this '
+            'run only.'
+      : 'This run: ${RunPackOff.describeMinutes(own)}. Moving the start '
+            'moves the pack-off with it.';
+
+  Future<void> pickTime() async {
+    final DateTime? g = c.gatherFromField;
+    if (g == null) {
+      await Utilities.showAlert(
+        'Pack off',
+        'Set the run\'s date and time first.',
+        'OK',
+      );
+      return;
+    }
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      helpText: 'PACK OFF',
+      initialTime: TimeOfDay.fromDateTime(
+        g.add(Duration(minutes: c.effectivePackOffMinutes)),
+      ),
+      builder: (BuildContext context, Widget? child) {
+        return MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(alwaysUse24HourFormat: false),
+          child: _hcPickerTheme(context, child),
+        );
+      },
+    );
+    if (picked == null) return;
+    final String? error = c.setPackOffFromTime(picked);
+    if (error != null) {
+      await Utilities.showAlert('Pack off', error, 'OK');
+    }
+  }
+
+  return Container(
+    color: Colors.white,
+    margin: const EdgeInsets.only(bottom: 10.0, left: 25.0, right: 25.0),
+    padding: const EdgeInsets.all(10.0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        const Text(
+          'Pack off',
+          style: TextStyle(
+            color: Colors.black87,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 6.0),
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 8.0,
+          runSpacing: 4.0,
+          children: <Widget>[
+            ChoiceChip(
+              label: Text(kennelLabel, textAlign: TextAlign.center),
+              selected: own == null,
+              onSelected: (_) => c.usePackOffKennelDefault(),
+            ),
+            ChoiceChip(
+              label: Text(ownLabel, textAlign: TextAlign.center),
+              selected: own != null,
+              // Opens the picker at once; tapping again changes the time.
+              onSelected: (_) => pickTime(),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6.0),
+        Text(
+          hint,
+          style: const TextStyle(color: Colors.black54, fontSize: 12.0),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    ),
+  );
+}
+
 Widget _hcPickerTheme(BuildContext context, Widget? child) {
   final ThemeData base = Theme.of(context);
   return Theme(

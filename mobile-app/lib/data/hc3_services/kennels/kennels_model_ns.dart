@@ -57,6 +57,10 @@ abstract class KennelsModel with _$KennelsModel implements BaseModel {
     DateTime? membershipPeriodEndDate,
     @Default(0.0) double membershipPrice,
     required DateTime defaultRunStartTime,
+    /// Pack-off (E3.F1.S6): the kennel's default — the pack leaves this many
+    /// minutes after the gather. Null = at the gather. A run's own
+    /// [EventModel.packOffMinutes] wins; read both through [RunPackOff].
+    int? packOffMinutes,
     String? currencyCode,
     String? primaryCultureCode,
     String? currencySymbol,

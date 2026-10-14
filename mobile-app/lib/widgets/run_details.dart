@@ -193,6 +193,8 @@ class RunDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Kennel-local wall clock the pack leaves, null when at the gather.
+    final DateTime? packOffAt = RunPackOff.packOffLocal(event, kennel);
     return SingleChildScrollView(
       child: Column(
         children: <Widget>[
@@ -365,7 +367,9 @@ class RunDetails extends StatelessWidget {
                     Expanded(
                       flex: _flexLeft,
                       child: Text(
-                        'Time:',
+                        // A run whose pack leaves after the gather (E3.F1.S6)
+                        // shows both times; otherwise the one start as ever.
+                        packOffAt == null ? 'Time:' : 'Gather:',
                         style: ts_listLabelStyle,
                         textAlign: TextAlign.right,
                         maxLines: 1,
@@ -411,6 +415,35 @@ class RunDetails extends StatelessWidget {
                     ),
                   ],
                 ),
+                if (packOffAt != null)
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        flex: _flexLeft,
+                        child: Text(
+                          'Pack off:',
+                          style: ts_listLabelStyle,
+                          textAlign: TextAlign.right,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(
+                        height: _spaceBetweenRows,
+                        width: _spaceBetweenColumns,
+                      ),
+                      Expanded(
+                        flex: _flexRight,
+                        child: Text(
+                          DateFormat('h:mm a').format(packOffAt),
+                          style: ts_listValueStyle,
+                          textAlign: TextAlign.left,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 if ((event.locationOneLineDesc ?? '') != '') ...<Widget>[
                   Row(
                     children: <Widget>[

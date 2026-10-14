@@ -500,16 +500,26 @@ class RunListItem extends StatelessWidget {
                                                 DateTime.now().year
                                             ? Text(
                                                 '${DateFormat("E, MMM d 'at' h:mm a").format(futureRun.event.eventStartDatetime)}'
-                                                '${kennelTzSuffix(futureRun.event.eventStartDatetime, futureRun.event.eventStartDatetimeGmt, futureRun.extensions.ianaTimeZone)}',
+                                                '${kennelTzSuffix(futureRun.event.eventStartDatetime, futureRun.event.eventStartDatetimeGmt, futureRun.extensions.ianaTimeZone)}'
+                                                // " · Pack off 12:30 PM" when the
+                                                // pack leaves after the gather
+                                                // (E3.F1.S6); synced, no fetch.
+                                                '${RunPackOff.suffix(futureRun.event, futureRun.kennel)}',
                                                 style: ts_regularMediumBlack,
                                                 textAlign: TextAlign.left,
+                                                maxLines: 2,
                                                 overflow: TextOverflow.ellipsis,
                                               )
                                             : Text(
                                                 '${DateFormat("E, MMM d yyyy 'at' h:mm a").format(futureRun.event.eventStartDatetime)}'
-                                                '${kennelTzSuffix(futureRun.event.eventStartDatetime, futureRun.event.eventStartDatetimeGmt, futureRun.extensions.ianaTimeZone)}',
+                                                '${kennelTzSuffix(futureRun.event.eventStartDatetime, futureRun.event.eventStartDatetimeGmt, futureRun.extensions.ianaTimeZone)}'
+                                                // " · Pack off 12:30 PM" when the
+                                                // pack leaves after the gather
+                                                // (E3.F1.S6); synced, no fetch.
+                                                '${RunPackOff.suffix(futureRun.event, futureRun.kennel)}',
                                                 style: ts_regularMediumBlack,
                                                 textAlign: TextAlign.left,
+                                                maxLines: 2,
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                         // Viewer in a different timezone than the

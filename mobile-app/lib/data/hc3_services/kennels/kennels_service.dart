@@ -55,6 +55,9 @@ class KennelsTableHelper extends BaseTableHelper<AppDomainType>
   final String colMembershipPeriodEndDate = 'membershipPeriodEndDate';
   final String colMembershipPrice = 'membershipPrice';
   final String colDefaultRunStartTime = 'defaultRunStartTime';
+  // Pack-off (E3.F1.S6): the pack leaves this many minutes after the gather
+  // (defaultRunStartTime / a run's start). NULL = at the gather.
+  final String colPackOffMinutes = 'packOffMinutes';
   final String colCurrencyCode = 'currencyCode';
   final String colPrimaryCultureCode = 'primaryCultureCode';
   final String colCurrencySymbol = 'currencySymbol';
@@ -138,6 +141,7 @@ class KennelsTableHelper extends BaseTableHelper<AppDomainType>
             $colMembershipPeriodEndDate TEXT,
             $colMembershipPrice NUM,
             $colDefaultRunStartTime TEXT NOT NULL,
+            $colPackOffMinutes INT,
             $colCurrencyCode TEXT,
             $colPrimaryCultureCode TEXT,
             $colCurrencySymbol TEXT,
@@ -207,6 +211,15 @@ class KennelsTableHelper extends BaseTableHelper<AppDomainType>
 
   @override
   KennelsModel fromMap(Map<String, dynamic> map) {
-    return KennelsModel.fromJson(map);
+    final KennelsModel item = KennelsModel.fromJson(map);
+    // A joined row may carry the RUN's packOffMinutes under the plain name
+    // (whichever table came last in the SELECT); the kennel's own is in the
+    // alias (RunPackOff.joinedColumns).
+    if (map.containsKey(RunPackOff.kennelAlias)) {
+      return item.copyWith(
+        packOffMinutes: (map[RunPackOff.kennelAlias] as num?)?.toInt(),
+      );
+    }
+    return item;
   }
 }

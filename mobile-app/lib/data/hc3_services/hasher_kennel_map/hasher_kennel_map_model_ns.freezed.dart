@@ -15,7 +15,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$HasherKennelMapModel implements DiagnosticableTreeMixin {
 
- String get hkmId; String get userId; String get kennelId; int get following; int get isMember; int get isHomeKennel; int get kennelNotificationPreference; int get kennelEmailAlertPreference; String? get authorizedDeviceList; int? get authorizedDeviceCount; int get userRoleFlags; int get appAccessFlags; int get hcTotalRunCount; int get hcHaringCount; int get historicalTotalRunCount; int get historicalHaringCount; int get historicalCountIsEstimate; double get kennelCredit; double get discountAmount; int get discountPercent; String get discountDescription; DateTime? get dateOfLastRun; DateTime? get membershipExpirationDate; DateTime? get memberSince; int? get isKennelFollowing; int get mismanagementRoles; String? get kennelUserPhoto; String? get kennelHashName;/// Pinned chat, TRI-STATE (E9.F1.S8): null means "use the default",
+ String get hkmId; String get userId; String get kennelId; int get following;/// DEPRECATED snapshot — see HasherKennelMapTableHelper.colIsMember.
+/// Queries that build this model compute it from the expiry date.
+ int get isMember; int get isHomeKennel; int get kennelNotificationPreference; int get kennelEmailAlertPreference; String? get authorizedDeviceList; int? get authorizedDeviceCount; int get userRoleFlags; int get appAccessFlags; int get hcTotalRunCount; int get hcHaringCount; int get historicalTotalRunCount; int get historicalHaringCount; int get historicalCountIsEstimate; double get kennelCredit; double get discountAmount; int get discountPercent; String get discountDescription; DateTime? get dateOfLastRun; DateTime? get membershipExpirationDate; DateTime? get memberSince; int? get isKennelFollowing; int get mismanagementRoles; String? get kennelUserPhoto; String? get kennelHashName;/// Pinned chat, TRI-STATE (E9.F1.S8): null means "use the default",
 /// which is pinned for the home kennel and unpinned otherwise. 0 and 1
 /// are the hasher's explicit choice and override the default.
  int? get pinned; DateTime? get updatedAt; int? get removed;
@@ -255,6 +257,8 @@ class _HasherKennelMapModel with DiagnosticableTreeMixin implements HasherKennel
 @override final  String userId;
 @override final  String kennelId;
 @override final  int following;
+/// DEPRECATED snapshot — see HasherKennelMapTableHelper.colIsMember.
+/// Queries that build this model compute it from the expiry date.
 @override final  int isMember;
 @override final  int isHomeKennel;
 @override final  int kennelNotificationPreference;

@@ -335,14 +335,20 @@ class LiveRunGeneralController extends GetxController
       normalizeUuid(autoStart.eventId ?? '') ==
           normalizeUuid(run.event.eventId);
 
-  /// Auto start can be armed now (T−2h until 2 h after the start).
-  bool get canArmAutoStart =>
-      AutoStartMonitor.canArm(run.event.eventStartDatetimeGmt);
+  /// The instant auto start counts from: the PACK-OFF (E3.F1.S6), which is
+  /// the gather when the kennel and the run set none. A kennel that gathers
+  /// at 12:00 and sets off at 12:30 is still standing about at 12:00, so T−5
+  /// precise GPS, the T+90 "not coming" and the T+2h stop all count from
+  /// 12:30 — the T+90 rule was moved once already for a late pack (#200).
+  DateTime get _autoStartFromGmt => RunPackOff.packOffGmt(run.event, run.kennel);
+
+  /// Auto start can be armed now (T−2h until 2 h after the pack-off).
+  bool get canArmAutoStart => AutoStartMonitor.canArm(_autoStartFromGmt);
 
   /// Local time auto start becomes available, e.g. `10:00 AM`.
-  String get autoStartOpensAt => DateFormat('h:mm a').format(
-    run.event.eventStartDatetimeGmt.toLocal().subtract(kAutoStartArmBefore),
-  );
+  String get autoStartOpensAt => DateFormat(
+    'h:mm a',
+  ).format(_autoStartFromGmt.toLocal().subtract(kAutoStartArmBefore));
 
   Future<void> armAutoStart() async {
     // Arming is a promise to record in a pocket, so the same pre-flight as
@@ -353,7 +359,7 @@ class LiveRunGeneralController extends GetxController
     await autoStart.arm(
       eventId: run.event.eventId,
       eventName: '${run.kennel.kennelShortName} #${run.event.eventNumber}',
-      startGmt: run.event.eventStartDatetimeGmt,
+      startGmt: _autoStartFromGmt,
       isHare: hare,
       startLat: run.extensions.evtLat,
       startLng: run.extensions.evtLon,

@@ -468,6 +468,7 @@ class CommonQueries {
           '''
           SELECT e.*,
           k.*,
+          ${RunPackOff.joinedColumns(evt: 'e')}
           case when e.${tableModel.eventsTableHelper.colUseFbLatLon} = 0 then e.${tableModel.eventsTableHelper.colHcLatitude} else coalesce(e.${tableModel.eventsTableHelper.colFbLatitude},e.${tableModel.eventsTableHelper.colHcLatitude}) end as latitude,
           case when e.${tableModel.eventsTableHelper.colUseFbLatLon} = 0 then e.${tableModel.eventsTableHelper.colHcLongitude} else coalesce(e.${tableModel.eventsTableHelper.colFbLongitude},e.${tableModel.eventsTableHelper.colHcLongitude}) end as longitude,
           case when ((e.${tableModel.eventsTableHelper.colUseFbLatLon} = 0 AND e.${tableModel.eventsTableHelper.colHcLongitude} IS NOT NULL) OR ((e.${tableModel.eventsTableHelper.colUseFbLatLon} = 1 AND coalesce(e.${tableModel.eventsTableHelper.colFbLatitude},e.${tableModel.eventsTableHelper.colHcLatitude}) IS NOT NULL))) THEN 1 ELSE 0 END as isMapAndDistanceValid,
