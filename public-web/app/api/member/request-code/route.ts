@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { randomUUID } from "crypto";
 import { emailInviteCode } from "@/lib/member-api";
+import { signValue } from "@/lib/member-session";
 import { bad, ipOf, isEmail, jsonBody, limited } from "@/lib/member-routes";
 import { logWebError } from "@/lib/web-log";
 
@@ -19,7 +21,20 @@ export async function POST(req: NextRequest) {
   }
   try {
     const known = await emailInviteCode(email);
-    return NextResponse.json({ sent: known, known });
+    const res = NextResponse.json({ sent: known, known });
+    // The browser's deviceId for THIS sign-in, minted once (idempotency audit
+    // W4). verify-code reuses it on every attempt, so a double submit or a
+    // retry after a lost reply is the same HC.Device row (hcapp_authorizeDevice
+    // returns the existing secret) rather than a second, phantom device.
+    // Same name, path and lifetime as verify-code/route.ts reads.
+    res.cookies.set("hc_signin", signValue({ deviceId: randomUUID() }, 30 * 60), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/api/member",
+      maxAge: 30 * 60,
+    });
+    return res;
   } catch (e) {
     await logWebError({ source: "/api/member/request-code", error: e });
     return bad("We couldn't send the code just now. Please try again.", 502);

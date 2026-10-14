@@ -120,6 +120,26 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel, dm }: {
   // the photo button spins and refuses a second pick until it is ready.
   const [preparing, setPreparing] = useState(false);
   const preparingRef = useRef(false);
+  /** Set with `sending`, read first: a second Send or location cannot start while one is out. */
+  const sendingRef = useRef(false);
+  /**
+   * The id of a text or location send that failed without a confirmed answer
+   * (idempotency audit W3). The first attempt may have committed with its reply
+   * lost, so "try again" must send the SAME messageId — the SP keeps one row per
+   * id. Keyed to what was sent: a changed draft or reply target is a new message
+   * and gets a new id. Cleared on success.
+   */
+  const unsent = useRef<{ key: string; messageId: string } | null>(null);
+  const idFor = (key: string) => {
+    if (unsent.current?.key !== key) unsent.current = { key, messageId: crypto.randomUUID() };
+    return unsent.current.messageId;
+  };
+  const textKey = (body: string, target: Shown | null) => `text|${target ? upper(target.id) : ""}|${body}`;
+  // Editing the draft or changing the reply target makes it a new message: forget the old id.
+  useEffect(() => {
+    const k = unsent.current?.key;
+    if (k?.startsWith("text|") && k !== textKey(text.trim(), replyTo)) unsent.current = null;
+  }, [text, replyTo]);
   const [pinPicker, setPinPicker] = useState(false);
   const bottom = useRef<HTMLDivElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -234,16 +254,18 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel, dm }: {
 
   async function send() {
     const body = text.trim();
-    if (!body || sending) return;
-    setSending(true); setError(null);
-    const messageId = crypto.randomUUID();
+    if (!body || sendingRef.current) return;
+    sendingRef.current = true; setSending(true); setError(null);
     const target = replyTo;
+    // Same draft, same reply target as a failed attempt ⇒ the same messageId.
+    const messageId = idFor(textKey(body, target));
     try {
       const err = await post(messageId, body, CHAT_KIND_TEXT, target ? target.id.toLowerCase() : null);
       if (err) { setError(err); return; }
+      unsent.current = null;
       setText(""); setReplyTo(null);
       merge([mine(messageId, body, CHAT_KIND_TEXT, quoteOf(target))]);
-    } finally { setSending(false); }
+    } finally { sendingRef.current = false; setSending(false); }
   }
 
   // ── Reactions (E9.F1.S22) ──────────────────────────────────────────────────
@@ -348,14 +370,18 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel, dm }: {
   // ── Locations (E9.F1.S12) ──────────────────────────────────────────────────
 
   async function sendLocation(lat: number, lng: number) {
-    setError(null); setSending(true);
-    const messageId = crypto.randomUUID();
+    if (sendingRef.current) return;
+    sendingRef.current = true; setError(null); setSending(true);
     const content = chatLocationUrl(lat, lng);
+    // The same spot again after a failure ⇒ the same messageId (a fresh GPS
+    // fix usually differs, and is then a new message).
+    const messageId = idFor(`location|${content}`);
     try {
       const err = await post(messageId, content, CHAT_KIND_LOCATION);
       if (err) { setError(err); return; }
+      unsent.current = null;
       merge([mine(messageId, content, CHAT_KIND_LOCATION)]);
-    } finally { setSending(false); }
+    } finally { sendingRef.current = false; setSending(false); }
   }
 
   function whereIAmNow() {
@@ -452,8 +478,8 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel, dm }: {
    * says only what the target chose — a block by them looks like a request.
    */
   async function messageHasher(m: Shown) {
-    setMenuFor(null); setError(null);
     if (messaging) return;
+    setMenuFor(null); setError(null);
     const name = m.authorFirstName || "They";
     setMessaging(upper(m.authorId));
     try {
@@ -474,8 +500,8 @@ export function ChatThread({ kind, id, title, me, initial, back, kennel, dm }: {
   }
 
   async function setMute(mute: 0 | 1) {
-    setHeaderMenu(false);
     if (dmBusy) return;
+    setHeaderMenu(false);
     setDmBusy(true); setError(null);
     try {
       const r = await fetch("/api/member/dm", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ threadId: id, mute }) });

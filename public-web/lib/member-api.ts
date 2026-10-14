@@ -169,7 +169,13 @@ export async function createMember(p: {
   });
   const env = envelopeOf(rowsets);
   if (env.success === 1) return { ok: true };
-  return { ok: false, duplicate: env.errorCode === 10005, message: userMessageOf(rowsets) };
+  // "This email already has an account" arrives two ways: the wrapper's own
+  // pre-check (errorCode 10005), or — when a second submit races the first —
+  // hcapp_addEditUser's locked duplicate check, whose envelope is errorCode
+  // 1510 with errorType 10005. Either way the account exists (possibly made a
+  // moment ago by the first click), so the sign-in continues with a code.
+  const duplicate = Number(env.errorCode) === 10005 || Number(env.errorType) === 10005 || Number(env.errorCode) === 1510;
+  return { ok: false, duplicate, message: userMessageOf(rowsets) };
 }
 
 // ── RSVP + pack ───────────────────────────────────────────────────────────────

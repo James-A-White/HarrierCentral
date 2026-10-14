@@ -216,7 +216,7 @@ export function AddKennelForm({ countries, stamp }: { countries: Place[]; stamp:
       <form className={`${panel} space-y-4 text-center`} onSubmit={(e) => { e.preventDefault(); if (!busy) void confirm(step.requestId); }}>
         <h2 className="text-xl font-bold">Check your email</h2>
         <p className="text-zinc-700">
-          {step.again ? "We already had this request, so we sent a new code" : "We sent a six-digit code"} to{" "}
+          {step.again ? "We already had this request, so we sent your code again" : "We sent a six-digit code"} to{" "}
           <strong>{f.email.trim()}</strong>. Enter it here to confirm the request. It works for 48 hours.
         </p>
         {errorBox}
