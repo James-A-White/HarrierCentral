@@ -28,6 +28,8 @@ class EventsTableHelper extends BaseTableHelper<AppDomainType> with BaseFields {
   final String colPublicEventId = 'publicEventId';
   final String colEventStartDatetime = 'eventStartDatetime';
   final String colEventStartDatetimeGmt = 'eventStartDatetimeGmt';
+  /// E3.F1.S6: this run's pack-off, minutes after the gather (NULL = kennel default).
+  final String colPackOffMinutes = 'packOffMinutes';
   final String colKennelId = 'kennelId';
   final String colIsVisible = 'isVisible';
   final String colIsCountedRun = 'isCountedRun';
@@ -97,6 +99,7 @@ class EventsTableHelper extends BaseTableHelper<AppDomainType> with BaseFields {
             $colPublicEventId TEXT NOT NULL,
             $colEventStartDatetime TEXT NOT NULL,
             $colEventStartDatetimeGmt TEXT NOT NULL,
+            $colPackOffMinutes INT,
             $colKennelId TEXT NOT NULL,
             $colIsVisible INT NOT NULL,
             $colIsCountedRun INT NOT NULL,

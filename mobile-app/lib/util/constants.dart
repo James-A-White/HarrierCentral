@@ -204,8 +204,10 @@ const String DB_NAME = 'HcDb.db';
 // shape, and the server no longer sends priceCharged at all — which would fail
 // the NOT NULL on that column — so those phones must rebuild, not migrate.
 // Only internal testers are on 540, so the cost is one reload each.
-// ⚠ THE TWO TRAINS MUST STAY 20 APART. 3.2 (this branch) is 562, dev (3.1.x)
-// is 543 (both +10 on 2026-09-26 to force every phone to wipe and reload once).
+// ⚠ THE TWO TRAINS MUST STAY 20 APART. 3.2 (this branch) is 563, dev (3.1.x)
+// is 544 (both +10 on 2026-09-26 to force every phone to wipe and reload once;
+// both +1 on 2026-10-14 for the pack-off columns, E3.F1.S6: 3.2's migration
+// 563 = dev's 544).
 //
 // A device upgrading from 3.0.x to 3.1 has to WIPE AND RELOAD rather than
 // migrate, because this train's local schema (the JSON product catalogue, the
@@ -218,7 +220,7 @@ const String DB_NAME = 'HcDb.db';
 // becomes an in-place migration onto a schema that does not exist, which is
 // the "Database Version Mismatch" that blocked 3.1.0+1350 and +1352
 // (James, 2026-09-15).
-const int DB_VERSION = 562;
+const int DB_VERSION = 563;
 
 const double CLEAR_LATLONG = -2.0;
 

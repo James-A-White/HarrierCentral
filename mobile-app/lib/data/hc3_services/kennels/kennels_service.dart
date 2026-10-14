@@ -34,6 +34,8 @@ class KennelsTableHelper extends BaseTableHelper<AppDomainType>
   final String colKennelWebsiteUrl = 'kennelWebsiteUrl';
   final String colDefaultMessagingPlatform = 'defaultMessagingPlatform';
   final String colMessagingGroupInviteUrl = 'messagingGroupInviteUrl';
+  /// E3.F1.S6: the pack leaves this many minutes after the gather (NULL = at it).
+  final String colPackOffMinutes = 'packOffMinutes';
   final String colDefaultEventCurrencyType = 'defaultEventCurrencyType';
   final String colIntegrationType = 'integrationType';
   final String colKennelInboundIntegrationId = 'kennelInboundIntegrationId';
@@ -115,6 +117,7 @@ class KennelsTableHelper extends BaseTableHelper<AppDomainType>
             $colKennelWebsiteUrl TEXT,
             $colDefaultMessagingPlatform INT,
             $colMessagingGroupInviteUrl TEXT,
+            $colPackOffMinutes INT,
             $colDefaultEventCurrencyType TEXT,
             $colIntegrationType TEXT,
             $colKennelInboundIntegrationId INT,

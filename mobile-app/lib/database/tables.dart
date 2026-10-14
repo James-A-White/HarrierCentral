@@ -414,6 +414,22 @@ class Tables {
       appliedAtInt: 0,
     ),
 
+    // MIGRATION 563 — a run's pack-off time (E3.F1.S6, James 2026-10-14):
+    // HC.Kennel.PackOffMinutes (the kennel's default) and
+    // HC.Event.PackOffMinutes (a run's override), both minutes after the
+    // gather. Common domain only, like both tables. dev adds the same columns
+    // at its 544 in the same change, so the trains stay 20 apart. No
+    // updatedAtValue reset: every server row is NULL, which is what a phone
+    // holds for a column it never had.
+    MigrationsModel(
+      dbVersion: 563,
+      migrationText: '''
+        ALTER TABLE ${EnumDataTables.kennels.commonTableName} ADD COLUMN ${tableModel.kennelsTableHelper.colPackOffMinutes} INT;
+        ALTER TABLE ${EnumDataTables.events.commonTableName} ADD COLUMN ${tableModel.eventsTableHelper.colPackOffMinutes} INT;
+      ''',
+      appliedAtInt: 0,
+    ),
+
     // MIGRATION 562 — +10 to match dev's 533 → 543 (2026-09-26), which forces
     // every dev phone to wipe and reload after the silent-sync fix. The trains
     // must stay 20 apart, so 3.2 moves by the same amount; the jump also makes
