@@ -1008,6 +1008,7 @@ The app is used in fields with no signal by people who will not try twice. Every
 | `E14.G2.R2` | Every CATCH writes to `HC.ErrorLog` before returning or rethrowing. | The HC6 standard and the code-smell checklist. |
 | `E14.G2.R3` | A rollback never erases the error log row written for that same failure. | Ordering: `ROLLBACK` first, then the insert. Eight sites were corrected 2026-09-06. |
 | `E14.G2.R4` | A client-visible error explains the cause and the remedy in the user's terms. | The standard error envelope carrying a user message separate from debug detail. |
+| `E14.G2.R5` | Every write is safe to arrive twice — a double tap, a retry after a lost reply, or the transport's own six automatic retries never duplicates a row, a charge, an email or a push. A client acknowledges every press at once and refuses a second while busy. | The **Idempotent writes** pattern in `CLAUDE.md` (client-minted GUID per user intent + locked existence check; set-state, compare-and-set, send ids, `MERGE … HOLDLOCK`), and the same-frame feedback rule beside it; portal tabbed Save via `TabUiController.saveFromButton()` (2026-10-14). ⚠ Known gap (audit 2026-10-14, `docs/idempotency-audit-2026-10-14.md`, mobile app only): eight writes still duplicate — expense receipts, run email send (app and portal), Help / I'm Lost pushes, share song, membership extension by months, Add Down Down, haberdashery sale, promotion snooze. Run creation fixed (`E3.F1.S7`). Portal and public web not yet audited. |
 
 ### E14.G3 · Diagnostics
 

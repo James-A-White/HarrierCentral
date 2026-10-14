@@ -314,9 +314,42 @@ again is how one run was saved twice, then four times.
   editors' Save goes through `TabUiController.saveFromButton()` and its
   `isSaving`. App and web: the same shape — a flag checked and set first.
 - **Feedback is not idempotency.** A reply can still be lost and retried,
-  so a write that creates something carries a client-minted GUID the SP
-  treats as "already done" (`WITH (UPDLOCK, HOLDLOCK)`) — chat sends and run
-  creation (E3.F1.S7) are the pattern. Do both.
+  so every write follows **Idempotent writes** below as well. Do both.
+
+**Idempotent writes — every API call that writes (every client, every SP):**
+
+Every call that writes to the database must be safe to arrive twice
+(James, 2026-10-14). A write is repeated without anyone meaning it: a double
+tap, a "try again" after a lost reply, and the app's own transport, which
+retries a failed write up to six times (`ServiceCommon.sendHttpPost`,
+`_maxRetryAttempts`) — after a timeout the server may already have committed.
+The audit that found eight live cases (receipts, run emails, help pushes,
+membership extensions, down-down charges …) is
+`docs/idempotency-audit-2026-10-14.md`.
+
+The pattern, by kind of write:
+
+| The write… | Made idempotent by |
+|---|---|
+| **creates a row** (run, receipt, charge, message, photo, payment) | The client mints the GUID **once per user intent** — per editor, page or sheet, not per tap or per request — and sends it on every attempt until the server confirms. The SP checks for it `WITH (UPDLOCK, HOLDLOCK)`; found ⇒ return the existing result as success (or treat it as an edit). Never `NEWID()` for a row a client asked for. |
+| **sets a state** (RSVP, attendance, a flag, a preference) | Already idempotent: write the state, never toggle or flip it. Send the target value, not "the opposite". |
+| **adds or subtracts** (extend membership by N months, credit, a count) | Never a bare delta. Compare-and-set (send the value the client saw; apply only if it still holds, else return the current row as success), or send the absolute target. |
+| **sends something** (email, push, a fan-out) | A client-minted send id, recorded BEFORE the send under the same lock; a repeat returns the recorded result and sends nothing. |
+| **upserts by a natural key** | `MERGE … WITH (HOLDLOCK)` or a unique index on the key, so two concurrent firsts cannot both insert. |
+
+Rules that go with it:
+- A browser holds **public** ids only: the portal and the web mint the
+  PUBLIC id for a new row and the SP resolves it at the door
+  (`hcportal_addEditEvent @newPublicEventId`; `/hc-primary-keys`).
+- A **failure that left the write unconfirmed keeps its id** for the retry; a
+  success clears it. Minting a fresh id for "try again" defeats the point
+  (the help-push case in the audit).
+- A repeat answers **success with the original result**, never an error —
+  the client must not show "already exists" for its own lost reply.
+- A write that cannot be made idempotent opts out of the transport's
+  automatic retries (`noRetries: true`) and says why in a comment.
+- New and changed write SPs say in their header and contract which row of
+  the table above they follow.
 
 **Generated email addresses are shown in dark red and never sent to (every client):**
 
