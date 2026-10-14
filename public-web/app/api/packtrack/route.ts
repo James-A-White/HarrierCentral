@@ -21,7 +21,8 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Mobile app uses POST with JSON body — match that behaviour
+    // Mobile app uses POST with JSON body — match that behaviour.
+    // get-ok: GetPositions is a read; the upstream POST only carries its body.
     const res = await fetch(UPSTREAM, {
       method: "POST",
       headers: {

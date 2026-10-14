@@ -55,6 +55,18 @@ if [ -n "$sql_changed" ]; then
     done
 fi
 
+# API endpoints and public-web routes (CLAUDE.md "A GET never acts",
+# 2026-10-14): a GET handler that can write, send or consume a token is
+# acted on by mail scanners and link previews.
+web_changed="$(git -C "$root" status --porcelain -- api/Endpoints public-web/app/api 2>/dev/null | grep -E '\.(cs|ts)"?$' || true)"
+if [ -n "$web_changed" ] && [ -f "$root/tools/get_write_scan.py" ]; then
+    out="$(python3 "$root/tools/get_write_scan.py" 2>&1)"
+    rc=$?
+    if [ -n "$out" ] || [ "$rc" -ne 0 ]; then
+        report+="── tools/get_write_scan.py (exit $rc) ──"$'\n'"${out:-<no output>}"$'\n'
+    fi
+fi
+
 # Only when mobile Dart files are part of what is about to be committed.
 changed="$(git -C "$root" status --porcelain -- mobile-app/lib 2>/dev/null | grep -E '\.dart"?$' || true)"
 [ -n "$changed" ] || { [ -n "$report" ] || exit 0; }

@@ -361,7 +361,10 @@ Rules that go with it:
   prefetchers before — or instead of — the person. A link may show a page;
   only a POST (a button on that page, RFC 8058 one-click) may write, send or
   consume a token. The run email's unsubscribe link silently unsubscribed
-  members until 2026-10-14 (W1).
+  members until 2026-10-14 (W1). Enforced by
+  `python3 tools/get_write_scan.py` (MUST print nothing; the commit hook runs
+  it when `api/Endpoints` or `public-web/app/api` change); a deliberate,
+  harmless case carries `get-ok: <why>`.
 - **Every write SP declares its pattern** on one header line,
   `-- Idempotency: <pattern> — <why>`, with `<pattern>` one of `client-id`,
   `set-state`, `compare-and-set`, `send-id`, `locked-upsert`, `log-only`,
