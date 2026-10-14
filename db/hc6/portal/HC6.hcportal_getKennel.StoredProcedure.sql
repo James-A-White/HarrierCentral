@@ -32,7 +32,11 @@ AS
 --   - Removed ErrorLog inserts (error logging moved to API shim)
 --   - Removed GeneralLog inserts (request logging moved to API shim)
 --   - @publicHasherId replaced by @deviceId (device-bound auth via HC.Device lookup)
+-- Idempotency: read-only — reads the kennel; the nonApi_portalKennelAccess
+--   EXEC is a permission check that writes nothing.
 -- Changes:
+--   - 2026-10-14: socialLinksJson (E12.F4.S4), every entry — the editor
+--     shows members-only links too.
 --   - 2026-09-26: returns cardPaymentProvider, cardPaymentMerchantCode
 --     (E8.F7.S2). Deploy AFTER db/hc6/app/2026-09-22_kennel_payment_provider.sql
 --     has run: the columns do not exist before it.
@@ -120,6 +124,7 @@ BEGIN TRY
 		, k.MessagingGroupInviteUrl as messagingGroupInviteUrl
 		, k.CardPaymentProvider as cardPaymentProvider
 		, k.CardPaymentMerchantCode as cardPaymentMerchantCode
+		, k.SocialLinksJson as socialLinksJson
 		, k.KennelCoverPhoto as kennelCoverPhoto
 		, c.CityName as cityName
 		, r.RegionName as regionName

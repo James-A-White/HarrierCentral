@@ -2,7 +2,7 @@
   "schema": "HC6",
   "name": "hcportal_getKennel",
   "version": "1.4.0",
-  "description": "Returns one kennel's full profile for the portal's kennel editor and the HashRuns.org service account: identity, location (city/region/country with flags), website settings, dissemination flags, default run settings, membership settings, three payment-scheme slots, bank details, card payment provider, runs-page import status, trail symbol/type config and notification windows. Auth: HC6.ValidatePortalAuth with @publicKennelId as the context identifier. There is no kennel permission gate: any authenticated portal caller (regular user callerType 0, or service account 1/2) can read any kennel. Read-only. Permission (2026-10-13): HC6.nonApi_portalKennelAccess — AppAccessFlags 0x4000008B (SuperAdmin, Admin, Manage kennel 0x2, Manage hash cash 0x8, 0x80), manageKennelSettings, or platform CanEditKennel; otherwise {Success 0, 'Not authorised to manage this kennel'}.",
+  "description": "Returns one kennel's full profile for the portal's kennel editor and the HashRuns.org service account: identity, location (city/region/country with flags), website settings, dissemination flags, default run settings, membership settings, three payment-scheme slots, bank details, card payment provider, runs-page import status, trail symbol/type config and notification windows. Auth: HC6.ValidatePortalAuth with @publicKennelId as the context identifier. There is no kennel permission gate: any authenticated portal caller (regular user callerType 0, or service account 1/2) can read any kennel. Read-only. Permission (2026-10-13): HC6.nonApi_portalKennelAccess — AppAccessFlags 0x4000008B (SuperAdmin, Admin, Manage kennel 0x2, Manage hash cash 0x8, 0x80), manageKennelSettings, or platform CanEditKennel; otherwise {Success 0, 'Not authorised to manage this kennel'}. Idempotency: read-only — the nonApi_portalKennelAccess EXEC is a permission check that writes nothing.",
   "parameters": [
     {
       "name": "deviceId",
@@ -164,6 +164,12 @@
           "type": "NVARCHAR(100)",
           "nullable": true,
           "description": "The club's SumUp merchant code: the account the Hash Cash's SumUp app must be signed in to (E8.F7.S2)."
+        },
+        {
+          "name": "socialLinksJson",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Every social and chat link (E12.F4.S4), members-only entries included — the editor's list. JSON array or NULL."
         },
         {
           "name": "kennelCoverPhoto",
