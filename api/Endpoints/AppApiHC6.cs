@@ -267,6 +267,9 @@ namespace HcWebApi.Endpoints
                         break;
                     case "sendRoomMessage":
                         _ = SendChatNotifications(multipleResults, ChatPushKind.Room, log);
+                        // A tester's message in the Beta Testers room wakes the
+                        // cloud assistant at once (E18.F9.S3); its own replies do not.
+                        BetaRoomAssistant.KickAfterRoomMessage((int?)data.roomType, (string?)data.deviceId, log);
                         break;
                     case "markEventChatRead":
                         await SendReadSyncAsync(multipleResults, log);
