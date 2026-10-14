@@ -28,6 +28,11 @@ class RunEmailComposerController extends GetxController {
 
   final RxBool isDrafting = false.obs;
   final RxBool isSending = false.obs;
+
+  /// This composer's id for the send, minted once (E14.G2.R5, 2026-10-14):
+  /// "Send" again after a timeout whose first attempt went out is recognised
+  /// by the server, which emails nobody a second time.
+  final String _sendId = const Uuid().v4();
   final RxBool isPreviewing = false.obs;
 
   /// Subject AND message both have text. Preview, Who gets it and Send are
@@ -212,6 +217,7 @@ class RunEmailComposerController extends GetxController {
     try {
       final int sent = await const RunEmailService().send(
         _eventId,
+        sendId: _sendId,
         subject: subj,
         body: text,
         instruction: instruction.text.trim(),

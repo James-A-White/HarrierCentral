@@ -31,6 +31,11 @@ class RunEmailDialogController extends GetxController {
   final RxBool isLoading = true.obs;
   final RxBool isDrafting = false.obs;
   final RxBool isSending = false.obs;
+
+  /// This composer's id for the send, minted once (E14.G2.R5, 2026-10-14):
+  /// "Send" again after a timeout whose first attempt went out is recognised
+  /// by the server, which emails nobody a second time.
+  final String _sendId = const Uuid().v4();
   final RxBool isPreviewing = false.obs;
   final RxBool saveInstruction = false.obs;
 
@@ -225,6 +230,7 @@ class RunEmailDialogController extends GetxController {
     try {
       final int sent = await const RunEmailService().send(
         publicEventId,
+        sendId: _sendId,
         subject: subj,
         body: text,
         instruction: instruction.text.trim(),
@@ -280,9 +286,17 @@ class RunEmailDialog extends StatelessWidget {
           Obx(() {
             // Read the override sets here so a move repaints the button.
             final int n = (c.context.value?.recipientCount ?? 0) - c.excludeIds.length + c.includeIds.length;
-            final bool busy = c.isLoading.value || c.isDrafting.value || c.isSending.value;
+            // Every flag read before it is combined (an Obx must read each
+            // Rx it depends on — `||` would skip the later ones), and a
+            // Preview in flight blocks Send too.
+            final bool loading = c.isLoading.value;
+            final bool drafting = c.isDrafting.value;
+            final bool sending = c.isSending.value;
+            final bool previewing = c.isPreviewing.value;
+            final bool busy = loading || drafting || sending || previewing;
             final bool empty = !c.hasContent.value;
             return HcButton.primary(
+              loading: sending,
               icon: Icons.send_rounded,
               label: c.isSending.value
                   ? 'Sending…'
@@ -312,7 +326,10 @@ class RunEmailDialog extends StatelessWidget {
       );
     }
     final RunEmailContext? ctx = c.context.value;
-    final bool busy = c.isDrafting.value || c.isSending.value || c.isPreviewing.value;
+    final bool drafting = c.isDrafting.value;
+    final bool sending = c.isSending.value;
+    final bool previewing = c.isPreviewing.value;
+    final bool busy = drafting || sending || previewing;
     // Nothing to preview, target or send until both fields have text.
     final bool empty = !c.hasContent.value;
     return SingleChildScrollView(

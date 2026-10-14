@@ -157,6 +157,9 @@ class RunEmailService {
     bool previewToSelf = false,
     Iterable<String> includeHasherIds = const <String>[],
     Iterable<String> excludeHasherIds = const <String>[],
+    // The composer's id for this send, minted once per composer (E14.G2.R5):
+    // a "try again" after a timeout is recognised and emails nobody twice.
+    String? sendId,
   }) async {
     final Map<String, dynamic> j = await _call(publicEventId, 'send', {
       'subject': subject,
@@ -166,6 +169,7 @@ class RunEmailService {
       'previewToSelf': previewToSelf,
       'includeHasherIds': includeHasherIds.toList(),
       'excludeHasherIds': excludeHasherIds.toList(),
+      'sendId': ?sendId,
     });
     return (j['sent'] as num?)?.toInt() ?? 0;
   }
