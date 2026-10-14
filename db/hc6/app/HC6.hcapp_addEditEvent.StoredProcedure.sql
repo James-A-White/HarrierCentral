@@ -278,8 +278,14 @@ BEGIN TRY
 
         -- ---------------------------------------------------------------
         -- Determine mode: UPDATE if @eventId exists for this kennel, INSERT otherwise
+        -- The app mints a new run's id before the first send and reuses it
+        -- on a retry (E3.F1.S7, 2026-10-14), so a Save repeated after a lost
+        -- reply lands here as an edit of the run the first send created.
+        -- UPDLOCK + HOLDLOCK: two copies of the same send arriving together
+        -- must not both see "absent" and both INSERT (the second would hit
+        -- PK_Event); the second waits and then edits.
         -- ---------------------------------------------------------------
-        IF (@eventId IS NOT NULL AND EXISTS (SELECT 1 FROM HC.Event e WHERE e.id = @eventId AND e.KennelId = @kennelId))
+        IF (@eventId IS NOT NULL AND EXISTS (SELECT 1 FROM HC.Event e WITH (UPDLOCK, HOLDLOCK) WHERE e.id = @eventId AND e.KennelId = @kennelId))
         BEGIN
             -- A run the AI imported from the kennel's runs page becomes a
             -- Harrier Central run once edited here; the AI stops updating it
