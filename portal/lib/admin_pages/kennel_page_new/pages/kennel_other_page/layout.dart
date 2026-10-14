@@ -261,9 +261,34 @@ class KennelOtherTabContent extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         _buildGoogleCalendarAddressesField(),
+        _googleCalendarPublishHelp(),
       ],
     );
   }
+
+  /// With publishing on, how to give Harrier Central permission to change
+  /// the calendar. Without it Google refuses every run (Big Lik H3, 13 Oct
+  /// 2026; E3.F6.S7). Selectable so the address can be copied.
+  Widget _googleCalendarPublishHelp() => Obx(() {
+    final bool on = controller.publishToGoogleCalendar.value;
+    if (!on) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.amber.shade50,
+          border: Border.all(color: Colors.amber.shade700),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: SelectableText(
+          kGoogleCalendarPublishHelp,
+          style: const TextStyle(fontSize: 13, height: 1.4),
+        ),
+      ),
+    );
+  });
 
   /// Builds the Other section with miscellaneous switches.
   Widget _buildOtherSection(bool isMobileScreen) {

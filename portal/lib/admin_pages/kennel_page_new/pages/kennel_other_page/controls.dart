@@ -305,13 +305,12 @@ extension KennelOtherControlsExtension on KennelPageFormController {
       controlType: UiControlType.checkbox,
       sidebarEntryKey: fieldKey,
       sidebarExitKey: '${tabKey}_generic',
-      sidebarData: const SideBarData(
+      sidebarData: SideBarData(
         'Publish to Google Calendars',
         FontAwesome5Brands.google,
         'When enabled, your runs will be automatically published to the '
             'Google Calendar IDs you specify below.\n\n'
-            'This is useful for kennels that maintain their own shared '
-            'Google Calendar.',
+            '$kGoogleCalendarPublishHelp',
       ),
       editedFieldValue:
           ((originalData.publishToGoogleCalendar ?? 0) > 0).toString(),
@@ -344,13 +343,13 @@ extension KennelOtherControlsExtension on KennelPageFormController {
       controlType: UiControlType.string,
       sidebarEntryKey: fieldKey,
       sidebarExitKey: '${tabKey}_generic',
-      sidebarData: const SideBarData(
+      sidebarData: SideBarData(
         'Google Calendar IDs',
         FontAwesome5Solid.calendar_plus,
-        'Enter the Google Calendar IDs (email addresses) where your runs '
-            'should be published.\n\n'
-            'Multiple IDs can be separated by commas. Each ID is typically '
-            'the email address associated with the Google Calendar.',
+        'Enter the Google Calendar IDs where your runs should be '
+            'published (Settings › the calendar › Integrate calendar › '
+            'Calendar ID). Separate several with commas.\n\n'
+            '$kGoogleCalendarPublishHelp',
       ),
       editedFieldValue: editedData.value.publishToGoogleCalendarAddresses ?? '',
       originalFieldValue: originalData.publishToGoogleCalendarAddresses ?? '',

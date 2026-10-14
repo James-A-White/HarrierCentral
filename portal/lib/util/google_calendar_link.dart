@@ -24,3 +24,24 @@ const String kGoogleCalendarLinkHelp =
     'and copy "Public URL to this calendar" (it starts '
     'https://calendar.google.com/calendar/). The calendar must be public: '
     'Settings › the calendar › Access permissions › Make available to public.';
+
+/// The Google account that publishes runs to kennels' calendars: the Logic
+/// App PublishRunsToGoogleCalendars connects as it (connection
+/// googlecalendar-3). A kennel's calendar must be shared with it.
+const String kHarrierCentralGoogleAccount = 'harriercentral@gmail.com';
+
+/// How to let Harrier Central publish to a calendar (E3.F6.S7). Without the
+/// share Google refuses every run ("You need to have writer access to this
+/// calendar"): Big Lik H3, 13–14 Oct 2026.
+const String kGoogleCalendarPublishHelp =
+    'Harrier Central can only publish to a calendar it has been given '
+    'permission to change. In Google Calendar on a computer:\n'
+    '1. Open Settings (the gear), and under "Settings for my calendars" '
+    'choose the calendar.\n'
+    '2. In "Share with specific people or groups", choose "Add people and '
+    'groups".\n'
+    '3. Enter $kHarrierCentralGoogleAccount, set the permission to "Make '
+    'changes to events", and choose Send.\n'
+    '4. On the same page, under "Integrate calendar", copy the Calendar ID '
+    'and paste it in Google Calendar IDs here (separate several with commas).\n'
+    'Until the calendar is shared, none of your runs will appear in it.';
