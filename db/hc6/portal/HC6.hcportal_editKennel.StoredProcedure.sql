@@ -102,7 +102,11 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_editKennel]
 	-- '' = clear. Provider is a lowercase token ('sumup'); the merchant code
 	-- is the club's SumUp account (e.g. MC8ABC12).
 	@cardPaymentProvider NVARCHAR(30) = NULL,
-	@cardPaymentMerchantCode NVARCHAR(100) = NULL
+	@cardPaymentMerchantCode NVARCHAR(100) = NULL,
+	-- The kennel's social and chat links (E12.F4.S4): a JSON array checked
+	-- by HC6.SocialLinksProblem. NVARCHAR(MAX) like the column, so nothing
+	-- is truncated. NULL = unchanged; '' clears.
+	@socialLinksJson NVARCHAR(MAX) = NULL
 
 AS
 -- =====================================================================
@@ -142,7 +146,11 @@ AS
 --   - Removed @ipAddress, @ipGeoDetails (logging moved to API shim)
 --   - Removed ErrorLog inserts (error logging moved to API shim)
 --   - Removed GeneralLog inserts (request logging moved to API shim)
+-- Idempotency: set-state — every column is written to the value sent; a
+--   repeat writes the same values again.
 -- Changes:
+--   - 2026-10-14: @socialLinksJson (E12.F4.S4) — refused with the first
+--     problem HC6.SocialLinksProblem finds. Column added 2026-10-10.
 --   - 2026-10-05: @inboundIntegrationId — the editor's Inbound Integration
 --     drop-down; must name an inbound HC.Integration row.
 --   - 2026-10-04: @runsPageUrl (kennel runs-page import). Deploy AFTER
@@ -187,6 +195,17 @@ BEGIN TRY
 	BEGIN
 		SELECT 0 AS Success, 'The runs page must be a web address starting with https:// (500 characters at most).' AS ErrorMessage;
 		RETURN;
+	END
+
+	-- Validation: social links (the same rules the portal editor applies)
+	IF @socialLinksJson IS NOT NULL AND LEN(@socialLinksJson) > 0
+	BEGIN
+		DECLARE @socialProblem NVARCHAR(300) = HC6.SocialLinksProblem(@socialLinksJson);
+		IF @socialProblem IS NOT NULL
+		BEGIN
+			SELECT 0 AS Success, @socialProblem AS ErrorMessage;
+			RETURN;
+		END
 	END
 
 	-- Validation: inbound integration (an inbound HC.Integration row)
@@ -390,6 +409,9 @@ BEGIN TRY
 		                           ELSE NULLIF(@cardPaymentProvider, N'') END,
 		CardPaymentMerchantCode = CASE WHEN @cardPaymentMerchantCode IS NULL THEN CardPaymentMerchantCode
 		                               ELSE NULLIF(@cardPaymentMerchantCode, N'') END,
+		-- NULL = unchanged; '' clears.
+		SocialLinksJson = CASE WHEN @socialLinksJson IS NULL THEN SocialLinksJson
+		                       ELSE NULLIF(@socialLinksJson, N'') END,
 		updatedAt = SYSUTCDATETIME()
 	WHERE id = @kennelId;
 
