@@ -23,6 +23,7 @@ AS
 --                                         from @IsFuture)
 -- Returns:     Rowset 0: { TotalMatchingEvents INT }
 --              Rowset 1: one row per event — see column list below
+-- Changes: 2026-10-14 — PackOffMinutes (E3.F1.S6), effective minutes after the gather.
 -- Author:      Harrier Central
 -- Created:     2026-05-10
 -- HC5 Source:  None — new for HC6 RunListBlock multi-kennel support
@@ -161,6 +162,8 @@ BEGIN TRY
 
         -- Timing
         CAST(e.EventStartDatetime AS datetime2(7)) AS EventStartDatetime,
+        -- Pack-off (E3.F1.S6): minutes after the gather, run else kennel; NULL = at the gather.
+        COALESCE(e.PackOffMinutes, (SELECT kp.PackOffMinutes FROM HC.Kennel kp WHERE kp.id = e.KennelId)) AS PackOffMinutes,
         CAST(e.EventEndDatetime   AS datetime2(7)) AS EventEndDatetime,
         e.EventStartDatetimeGmt,
         vk.IANATimezone                            AS KennelIANATimezone,
@@ -228,6 +231,8 @@ BEGIN TRY
 
         -- Timing
         CAST(e.EventStartDatetime AS datetime2(7)) AS EventStartDatetime,
+        -- Pack-off (E3.F1.S6): minutes after the gather, run else kennel; NULL = at the gather.
+        COALESCE(e.PackOffMinutes, (SELECT kp.PackOffMinutes FROM HC.Kennel kp WHERE kp.id = e.KennelId)) AS PackOffMinutes,
         CAST(e.EventEndDatetime   AS datetime2(7)) AS EventEndDatetime,
         e.EventStartDatetimeGmt,
         vk.IANATimezone                            AS KennelIANATimezone,
