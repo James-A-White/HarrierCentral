@@ -14,6 +14,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_sendEventMessage]
 AS
 -- =====================================================================
 -- Procedure: HC6.hcportal_sendEventMessage
+-- Idempotency: client-id — @messageId minted once per message; a repeat by the same sender returns the stored message and pushes nobody.
 -- Description: Sends a message to event participants based on
 --   releasability flags (admins, members, followers, RSVPs, hares,
 --   everyone). Inserts into HC.EventMessage and returns the message
@@ -65,6 +66,13 @@ AS
 --     180-day-idle devices skipped; deleted hashers (Hasher.Removed = 1)
 --     and removed kennel links skipped. Rowsets 1 and 2 keep their columns
 --     (UserId, DisplayName, FcmToken). The CATCH now logs to HC.ErrorLog.
+--   2026-10-14: IDEMPOTENT ("Idempotent writes": creates a row — the client
+--     mints the id once per message). An @messageId already stored for the
+--     same sender and run (checked WITH (UPDLOCK, HOLDLOCK) inside the
+--     transaction) is a repeat: success, rowset 0 the stored message,
+--     rowsets 1 and 2 EMPTY (no second push). It used to hit the primary key
+--     and answer with an error. The same id on another sender or run is
+--     refused ('messageId is already in use'). Idempotency audit P2.
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -201,6 +209,33 @@ END
     -- Insert the message inside a transaction
     BEGIN TRANSACTION;
 
+    -- Idempotent writes, "creates a row" (2026-10-14, idempotency audit P2):
+    -- the portal mints @messageId once per message and sends the SAME id on
+    -- a Retry. Found under lock => this is a repeat of a send that already
+    -- committed: answer success with the stored message and push nobody
+    -- (#pushAudience is emptied below), as hcapp_sendEventMessage's
+    -- @isResend does. An id held by another sender or another run is a
+    -- collision, not a repeat, and is refused.
+    DECLARE @isResend SMALLINT = 0,
+            @existingUserId UNIQUEIDENTIFIER,
+            @existingEventId UNIQUEIDENTIFIER;
+    SELECT @existingUserId = em.UserId, @existingEventId = em.EventId
+    FROM HC.EventMessage em WITH (UPDLOCK, HOLDLOCK)
+    WHERE em.id = @messageId;
+
+    IF (@existingEventId IS NOT NULL)
+    BEGIN
+        IF (@existingUserId <> @hasherId OR @existingEventId <> @eventId)
+        BEGIN
+            ROLLBACK TRANSACTION;
+            SELECT 0 AS Success, 'messageId is already in use' AS ErrorMessage;
+            RETURN;
+        END
+        SET @isResend = 1;
+    END
+
+    IF (@isResend = 0)
+    BEGIN
         -- A reply quotes a message of THIS run's chat (E9.F1.S21); anything else sends plain.
     IF (@replyToMessageId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM HC.EventMessage r
                                                     WHERE r.id = @replyToMessageId AND r.EventId = @eventId))
@@ -231,6 +266,7 @@ END
                   , @messageKind
                   , @replyToMessageId
                   );
+    END
 
     COMMIT TRANSACTION;
 
@@ -337,6 +373,11 @@ END
            AND COALESCE(NULLIF(hem.EventNotificationPreference, 0), hkm.KennelNotificationPreference, 0) != 2
            AND (hkm.Following != 0 OR hkm.MembershipExpirationDate > GETDATE()))
       );
+
+    -- A repeat of a send that already committed pushes nobody: the first
+    -- call did. Rowsets 1 and 2 keep their shape and come back empty, so the
+    -- shim's SendNotifications sends nothing.
+    IF (@isResend = 1) DELETE FROM #pushAudience;
 
     -- Rowset 1: FullPushNotificationRecipients — visible banner.
     -- BadgeTotal: the recipient's unread total for the app ICON

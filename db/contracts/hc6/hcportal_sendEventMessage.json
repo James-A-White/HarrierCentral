@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_sendEventMessage",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Posts a message to a run's chat from the portal and returns the push audience. Inserts into HC.EventMessage (optionally a photo/location kind, optionally quoting a message of the same run), then returns the message details and two FCM token lists — visible push and silent (badge-only) push — built with the same rules as hcapp_sendEventMessage: the effective preference (run bell when non-zero, else kennel bell), the 6-hour window for preference 4, HC6.RunChatTie for which runs buzz, one push per device token, retired / 180-day-idle devices and removed hashers skipped, and senders blocked by the recipient left out. Auth: HC6.ValidatePortalAuth with the compound param string '<publicEventId>:<messageId>'; service accounts refused. There is NO check that the caller belongs to the kennel or may post in that run's chat. Who may post (2026-10-13): the sender must have a HasherKennelMap row for the run's kennel (removed = 0) or a HasherEventMap row on the run, as hcapp_sendEventMessage; otherwise {Success 0, 'Not authorised to post in this run''s chat'}.",
   "parameters": [
     {
@@ -30,7 +30,7 @@
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "EventMessage.id",
-      "description": "Required: client-generated message ID. Used as the primary key for the EventMessage INSERT."
+      "description": "Required: client-generated message ID. Used as the primary key for the EventMessage INSERT. Minted ONCE per message by the portal and resent unchanged on Retry: an id already stored for the same sender and run returns the stored message as success and pushes nobody (2026-10-14)."
     },
     {
       "name": "messageTitle",
@@ -230,7 +230,8 @@
     "The API shim sends a visible push to rowset 2 tokens and a silent data push to rowset 3 tokens",
     "Reads HC6.RunChatTie, HC6.UserUnreadChatTotal, HC6.ChatMessagePreview, HC6.ChatMessageKindError, HC6.MinBuildForIconBadge",
     "On a runtime error: INSERT HC.ErrorLog after the ROLLBACK",
-    "Membership check reads HC.HasherKennelMap / HC.HasherEventMap before the insert."
+    "Membership check reads HC.HasherKennelMap / HC.HasherEventMap before the insert.",
+    "A repeat @messageId (same sender and run) inserts nothing and returns empty recipient rowsets: no second push."
   ],
   "codeSmells": [
     {
@@ -262,6 +263,7 @@
   "changes": [
     "1.2.0 (2026-09-25): rowsets 1 and 2 keep their columns (UserId, DisplayName, FcmToken); the audience rules now match hcapp_sendEventMessage (pref IN (1,3,4), one push per token, retired/180-day-idle devices, deleted hashers and removed links skipped). The sender still gets the silent echo when following/member and not switched off.",
     "2026-09-29 (E9.F1.S11-S14): additive — see docs/chat_photos_location_delete_plan.md",
-    "2026-10-13 (contract sweep): MessageContent widened to NVARCHAR(4000); MessageKind moved to its real position (after MessageContent); DisplayName added to the two recipient rowsets; description now covers RunChatTie, blocking and the missing post gate."
+    "2026-10-13 (contract sweep): MessageContent widened to NVARCHAR(4000); MessageKind moved to its real position (after MessageContent); DisplayName added to the two recipient rowsets; description now covers RunChatTie, blocking and the missing post gate.",
+    "1.6.0 (2026-10-14): IDEMPOTENT (Idempotent writes: creates a row; client mints the id once per message; idempotency audit P2). An @messageId already stored for the same sender and run, checked WITH (UPDLOCK, HOLDLOCK) inside the transaction, is a repeat: success, rowset 0 = the stored message (empty if it has since been deleted), rowsets 1 and 2 EMPTY so the shim pushes nothing. It used to fail on the primary key. The same id held by another sender or run is refused with the error envelope (\"messageId is already in use\"). Rowset shapes unchanged."
   ]
 }
