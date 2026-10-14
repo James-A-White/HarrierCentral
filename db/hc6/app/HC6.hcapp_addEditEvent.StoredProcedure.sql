@@ -49,7 +49,11 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_addEditEvent]
     @deleted                   SMALLINT            = NULL,
     @hasherEventMapUpdatedAfter   NVARCHAR(50)     = NULL,
     @hasherKennelMapUpdatedAfter  NVARCHAR(50)     = NULL,
-    @hares                     NVARCHAR(2500)      = NULL
+    @hares                     NVARCHAR(2500)      = NULL,
+    -- Pack-off (E3.F1.S6): minutes after the gather (@startDatetime) that the
+    -- pack leaves. NULL / -1 = keep, -2 = clear (use the kennel's default),
+    -- 0..600 = this run's own pack-off. Same sentinels as the prices.
+    @packOffMinutes            SMALLINT            = NULL
 
 AS
 -- =====================================================================
@@ -86,6 +90,8 @@ AS
 --   On success (rowset 1+): syncUserData rowsets
 --   On error (rowset 1): standard HC6 error detail
 -- Idempotency: client-id — the app mints a new run's @eventId once per editor; an existing id in the kennel is an edit (UPDLOCK, HOLDLOCK), never a second run (E3.F1.S7).
+-- Changes:
+--   2026-10-14: @packOffMinutes (E3.F1.S6) — refused (1227) outside 0..600.
 -- Author: Harrier Central
 -- Created: 2026-05-10
 -- HC5 Source: HC5.hcapp_addEditEvent
@@ -197,6 +203,24 @@ IF (@fbLongitude= -1) SET @fbLongitude= NULL;
 IF (@eventPriceForMembers    = -1) SET @eventPriceForMembers    = NULL;
 IF (@eventPriceForNonMembers = -1) SET @eventPriceForNonMembers = NULL;
 IF (@eventPriceForExtras     = -1) SET @eventPriceForExtras     = NULL;
+
+-- packOffMinutes: -1 = keep (becomes NULL), -2 = clear (handled inline),
+-- otherwise 0..600 minutes after the gather.
+IF (@packOffMinutes = -1) SET @packOffMinutes = NULL;
+IF (@packOffMinutes IS NOT NULL AND @packOffMinutes <> -2
+    AND (@packOffMinutes < 0 OR @packOffMinutes > 600))
+BEGIN
+    SET @errorCode = 1227; SET @errorType = 12; SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Pack-off out of range',
+            'packOffMinutes ' + CAST(@packOffMinutes AS NVARCHAR(10)) + ' is outside 0..600', @procName, @userId);
+    SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+           'Pack-off time' AS errorTitle,
+           'The pack must leave within 10 hours of the gather.' AS errorUserMessage,
+           @procName AS errorProc;
+    RETURN;
+END
 
 -- absoluteEventNumber: -1 = keep (becomes NULL), 0 = explicitly clear
 IF (@absoluteEventNumber = -1) SET @absoluteEventNumber = NULL;
@@ -338,6 +362,7 @@ BEGIN TRY
                 EventPriceForExtras     = CASE WHEN @eventPriceForExtras     = -2 THEN NULL ELSE COALESCE(@eventPriceForExtras,     EventPriceForExtras)     END,
                 ExtrasDescription      = CASE WHEN @extrasDescription = '<none>' THEN NULL ELSE COALESCE(@extrasDescription, ExtrasDescription) END,
                 AbsoluteEventNumber    = CASE WHEN @absoluteEventNumber = 0 THEN NULL ELSE COALESCE(@absoluteEventNumber, AbsoluteEventNumber) END,
+                PackOffMinutes         = CASE WHEN @packOffMinutes = -2 THEN NULL ELSE COALESCE(@packOffMinutes, PackOffMinutes) END,
                 EventCurrencyType      = COALESCE(@eventCurrencyType, EventCurrencyType),
                 deleted                = COALESCE(@deleted, deleted),
                 EventSource            = 'HC app',
@@ -407,7 +432,7 @@ BEGIN TRY
                      [Latitude], [Longitude], [FbLatitude], [FbLongitude], [EventGeolocation],
                      [EventPriceForMembers], [EventPriceForNonMembers], [EventPriceForExtras],
                      [ExtrasDescription], [AbsoluteEventNumber], [EventCurrencyType],
-                     [Hares], [EventSource], [deleted], [updatedAt], [countryId])
+                     [Hares], [EventSource], [deleted], [updatedAt], [countryId], [PackOffMinutes])
                 VALUES
                     (@eventId, @kennelId,
                      COALESCE(@startDatetime, GETDATE()), @endDatetime,
@@ -457,7 +482,8 @@ BEGIN TRY
                      'HC app',
                      COALESCE(@deleted, 0),
                      GETDATE(),
-                     @countryId);
+                     @countryId,
+                     CASE WHEN @packOffMinutes = -2 THEN NULL ELSE @packOffMinutes END);
             END
         END
 

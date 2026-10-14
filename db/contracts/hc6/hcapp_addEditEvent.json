@@ -322,6 +322,13 @@
       "nullable": true,
       "mapsToColumn": "Event.Hares",
       "description": "Comma-separated hare names (not IDs). Sentinel: LEN < 4 normalised to NULL (keep existing). '<remove>' clears to NULL. Unicode line/paragraph separators (U+2028, U+2029) are stripped. The HC5 INSERT bug (using @locationOneLineDesc instead of @hares) is fixed in HC6."
+    },
+    {
+      "name": "packOffMinutes",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "Event.PackOffMinutes",
+      "description": "Pack-off (E3.F1.S6): minutes after the gather (the start time) that the pack leaves. NULL / -1 = keep, -2 = clear (the run then uses the kennel's default), 0..600 = this run's own. Outside 0..600 is refused. Refusal: errorCode 1227 / errorType 12."
     }
   ],
   "rowsets": [
