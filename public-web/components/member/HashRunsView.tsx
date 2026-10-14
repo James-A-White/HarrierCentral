@@ -14,7 +14,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { MyRun } from "@/lib/member-api";
-import { HC_BLUE, HC_RED, appDate, bellIcon, envelopeIcon, formatDistance, haversine, prefersImperial } from "@/components/member/app-look";
+import { HC_BLUE, HC_RED, appDate, appPackOff, bellIcon, envelopeIcon, formatDistance, haversine, prefersImperial } from "@/components/member/app-look";
 import { DEFAULT_RADIUS, MILE_IN_METRES, RADII, currentRadius, radiusLabel } from "@/lib/distance";
 import { ChoicePopup, runBellChoices, runEnvelopeChoices, type Choice } from "@/components/member/ChoicePopup";
 
@@ -381,6 +381,7 @@ export function RunCard({ run, past, distance, menuOpen, onMenu, onRsvp, onPref,
 }) {
   const href = `/${run.KennelSlug}/${run.EventNumber}?back=${encodeURIComponent(back)}`;
   const when = run.EventStartDatetimeGmt ?? run.EventStartDatetime;
+  const packOff = appPackOff(run.EventStartDatetime, run.EventStartDatetimeGmt, run.KennelIANATimezone, run.PackOffMinutes);
   const scope = scopeText(run.EventGeographicScope);
   // The hasher's own choice wins; Auto follows this run's kennel.
   const metric = !prefersImperial(run.HasherPreferences, run.DistanceUnitsPref);
@@ -438,6 +439,7 @@ export function RunCard({ run, past, distance, menuOpen, onMenu, onRsvp, onPref,
             {run.IsCountedRun ? `Run #${run.EventNumber}, ` : "Run / Event "}{relativeTime(when)}
           </div>
           <div suppressHydrationWarning>{appDate(run.EventStartDatetime, run.EventStartDatetimeGmt, run.KennelIANATimezone)}{tzSuffix(run)}</div>
+          {packOff && <div suppressHydrationWarning>Pack off {packOff}</div>}
           {run.Hares && <div className="truncate">Hares: {run.Hares}</div>}
           <div className="truncate">{run.LocationOneLineDesc || "No location provided"}</div>
           {distance != null && <div className="truncate">{formatDistance(distance, metric)} from here</div>}

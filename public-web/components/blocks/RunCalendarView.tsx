@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { MapPin, Clock } from "lucide-react";
 import type { EnrichedRun, DisplayOptions } from "./RunListBlock";
+import { packOffTime } from "@/lib/member-format";
 
 interface RunCalendarViewProps {
   runs: EnrichedRun[];
@@ -132,6 +133,8 @@ export function RunCalendarView({
             {/* Runs for this day — stacked as rows */}
             {dayRuns.map((entry, entryIdx) => {
               const run = entry.event;
+              const gatherTime = formatTime(entry);
+              const packOff = packOffTime(gatherTime, run.PackOffMinutes);
               const isGuestRun = entry.kennel.slug !== slug;
               const href = isGuestRun
                 ? display.isCustomDomain
@@ -230,12 +233,13 @@ export function RunCalendarView({
 
                       {display.showTime && (
                         <div
-                          className="flex items-center gap-1 text-sm"
+                          className="flex min-w-0 flex-wrap items-center gap-x-1 text-sm"
                           style={{ color: display.detailColor }}
                           suppressHydrationWarning
                         >
                           <Clock className="h-3 w-3 shrink-0" />
-                          {formatTime(entry)}
+                          {gatherTime}
+                          {packOff && <span className="whitespace-nowrap">· Pack off {packOff}</span>}
                         </div>
                       )}
                       {display.showLocation && (run.LocationOneLineDesc ?? run.LocationCity) && (

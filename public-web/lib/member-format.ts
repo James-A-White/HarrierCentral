@@ -1,4 +1,5 @@
-/** Date helpers for the member pages — the same shapes the global runs list uses. */
+/** Date helpers for the member pages — the same shapes the global runs list uses.
+ *  packOffTime() is shared by every run view (kennel, global and member pages). */
 const CURRENT_YEAR = new Date().getFullYear();
 
 export function relativeTime(iso: string): string {
@@ -42,4 +43,33 @@ export function nextMilestone(runs: number): number {
   if (runs < 50) return 50;
   if (runs < 100) return 100;
   return (Math.floor(runs / 50) + 1) * 50;
+}
+
+/**
+ * A run's pack-off clock time (E3.F1.S6): the gather's displayed wall-clock
+ * time, exactly as the run view already formats it ("12:00", "12:00 BST" or
+ * "12:00 PM"), plus the effective pack-off minutes. Pure wall-clock arithmetic
+ * — no time-zone conversion — so the result is in the same local clock as the
+ * gather it is shown beside, and in the same 24h/12h style (the zone label,
+ * if any, is left to the caller). Returns null when there is no pack-off
+ * (null, absent or <= 0 minutes) or the time cannot be read, so callers
+ * render exactly as before.
+ */
+export function packOffTime(gatherTime: string | null | undefined, minutes: number | null | undefined): string | null {
+  if (!gatherTime || minutes == null || !(minutes > 0)) return null;
+  const m = /^(\d{1,2}):(\d{2})(?:(\s*)([AaPp])\.?\s*[Mm]\.?)?/.exec(gatherTime.trim());
+  if (!m) return null;
+  let hour = Number(m[1]);
+  const meridiem = m[4]?.toUpperCase();
+  if (meridiem) hour = (hour % 12) + (meridiem === "P" ? 12 : 0);
+  const total = (hour * 60 + Number(m[2]) + Math.round(minutes)) % 1440;
+  const h24 = Math.floor(total / 60);
+  const mm = String(total % 60).padStart(2, "0");
+  if (meridiem) {
+    // Keep the original's spacing (Intl uses a narrow no-break space) and case.
+    const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+    const suffix = h24 < 12 ? "AM" : "PM";
+    return `${h12}:${mm}${m[3]}${m[4] === m[4].toLowerCase() ? suffix.toLowerCase() : suffix}`;
+  }
+  return `${m[1].length === 2 ? String(h24).padStart(2, "0") : h24}:${mm}`;
 }

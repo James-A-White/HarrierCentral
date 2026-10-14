@@ -233,6 +233,11 @@ export interface MyRun {
   EventEndDatetime: string | null;
   EventStartDatetimeGmt: string | null;
   KennelIANATimezone: string | null;
+  /**
+   * Effective pack-off, minutes after the gather (the run's own, else the
+   * kennel's default). Null/absent = the pack leaves at the gather (E3.F1.S6).
+   */
+  PackOffMinutes?: number | null;
   EventTypeName: string | null;
   EventPriceForMembers: number | null;
   EventPriceForNonMembers: number | null;
@@ -366,6 +371,8 @@ export interface HistoryRunRow {
   countryName: string; flagFile: string | null; countryCode: string | null;
   kennelName: string; kennelShortName: string; kennelSlug: string; kennelLogo: string | null;
   digitsAfterDecimal: number; currencySymbol: string; eventStartDatetime: string;
+  /** Effective pack-off, minutes after the gather; null/absent = none (E3.F1.S6). */
+  packOffMinutes?: number | null;
   extrasDescription: string | null; extrasPrice: number | null; hemId: string | null;
   attendenceState: number; isHare: number;
   creditAmount: number | null; debitAmount: number | null; creditAvailable: number | null; paymentType: number | null; doPayForExtras: number | null;

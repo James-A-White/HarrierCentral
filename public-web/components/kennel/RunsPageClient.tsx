@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import type { RunEvent } from "@/lib/api";
 import type { KennelContext } from "@/lib/types/kennel";
 import { RunDetail } from "./RunDetail";
+import { packOffTime } from "@/lib/member-format";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -41,6 +42,7 @@ function RunListItem({
   const displayTz = gmt && tz ? tz : "UTC";
   const cardDate = src.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: displayTz });
   const cardTime = src.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: displayTz });
+  const packOff = packOffTime(cardTime, run.PackOffMinutes);
   const rel = relativeTime(gmt ?? run.EventStartDatetime);
 
   const addressParts = [run.LocationStreet, run.LocationCity].filter(Boolean).join(", ");
@@ -96,7 +98,7 @@ function RunListItem({
             {run.IsCountedRun ? `Run #${run.EventNumber}, ${rel}` : rel}
           </span>
           <span className="text-sm leading-snug" style={{ color: "var(--kennel-text-muted)" }} suppressHydrationWarning>
-            {cardDate} at {cardTime}
+            {cardDate} at {cardTime}{packOff && <> · <span className="whitespace-nowrap">Pack off {packOff}</span></>}
           </span>
           {addressParts && (
             <span className="text-sm leading-snug" style={{ color: "var(--kennel-text-muted)" }}>

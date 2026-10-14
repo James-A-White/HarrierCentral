@@ -7,6 +7,8 @@
  * #N" and purple.shade800 for haring — and the RSVP as the three checkbox
  * icons, not words.
  */
+import { packOffTime } from "@/lib/member-format";
+
 export const HC_BLUE = "#1565C0";
 export const HC_RED = "#B71C1C";
 export const HC_GREEN = "#2E7D32";
@@ -32,6 +34,14 @@ export function appDate(local: string, gmt?: string | null, tz?: string | null):
   const day = src.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone, ...(showYear && { year: "numeric" }) });
   const time = src.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone });
   return `${day} at ${time}`;
+}
+
+/** The pack-off time beside appDate()'s gather time, in the same style
+ *  ("12:30 PM"); null when the run has none (E3.F1.S6). */
+export function appPackOff(local: string, gmt: string | null | undefined, tz: string | null | undefined, minutes: number | null | undefined): string | null {
+  if (minutes == null || !(minutes > 0)) return null;
+  const gather = appDate(local, gmt, tz).split(" at ").pop();
+  return packOffTime(gather, minutes);
 }
 
 // ── Distance: one rule for the whole web, see lib/distance.ts ───────────────

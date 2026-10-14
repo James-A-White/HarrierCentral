@@ -12,6 +12,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import dynamic from "next/dynamic";
 import type { GlobalRunRow, GetGlobalRunsResult } from "@/lib/api";
 import { RunDetail } from "@/components/kennel/RunDetail";
+import { packOffTime } from "@/lib/member-format";
 
 const RunLocationMap = dynamic(() => import("./RunLocationMap"), { ssr: false });
 
@@ -119,6 +120,7 @@ function GlobalRunCard({
   const primaryColor = run.PrimaryColor ?? "#dc2626";
   const rel = relativeTime(run.EventStartDatetimeGmt ?? run.EventStartDatetime);
   const { short, time } = formatDate(run);
+  const packOff = packOffTime(time, run.PackOffMinutes);
   const location = [run.LocationCity, run.LocationCountry].filter(Boolean).join(", ");
 
   return (
@@ -172,8 +174,9 @@ function GlobalRunCard({
           </p>
 
           {/* Date and time */}
-          <p className="text-xs text-zinc-700 leading-tight truncate" suppressHydrationWarning>
-            {short} at {time}
+          {/* Wraps (rather than truncates) when a pack-off is added, so it is never cut off. */}
+          <p className={`text-xs text-zinc-700 leading-tight ${packOff ? "break-words" : "truncate"}`} suppressHydrationWarning>
+            {short} at {time}{packOff && <> · <span className="whitespace-nowrap">Pack off {packOff}</span></>}
           </p>
 
           {/* City, Country */}

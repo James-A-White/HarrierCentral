@@ -5,6 +5,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Navigation, ExternalLink, Copy, Check, Footprints, Download } from "lucide-react";
 import { formatDistance, prefersImperial } from "@/lib/distance";
+import { packOffTime } from "@/lib/member-format";
 import {
   downloadOfficialTrail, laneColor, laneLabel, laneLengthM, orderedLanes, type OfficialTrail,
 } from "@/lib/official-trail";
@@ -17,6 +18,8 @@ export interface RunDetailRun {
   EventStartDatetime: string;
   EventStartDatetimeGmt: string | null;
   KennelIANATimezone: string | null;
+  /** Effective pack-off, minutes after the gather; null/absent = none (E3.F1.S6). */
+  PackOffMinutes?: number | null;
   EventName: string;
   EventNumber: number;
   Hares: string | null;
@@ -188,6 +191,9 @@ export function RunDetail({ run, kennel, canonicalPath, extraButtons, mapHeight 
   // The run's official (hare's) trail, once the run has ended (E5.F6.S6).
   const [officialTrail, setOfficialTrail] = useState<OfficialTrail>({ lanes: [], info: [] });
   const { date, kennelTime, browserTime } = fmtRunTime(run);
+  // Pack-off shares the gather's wall clock, so it carries the same zone label.
+  const packOffClock = packOffTime(kennelTime, run.PackOffMinutes);
+  const packOff = packOffClock ? packOffClock + kennelTime.replace(/^\d{1,2}:\d{2}/, "") : null;
   const mapsLink = mapsUrl(run.Latitude, run.Longitude, run.LocationOneLineDesc ?? run.EventName);
   const w3wLink = parseW3w(run.w3wJson);
 
@@ -253,12 +259,13 @@ export function RunDetail({ run, kennel, canonicalPath, extraButtons, mapHeight 
           label="Time"
           value={
             <span suppressHydrationWarning>
-              {kennelTime}
+              {packOff ? `Gather ${kennelTime}` : kennelTime}
               {browserTime && (
                 <span className="block text-sm font-normal mt-0.5">
                   {browserTime} your time
                 </span>
               )}
+              {packOff && <span className="block">Pack off {packOff}</span>}
             </span>
           }
         />

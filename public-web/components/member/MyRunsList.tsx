@@ -11,7 +11,7 @@ import Link from "next/link";
 import type { MyRun } from "@/lib/member-api";
 import { bodyText } from "@/components/member/app-look";
 import { relativeTime } from "@/lib/member-format";
-import { APP_BAR, HC_BLUE, appDate, card, cardDivider, mutedText, titleText } from "@/components/member/app-look";
+import { APP_BAR, HC_BLUE, appDate, appPackOff, card, cardDivider, mutedText, titleText } from "@/components/member/app-look";
 
 const RSVP_YES = 3, RSVP_MAYBE = 2, RSVP_NO = 1, AT_HASH = 20;
 type Answer = "yes" | "no" | "maybe";
@@ -135,6 +135,7 @@ function stateIcon(run: MyRun): string {
 
 function RunCard({ run, children }: { run: MyRun; children?: React.ReactNode }) {
   const when = run.EventStartDatetimeGmt ?? run.EventStartDatetime;
+  const packOff = appPackOff(run.EventStartDatetime, run.EventStartDatetimeGmt, run.KennelIANATimezone, run.PackOffMinutes);
   return (
     <li className={`${card} overflow-hidden`}>
       {/* Header: my state as the app's checkbox, then the title. */}
@@ -155,6 +156,7 @@ function RunCard({ run, children }: { run: MyRun; children?: React.ReactNode }) 
             {run.IsCountedRun ? `Run #${run.EventNumber}, ` : "Run / Event "}{relativeTime(when)}
           </p>
           <p className={bodyText} suppressHydrationWarning>{appDate(run.EventStartDatetime, run.EventStartDatetimeGmt, run.KennelIANATimezone)}</p>
+          {packOff && <p className={bodyText} suppressHydrationWarning>Pack off {packOff}</p>}
           {run.Hares && <p className={bodyText}>Hares: {run.Hares}</p>}
           {run.LocationOneLineDesc
             ? <p className={`${bodyText} truncate`}>{run.LocationOneLineDesc}</p>

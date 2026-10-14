@@ -6,6 +6,7 @@ import { MapPin, Clock, Calendar } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { EnrichedRun, DisplayOptions } from "./RunListBlock";
 import ViewerLocalTime from "@/components/ViewerLocalTime";
+import { packOffTime } from "@/lib/member-format";
 
 const LOGO_PX: Record<string, number> = { sm: 16, md: 24, lg: 36, xl: 52 };
 
@@ -45,6 +46,7 @@ export function RunCardView({ runs, slug, display, flat = false }: RunCardViewPr
       {runs.map((entry, i) => {
         const run = entry.event;
         const { shortDate, weekday, time } = formatDateParts(entry);
+        const packOff = packOffTime(time, run.PackOffMinutes);
         const kennelColor = entry.kennel.primaryColor ?? "var(--kennel-accent, var(--kennel-primary))";
         const isGuestRun = entry.kennel.slug !== slug;
         const href = isGuestRun
@@ -127,7 +129,7 @@ export function RunCardView({ runs, slug, display, flat = false }: RunCardViewPr
               {/* Time */}
               {display.showTime && (
                 <div
-                  className="mt-0.5 flex items-center gap-1 text-sm"
+                  className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1 text-sm"
                   style={{ color: display.detailColor }}
                   suppressHydrationWarning
                 >
@@ -138,6 +140,7 @@ export function RunCardView({ runs, slug, display, flat = false }: RunCardViewPr
                     kennelTz={entry.kennel.ianaTimezone ?? run.KennelIANATimezone}
                     className="italic opacity-70"
                   />
+                  {packOff && <span className="whitespace-nowrap">· Pack off {packOff}</span>}
                 </div>
               )}
 

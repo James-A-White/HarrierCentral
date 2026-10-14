@@ -9,6 +9,7 @@ import { toKennelContext } from "@/lib/kennel-utils";
 import { StickyNav } from "@/components/StickyNav";
 import { KennelBackground } from "@/components/kennel/KennelBackground";
 import { Card, CardContent } from "@/components/ui/card";
+import { packOffTime } from "@/lib/member-format";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -112,6 +113,9 @@ export default async function NextRunPage({ params }: PageProps) {
 
   const kennel = toKennelContext(kennelData);
   const { date, kennelTime } = formatDateLong(event);
+  // Pack-off shares the gather's wall clock, so it carries the same zone label (E3.F1.S6).
+  const packOffClock = packOffTime(kennelTime, event.PackOffMinutes);
+  const packOff = packOffClock ? packOffClock + kennelTime.replace(/^\d{1,2}:\d{2}/, "") : null;
   const mapsLink = mapsUrl(event.Latitude, event.Longitude, event.LocationOneLineDesc ?? event.EventName);
   const w3wLink = parseW3w(event.w3wJson);
 
@@ -223,6 +227,9 @@ export default async function NextRunPage({ params }: PageProps) {
                         kennelFormatted={kennelTime}
                         className="block text-base opacity-60 mt-0.5 ml-5"
                       />
+                    )}
+                    {packOff && (
+                      <span className="block mt-0.5 ml-5">Pack off {packOff}</span>
                     )}
                   </span>
                 }

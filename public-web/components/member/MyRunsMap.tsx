@@ -11,7 +11,7 @@ import L from "leaflet";
 import { safeFlyTo } from "@/lib/leaflet-teardown";
 import Link from "next/link";
 import type { MyRun } from "@/lib/member-api";
-import { formatRunDate, relativeTime } from "@/lib/member-format";
+import { formatRunDate, packOffTime, relativeTime } from "@/lib/member-format";
 
 const pinIcon = L.icon({ iconUrl: "/images/map_pin_foot.png", iconSize: [37, 44], iconAnchor: [18, 44], popupAnchor: [0, -40] });
 
@@ -55,6 +55,7 @@ export default function MyRunsMap({ runs }: { runs: MyRun[] }) {
         <FlyTo pos={me} />
         {located.map((r) => {
           const d = formatRunDate(r);
+          const packOff = packOffTime(d.time, r.PackOffMinutes);
           return (
             <Marker key={r.PublicEventId} position={[r.Latitude!, r.Longitude!]} icon={pinIcon}>
               <Popup>
@@ -62,6 +63,7 @@ export default function MyRunsMap({ runs }: { runs: MyRun[] }) {
                   <p className="font-bold">{r.EventName}</p>
                   <p>{r.KennelShortName} · #{r.EventNumber}</p>
                   <p>{d.short} · {d.time} ({relativeTime(r.EventStartDatetimeGmt ?? r.EventStartDatetime)})</p>
+                  {packOff && <p>Pack off {packOff}</p>}
                   {r.LocationOneLineDesc && <p>{r.LocationOneLineDesc}</p>}
                   <Link href={`/${r.KennelSlug}/${r.EventNumber}?back=/me/map`} className="underline">Open run</Link>
                 </div>

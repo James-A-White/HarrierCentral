@@ -427,6 +427,11 @@ export interface RunEvent {
   EventEndDatetime: string | null;
   EventStartDatetimeGmt: string | null;
   KennelIANATimezone: string | null;
+  /**
+   * Effective pack-off, minutes after the gather (the run's own, else the
+   * kennel's default). Null/absent = the pack leaves at the gather (E3.F1.S6).
+   */
+  PackOffMinutes?: number | null;
   EventTypeName: string | null;
   EventPriceForMembers: number | null;
   EventPriceForNonMembers: number | null;
@@ -493,6 +498,11 @@ export interface GlobalRunRow {
   EventEndDatetime: string | null;
   EventStartDatetimeGmt: string | null;
   KennelIANATimezone: string | null;
+  /**
+   * Effective pack-off, minutes after the gather (the run's own, else the
+   * kennel's default). Null/absent = the pack leaves at the gather (E3.F1.S6).
+   */
+  PackOffMinutes?: number | null;
 
   // Event type
   EventTypeName: string | null;

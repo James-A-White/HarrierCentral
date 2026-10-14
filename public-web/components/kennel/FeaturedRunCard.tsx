@@ -7,6 +7,7 @@ import { MapPin, Clock, Users, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { RunEvent } from "@/lib/api";
 import ViewerLocalTime from "@/components/ViewerLocalTime";
+import { packOffTime } from "@/lib/member-format";
 
 const FeaturedRunMap = dynamic(() => import("./FeaturedRunMap"), { ssr: false });
 
@@ -59,6 +60,7 @@ function formatDatetime(run: RunEvent): { longDate: string; time: string } {
 export function FeaturedRunCard({ run, href, display: displayProp }: FeaturedRunCardProps) {
   const d = { ...DEFAULT_DISPLAY, ...displayProp };
   const { longDate, time } = formatDatetime(run);
+  const packOff = d.showTime ? packOffTime(time, run.PackOffMinutes) : null;
 
   const showHeader = d.showRunName || d.showRunNumber;
   const showDatetimeRow = d.showDate || d.showTime;
@@ -124,6 +126,16 @@ export function FeaturedRunCard({ run, href, display: displayProp }: FeaturedRun
                   kennelTz={run.KennelIANATimezone}
                   className="shrink-0 text-sm italic opacity-70"
                 />
+              </div>
+            )}
+            {packOff && (
+              <div
+                className="flex items-center gap-2.5 text-2xl"
+                style={{ color: "var(--kennel-text-body)" }}
+                suppressHydrationWarning
+              >
+                <span className="h-4 w-4 shrink-0" aria-hidden />
+                <span className="min-w-0 truncate">Pack off {packOff}</span>
               </div>
             )}
 

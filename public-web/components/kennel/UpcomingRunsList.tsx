@@ -6,20 +6,22 @@ import { MapPin, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { RunEvent } from "@/lib/api";
 import ViewerLocalTime from "@/components/ViewerLocalTime";
+import { packOffTime } from "@/lib/member-format";
 
 interface UpcomingRunsListProps {
   runs: RunEvent[];
   slug: string;
 }
 
-function formatShortDate(run: RunEvent): { dayTime: string; shortDate: string } {
+function formatShortDate(run: RunEvent): { dayTime: string; time: string; shortDate: string } {
   const gmt = run.EventStartDatetimeGmt;
   const tz  = run.KennelIANATimezone;
   const src = gmt && tz ? new Date(gmt) : new Date(run.EventStartDatetime);
   const displayTz = gmt && tz ? tz : "UTC";
+  const time = src.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: displayTz });
   return {
-    dayTime: src.toLocaleDateString("en-GB", { weekday: "short", timeZone: displayTz }) + " · " +
-             src.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: displayTz }),
+    dayTime: src.toLocaleDateString("en-GB", { weekday: "short", timeZone: displayTz }) + " · " + time,
+    time,
     shortDate: src.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: displayTz }),
   };
 }
@@ -42,7 +44,8 @@ export function UpcomingRunsList({ runs, slug }: UpcomingRunsListProps) {
           <p className="text-xl py-4" style={{ color: "var(--kennel-text-body)" }}>No upcoming runs scheduled.</p>
         )}
         {runs.map((run, i) => {
-          const { dayTime, shortDate } = formatShortDate(run);
+          const { dayTime, time, shortDate } = formatShortDate(run);
+          const packOff = packOffTime(time, run.PackOffMinutes);
           return (
             <motion.div
               key={run.PublicEventId}
@@ -83,6 +86,9 @@ export function UpcomingRunsList({ runs, slug }: UpcomingRunsListProps) {
                         kennelTz={run.KennelIANATimezone}
                         className="text-base italic opacity-70"
                       />
+                      {packOff && (
+                        <span className="whitespace-nowrap" suppressHydrationWarning>Pack off {packOff}</span>
+                      )}
                       {(run.LocationOneLineDesc ?? run.LocationCity) && (
                         <span className="flex min-w-0 max-w-full items-center gap-1">
                           <MapPin className="h-3 w-3 shrink-0" />
