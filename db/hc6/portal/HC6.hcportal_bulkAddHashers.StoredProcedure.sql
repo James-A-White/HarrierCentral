@@ -15,6 +15,7 @@ CREATE OR ALTER PROCEDURE [HC6].[hcportal_bulkAddHashers]
 AS
 -- =====================================================================
 -- Procedure: HC6.hcportal_bulkAddHashers
+-- Idempotency: locked-upsert — rows upsert by email under UPDLOCK, HOLDLOCK; an import row with no address gets a placeholder derived from kennel + names, so a re-run finds it.
 -- Description: Bulk adds or updates multiple hashers (members) for a
 --   kennel. Accepts a JSON array of hasher data, validates email format,
 --   creates new HC.Hasher records for new users, creates/updates
@@ -49,6 +50,13 @@ AS
 -- 2026-10-10: results are matched back to
 --   input rows by position, not email (an import row may have none); the
 --   CATCH now logs to HC.ErrorLog.
+-- 2026-10-14 (idempotency audit P8; Idempotent writes: upserts by a natural
+--   key): the email lookup takes UPDLOCK, HOLDLOCK, and an import row with no
+--   real address that matches nobody gets a placeholder DERIVED from
+--   (kennel, hash name, first name, last name) instead of a random one, so a
+--   re-run finds the hasher the first run added. A portal-made placeholder
+--   that no account holds is replaced by the derived one (the result rowset
+--   returns the address used, as before).
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -227,8 +235,9 @@ BEGIN TRY
         END
 
         -- A made-up address the portal filled in (hc-…@noemail.invalid) that
-        -- no account holds yet counts as "no email" for matching; it is kept
-        -- if the row turns out to be someone new.
+        -- no account holds yet counts as "no email" for matching; if the row
+        -- turns out to be someone new it is replaced by the derived
+        -- placeholder below (2026-10-14).
         IF (@fromImport = 1 AND @ahStatus IS NULL
             AND (@email IS NULL
                  OR (@email LIKE '%@noemail.invalid' AND NOT EXISTS (SELECT 1 FROM HC.Hasher x WHERE x.Email = @email))))
@@ -246,15 +255,28 @@ BEGIN TRY
                     AND LOWER(LTRIM(RTRIM(h.LastName))) = LOWER(LTRIM(RTRIM(@lastName)))));
             IF (@newHasherId IS NOT NULL)
                 SET @ahStatus = 'ALREADY IN KENNEL'
-            ELSE IF (@email IS NULL)
-                SET @email = 'hc-' + LOWER(LEFT(REPLACE(CAST(NEWID() AS NVARCHAR(40)), '-', ''), 12)) + '@noemail.invalid';
+            ELSE
+                -- Someone new with no real address. The placeholder is DERIVED
+                -- from the kennel and the row's own names, never NEWID(), so a
+                -- re-run of the same file (which arrives with fresh made-up
+                -- addresses from the portal, or none) finds the hasher the
+                -- first run made by email below, instead of minting a second
+                -- one (idempotency audit P8, 2026-10-14). Same shape as before:
+                -- hc-<12 hex>@noemail.invalid.
+                SET @email = 'hc-' + LOWER(LEFT(CONVERT(NVARCHAR(64), HASHBYTES('SHA2_256',
+                        CONCAT(LOWER(CAST(@kennelId AS NVARCHAR(40))), N'|',
+                               LOWER(LTRIM(RTRIM(ISNULL(@hashName, N'')))), N'|',
+                               LOWER(LTRIM(RTRIM(ISNULL(@firstName, N'')))), N'|',
+                               LOWER(LTRIM(RTRIM(ISNULL(@lastName, N'')))))), 2), 12)) + '@noemail.invalid';
         END
 
+        -- Locked: two overlapping batches cannot both decide this address is
+        -- new (the second waits, then finds the first one's hasher).
         IF (@ahStatus IS NULL)
             SELECT
                 @newHasherId = id,
                 @newPublicHasherId = PublicHasherId
-            FROM HC.Hasher where Email = @email
+            FROM HC.Hasher WITH (UPDLOCK, HOLDLOCK) where Email = @email
 
                 -- An import leaves people already in this kennel as they are...
         IF (@fromImport = 1 AND @ahStatus IS NULL AND @newHasherId IS NOT NULL

@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_bulkAddHashers",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Bulk adds or updates hashers (members) for a kennel from a JSON array: creates HC.Hasher rows for unknown emails, creates or reactivates HC.HasherKennelMap memberships (never-expires 2999-12-31), and updates historical run / haring counts. A cursor walks the rows in input order inside ONE transaction; results are matched back to input rows by position (rowNo), not by email. Two callers: the paste grid (@fromImport = 0, original behaviour) and \"Import from file\" (@fromImport = 1, E2.F2.S6, 2026-10-10). In import mode: a row may carry matchPublicHasherId (the admin said it IS that member — must have a live HKM row here) and updateEmail = 1 (replace the member's email, honoured only under the 2026-09-23 ownership rule, re-checked here: never signed in, no device, home kennel is this one or none, and no other account holds the address); a row with no email (or an unclaimed hc-…@noemail.invalid placeholder) is matched to a live kennel member by hash name, else first + last name, and otherwise gets a fresh hc-<12 hex>@noemail.invalid placeholder; people already in the kennel keep everything except HISTORIC counts, which take the file's numbers when > 0; every hasher the import adds gets an invite code. Auth: HC6.ValidatePortalAuth with @publicKennelId as the callerParamString. Gate: the caller's HKM row for the kennel must carry AppAccessFlags & 0x40000081 (superAdmin | authIsAdmin). Bit 0x0001 of KennelStanding (the old automated MEMBER bit) is retired since 2026-10-13: membership is MembershipExpirationDate and nothing else, and this SP no longer calls HC6.nonApi_syncMemberStandingBit (dropped).",
   "parameters": [
     {
@@ -129,7 +129,8 @@
     "Import mode, updateEmail = 1 and ownership rule passes: UPDATE HC.Hasher SET Email, then EXEC HC6.nonApi_resetEmailStatus (EmailStatus back to Unknown; LOG.GeneralLog line)",
     "Import mode: EXEC HC6.nonApi_ensureUserInviteCode for each 'NEW HC USER' / 'NEW MEMBER'",
     "INSERT HC.ErrorLog from the CATCH",
-    "All writes in one transaction: any row's failure rolls back the whole batch"
+    "All writes in one transaction: any row's failure rolls back the whole batch",
+    "An import row with no real address that matches nobody is stored under a placeholder derived from kennel + names (deterministic), so re-running the file does not add the person again."
   ],
   "breakingChangeRules": [
     "Never remove a column from any rowset",
@@ -165,5 +166,8 @@
       "issue": "Non-sargable email/name lookups per row",
       "detail": "Lines 243-246 compare LOWER(LTRIM(RTRIM(...))) per row of the kennel inside a cursor; fine for a roster, slow for a very large kennel."
     }
+  ],
+  "changes": [
+    "1.3.0 (2026-10-14): idempotency audit P8 (Idempotent writes: upserts by a natural key). The email lookup now takes WITH (UPDLOCK, HOLDLOCK). An @fromImport row with no real address that matches no kennel member gets a placeholder DERIVED from (kennel, hash name, first name, last name) — hc-<first 12 hex of SHA2_256>@noemail.invalid — instead of NEWID(), and replaces an unheld portal-made placeholder, so a re-run of the same file finds the hasher the first run added. No parameter or rowset change."
   ]
 }
