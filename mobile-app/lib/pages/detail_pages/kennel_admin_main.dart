@@ -2,6 +2,8 @@
 
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/pages/detail_pages/kennel_trails_map_page.dart';
+import 'package:harrier_central/util/social_links.dart';
+import 'package:harrier_central/widgets/kennel_social_links_row.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 import 'package:map_launcher/map_launcher.dart' as maps;
@@ -1074,6 +1076,15 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
               const SizedBox(height: 40),
             ],
           );
+        }),
+
+        // The kennel's social and chat links (E12.F4.S4): fetched per open by
+        // the controller, never synced. Empty while loading or on failure, so
+        // the row is simply absent — no spinner, no flash. The Rx is read
+        // first, before anything that could skip it.
+        Obx(() {
+          final List<SocialLink> links = controller.socialLinks.toList();
+          return KennelSocialLinksRow(links: links);
         }),
 
         // Join-the-group button (E9.F6). The invite link is for JOINING —

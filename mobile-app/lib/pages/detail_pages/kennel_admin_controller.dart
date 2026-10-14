@@ -1,5 +1,7 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/services/kennels/kennel_social_links_service.dart';
+import 'package:harrier_central/util/social_links.dart';
 
 class KennelAdminController extends GetxController {
   KennelAdminController({required this.kennelAggregateItem});
@@ -14,6 +16,11 @@ class KennelAdminController extends GetxController {
   final RxList<RunDetailsAggregate> allRuns = <RunDetailsAggregate>[].obs;
   final Rx<List<String>?> mismanagement = Rx<List<String>?>(null);
   final RxBool saveUserMapPreference = false.obs;
+
+  /// The kennel's social and chat links for this hasher (E12.F4.S4). Empty
+  /// while loading and on failure, so the page shows nothing rather than a
+  /// spinner or a flash. Fetched per open, never synced (see the service).
+  final RxList<SocialLink> socialLinks = <SocialLink>[].obs;
 
   // ---------------------------------------------------------------------------
   // Non-reactive state owned by controller
@@ -43,6 +50,7 @@ class KennelAdminController extends GetxController {
     _dataChangeSub = Get.find<DataChangeService>().stream.listen(_onDataChange);
 
     unawaited(_syncAndLoad());
+    unawaited(_loadSocialLinks());
   }
 
   @override
@@ -67,6 +75,15 @@ class KennelAdminController extends GetxController {
     mismanagement.value = trimmed.contains('\r')
         ? trimmed.split('\r')
         : trimmed.split('\n');
+  }
+
+  Future<void> _loadSocialLinks() async {
+    final ({List<SocialLink> links, bool includesMembers})? r =
+        await KennelSocialLinksService.fetch(
+          HcId(kennelAggregateItem.kennel.kennelId),
+        );
+    if (isClosed || r == null) return;
+    socialLinks.assignAll(r.links);
   }
 
   Future<void> _syncAndLoad() async {
