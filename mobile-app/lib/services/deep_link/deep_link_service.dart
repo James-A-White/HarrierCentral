@@ -1,4 +1,5 @@
 import 'package:app_links/app_links.dart';
+import 'package:harrier_central/util/kennel_calendar_feed.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/services/kennel_history.dart';
 
@@ -358,6 +359,11 @@ class DeepLinkService {
     }
 
     final DeepLinkTarget? target = parse(uri);
+    if (target == null && uri.path.toLowerCase().endsWith('.ics')) {
+      // A kennel's calendar feed (E3.F6.S8): subscribe, don't browse it.
+      _crumb('calendar feed, opening the subscribe flow: $uri');
+      if (await openCalendarSubscription(uri.replace(scheme: 'https'))) return;
+    }
     if (target == null) {
       _crumb('not a run link, bouncing to the site: $uri');
       await _openInBrowser(uri);

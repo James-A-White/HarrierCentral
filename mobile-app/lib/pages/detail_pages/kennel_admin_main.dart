@@ -1,6 +1,7 @@
 //import 'dart:ui' as ui;
 
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/util/kennel_calendar_feed.dart';
 import 'package:harrier_central/pages/detail_pages/kennel_trails_map_page.dart';
 import 'package:harrier_central/util/social_links.dart';
 import 'package:harrier_central/widgets/kennel_social_links_row.dart';
@@ -1168,6 +1169,64 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                 ),
               ),
             ],
+          ),
+
+        // Add the kennel's runs to the phone's calendar (E3.F6.S8): the
+        // hashruns.org iCal feed; every entry links back to its run.
+        if (agg.kennel.kennelUniqueShortName.trim().isNotEmpty)
+          Container(
+            margin: const EdgeInsets.only(bottom: 20),
+            width: _buttonWidth,
+            height: _buttonHeight,
+            child: StyleForConnected(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.only(
+                    left: 12.0,
+                    top: 8.0,
+                    bottom: 8.0,
+                  ),
+                ),
+                child: Row(
+                  children: <Widget>[
+                    const SizedBox(
+                      width: 45.0,
+                      child: Icon(
+                        Icons.event_available,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 20, right: 0),
+                        child: Text(
+                          'Add ${agg.kennel.kennelShortName} runs to my calendar',
+                          style: ts_button,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                onPressed: () async {
+                  if (!Utilities.isConnected(showDialog: true)) return;
+                  // The calendar app's own subscribe dialog is the feedback;
+                  // say so only if nothing could open it.
+                  final bool opened = await openCalendarSubscription(
+                    kennelCalendarFeedUrl(agg.kennel.kennelUniqueShortName),
+                  );
+                  if (!opened) {
+                    hcSnack(
+                      'No calendar app could open the feed.',
+                      error: true,
+                    );
+                  }
+                },
+              ),
+            ),
           ),
 
         // Website button
