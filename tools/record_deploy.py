@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 """Record a production deploy in LOG.DeployLog (never pruned), so an error's
-time maps to the builds that were live then (tools/log_triage.py).
+time maps to the builds that were live then (tools/log_triage.py) — and,
+when James asks, a major AI task (an audit, a sweep, a large refactor), so
+the same timeline shows what was examined or changed and when.
 
     python3 tools/record_deploy.py web 0.21.77
     python3 tools/record_deploy.py api 1.0.61+111
     python3 tools/record_deploy.py portal 2.0.87+778
     python3 tools/record_deploy.py app-ios 3.1.10+1480 --audience private
     python3 tools/record_deploy.py app-android 3.1.10+1480 --audience beta --detail "Play internal"
-    python3 tools/record_deploy.py --list            # the last 20 deploys
+    python3 tools/record_deploy.py ai-task "SP security audit" --detail "All 289 HC6 SPs checked for …; 7 fixed, 3 to James"
+    python3 tools/record_deploy.py --list            # the last 20 rows
+    python3 tools/record_deploy.py --list ai-task    # AI tasks only
 
 SP deploys record themselves (tools/deploy_hc6.sh). The dance-baby skill runs
 this after each other deploy. The commit is HEAD; the time is now (or --at).
@@ -20,7 +24,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-COMPONENTS = ("sp", "api", "web", "portal", "app-ios", "app-android")
+COMPONENTS = ("sp", "api", "web", "portal", "app-ios", "app-android", "ai-task")
 AUDIENCES = ("production", "private", "beta", "store")
 
 
@@ -51,21 +55,32 @@ def lit(s: str | None) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("component", nargs="?", choices=COMPONENTS)
-    ap.add_argument("version", nargs="?")
-    ap.add_argument("--audience", choices=AUDIENCES, default="production")
+    ap.add_argument("version", nargs="?", help="the version; for ai-task, a short title (≤ 40 characters)")
+    ap.add_argument("--audience", choices=AUDIENCES, default=None,
+                    help="default production; none for ai-task")
     ap.add_argument("--detail", default=None)
     ap.add_argument("--at", default=None, help="UTC time if not now, e.g. 2026-10-15T08:56:28Z")
     ap.add_argument("--list", action="store_true")
     a = ap.parse_args()
 
     if a.list:
+        where = f"WHERE Component = {lit(a.component)} " if a.component else ""
         print(sql("SELECT TOP 20 CONVERT(varchar(19), DeployedAt, 120) AS DeployedAtUtc, Component, Version, "
-                  "GitCommit, Audience, LEFT(Detail, 60) AS Detail FROM LOG.DeployLog ORDER BY DeployedAt DESC"))
+                  f"GitCommit, Audience, LEFT(Detail, 80) AS Detail FROM LOG.DeployLog {where}ORDER BY DeployedAt DESC"))
         return 0
     if not (a.component and a.version):
         ap.error("component and version are required (or --list)")
-    if not re.fullmatch(r"[0-9A-Za-z.+-]{1,40}", a.version):
-        ap.error(f"version {a.version!r} does not look like a version")
+    if a.component == "ai-task":
+        if not 1 <= len(a.version.strip()) <= 40:
+            ap.error("an ai-task title is 1-40 characters")
+        if not a.detail:
+            ap.error("an ai-task needs --detail: a short description of what was done")
+        if a.audience:
+            ap.error("an ai-task has no audience")
+    else:
+        if not re.fullmatch(r"[0-9A-Za-z.+-]{1,40}", a.version):
+            ap.error(f"version {a.version!r} does not look like a version")
+        a.audience = a.audience or "production"
     if a.at and not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?Z", a.at):
         ap.error("--at must be UTC like 2026-10-15T08:56:28Z")
     if a.detail and len(a.detail) > 400:
