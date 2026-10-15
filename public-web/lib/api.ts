@@ -664,6 +664,58 @@ export async function getEvents(
   return { totalMatchingEvents, events };
 }
 
+// ─── getKennelRunsFeed (E3.F6.S8) ─────────────────────────────────────────────
+
+/** Rowset 0 of publicWeb_getKennelRunsFeed. */
+export interface KennelFeedHeader {
+  KennelName: string;
+  KennelShortName: string;
+  CustomDomain: string | null;
+  KennelIANATimezone: string | null;
+  /** 0 = Defunct or Inactive-Hidden: the feed is served empty. */
+  FeedActive: number;
+}
+
+/** Rowset 1 of publicWeb_getKennelRunsFeed — only what the calendar writes. */
+export interface FeedRun {
+  PublicEventId: string;
+  EventNumber: number;
+  EventName: string | null;
+  /** The instant (UTC). */
+  EventStartDatetimeGmt: string | null;
+  /** Wall clock; with EventEndLocal gives the run's length only. */
+  EventStartLocal: string | null;
+  EventEndLocal: string | null;
+  PackOffMinutes: number | null;
+  Hares: string | null;
+  LocationOneLineDesc: string | null;
+  LocationStreet: string | null;
+  LocationCity: string | null;
+  LocationPostCode: string | null;
+  LocationCountry: string | null;
+  Latitude: number | null;
+  Longitude: number | null;
+  EventDescription: string | null;
+  UpdatedAt: string | null;
+}
+
+/**
+ * A kennel's iCal feed data in one call: its own procedure, not a reuse of
+ * getEvents, so a change to the site's run lists cannot change the feed
+ * (James, 2026-10-15). Pass fetchOptions to cache it (the feed route does).
+ * Returns null when there is no such kennel.
+ */
+export async function getKennelRunsFeed(
+  kennelUniqueShortName: string,
+  fetchOptions?: RequestInit
+): Promise<{ kennel: KennelFeedHeader; runs: FeedRun[] } | null> {
+  const data = await callPublicWebApiAllRowsets("getKennelRunsFeed", { kennelUniqueShortName }, fetchOptions);
+  if (!data) return null;
+  const [header, runs] = data as [KennelFeedHeader[], FeedRun[]];
+  if (!header?.[0]) return null;
+  return { kennel: header[0], runs: runs ?? [] };
+}
+
 // ─── getMultiKennelRuns ───────────────────────────────────────────────────────
 
 /** A RunEvent extended with kennel context columns from publicWeb_getMultiKennelRuns. */

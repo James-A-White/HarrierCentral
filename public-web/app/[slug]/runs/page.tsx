@@ -7,6 +7,7 @@ import { PuckRenderer } from "@/components/puck/PuckRenderer";
 import { parseSiteConfig, getDefaultLayout, deriveNavItems } from "@/lib/page-layout";
 import { kennelBaseUrl } from "@/lib/seo";
 import { getIsCustomDomain } from "@/lib/server-utils";
+import { SubscribeCalendar } from "@/components/kennel/SubscribeCalendar";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -77,6 +78,7 @@ export default async function RunsPage({ params }: PageProps) {
         <KennelBackground kennel={kennel} />
         <StickyNav kennel={kennel} slug={slug} alwaysVisible navItems={navItems} />
         <div className="pt-20">
+          <SubscribeCalendar slug={slug} customDomain={kennelData.CustomDomain} kennelShortName={kennelData.KennelShortName} />
           <PuckRenderer
             data={pageLayout}
             pageData={{ kennelData, slug, futureRuns, pastRuns, isCustomDomain }}

@@ -86,6 +86,11 @@
             "exclude": true
           },
           {
+            "/": "/*/runs.ics",
+            "exclude": true,
+            "comment": "a kennel's calendar feed opens the calendar, not the app (E3.F6.S8)"
+          },
+          {
             "/": "/*/*",
             "comment": "/<kennel-slug>/<run-number> and its sub-pages open the app"
           },
