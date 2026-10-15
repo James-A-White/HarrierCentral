@@ -69,7 +69,7 @@ without its line number), looked up in `tools/known_errors.tsv`:
 
 Each line also shows `· SP N`, the SP build that was live when the error
 happened, from `LOG.DeployLog` (deploy history, never pruned, from
-2026-10-14 21:19 UTC; `python3 tools/record_deploy.py --list`). The
+2026-03-30, reconstructed — see each row's Detail; `python3 tools/record_deploy.py --list`). The
 portal's Error drill-down has the same `spBuild` column.
 
 Exit code 1 = something new, regressed or spiking. Anything **NEW** ends with
