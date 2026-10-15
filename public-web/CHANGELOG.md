@@ -1,5 +1,11 @@
 # public-web Changelog
 
+## 0.21.76 (2026-10-15)
+
+- Every kennel has a calendar feed at `/<slug>/runs.ics`: subscribe once and new runs and changes appear in your calendar by themselves, each linking back to its run. Defunct and hidden kennels serve an empty feed.
+- The runs page has an "Add <kennel>'s runs to your calendar" bar: Apple / Outlook, Google Calendar and the feed address
+- iOS universal links leave `/<slug>/runs.ics` to the calendar
+
 ## 0.21.75 (2026-10-15)
 
 - `hashruns.org/?q=<text>` opens the worldwide run list already searched (the portal Developer tab's city, region and country links)

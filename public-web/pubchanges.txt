@@ -1,3 +1,8 @@
+0.21.76 (2026-10-15)
+    • /<slug>/runs.ics — a kennel's runs as a calendar feed (15-min cache per kennel, ETag/304); every entry links back to its run
+    • Runs page: "Add <kennel>'s runs to your calendar" — Apple / Outlook, Google Calendar, feed address
+    • apple-app-site-association: /*/runs.ics excluded (the calendar, not the app)
+
 0.21.75 (2026-10-15)
     • hashruns.org/?q=<text> opens the worldwide run list already searched (the portal Developer tab's city, region and country links)
     • A page left open across a deploy reloads once on a missing code chunk instead of showing "That did not load"

@@ -1,3 +1,13 @@
+## 3.1.10+1479 (2026-10-15)
+
+### New Features
+
+- **Add to calendar** on a run asks: this run only, or all of the kennel's
+  runs — connected to its calendar, so new runs and changes appear by
+  themselves, each linking back to the run.
+- **Add <kennel> runs to my calendar** on the kennel page.
+- A tapped kennel calendar-feed link opens the calendar's subscribe dialog.
+
 ## 3.1.10+1478 (2026-10-15)
 
 ### Fixes
