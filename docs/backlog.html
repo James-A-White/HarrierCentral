@@ -294,7 +294,7 @@
   <div class="meta-strip">
     <div><b>20</b> epics</div>
     <div><b>103</b> features</div>
-    <div><b>462</b> stories</div>
+    <div><b>463</b> stories</div>
     <div><b>52</b> NFR requirements</div>
     <div><b>6</b> personas</div>
   </div>
@@ -327,7 +327,7 @@
   <a class="idx" href="#e7"><span class="idx-id">E7</span><span class="idx-name">Circle, Down Downs &amp; Songs</span><span class="idx-count">4 features · 17 stories</span></a>
   <a class="idx" href="#e8"><span class="idx-id">E8</span><span class="idx-name">Money &amp; the Hash Cash Ledger</span><span class="idx-count">8 features · 36 stories</span></a>
   <a class="idx" href="#e9"><span class="idx-id">E9</span><span class="idx-name">Messaging, Notifications &amp; Teaching</span><span class="idx-count">7 features · 88 stories</span></a>
-  <a class="idx" href="#e10"><span class="idx-id">E10</span><span class="idx-name">Stats, Leaderboards &amp; Reporting</span><span class="idx-count">4 features · 19 stories</span></a>
+  <a class="idx" href="#e10"><span class="idx-id">E10</span><span class="idx-name">Stats, Leaderboards &amp; Reporting</span><span class="idx-count">4 features · 20 stories</span></a>
   <a class="idx" href="#e11"><span class="idx-id">E11</span><span class="idx-name">Public Web Presence</span><span class="idx-count">6 features · 22 stories</span></a>
   <a class="idx" href="#e12"><span class="idx-id">E12</span><span class="idx-name">Platform Administration</span><span class="idx-count">7 features · 29 stories</span></a>
   <a class="idx" href="#e13"><span class="idx-id">E13</span><span class="idx-name">Security, Privacy &amp; Data Protection</span><span class="idx-count">4 groups · 15 requirements</span></a>
@@ -1151,6 +1151,8 @@
       <li class="story"><span class="s-id">E10.F4.S6</span><span class="s-text">As a <em>Platform Admin</em>, I want every server and client error record to name the app build that produced it so that I can see which release an error belongs to and confirm it is gone.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E10.F4.S7</span><span class="s-text">As a <em>Platform Admin</em>, I want a device health view when I open a user from the dashboard so that I can see that user's memory, CPU, network, GPS and battery per session without reading raw logs.</span><span class="chip c-ship">Shipped</span></li>
       <li class="story"><span class="s-id">E10.F4.S8</span><span class="s-text">As a <em>Platform Admin</em>, I want the Usage Data dashboard to open in a few seconds, every time, so that the page I check a release on does not fail when I need it. <code>hcportal_getUsageData</code> timed out once (2026-10-13 23:04 UTC, *Execution Timeout Expired*, the page did not load). Measured on a normal open 2026-10-14: 10.5 s, of which 10.1 s is the activity grid (Result Set 3), at 2 s CPU and ~157,000 logical reads, so about 8 s is spent waiting on the S1 database's I/O. The grid grew a row at a time (Email, First Sign-in, run links) and each row is another range count over a large table (<code>HC.ClientErrorLog</code>, <code>HC.LaunchAndLogin</code>, <code>HC.HasherEventMap</code>, <code>HC.PushLog</code>, <code>LOG.GeneralLog</code>). Next: per-table I/O for the grid, one branch at a time (an ad-hoc run of the whole statement hung), then an index or a narrower range for the worst; the cached plan suggests indexes on <code>HC.Kennel</code>, <code>HC.IntegrationJob</code> and <code>HC.Event</code>, which may belong to other statements. Fingerprint <code>api hcportal_getUsageData … Execution Timeout Expired</code> in <code>tools/known_errors.tsv</code>.</span><span class="chip c-back">Backlog</span></li>
+      <li class="story"><span class="s-id">E10.F4.S9</span><span class="s-text">As a <em>Platform Admin</em>, I want every error tied to the builds that were live when it happened, so that I know which SP build, API, web, portal and app build to blame. <em>Built 2026-10-15 (James):</em> <code>LOG.DeployLog</code>, its own table because <code>LOG.GeneralLog</code> is pruned — one row per production deploy of any component (sp, api, web, portal, app-ios, app-android), append-only, never pruned, INT key by James's choice. <code>tools/deploy_hc6.sh</code> records each SP build; <code>tools/record_deploy.py</code> records the others (the dance-baby skill runs it after each deploy). <code>tools/log_triage.py</code> shows <code>· SP N</code> on every line; the portal's Error drill-down gains an <code>spBuild</code> column (<code>hcportal_getCategoryDetail2</code>). Chosen over a build number in every SP's success envelope: all 318 SPs carry one build at a time, so the error's time is enough and no client changes. History starts 2026-10-14 21:19 UTC (SP 71).</span><span class="chip c-build">Building</span>
+        <span class="gap">the drill-down column needs the next SP deploy; app session logs are matched by upload time, so they get no SP build.</span></li>
     </ul>
   </div>
 </section>
