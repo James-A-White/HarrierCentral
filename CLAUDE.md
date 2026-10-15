@@ -220,6 +220,32 @@ those builds apart. This is the one standing exception to "never bump a
 version unasked"; the middle and first parts (0.**21**.x, **0**.21.x) still
 change only when James asks.
 
+**Significant AI work goes in the history too — unasked (James, 2026-10-15).**
+`LOG.DeployLog` holds every deploy AND every significant piece of AI work, on
+one timeline, never pruned, so either can be studied later ("what changed
+just before this started?", "what did the June SP audit find, and did it
+hold?"). Log it yourself when the work is committed, without being asked:
+
+- **Counts:** audits, reviews and surveys of a whole area (SPs, a client's
+  pages, permissions, costs, logs); error-log sweeps and triage; refactors and
+  migrations that touch many files or SPs (a GetX migration, a contract sweep,
+  a rule applied across the codebase); new rules, scans or tooling that change
+  how work is done; data repairs and run-once scripts against production;
+  schema changes; backlog-wide sweeps.
+- **Does not count:** a single bug fix, one feature, one SP, a question
+  answered. Deploys are logged by their own commands. When unsure, log it —
+  a spare row costs nothing, a missing one is a gap in the record.
+
+```bash
+python3 tools/record_deploy.py ai-task "<title ≤ 40>" --detail "<what was examined or changed, ≤ 400>"
+python3 tools/record_deploy.py --outcome <id> "<what it found, what was fixed, what went to James, ≤ 2000>"
+```
+
+Write the outcome as soon as it is known (often the same session), and come
+back to it when something later changes the story (a fix shipped, a finding
+was wrong, it caused a regression). Detail names the commits; never put live
+vulnerabilities in a row's text beyond what the backlog already says.
+
 To answer "is this fix live?", run `python3 tools/sp_versions.py [object]`.
 How to read its report is in the same skill file under *Deploying SPs*.
 

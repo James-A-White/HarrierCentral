@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Record a production deploy in LOG.DeployLog (never pruned), so an error's
-time maps to the builds that were live then (tools/log_triage.py) — and,
-when James asks, a major AI task (an audit, a sweep, a large refactor), so
-the same timeline shows what was examined or changed and when.
+time maps to the builds that were live then (tools/log_triage.py) — and
+every significant piece of AI work (an audit, a sweep, a large refactor, a
+new rule, a production data repair; the list is in CLAUDE.md), logged
+unasked when it is committed, so the same timeline shows what was examined
+or changed and when.
 
 Detail says what was done; Outcome is written AFTER the fact (--outcome <id>):
 what the task found and what came of it, or what became of a deploy.
