@@ -1,3 +1,8 @@
+## 2.0.87+777 (2026-10-15)
+### Fixes
+- **Developer tab — hashruns.org links**: the kennel link opens `hashruns.org/rd/<id>` directly; the city, region and country links open the run list searched for that place (`?q=`) instead of every run worldwide.
+- **Notifications**: no push-token save before this browser has a device (signed in); the empty id was refused by the server.
+
 ## 2.0.87+776 (2026-10-14)
 ### Fixes
 - **Developer tab — Data APIs**: the links now point at the live API (`harriercentralpublicapi.azurewebsites.net/api/PublicApi`); the old host was deleted in August. The run-counts link uses `getLeaderboard` (it asked for a query that never existed).

@@ -1,5 +1,10 @@
 # public-web Changelog
 
+## 0.21.75 (2026-10-15)
+
+- `hashruns.org/?q=<text>` opens the worldwide run list already searched (the portal Developer tab's city, region and country links)
+- A page left open across a deploy reloads once on a missing code chunk instead of showing "That did not load"
+
 ## 0.21.74 (2026-10-15 redeploy — Google Calendar link)
 
 - A kennel's Google Calendar can be one of its social links (calendar icon)

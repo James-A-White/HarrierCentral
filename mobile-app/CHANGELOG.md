@@ -1,3 +1,15 @@
+## 3.1.10+1478 (2026-10-15)
+
+### Fixes
+
+- **Error logs from a phone's first session**: kept until the phone has a
+  device id, then uploaded. They used to be refused and lost.
+
+### New Features
+
+- **Google Calendar as a social link**: a kennel's Google Calendar can be one
+  of its social links.
+
 ## 3.1.10+1477 (2026-10-14)
 
 ### New Features
