@@ -1,0 +1,176 @@
+{
+  "schema": "HC6",
+  "name": "publicWeb_getKennelRunsFeed",
+  "version": "1.0.0",
+  "description": "Everything a kennel's iCal feed (/<slug>/runs.ics, E3.F6.S8) needs in one call: a header row for the kennel and its visible, live runs from 30 days ago onwards (EventStartDatetimeGmt), oldest first, at most 500. Its own procedure rather than a reuse of publicWeb_getEvents (James, 2026-10-15): calendar apps read the feed constantly, so it returns only the columns the calendar writes (one unique-index seek on the slug, one seek on IX_Event_Kennel_GmtStart_Visible, ~45 page reads for a typical kennel), and a change made for the site's run lists cannot change the feed by accident. Defunct (-1) and Inactive-Hidden (4) kennels return the header with FeedActive = 0 and no runs, so subscribers' calendars empty rather than error; a kennel with its website switched off still has a feed (its run pages still render). Public fields only \u2014 the same ones the public run pages show. No authentication (anonymous PublicWebApi GET). Read-only. The web caches the answer 15 minutes per kennel.",
+  "parameters": [
+    {
+      "name": "kennelUniqueShortName",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": "Kennel.KennelUniqueShortName",
+      "description": "The kennel's URL slug. No match among live kennels \u2192 rowset 0 is empty (shim 404)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "KennelFeedHeader",
+      "description": "One row, or EMPTY when no live kennel has this slug (the shim answers 404).",
+      "columns": [
+        {
+          "name": "KennelName",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Calendar name: '<KennelName> runs'."
+        },
+        {
+          "name": "KennelShortName",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Prefix of each run's summary ('DH3 #1683')."
+        },
+        {
+          "name": "CustomDomain",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "HC.KennelWebsite.CustomDomain; when set, run links use it instead of www.hashruns.org/<slug>."
+        },
+        {
+          "name": "KennelIANATimezone",
+          "type": "NVARCHAR(100)",
+          "nullable": true,
+          "description": "IANA zone of the kennel's city, for the gather / pack-off times in each description. NULL when the city has no zone."
+        },
+        {
+          "name": "FeedActive",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 normally; 0 for a Defunct (-1) or Inactive-Hidden (4) kennel, whose rowset 1 is then empty."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "FeedRuns",
+      "description": "Visible, live runs (IsVisible = 1, deleted = 0, removed = 0) with EventStartDatetimeGmt no more than 30 days ago, ascending, TOP 500. Empty when FeedActive = 0.",
+      "columns": [
+        {
+          "name": "PublicEventId",
+          "type": "NVARCHAR(40)",
+          "nullable": false,
+          "description": "Lower-case public id; the iCal UID is '<id>@hashruns.org', so it must never change for a run (rotating it re-creates the entry)."
+        },
+        {
+          "name": "EventNumber",
+          "type": "INT",
+          "nullable": true,
+          "description": "Run number; the run's page is /<slug>/<EventNumber>."
+        },
+        {
+          "name": "EventName",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "Run name."
+        },
+        {
+          "name": "EventStartDatetimeGmt",
+          "type": "DATETIMEOFFSET",
+          "nullable": false,
+          "description": "The start instant (UTC) \u2014 DTSTART. Never the raw EventStartDatetime (/hc-event-datetimes)."
+        },
+        {
+          "name": "EventStartLocal",
+          "type": "DATETIME2",
+          "nullable": true,
+          "description": "Wall-clock start; with EventEndLocal gives the run's length only."
+        },
+        {
+          "name": "EventEndLocal",
+          "type": "DATETIME2",
+          "nullable": true,
+          "description": "Wall-clock end (EventEndDatetime, offset stripped). NULL = the feed uses 3 hours."
+        },
+        {
+          "name": "PackOffMinutes",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Effective pack-off, minutes after the gather: the run's, else the kennel's (E3.F1.S6)."
+        },
+        {
+          "name": "Hares",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "Hares as shown on the public run page."
+        },
+        {
+          "name": "LocationOneLineDesc",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "Preferred LOCATION text."
+        },
+        {
+          "name": "LocationStreet",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "SyncLocationStreet \u2014 LOCATION fallback."
+        },
+        {
+          "name": "LocationCity",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "SyncLocationCity \u2014 LOCATION fallback."
+        },
+        {
+          "name": "LocationPostCode",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "SyncLocationPostCode \u2014 LOCATION fallback."
+        },
+        {
+          "name": "LocationCountry",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "SyncLocationCountry \u2014 LOCATION fallback."
+        },
+        {
+          "name": "Latitude",
+          "type": "DECIMAL",
+          "nullable": true,
+          "description": "SyncLatitude \u2014 GEO when in range."
+        },
+        {
+          "name": "Longitude",
+          "type": "DECIMAL",
+          "nullable": true,
+          "description": "SyncLongitude \u2014 GEO when in range."
+        },
+        {
+          "name": "EventDescription",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "SyncDescription; the feed strips HTML and caps it at 2,000 characters."
+        },
+        {
+          "name": "UpdatedAt",
+          "type": "DATETIMEOFFSET",
+          "nullable": false,
+          "description": "HC.Event.updatedAt \u2014 LAST-MODIFIED; the latest across the feed is its DTSTAMP, so an unchanged feed has an unchanged body and ETag."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "On a runtime error: one HC.ErrorLog row, then THROW."
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers",
+    "Never add a members-only field: the feed is public and cached",
+    "Keep PublicEventId stable per run: it is the calendar UID"
+  ]
+}
