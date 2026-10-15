@@ -125,6 +125,11 @@ class ServiceCommon {
   /// was lost (cleared from the pref, upload failed, gone).
   static Future<bool> recordClientErrorLog(String errorLog) async {
     final String deviceId = getStringPref(StringPrefsEnum.deviceId) ?? '';
+    // Not registered yet (first session before sign-in): HC.ClientErrorLog
+    // needs a device id, and '' fails the SP's GUID conversion
+    // (HC.ErrorLog, 2026-10-14). Report "not accepted" so the boot caller
+    // keeps the log and sends it once the device has an id.
+    if (deviceId.isEmpty) return false;
 
     // 'X.Y.Z+build' of the session that wrote the log. At boot, before
     // _prepareDeviceContext re-stamps it, this is still the PREVIOUS boot's
