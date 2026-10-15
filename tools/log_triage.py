@@ -331,12 +331,29 @@ def spikes(hits: list[Hit]) -> list[str]:
 
 # ─── report ─────────────────────────────────────────────────────────────────
 
+# SP deploys from LOG.DeployLog (never pruned, 2026-10-15), oldest first: an
+# error's time says which SP build served it. Loaded once in main().
+SP_DEPLOYS: list[tuple[datetime, str]] = []
+
+
+def sp_build_at(when: datetime) -> str | None:
+    """The SP build live at `when`, or None before the deploy history starts."""
+    live = None
+    for at, ver in SP_DEPLOYS:
+        if at > when:
+            break
+        live = ver
+    return live
+
+
 def summarise(fp: str, hits: list[Hit]) -> str:
     vers = sorted({h.version for h in hits}, key=ver_tuple)
     devs = {h.who for h in hits}
     first, last = min(h.when for h in hits), max(h.when for h in hits)
+    builds = sorted({b for h in hits if (b := sp_build_at(h.when))}, key=ver_tuple)
+    sp = f"  · SP {', '.join(builds[-3:])}" if builds else ""
     return (f"  {len(hits):>4}×  {len(devs)} who  "
-            f"{first:%m-%d %H:%M}→{last:%m-%d %H:%M}  on {', '.join(vers[-4:])}\n"
+            f"{first:%m-%d %H:%M}→{last:%m-%d %H:%M}  on {', '.join(vers[-4:])}{sp}\n"
             f"        {fp}")
 
 
@@ -363,6 +380,10 @@ def main() -> int:
           AND (c.ErrorLog LIKE '%[[]ERROR]%' OR c.ErrorLog LIKE '%"kind":"crash"%'
                OR c.ErrorLog LIKE '%"kind":"hang"%' OR c.ErrorLog LIKE '%diskWriteException%')
         FOR JSON PATH""")
+
+    SP_DEPLOYS[:] = [(_dt(r["DeployedAt"]), r["Version"]) for r in query_json(env, """
+        SELECT CONVERT(varchar(40), DeployedAt AT TIME ZONE 'UTC', 127) DeployedAt, Version
+        FROM LOG.DeployLog WHERE Component = 'sp' ORDER BY DeployedAt FOR JSON PATH""")]
 
     hits = parse_server(server) + parse_client(client)
     by_fp: dict[str, list[Hit]] = defaultdict(list)

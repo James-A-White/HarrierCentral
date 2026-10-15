@@ -67,6 +67,11 @@ without its line number), looked up in `tools/known_errors.tsv`:
 | `open` | Known bug, not fixed | one line each, when it fires |
 | `fixed:X` | Fixed in build `1397`, version `web 0.21.74`, or on date `2026-09-24` (SP deploys) | **REGRESSED** if seen at/after X |
 
+Each line also shows `· SP N`, the SP build that was live when the error
+happened, from `LOG.DeployLog` (deploy history, never pruned, from
+2026-10-14 21:19 UTC; `python3 tools/record_deploy.py --list`). The
+portal's Error drill-down has the same `spBuild` column.
+
 Exit code 1 = something new, regressed or spiking. Anything **NEW** ends with
 a paste-ready `↳` line: investigate it, then add it to the baseline with a
 status and a note. When you fix something, change its line to `fixed:<next

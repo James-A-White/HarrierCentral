@@ -291,6 +291,15 @@ echo "  Build $DEPLOY_BUILD.  Check it: python3 tools/sp_versions.py"
 echo "══════════════════════════════════════════════════════════════"
 echo ""
 
+# Deploy history (LOG.DeployLog, never pruned, 2026-10-15): the stamps say
+# which build is live NOW; this row says when it went live, so an error's
+# time maps to the SP build that served it (tools/log_triage.py).
+if ! _sqlcmd -Q "SET NOCOUNT ON; INSERT LOG.DeployLog (DeployedAt, Component, Version, GitCommit, Audience, Detail)
+    VALUES ('$DEPLOY_AT', 'sp', '$DEPLOY_BUILD', '$DEPLOY_COMMIT', 'production', '$PASS deployed, $FAIL failed');" >/dev/null 2>&1; then
+    echo "  ⚠ Could not record build $DEPLOY_BUILD in LOG.DeployLog — add it: python3 tools/record_deploy.py sp $DEPLOY_BUILD"
+    echo ""
+fi
+
 # Table definitions (db/schema/tables/) are generated from the live database.
 # A run-once script that changed a table without regenerating them leaves
 # agents reading stale columns, so say so here, every deploy. Read-only.

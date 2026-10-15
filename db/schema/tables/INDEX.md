@@ -87,6 +87,7 @@ legacy schemas, and TSA (defunct; its old files are left as they were).
 | [HC.WebPortalAuthenticationRequests](HC.WebPortalAuthenticationRequests.Table.sql) | 5 | 1 | 0 |
 | [LOG.AiUsage](LOG.AiUsage.Table.sql) | 13 | 2 | 0 |
 | [LOG.AzureDailyCost](LOG.AzureDailyCost.Table.sql) | 5 | 1 | 0 |
+| [LOG.DeployLog](LOG.DeployLog.Table.sql) | 7 | 2 | 0 |
 | [LOG.GeneralLog](LOG.GeneralLog.Table.sql) | 6 | 3 | 0 |
 | [LOG.IntegrationLog](LOG.IntegrationLog.Table.sql) | 5 | 0 | 0 |
 | [LOG.KennelReport](LOG.KennelReport.Table.sql) | 5 | 0 | 0 |

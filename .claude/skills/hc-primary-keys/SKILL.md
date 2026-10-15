@@ -169,6 +169,7 @@ existing; none is a precedent.
 | `HC.PermissionFunction`, `HC.PermissionRole`, `HC.RolePermission` | `id INT` | permission lookups |
 | `LOG.GeneralLog` | `idx INT` | log |
 | `LOG.AiUsage` | `Id BIGINT` | log |
+| `LOG.DeployLog` | `id INT IDENTITY` | deploy history, one writer; James chose the integer key (2026-10-15) |
 | `LOG.AzureDailyCost` | (`CostDate`, `ServiceName`) | one row per day per service |
 | `DomainValues.*` | `SMALLINT` / `INT` codes | enum tables — the code IS the meaning |
 

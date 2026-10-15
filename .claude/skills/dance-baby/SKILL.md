@@ -53,6 +53,8 @@ Before doing anything irreversible, present:
 6. **Deploy API** — `func azure functionapp publish harriercentralpublicapi` from `api/` dir (only if `api/` changed; the short `func publish` form prints help and deploys nothing)
 7. **Deploy public web** — standalone build → zip → `az webapp deploy` to harriercentralpublicweb (only if `public-web/` changed)
 8. **Deploy mobile app** — TestFlight via xcodebuild + xcrun altool (only if `mobile-app/` changed)
+9. **Record every deploy** in `LOG.DeployLog` (never pruned; error provenance). SPs record themselves; for the rest run, right after each deploy succeeds:
+   `python3 tools/record_deploy.py api 1.0.61+N` · `web 0.21.N` · `portal 2.0.87+N` · `app-ios 3.1.10+N --audience private|beta` · `app-android 3.1.10+N --audience beta` (only when uploaded to Play). `--list` shows the history.
 
 ---
 

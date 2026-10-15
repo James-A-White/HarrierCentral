@@ -2,14 +2,14 @@
   "schema": "HC6",
   "name": "publicWeb_getKennelRunsFeed",
   "version": "1.0.0",
-  "description": "Everything a kennel's iCal feed (/<slug>/runs.ics, E3.F6.S8) needs in one call: a header row for the kennel and its visible, live runs from 30 days ago onwards (EventStartDatetimeGmt), oldest first, at most 500. Its own procedure rather than a reuse of publicWeb_getEvents (James, 2026-10-15): calendar apps read the feed constantly, so it returns only the columns the calendar writes (one unique-index seek on the slug, one seek on IX_Event_Kennel_GmtStart_Visible, ~45 page reads for a typical kennel), and a change made for the site's run lists cannot change the feed by accident. Defunct (-1) and Inactive-Hidden (4) kennels return the header with FeedActive = 0 and no runs, so subscribers' calendars empty rather than error; a kennel with its website switched off still has a feed (its run pages still render). Public fields only \u2014 the same ones the public run pages show. No authentication (anonymous PublicWebApi GET). Read-only. The web caches the answer 15 minutes per kennel.",
+  "description": "Everything a kennel's iCal feed (/<slug>/runs.ics, E3.F6.S8) needs in one call: a header row for the kennel and its visible, live runs from 30 days ago onwards (EventStartDatetimeGmt), oldest first, at most 500. Its own procedure rather than a reuse of publicWeb_getEvents (James, 2026-10-15): calendar apps read the feed constantly, so it returns only the columns the calendar writes (one unique-index seek on the slug, one seek on IX_Event_Kennel_GmtStart_Visible, ~45 page reads for a typical kennel), and a change made for the site's run lists cannot change the feed by accident. Defunct (-1) and Inactive-Hidden (4) kennels return the header with FeedActive = 0 and no runs, so subscribers' calendars empty rather than error; a kennel with its website switched off still has a feed (its run pages still render). Public fields only — the same ones the public run pages show. No authentication (anonymous PublicWebApi GET). Read-only. The web caches the answer 15 minutes per kennel.",
   "parameters": [
     {
       "name": "kennelUniqueShortName",
       "type": "NVARCHAR(50)",
       "nullable": true,
       "mapsToColumn": "Kennel.KennelUniqueShortName",
-      "description": "The kennel's URL slug. No match among live kennels \u2192 rowset 0 is empty (shim 404)."
+      "description": "The kennel's URL slug. No match among live kennels → rowset 0 is empty (shim 404)."
     }
   ],
   "rowsets": [
@@ -77,7 +77,7 @@
           "name": "EventStartDatetimeGmt",
           "type": "DATETIMEOFFSET",
           "nullable": false,
-          "description": "The start instant (UTC) \u2014 DTSTART. Never the raw EventStartDatetime (/hc-event-datetimes)."
+          "description": "The start instant (UTC) — DTSTART. Never the raw EventStartDatetime (/hc-event-datetimes)."
         },
         {
           "name": "EventStartLocal",
@@ -113,37 +113,37 @@
           "name": "LocationStreet",
           "type": "NVARCHAR",
           "nullable": true,
-          "description": "SyncLocationStreet \u2014 LOCATION fallback."
+          "description": "SyncLocationStreet — LOCATION fallback."
         },
         {
           "name": "LocationCity",
           "type": "NVARCHAR",
           "nullable": true,
-          "description": "SyncLocationCity \u2014 LOCATION fallback."
+          "description": "SyncLocationCity — LOCATION fallback."
         },
         {
           "name": "LocationPostCode",
           "type": "NVARCHAR",
           "nullable": true,
-          "description": "SyncLocationPostCode \u2014 LOCATION fallback."
+          "description": "SyncLocationPostCode — LOCATION fallback."
         },
         {
           "name": "LocationCountry",
           "type": "NVARCHAR",
           "nullable": true,
-          "description": "SyncLocationCountry \u2014 LOCATION fallback."
+          "description": "SyncLocationCountry — LOCATION fallback."
         },
         {
           "name": "Latitude",
           "type": "DECIMAL",
           "nullable": true,
-          "description": "SyncLatitude \u2014 GEO when in range."
+          "description": "SyncLatitude — GEO when in range."
         },
         {
           "name": "Longitude",
           "type": "DECIMAL",
           "nullable": true,
-          "description": "SyncLongitude \u2014 GEO when in range."
+          "description": "SyncLongitude — GEO when in range."
         },
         {
           "name": "EventDescription",
@@ -155,7 +155,7 @@
           "name": "UpdatedAt",
           "type": "DATETIMEOFFSET",
           "nullable": false,
-          "description": "HC.Event.updatedAt \u2014 LAST-MODIFIED; the latest across the feed is its DTSTAMP, so an unchanged feed has an unchanged body and ETag."
+          "description": "HC.Event.updatedAt — LAST-MODIFIED; the latest across the feed is its DTSTAMP, so an unchanged feed has an unchanged body and ETag."
         }
       ]
     }
