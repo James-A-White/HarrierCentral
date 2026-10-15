@@ -46,7 +46,7 @@ app HTTP 400 approveLogin	noise	an SP said no on purpose; its reason is in the s
 app HTTP 400 authorizeDevice	noise	an SP said no on purpose; its reason is in the sp … row
 app HTTP 400 getInviteCode	noise	an SP said no on purpose; its reason is in the sp … row
 app HTTP 400 processPayment	fixed:2026-09-07	processPayment error path hidden by a rolled-back log (fixed 2026-09-06)
-app HTTP 400 sendRoomMessage	fixed:2026-09-20	emoji-only room message read as empty (SP 2026-09-19)
+app HTTP 400 sendRoomMessage	fixed:2026-10-14	emoji-only room message read as empty (SP 2026-09-19); 2026-10-12 22:00 UTC a second cause: a retry after a Bad-file-descriptor transport failure re-sent the same messageId → PK_EventMessage duplicate (message delivered once). Chat sends made idempotent in 86122c12, live SP 61 2026-10-13 evening
 app HTTP 400 setEventAttendence	noise	an SP said no on purpose; its reason is in the sp … row
 app HTTP 400 syncEventAdminData	noise	an SP said no on purpose; its reason is in the sp … row
 app HTTP 500 approveLogin	open	approveLogin 500 with a body — see sp hcapp_approveLogin Unhandled error
@@ -173,3 +173,7 @@ sp hcpublicapi_getEvents Invalid API key	noise	a caller with the wrong ApiKey �
 api hcapp_syncKennelAdminData Unhandled exception in hcapp_syncKennelAdminData — Execution Timeout Expired. The timeout period elapsed prior to completion of the operatio	open	one timeout in 30 days (ROMEO, iOS 1435, 2026-10-15 01:29 UTC); kennel not logged. Watch for a repeat before profiling
 app SYNC full sync incomplete after retry: Cities, Regions, Countries, Songs, HEM, HKM, Kennels, Events, Hashers failed — not stamped	noise	every table failed in the same boot = the phone had no network (one device on 1471, 2026-10-14 10:09); a spike across devices is the server
 app NET other www.hashruns.org	noise	iOS Bad file descriptor on a hashruns.org image fetch after suspend (http-one-shot-clients), old build 1435
+api hcapp_searchHashers Unhandled exception in hcapp_searchHashers — Execution Timeout Expired. The timeout period elapsed prior to completion of the operation or t	open	4 timeouts in 4 s, one hasher on 1471, 2026-10-15 10:33 UTC. Not the search: Query Store shows the aborted 30 s statement was a SYNCHRONOUS auto-stats update (StatMan) on LOG.GeneralLog.Message, triggered by the rate-limit COUNT (LogSource+Message+Timestamp) on a 450k-row, high-churn table; each keystroke waited for it. Fix options to James: AUTO_UPDATE_STATISTICS_ASYNC on, and/or an index for the rate-limit lookup
+sp BetaRoomAssistant BetaRoomAssistant run failed	open	same mechanism as the searchHashers timeout: 2026-10-15 11:40 UTC, the LogSource stats on LOG.GeneralLog updated synchronously at 11:40 under the assistant's LogSource='beta-room' read
+sp hcapp_getDirectMessageRequests Invalid access token	noise	phone clock off (1435, 2026-10-15); the SP's message tells the user to fix the clock
+app ASYNC type 'Null' is not a subtype of type 'NotificationState' in type cast @ kennel_list_item.dart KennelListItemState._showNotificationPopup	fixed:1439	Cancel on the kennel notification picker; fixed e654e45d (2026-10-03), first shipped in 1439; seen on 1435 only
