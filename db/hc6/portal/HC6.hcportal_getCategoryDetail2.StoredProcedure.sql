@@ -45,6 +45,8 @@ AS
 --   - All categories now return raw data columns instead of formatted message strings
 --   - Removed header metadata rowset (was rowset 1 with col1-col6 labels)
 --   - Portal must implement time-ago formatting and string concatenation
+-- Changes: 2026-10-15 — Errors (7) carry spBuild, the SP build live when the
+--   error was logged (LOG.DeployLog), for provenance.
 -- =====================================================================
 
 SET NOCOUNT ON;
@@ -283,6 +285,9 @@ BEGIN TRY
 		SELECT
 			er.updatedAt,
 			er.HcVersion AS hcVersion,
+			-- The SP build live when the error was logged (LOG.DeployLog,
+			-- 2026-10-15); NULL before the deploy history starts.
+			sb.Version AS spBuild,
 			er.ErrorDescription AS errorDescription,
 			COALESCE(h1.DisplayName, h2.DisplayName, h3.DisplayName, '') AS displayName,
 			er.userId,
@@ -293,6 +298,9 @@ BEGIN TRY
 		-- Portal shim logs deviceId in userId — resolve via HC.Device
 		LEFT OUTER JOIN HC.Device  dev WITH (NOLOCK) ON dev.id          = er.userId
 		LEFT OUTER JOIN HC.Hasher h3 WITH (NOLOCK) ON h3.id             = dev.UserId
+		OUTER APPLY (SELECT TOP 1 dl.Version FROM LOG.DeployLog dl
+		             WHERE dl.Component = 'sp' AND dl.DeployedAt <= er.createdAt
+		             ORDER BY dl.DeployedAt DESC) sb
 		WHERE er.updatedAt > @cutoffDate
 		ORDER BY er.updatedAt DESC
 		OPTION (RECOMPILE)
