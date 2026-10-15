@@ -7,9 +7,9 @@ import 'package:harrier_central/pages/run_admin/add_down_down_page.dart';
 import 'package:harrier_central/pages/detail_pages/official_trail_page.dart';
 import 'package:harrier_central/pages/live_run_pages/live_run_charges_page.dart';
 import 'package:harrier_central/widgets/run_photo_gallery.dart';
-import 'package:eventide/eventide.dart';
 import 'package:harrier_central/imports.dart';
 import 'package:harrier_central/widgets/run_summary_dialog.dart';
+import 'package:harrier_central/widgets/run_calendar_choice.dart';
 import 'package:harrier_central/services/export/gpx_export_service.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart' as latlng;
@@ -625,133 +625,10 @@ class RunTabs extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                                onPressed: () async {
-                                  // THIS IS A H@CK: strip the "Z" timezone character off of the time so it imports as local time and not GMT
-                                  String url =
-                                      '$BASE_HASHRUNS_DOT_ORG_URL${futureRun.kennel.kennelUniqueShortName}/${futureRun.event.eventNumber}';
-
-                                  String startTime = futureRun
-                                      .event
-                                      .eventStartDatetime
-                                      .toString();
-                                  startTime = startTime.substring(
-                                    0,
-                                    startTime.length - 1,
-                                  );
-                                  DateTime localTime =
-                                      DateTime.tryParse(startTime) ??
-                                      DateTime.now();
-
-                                  String? oneLineLocForDesc =
-                                      futureRun.event.locationOneLineDesc;
-
-                                  String? oneLineLocForTitle;
-
-                                  if ((oneLineLocForDesc != null) &&
-                                      (oneLineLocForDesc.isNotEmpty)) {
-                                    oneLineLocForTitle =
-                                        ' @ $oneLineLocForDesc';
-                                    oneLineLocForDesc =
-                                        'Location: $oneLineLocForDesc\r\n\r\n';
-                                  } else {
-                                    oneLineLocForDesc = '';
-                                    oneLineLocForTitle = '';
-                                  }
-
-                                  var eventide = Eventide();
-
-                                  // Create an event in the default calendar (iOS write-only access)
-                                  await eventide.createEventInDefaultCalendar(
-                                    title:
-                                        futureRun.event.eventName +
-                                        oneLineLocForTitle,
-                                    description:
-                                        oneLineLocForDesc +
-                                        (futureRun.event.eventDescription ??
-                                            ''),
-                                    location: Utilities.buildMapLocation(
-                                      futureRun.event,
-                                    ),
-                                    startDate: localTime,
-                                    endDate: localTime.add(Duration(hours: 4)),
-                                    url: url,
-                                  );
-
-                                  closeAllSnackbarsSafely();
-
-                                  if (!context.mounted) return;
-
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      backgroundColor: Colors.blue,
-                                      content: Text(
-                                        '${futureRun.event.eventName}$oneLineLocForTitle has been added to your calendar',
-                                      ),
-                                    ),
-                                  );
-
-                                  // if (success) {
-
-                                  // calendar.CalendarEvent
-                                  // newEvent = calendar.CalendarEvent(
-                                  //   title:
-                                  //       futureRun.event.eventName +
-                                  //       oneLineLocForTitle,
-                                  //   description:
-                                  //       oneLineLocForDesc +
-                                  //       (widget
-                                  //               .futureRun
-                                  //               .event
-                                  //               .eventDescription ??
-                                  //           ''),
-                                  //   startDate: localTime,
-                                  //   location:
-                                  //       widget
-                                  //           .futureRun
-                                  //           .extensions
-                                  //           .userFriendlyLocation,
-                                  //   url:
-                                  //       'https://www.hashruns.org/#/RID?publicEventId=${futureRun.event.publicEventId}&textTheme=light',
-                                  // );
-
-                                  // final calendar.CalendarPlugin
-                                  // calendarPlugIn =
-
-                                  //   calendarPlugIn
-                                  //       .createEvent(
-                                  //         calendarId: calendars[0].id!,
-                                  //         event: newEvent,
-                                  //             'Event Id is: $evenId',
-
-                                  // Event event = Event(
-                                  //   title:
-                                  //       futureRun.event.eventName +
-                                  //       oneLineLocForTitle,
-                                  //   description:
-                                  //       oneLineLocForDesc +
-                                  //       (widget
-                                  //               .futureRun
-                                  //               .event
-                                  //               .eventDescription ??
-                                  //           ''),
-                                  //   location:
-                                  //       widget
-                                  //           .futureRun
-                                  //           .extensions
-                                  //           .userFriendlyLocation,
-                                  //   startDate: localTime,
-                                  //       hours: 4,
-                                  //     ), // on iOS, you can set alarm notification after your event.
-                                  //     url:
-                                  //         'https://www.hashruns.org/#/RID?publicEventId=${futureRun.event.publicEventId}&textTheme=light', // on iOS, you can set url to your event.
-                                  //   //   emailInvites: [], // on Android, you can add invite emails to your event.
-
-                                  // PermissionStatus ps;
-
-                                  // await Add2Calendar.addEvent2Cal(event);
-
-                                  // bool success = await Add2Calendar.addEvent2Cal(event);
-                                },
+                                // Choose: this run once, or all the kennel's
+                                // runs via its calendar feed (E3.F6.S8).
+                                onPressed: () =>
+                                    showRunCalendarChoice(context, futureRun),
                               ),
                             ),
                           ],
