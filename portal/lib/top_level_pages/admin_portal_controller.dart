@@ -325,6 +325,11 @@ class AdminPortalController extends GetxController {
 
   Future<void> _syncFcmTokenToServer(String? fcmToken) async {
     final deviceId = (box.get(HIVE_DEVICE_ID) as String?) ?? '';
+    // No device yet (not signed in on this browser): there is nothing to
+    // attach the token to, and an empty deviceId fails the SP's GUID
+    // conversion (HC.ErrorLog, 2026-10-14). The next load after sign-in
+    // sends it.
+    if (deviceId.isEmpty) return;
     final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
     // Compound token: binds the auth to the specific FCM token being registered.
     // Use deviceSecret-only paramString when fcmToken is null (no token to bind).
