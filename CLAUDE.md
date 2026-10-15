@@ -210,6 +210,16 @@ The deploy commands themselves are `ask` rules in `.claude/settings.json`:
 and any push to `master` (which deploys the portal through CI). Claude Code
 stops for James's approval on each one, in every permission mode.
 
+**Every public-web deploy gets its own version (James, 2026-10-15).** The web
+has no build number, so each deploy bumps the last part of `"version"` in
+`public-web/package.json` (and `package-lock.json`): 0.21.75 → 0.21.76, with
+its own entry in `public-web/CHANGELOG.md` and `pubchanges.txt`. Never
+redeploy under a version that is already live — 0.21.74 went out four times
+on 2026-10-14, and the error triage (`fixed:web <version>`) could not tell
+those builds apart. This is the one standing exception to "never bump a
+version unasked"; the middle and first parts (0.**21**.x, **0**.21.x) still
+change only when James asks.
+
 To answer "is this fix live?", run `python3 tools/sp_versions.py [object]`.
 How to read its report is in the same skill file under *Deploying SPs*.
 

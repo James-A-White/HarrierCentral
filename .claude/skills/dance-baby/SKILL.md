@@ -91,7 +91,7 @@ closes its train.
 - **No manual deploy step** — merging to master triggers auto-deploy via CI
 
 #### Public web (`public-web/`)
-- `"version"` in `public-web/package.json` has no build number — change it only on James's request
+- `"version"` in `public-web/package.json` has no build number, so **every web deploy bumps its last part** (0.21.75 → 0.21.76, also in `package-lock.json`) — standing instruction, James 2026-10-15; never redeploy under a live version. The middle and first parts change only on James's request
 - Prepend to `public-web/CHANGELOG.md`
 - Deploy steps in memory `reference_public_web_deploy.md`
 
