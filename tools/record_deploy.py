@@ -4,13 +4,17 @@ time maps to the builds that were live then (tools/log_triage.py) — and,
 when James asks, a major AI task (an audit, a sweep, a large refactor), so
 the same timeline shows what was examined or changed and when.
 
+Detail says what was done; Outcome is written AFTER the fact (--outcome <id>):
+what the task found and what came of it, or what became of a deploy.
+
     python3 tools/record_deploy.py web 0.21.77
     python3 tools/record_deploy.py api 1.0.61+111
     python3 tools/record_deploy.py portal 2.0.87+778
     python3 tools/record_deploy.py app-ios 3.1.10+1480 --audience private
     python3 tools/record_deploy.py app-android 3.1.10+1480 --audience beta --detail "Play internal"
     python3 tools/record_deploy.py ai-task "SP security audit" --detail "All 289 HC6 SPs checked for …; 7 fixed, 3 to James"
-    python3 tools/record_deploy.py --list            # the last 20 rows
+    python3 tools/record_deploy.py --outcome 812 "3 gaps fixed in SP 73; 2 left for James (E14…)"
+    python3 tools/record_deploy.py --list            # the last 20 rows (with ids)
     python3 tools/record_deploy.py --list ai-task    # AI tasks only
 
 SP deploys record themselves (tools/deploy_hc6.sh). The dance-baby skill runs
@@ -61,12 +65,27 @@ def main() -> int:
     ap.add_argument("--detail", default=None)
     ap.add_argument("--at", default=None, help="UTC time if not now, e.g. 2026-10-15T08:56:28Z")
     ap.add_argument("--list", action="store_true")
+    ap.add_argument("--outcome", nargs=2, metavar=("ID", "TEXT"),
+                    help="write (or replace) the outcome of row ID, after the fact")
     a = ap.parse_args()
 
     if a.list:
         where = f"WHERE Component = {lit(a.component)} " if a.component else ""
-        print(sql("SELECT TOP 20 CONVERT(varchar(19), DeployedAt, 120) AS DeployedAtUtc, Component, Version, "
-                  f"GitCommit, Audience, LEFT(Detail, 80) AS Detail FROM LOG.DeployLog {where}ORDER BY DeployedAt DESC"))
+        print(sql("SELECT TOP 20 id, CONVERT(varchar(19), DeployedAt, 120) AS DeployedAtUtc, Component, Version, "
+                  "GitCommit, Audience, LEFT(Detail, 70) AS Detail, LEFT(Outcome, 70) AS Outcome "
+                  f"FROM LOG.DeployLog {where}ORDER BY DeployedAt DESC"))
+        return 0
+    if a.outcome:
+        row_id, text = a.outcome
+        if not row_id.isdigit():
+            ap.error("--outcome takes the row id from --list")
+        if not 1 <= len(text.strip()) <= 2000:
+            ap.error("an outcome is 1-2000 characters")
+        n = sql(f"UPDATE LOG.DeployLog SET Outcome = {lit(text.strip())}, OutcomeAt = SYSDATETIMEOFFSET() "
+                f"WHERE id = {int(row_id)}; SELECT @@ROWCOUNT;").split()
+        if not n or n[-1] != "1":
+            sys.exit(f"no row with id {row_id}")
+        print(f"outcome written for row {row_id}")
         return 0
     if not (a.component and a.version):
         ap.error("component and version are required (or --list)")
@@ -91,7 +110,9 @@ def main() -> int:
     at = f"'{a.at}'" if a.at else "SYSDATETIMEOFFSET()"
     sql("INSERT LOG.DeployLog (DeployedAt, Component, Version, GitCommit, Audience, Detail) VALUES "
         f"({at}, {lit(a.component)}, {lit(a.version)}, {lit(commit)}, {lit(a.audience)}, {lit(a.detail)})")
-    print(f"recorded {a.component} {a.version} ({a.audience}) at {a.at or 'now'}, commit {commit}")
+    new_id = sql("SELECT MAX(id) FROM LOG.DeployLog;").split()[-1]
+    print(f"recorded row {new_id}: {a.component} {a.version} ({a.audience or 'no audience'}) at {a.at or 'now'}, commit {commit}"
+          + (" — add its outcome later: --outcome " + new_id + ' "…"' if a.component == "ai-task" else ""))
     return 0
 
 

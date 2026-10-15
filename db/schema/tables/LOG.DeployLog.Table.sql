@@ -11,6 +11,10 @@ CREATE TABLE [LOG].[DeployLog] (
 	[GitCommit] [nvarchar](40) NULL,
 	[Audience] [nvarchar](20) NULL,
 	[Detail] [nvarchar](400) NULL,
+	-- Written after the fact: what an AI task found and what came of it, or what became of a deploy (rolled back, fixed, caused a bug). Detail = what was done; Outcome = how it turned out (James, 2026-10-15).
+	[Outcome] [nvarchar](2000) NULL,
+	-- When Outcome was last written.
+	[OutcomeAt] [datetimeoffset](7) NULL,
 	CONSTRAINT [PK_DeployLog] PRIMARY KEY CLUSTERED ([id])
 );
 GO
