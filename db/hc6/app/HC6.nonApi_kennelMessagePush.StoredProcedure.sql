@@ -70,14 +70,14 @@ BEGIN TRY
         CASE WHEN EXISTS (SELECT 1 FROM HC.Device dv WHERE dv.FcmToken = a.FcmToken
                         AND TRY_CAST(dv.BuildNumber AS INT) >= HC6.MinBuildForIconBadge())
          THEN bt.BadgeTotal END AS BadgeTotal FROM #pushAudience a
-    CROSS APPLY HC6.UserUnreadChatTotal(a.UserId) bt WHERE a.Pref IN (1, 4);
+    CROSS APPLY HC6.UserUnreadChatTotal(a.UserId, a.FcmToken) bt WHERE a.Pref IN (1, 4);
 
     -- Rowset 2: silent recipients
     SELECT DISTINCT a.UserId, a.FcmToken,
         CASE WHEN EXISTS (SELECT 1 FROM HC.Device dv WHERE dv.FcmToken = a.FcmToken
                         AND TRY_CAST(dv.BuildNumber AS INT) >= HC6.MinBuildForIconBadge())
          THEN bt.BadgeTotal END AS BadgeTotal FROM #pushAudience a
-    CROSS APPLY HC6.UserUnreadChatTotal(a.UserId) bt WHERE a.Pref = 3;
+    CROSS APPLY HC6.UserUnreadChatTotal(a.UserId, a.FcmToken) bt WHERE a.Pref = 3;
 
     DROP TABLE #pushAudience;
 END TRY
