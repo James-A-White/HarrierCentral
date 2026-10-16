@@ -29,6 +29,9 @@ AS
 --              refreshes; nobody is buzzed for a 🍺. API ONLY, stripped.
 -- Author: Harrier Central
 -- Created: 2026-09-30
+-- 2026-10-16 (E9.F1.S33): the API-only thread rowset says 'kennelMisman' for a
+--   kennel's Mismanagement chat and gains KennelThread, so the reaction push
+--   reaches the right open thread. Additive.
 -- HC5 Source: none (new)
 -- Breaking Changes: none
 -- =====================================================================
@@ -88,13 +91,17 @@ BEGIN TRY
         SELECT UPPER(CAST(@messageId AS NVARCHAR(36)))                         AS MessageId,
                CASE WHEN @threadId IS NOT NULL THEN 'dm'
                     WHEN @eventId  IS NOT NULL THEN 'run'
-                    WHEN @kennelId IS NOT NULL THEN 'kennel' ELSE 'room' END   AS ThreadKind,
+                    -- A kennel's two threads (E9.F1.S33): 0 general, else Mismanagement.
+                    WHEN @kennelId IS NOT NULL AND @messageType = 0 THEN 'kennel'
+                    WHEN @kennelId IS NOT NULL THEN 'kennelMisman' ELSE 'room' END AS ThreadKind,
                @eventId                                                        AS EventId,
                (SELECT e.PublicEventId FROM HC.Event e WHERE e.id = @eventId)  AS PublicEventId,
                @kennelId                                                       AS KennelId,
                CASE WHEN @eventId IS NULL AND @kennelId IS NULL AND @threadId IS NULL
                     THEN @messageType END                                      AS RoomType,
-               @threadId                                                       AS ThreadId;
+               @threadId                                                       AS ThreadId,
+               CASE WHEN @eventId IS NULL AND @kennelId IS NOT NULL
+                    THEN CAST(CASE WHEN @messageType = 0 THEN 0 ELSE 1 END AS SMALLINT) END AS KennelThread;
 
         -- API only: the author's phones, never the reactor's own.
         SELECT DISTINCT d.UserId, d.FcmToken
