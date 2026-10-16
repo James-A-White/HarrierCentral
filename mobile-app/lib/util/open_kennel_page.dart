@@ -11,6 +11,21 @@ import 'package:harrier_central/imports.dart';
 /// inside (KennelAdminController._syncAndLoad on isAdmin). Returns false when
 /// the kennel is not on this phone (not synced yet) or there is no navigator.
 Future<bool> openKennelPage(HcId kennelId) async {
+  final KennelListAggregate? kennelAggregate = await kennelAggregateFor(kennelId);
+  if (kennelAggregate == null) return false;
+  if (navigatorKey.currentContext == null) return false;
+  await Navigator.of(navigatorKey.currentContext!).push<dynamic>(
+    MaterialPageRoute<dynamic>(
+      builder: (BuildContext context) =>
+          KennelAdminMainPage(kennelAggregateItem: kennelAggregate),
+    ),
+  );
+  return true;
+}
+
+/// The kennel, its row for this hasher and its list extras, as the kennel
+/// page takes them — or null when the kennel is not on this phone.
+Future<KennelListAggregate?> kennelAggregateFor(HcId kennelId) async {
   final bool isHomeKennel =
       normalizeUuid(kennelId) ==
       normalizeUuid(getStringPref(StringPrefsEnum.homeKennelId));
@@ -21,7 +36,7 @@ Future<bool> openKennelPage(HcId kennelId) async {
     hasherId: HcId(currentUserId),
     kennelId: kennelId,
   );
-  if (results.isEmpty) return false;
+  if (results.isEmpty) return null;
 
   double? dist;
   if (deviceInfo.deviceLat != null &&
@@ -50,18 +65,42 @@ Future<bool> openKennelPage(HcId kennelId) async {
   extensionsItem.notificationsRequested = -1;
   extensionsItem.emailAlertRequested = -1;
 
-  final KennelListAggregate kennelAggregate = KennelListAggregate(
+  return KennelListAggregate(
     kennel: kennelItem,
     extensions: extensionsItem,
     hkm: hkmItem,
     isHomeKennel: isHomeKennel,
   );
+}
 
-  if (navigatorKey.currentContext == null) return false;
+/// `hashruns.org/<slug>/review-photos` — the link in the weekly Mismanagement
+/// reminder (E9.F1.S33, James 2026-10-16): the kennel's whole pending-photo
+/// queue, the screen the kennel page's Review photos button opens. Only for
+/// someone who may review that kennel's photos (the same canAccessFeature
+/// rule as the button, and the server's own gate behind it); anyone else —
+/// a forwarded link — lands on the kennel page. Returns false when the kennel
+/// is not on this phone or there is no navigator.
+Future<bool> openKennelPhotoReview(HcId kennelId) async {
+  final KennelListAggregate? agg = await kennelAggregateFor(kennelId);
+  if (agg == null || navigatorKey.currentContext == null) return false;
+  final bool mayReview = canAccessFeature(
+    KennelFeature.reviewPhotos,
+    appAccessFlags: agg.hkm?.appAccessFlags ?? 0,
+    mismanagementRoles: agg.hkm?.mismanagementRoles ?? 0,
+    kennelOverrideJson: agg.kennel.permissionOverrideJson,
+  );
+  if (!mayReview) return openKennelPage(kennelId);
   await Navigator.of(navigatorKey.currentContext!).push<dynamic>(
     MaterialPageRoute<dynamic>(
-      builder: (BuildContext context) =>
-          KennelAdminMainPage(kennelAggregateItem: kennelAggregate),
+      builder: (BuildContext context) => PhotoReviewPage(
+        kennelId: agg.kennel.kennelId,
+        eventId: '',
+        eventName: agg.kennel.kennelShortName,
+        eventNumber: null,
+        kennelSlug: agg.kennel.kennelUniqueShortName,
+        kennelLogoUrl: agg.kennel.kennelLogo,
+        kennelShortName: agg.kennel.kennelShortName,
+      ),
     ),
   );
   return true;

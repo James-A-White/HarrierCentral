@@ -18,6 +18,7 @@ class DeepLinkTarget {
     this.rsvp,
     this.emailPrefs,
     this.loginScanData,
+    this.reviewPhotos = false,
   });
 
   /// `/login/UWP:<authCode>` — a browser's sign-in QR, read by the phone's
@@ -58,11 +59,18 @@ class DeepLinkTarget {
   const DeepLinkTarget.kennel(String slug)
     : this._(kennelSlug: slug, kennel: true);
 
+  /// `/<slug>/review-photos` — the kennel's photo review queue, linked from
+  /// the weekly Mismanagement reminder (E9.F1.S33, 2026-10-16). Someone who
+  /// may not review that kennel's photos lands on its page instead.
+  const DeepLinkTarget.reviewPhotos(String slug)
+    : this._(kennelSlug: slug, reviewPhotos: true);
+
   final String? kennelSlug;
   final int? runNumber;
   final String? publicEventId;
   final bool nextRun;
   final bool kennel;
+  final bool reviewPhotos;
 
   /// Check-in by default (James, 2026-09-15: "opens the app to the check-in
   /// page to that specific run"). The map and photo sub-pages open on their
@@ -87,6 +95,7 @@ class DeepLinkTarget {
   bool get isLogin => loginScanData != null;
   bool get isLegacy => publicEventId != null;
   bool get isKennel => kennel;
+  bool get isReviewPhotos => reviewPhotos;
 
   String get _rsvpSuffix => rsvp == null
       ? ''
@@ -101,6 +110,8 @@ class DeepLinkTarget {
       ? 'DeepLinkTarget(legacy $publicEventId$_rsvpSuffix)'
       : kennel
       ? 'DeepLinkTarget(kennel $kennelSlug)'
+      : reviewPhotos
+      ? 'DeepLinkTarget(review photos $kennelSlug)'
       : nextRun
       ? 'DeepLinkTarget($kennelSlug/next run$_rsvpSuffix)'
       : 'DeepLinkTarget($kennelSlug/$runNumber → ${tab.name}$_rsvpSuffix)';
@@ -271,6 +282,7 @@ class DeepLinkService {
     }
     final String second = seg[1].toLowerCase();
     if (_nextRunPages.contains(second)) return DeepLinkTarget.nextRun(slug);
+    if (second == 'review-photos') return DeepLinkTarget.reviewPhotos(slug);
     if (_kennelPages.contains(second)) return null;
     final int? number = int.tryParse(second);
     if (number == null || number <= 0) return null;
@@ -389,6 +401,17 @@ class DeepLinkService {
 
     if (target.isLogin) {
       await _approveWebSignIn(target.loginScanData!);
+      return;
+    }
+
+    if (target.isReviewPhotos) {
+      final Map<String, dynamic>? kennel = await _kennelBySlug(target.kennelSlug!);
+      final bool opened = kennel != null &&
+          await openKennelPhotoReview(HcId(normalizeUuid(kennel[tableModel.kennelsTableHelper.colKennelId] as String)));
+      if (!opened) {
+        _crumb('kennel ${target.kennelSlug} not on this phone, bouncing to the site');
+        await _openInBrowser(uri);
+      }
       return;
     }
 

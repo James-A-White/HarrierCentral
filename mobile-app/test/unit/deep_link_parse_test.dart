@@ -58,6 +58,17 @@ void main() {
           reason: 'no Trail TV in the app — the run page is the right landing');
     });
 
+    test('/<slug>/review-photos is the kennel\'s photo review queue', () {
+      for (final String host in <String>['www.hashruns.org', 'hashruns.org']) {
+        final t = p('https://$host/TNTH3/review-photos');
+        expect(t, isNotNull, reason: host);
+        expect(t!.isReviewPhotos, isTrue, reason: host);
+        expect(t.isKennel, isFalse);
+        expect(t.kennelSlug, 'tnth3');
+        expect(t.runNumber, isNull);
+      }
+    });
+
     test('the next-run link, in both spellings, is the kennel\'s next run', () {
       for (final String spelling in <String>['nextrun', 'next-run', 'NextRun']) {
         final t = p('https://www.hashruns.org/lh3/$spelling');
