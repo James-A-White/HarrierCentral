@@ -13,6 +13,8 @@ AS
 --   notification_count (Android), so the icon is right even when the app
 --   is closed (2026-09-28). Inline so a CROSS APPLY per recipient stays set-based.
 -- Returns: one row { BadgeTotal INT } (0 when nothing is unread).
+--   2026-10-16: a Mismanagement thread's unread counts only when the hasher
+--   has a device on a build that lists it (HC6.MinBuildForKennelMismanagement).
 -- Author: Harrier Central
 -- Created: 2026-09-28
 -- =====================================================================
@@ -28,4 +30,11 @@ RETURN
                      AND NOT EXISTS (SELECT 1 FROM HC.HasherFriendMap m
                                      WHERE m.UserId = @userId AND m.Friend_UserId = f.UserId AND (m.Ignore = 1 OR m.Removed = 0)))
            AS INT) AS BadgeTotal
-    FROM HC6.UserUnreadChatThreads(@userId) t;
+    FROM HC6.UserUnreadChatThreads(@userId) t
+    -- A Mismanagement thread (E9.F1.S33) counts only for a hasher with a
+    -- build that lists it; on an older one it is invisible, so counting it
+    -- would put a number on the icon that nothing could ever clear.
+    WHERE ISNULL(t.KennelThread, 0) = 0
+       OR EXISTS (SELECT 1 FROM HC.Device d
+                  WHERE d.UserId = @userId AND d.removed = 0
+                    AND TRY_CAST(d.BuildNumber AS INT) >= HC6.MinBuildForKennelMismanagement());
