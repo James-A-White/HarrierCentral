@@ -1,5 +1,9 @@
 # public-web Changelog
 
+## 0.21.77 (2026-10-16)
+
+- `/<slug>/review-photos`: where the weekly Mismanagement reminder's "Review them" link lands without the app — photo review is in the Harrier Central app, which opens this link on the kennel's Review photos screen. Not indexed.
+
 ## 0.21.76 (2026-10-15)
 
 - Every kennel has a calendar feed at `/<slug>/runs.ics`: subscribe once and new runs and changes appear in your calendar by themselves, each linking back to its run. Defunct and hidden kennels serve an empty feed.

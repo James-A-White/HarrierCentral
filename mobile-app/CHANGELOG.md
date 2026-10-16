@@ -1,17 +1,13 @@
-## 3.1.10+1481 (2026-10-16)
+## 3.1.10+1482 (2026-10-16)
 
 ### New Features
 
-- **Mismanagement chat**: every kennel now has a private chat for its
-  office-holders and admins beside its general chat — a shield button on the
-  kennel page, a "<kennel> Mismanagement" row in Chats with its own unread
-  count, pin and notifications. Harrier Central posts a weekly reminder there
-  of what is waiting (first: photos to review).
-- **Kennel trail map**: a search bar like the Runs page (run number, name or
-  date), and ‹ › on a selected trail to step to the next newer or older run.
+- **Review photos from the reminder**: the weekly Mismanagement reminder's
+  link — hashruns.org/<kennel>/review-photos — opens the kennel's Review
+  photos screen, tapped in the chat or anywhere else. Someone who cannot
+  review that kennel's photos lands on its page.
 
 ### Fixes
 
-- **Apple Watch**: the tracking screen fits on one screen on every watch, the
-  Ultra included — no scrolling — and shows your distance and checks so far.
+- **Kennel chat notifications**: the title no longer ends in a dangling " -".
 
