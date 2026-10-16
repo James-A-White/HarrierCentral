@@ -35,7 +35,6 @@ NO-DECLARATION hcapp_rptKennelRunStats
 NO-DECLARATION hcapp_saveHashTrash
 NO-DECLARATION hcapp_sendDirectMessage
 NO-DECLARATION hcapp_sendEventMessage
-NO-DECLARATION hcapp_sendKennelMessage
 NO-DECLARATION hcapp_sendRoomMessage
 NO-DECLARATION hcapp_setBulkEventAttendence
 NO-DECLARATION hcapp_setChatPin

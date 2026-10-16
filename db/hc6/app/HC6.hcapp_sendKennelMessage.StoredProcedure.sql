@@ -9,7 +9,10 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_sendKennelMessage]
     -- 0 text, 1 photo, 2 location (E9.F1.S11/S12, 2026-09-29). Optional,
     -- so every existing caller still sends text.
     @messageKind                 SMALLINT         = 0,
-    @replyToMessageId UNIQUEIDENTIFIER = NULL
+    @replyToMessageId UNIQUEIDENTIFIER = NULL,
+    -- 0 the kennel's general chat, 1 its private Mismanagement chat
+    -- (E9.F1.S33). Optional: every existing caller posts to the general chat.
+    @kennelThread     SMALLINT         = 0
 AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_sendKennelMessage
@@ -30,12 +33,22 @@ AS
 -- Created: 2026-07-06
 -- HC5 Source: none (new — kennel chat, design of record)
 -- Breaking Changes: none
+--   2026-10-16 (E9.F1.S33): optional @kennelThread. The message is stored
+--   under that thread's MessageType (HC6.KennelThreadMessageType); the
+--   resend, reply and read-mark checks are of that thread only. Thread 1,
+--   the private Mismanagement chat, is refused (errorType 13) unless
+--   HC6.UserInKennelMismanagement, and pushes ONLY the kennel's
+--   mismanagement (every office or app access flag), on builds at or
+--   above HC6.MinBuildForKennelMismanagement — releasability flags do not
+--   widen it. Rowset 0 gains KennelThread and ThreadKind ('kennel' /
+--   'kennelMisman') for the API's push payload. Additive.
 --   2026-10-11 (E9.F1.S30): anyone may post; the follower refusal is
 --   gone. Posting creates a HasherKennelMap row (Following 0, bell on) or
 --   turns a never-chosen bell (0) on. No rowset change.
 --   2026-09-29: optional @messageKind (photo / location). Rowset 0's
 --   MessageContent is now HC6.ChatMessagePreview — it is the push body —
 --   and rowset 0 gains MessageKind. Additive for every caller.
+-- Idempotency: client-id — @messageId; a resend of a stored message writes nothing and pushes nobody
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -94,6 +107,22 @@ BEGIN
     RETURN;
 END
 
+DECLARE @messageType INT = HC6.KennelThreadMessageType(@kennelThread);
+IF (@messageType IS NULL
+    OR (@messageType <> 0 AND HC6.UserInKennelMismanagement(@userId, @kennelId) = 0))
+BEGIN
+    SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not in kennel mismanagement',
+            CONCAT('kennelId=', CAST(@kennelId AS VARCHAR(40)), ' kennelThread=', @kennelThread),
+            @procName, @userId);
+    SELECT @errorId AS errorId, 13 AS errorType, 1913 AS errorCode,
+           'Not available' AS errorTitle,
+           'This chat is only for the kennel''s mismanagement.' AS errorUserMessage,
+           @procName AS errorProc;
+    RETURN;
+END
+
 -- A photo must be one of ours, a location a well-formed map link.
 SET @messageKind = COALESCE(@messageKind, 0);
 DECLARE @kindError NVARCHAR(200) = HC6.ChatMessageKindError(@messageKind, @messageContent);
@@ -126,7 +155,8 @@ SET @messageTitle = COALESCE(@messageTitle, '');
 -- to hit the primary key and report a delivered message as unsent.
 DECLARE @isResend SMALLINT = CASE WHEN EXISTS (
         SELECT 1 FROM HC.EventMessage
-        WHERE id = @messageId AND UserId = @userId AND KennelId = @kennelId AND EventId IS NULL) THEN 1 ELSE 0 END;
+        WHERE id = @messageId AND UserId = @userId AND KennelId = @kennelId AND EventId IS NULL
+          AND MessageType = @messageType) THEN 1 ELSE 0 END;
 
 BEGIN TRY
     BEGIN TRANSACTION;
@@ -138,7 +168,8 @@ BEGIN TRY
     -- a stale id, another chat's message — sends as a plain message rather
     -- than failing the send; the quote is decoration, the text is the point.
     IF (@replyToMessageId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM HC.EventMessage r
-                                                    WHERE r.id = @replyToMessageId AND r.KennelId = @kennelId AND r.EventId IS NULL))
+                                                    WHERE r.id = @replyToMessageId AND r.KennelId = @kennelId AND r.EventId IS NULL
+                                                      AND r.MessageType = @messageType))
         SET @replyToMessageId = NULL;
 
     -- Posting joins the kennel's chat (James, 2026-10-11). A hasher with no
@@ -164,24 +195,30 @@ BEGIN TRY
 
     INSERT INTO HC.EventMessage
         ([id], [KennelId], [PublicKennelId], [UserId], [PublicHasherId],
-         [MessageTitle], [MessageContent], [MessageReleasabilityFlags], [MessageKind], [ReplyToMessageId])
+         [MessageTitle], [MessageContent], [MessageReleasabilityFlags], [MessageKind], [ReplyToMessageId],
+         [MessageType])
     VALUES
         (@messageId, @kennelId, @publicKennelId, @userId, @publicHasherId,
-         @messageTitle, @messageContent, @messageReleasabilityFlags, @messageKind, @replyToMessageId);
+         @messageTitle, @messageContent, @messageReleasabilityFlags, @messageKind, @replyToMessageId,
+         @messageType);
 
     DECLARE @messageSequenceCount INT;
     SELECT @messageSequenceCount = em.MessageSequenceCount
     FROM HC.EventMessage em WHERE em.id = @messageId;
 
     -- Sender never sees their own message as unread
+    -- Per thread: the (UserId, KennelId, MessageType) row, so posting in one
+    -- of the kennel's two threads never marks the other read.
     MERGE INTO HC.EventMessageBadgeCounts WITH (HOLDLOCK) AS Target
-    USING (VALUES (@userId, @kennelId, @messageSequenceCount)) AS Source (UserId, KennelId, LastSequenceCount)
-    ON (Target.UserId = Source.UserId AND Target.KennelId = Source.KennelId)
+    USING (VALUES (@userId, @kennelId, @messageType, @messageSequenceCount))
+          AS Source (UserId, KennelId, MessageType, LastSequenceCount)
+    ON (Target.UserId = Source.UserId AND Target.KennelId = Source.KennelId
+        AND Target.EventId IS NULL AND Target.MessageType = Source.MessageType)
     WHEN MATCHED THEN
         UPDATE SET Target.LastSequenceCount = Source.LastSequenceCount
     WHEN NOT MATCHED BY TARGET THEN
-        INSERT (UserId, KennelId, LastSequenceCount)
-        VALUES (Source.UserId, Source.KennelId, Source.LastSequenceCount);
+        INSERT (UserId, KennelId, MessageType, LastSequenceCount)
+        VALUES (Source.UserId, Source.KennelId, Source.MessageType, Source.LastSequenceCount);
     END
 
     COMMIT TRANSACTION;
@@ -228,7 +265,10 @@ SELECT
     msg.MessageType                          AS MessageType,
     -- Added 2026-09-18: a kennel push carries the short name so the phone can
     -- title the thread it opens. Additive, so older clients ignore it.
-    k.KennelShortName                        AS KennelShortName
+    k.KennelShortName                        AS KennelShortName,
+    -- E9.F1.S33: which of the kennel's threads, for the push payload.
+    CAST(COALESCE(@kennelThread, 0) AS SMALLINT) AS KennelThread,
+    CASE WHEN @messageType = 0 THEN 'kennel' ELSE 'kennelMisman' END AS ThreadKind
 FROM HC.EventMessage msg
 INNER JOIN HC.Hasher h ON msg.UserId = h.id
 LEFT JOIN HC.Kennel k  ON k.id = msg.KennelId
@@ -272,10 +312,18 @@ WHERE hkm.KennelId = @kennelId
   AND TRY_CAST(device.BuildNumber AS INT) >= @minPushBuild
   AND COALESCE(hkm.KennelNotificationPreference, 0) IN (1, 3, 4)
   AND (
-      @sendToEveryone       != 0
-   OR (@sendToMismanagement != 0 AND hkm.MismanagementRoles != 0)
-   OR (@sendToMembers       != 0 AND hkm.MembershipExpirationDate > GETDATE())
-   OR (@sendToFollowers     != 0 AND hkm.Following = 1)
+      -- The general chat: the releasability flags choose the audience.
+      (@messageType = 0 AND (
+          @sendToEveryone       != 0
+       OR (@sendToMismanagement != 0 AND hkm.MismanagementRoles != 0)
+       OR (@sendToMembers       != 0 AND hkm.MembershipExpirationDate > GETDATE())
+       OR (@sendToFollowers     != 0 AND hkm.Following = 1)))
+      -- The Mismanagement chat: its members and nobody else, whatever the
+      -- flags say — the same rule as HC6.UserInKennelMismanagement, written
+      -- set-based on this row — and only builds that can open it.
+   OR (@messageType <> 0
+       AND (ISNULL(hkm.MismanagementRoles, 0) <> 0 OR ISNULL(hkm.AppAccessFlags, 0) <> 0)
+       AND TRY_CAST(device.BuildNumber AS INT) >= HC6.MinBuildForKennelMismanagement())
   );
 
 -- A resend notifies nobody: its first send already did.
