@@ -65,6 +65,15 @@ final class WatchConnectivityManager: NSObject, ObservableObject {
     private override init() {
         super.init()
         restoreMarkButtons()
+        #if targetEnvironment(simulator)
+        // Simulator check of the tracking layout without a phone:
+        // `simctl launch <watch> <bundle> -hcDemoTracking`. Simulator builds only.
+        if ProcessInfo.processInfo.arguments.contains("-hcDemoTracking") {
+            apply(["phase": "tracking", "tracking": true, "distanceKm": 7.34,
+                   "elapsedSec": 3725, "eventName": "CH3 - St Paul's", "checks": 12])
+            return
+        }
+        #endif
         guard WCSession.isSupported() else { return }
         let session = WCSession.default
         session.delegate = self

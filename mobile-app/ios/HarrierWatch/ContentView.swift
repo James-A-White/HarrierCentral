@@ -4,50 +4,38 @@ import SwiftUI
 /// Everything is driven by `WatchConnectivityManager`'s mirrored state —
 /// if the phone isn't tracking, the buttons aren't shown.
 ///
-/// LAYOUT IS A `List` ON PURPOSE. Plain ScrollView + Button on watchOS
-/// mis-maps tap coordinates when content is partially scrolled (taps at the
-/// rest position landed one row below their visual target — Check triggered
-/// I'm Lost; a NavigationStack wrapper did NOT cure it). List is the native
-/// watch scroll container with correct hit-testing at every offset, and one
-/// full-width button per row means a tap can never be ambiguous. New
-/// buttons = new rows; the screen scrolls, so the field can grow freely.
+/// THE TRACKING SCREEN NEVER SCROLLS (James, 2026-10-16, BT-2: on an Ultra 3
+/// it needed scrolling). It is a fixed layout sized to the screen: a compact
+/// header (your distance and checks, then the elapsed time) over a 2×2 grid
+/// that takes the rest. Not scrolling is also what keeps taps honest: plain
+/// ScrollView + Button on watchOS mis-maps tap coordinates when content is
+/// partially scrolled (Check triggered I'm Lost), which is why this used to
+/// be a `List`. A layout that cannot scroll has no partial offset. A fifth
+/// button needs a new design, not a new row.
+///
+/// The idle and summary screens still use a `List` (no buttons mid-run, and
+/// the summary can be taller than the screen).
 struct ContentView: View {
     @EnvironmentObject var connectivity: WatchConnectivityManager
     @State private var showOnInnConfirm = false
     @State private var showLostView = false
 
     var body: some View {
-        NavigationStack {
-            List {
-                if connectivity.isTracking {
-                    statsHeader
-                        .listRowBackground(Color.clear)
-                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 4, trailing: 0))
-                    // Two buttons per row is fine INSIDE List rows: each
-                    // Button carries an explicit style, so they hit-test
-                    // individually — the old ScrollView bug was about row
-                    // positioning, which List owns correctly.
-                    buttonRow(
-                        (connectivity.checkLabel ?? "Check", "circle.circle", .orange,
-                         { connectivity.sendMark("check") }),
-                        (connectivity.falseLabel ?? "False", "xmark.circle", .red,
-                         { connectivity.sendMark("falseTrail") }),
-                        leftGlyph: connectivity.checkGlyph, leftText: connectivity.checkText,
-                        rightGlyph: connectivity.falseGlyph, rightText: connectivity.falseText
-                    )
-                    buttonRow(
-                        ("I'm Lost", "location.north.line", .blue, { showLostView = true }),
-                        ("On Inn", "flag.checkered", .green, { showOnInnConfirm = true })
-                    )
-                } else if connectivity.phase == "summary" {
-                    summaryView
-                        .listRowBackground(Color.clear)
-                } else {
-                    idleView
-                        .listRowBackground(Color.clear)
+        Group {
+            if connectivity.isTracking {
+                trackingView
+            } else {
+                List {
+                    if connectivity.phase == "summary" {
+                        summaryView
+                            .listRowBackground(Color.clear)
+                    } else {
+                        idleView
+                            .listRowBackground(Color.clear)
+                    }
                 }
+                .listStyle(.plain)
             }
-            .listStyle(.plain)
         }
         .confirmationDialog(
             "On Inn?",
@@ -73,20 +61,33 @@ struct ContentView: View {
         label: String, icon: String, tint: Color, action: () -> Void
     )
 
-    /// A List row holding two side-by-side mark buttons — the 2×2 grid look,
-    /// with List doing the scrolling.
-    private func buttonRow(
-        _ left: ActionSpec,
-        _ right: ActionSpec,
-        leftGlyph: Data? = nil, leftText: String? = nil,
-        rightGlyph: Data? = nil, rightText: String? = nil
-    ) -> some View {
-        HStack(spacing: 6) {
-            gridButton(left, glyph: leftGlyph, markText: leftText)
-            gridButton(right, glyph: rightGlyph, markText: rightText)
+    /// The tracking screen: header, then the four buttons sharing whatever
+    /// height is left, on every watch size. The text size is capped so a
+    /// large accessibility setting cannot push the grid off the screen.
+    private var trackingView: some View {
+        VStack(spacing: 4) {
+            statsHeader
+            HStack(spacing: 4) {
+                gridButton(
+                    (connectivity.checkLabel ?? "Check", "circle.circle", .orange,
+                     { connectivity.sendMark("check") }),
+                    glyph: connectivity.checkGlyph, markText: connectivity.checkText)
+                gridButton(
+                    (connectivity.falseLabel ?? "False", "xmark.circle", .red,
+                     { connectivity.sendMark("falseTrail") }),
+                    glyph: connectivity.falseGlyph, markText: connectivity.falseText)
+            }
+            HStack(spacing: 4) {
+                gridButton(("I'm Lost", "location.north.line", .blue,
+                            { showLostView = true }))
+                gridButton(("On Inn", "flag.checkered", .green,
+                            { showOnInnConfirm = true }))
+            }
         }
-        .listRowBackground(Color.clear)
-        .listRowInsets(EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 0))
+        .padding(.horizontal, 2)
+        .dynamicTypeSize(...DynamicTypeSize.large)
+        // Use the corners too: the clock sits over the top edge on its own.
+        .ignoresSafeArea(edges: .bottom)
     }
 
     /// [glyph]/[markText] carry the kennel's own mark for this button, sent by
@@ -126,10 +127,10 @@ struct ContentView: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 6)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .buttonStyle(.bordered)
+        .buttonBorderShape(.roundedRectangle(radius: 12))
         .tint(spec.tint)
     }
 
@@ -156,21 +157,29 @@ struct ContentView: View {
 
     // MARK: - Stats
 
+    /// Your distance and your checks so far on one line, the elapsed time
+    /// under it. The run's name is left off mid-run: it cost a line and the
+    /// runner knows which run they are on.
     private var statsHeader: some View {
-        VStack(spacing: 2) {
-            if !connectivity.eventName.isEmpty {
-                Text(connectivity.eventName)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
+        VStack(spacing: 0) {
             HStack(alignment: .firstTextBaseline, spacing: 3) {
                 Text(distanceText)
-                    .font(.system(size: 30, weight: .bold, design: .rounded))
+                    .font(.system(size: 26, weight: .bold, design: .rounded))
                     .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
                 Text(distanceUnit)
-                    .font(.headline)
+                    .font(.footnote)
                     .foregroundStyle(.secondary)
+                Spacer(minLength: 6)
+                Image(systemName: "circle.circle")
+                    .font(.footnote.weight(.bold))
+                    .foregroundStyle(.orange)
+                Text("\(connectivity.sumChecks)")
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .accessibilityLabel("\(connectivity.sumChecks) checks")
             }
             HStack(spacing: 5) {
                 Text(elapsedText)

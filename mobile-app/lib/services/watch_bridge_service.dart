@@ -260,6 +260,10 @@ class WatchBridgeService extends GetxService {
         'eventName': _eventName,
         'imperial': _imperial,
         'powerSaver': (getIntPref(IntPrefsEnum.trackingQuality) ?? 2) == 0,
+        // The runner's own checks so far, shown at the top of the wrist's
+        // tracking screen (James, 2026-10-16). A watch older than 1481
+        // ignores the key.
+        'checks': _cntChecks,
       }),
     );
   }
