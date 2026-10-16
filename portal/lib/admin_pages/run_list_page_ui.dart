@@ -605,6 +605,43 @@ class RunListPage extends StatelessWidget {
   /// Shared by the left nav rail (wide) and the overflow menu (narrow).
   List<_BarAction> _appBarActions(HasherKennelsModel k) {
     return [
+      // The kennel's two chats (E9.F1.S33, 2026-10-16): the portal mirrors
+      // the phone. The general chat is anyone's; the Mismanagement chat is
+      // for the kennel's office-holders and admins — anyone the portal shows
+      // a kennel to holds an access flag there, and the server refuses
+      // everyone else whatever this draws.
+      (
+        label: 'Kennel Chat',
+        icon: Icons.chat_bubble_outline,
+        isPrimary: false,
+        onTap: () async {
+          await Get.to<ChatSheetPage>(
+            () => ChatSheetPage(
+              publicEventId: k.publicKennelId,
+              messageTitle: '',
+              eventName: '${k.kennelShortName} Kennel Chat',
+              isKennelThread: true,
+            ),
+          );
+        },
+      ),
+      if (k.appAccessFlags != 0)
+        (
+          label: 'Mismanagement Chat',
+          icon: Icons.admin_panel_settings_outlined,
+          isPrimary: false,
+          onTap: () async {
+            await Get.to<ChatSheetPage>(
+              () => ChatSheetPage(
+                publicEventId: k.publicKennelId,
+                messageTitle: '',
+                eventName: '${k.kennelShortName} Mismanagement',
+                isKennelThread: true,
+                kennelThread: 1,
+              ),
+            );
+          },
+        ),
       if (k.isAdmin) ...[
         if (k.canManageMembers || k.canManageHashCash) ...[
           (

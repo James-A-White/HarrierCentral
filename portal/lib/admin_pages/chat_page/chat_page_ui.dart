@@ -11,6 +11,8 @@ class ChatSheetPage extends StatelessWidget {
     required this.eventName,
     this.runLat,
     this.runLng,
+    this.isKennelThread = false,
+    this.kennelThread = 0,
     super.key,
   });
 
@@ -22,12 +24,20 @@ class ChatSheetPage extends StatelessWidget {
   final double? runLat;
   final double? runLng;
 
+  /// A kennel's chat (E9.F1.S33): [publicEventId] then carries the kennel's
+  /// PublicKennelId, and [kennelThread] says which of its two — 0 general,
+  /// 1 its private Mismanagement chat.
+  final bool isKennelThread;
+  final int kennelThread;
+
   late final ChatSheetController chatSheetController = Get.put(
     ChatSheetController(
       publicEventId: publicEventId,
       messageTitle: messageTitle,
       runLat: runLat,
       runLng: runLng,
+      isKennelThread: isKennelThread,
+      kennelThread: kennelThread,
     ),
   );
 
@@ -60,7 +70,8 @@ class ChatSheetPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('$eventName Trail Chat'),
+        // A kennel thread's caller passes the whole title.
+        title: Text(isKennelThread ? eventName : '$eventName Trail Chat'),
         leading: GestureDetector(
           onTap: Get.back<void>,
           child: const Icon(

@@ -16,10 +16,33 @@ class ChatSheetController extends GetxController {
     required this.messageTitle,
     this.runLat,
     this.runLng,
+    this.isKennelThread = false,
+    this.kennelThread = 0,
   });
 
+  /// The run's PublicEventId — or, for a KENNEL thread, the kennel's
+  /// PublicKennelId (the thread's roomId), as in the app.
   String publicEventId;
   String messageTitle;
+
+  /// A kennel's chat rather than a run's (E9.F1.S33, 2026-10-16: the portal
+  /// mirrors the phone), and which of the kennel's two: 0 its general chat,
+  /// 1 its private Mismanagement chat for office-holders and admins.
+  final bool isKennelThread;
+  final int kennelThread;
+
+  bool get _misman => isKennelThread && kennelThread == 1;
+
+  // The kennel SPs take the kennel's public id; the run SPs the run's.
+  String get _idKey => isKennelThread ? 'publicKennelId' : 'publicEventId';
+  String get _getQuery => isKennelThread ? 'getKennelMessages' : 'getEventMessages';
+  String get _markQuery => isKennelThread ? 'markKennelChatRead' : 'markEventChatRead';
+  String get _sendQuery => isKennelThread ? 'sendKennelMessage' : 'sendEventMessage';
+
+  /// Every body key becomes an SP parameter, so the thread is sent only for
+  /// the Mismanagement chat and every other call is exactly as before.
+  Map<String, dynamic> get _threadKey =>
+      _misman ? <String, dynamic>{'kennelThread': 1} : const <String, dynamic>{};
 
   /// Where the pin picker opens (the run's location, when it has one).
   final double? runLat;
@@ -125,8 +148,11 @@ class ChatSheetController extends GetxController {
 
         final chatsCounts =
             (box.get(HIVE_CHATS_COUNT) as Map?)?.cast<String, int>() ?? {};
-        chatsCounts[publicEventId] = messages.length;
-        await box.put(HIVE_CHATS_COUNT, chatsCounts);
+        // The run list's badge store; a kennel thread is not on that list.
+        if (!isKennelThread) {
+          chatsCounts[publicEventId] = messages.length;
+          await box.put(HIVE_CHATS_COUNT, chatsCounts);
+        }
       }
 
       unawaited(_markEventChatRead(publicEventId));
@@ -149,10 +175,18 @@ class ChatSheetController extends GetxController {
     _fcmSubscription = FirebaseMessaging.onMessage.listen(
       (RemoteMessage message) {
         try {
+          // A kennel push names the kennel and which of its two threads.
           final incomingEventId = normalizeUuid(
-            message.data['PublicEventId']?.toString(),
+            (isKennelThread
+                    ? message.data['PublicKennelId']
+                    : message.data['PublicEventId'])
+                ?.toString(),
           );
           if (incomingEventId.isEmpty || publicEventId != incomingEventId) {
+            return;
+          }
+          if (isKennelThread &&
+              (message.data['ThreadKind']?.toString() == 'kennelMisman') != _misman) {
             return;
           }
           unawaited(
@@ -179,8 +213,10 @@ class ChatSheetController extends GetxController {
   }
 
   void _startPollTimer() {
-    // Only needed on Safari — Chrome/Firefox get reliable FCM delivery.
-    if (!_isSafari) return;
+    // Only needed on Safari for run chat — Chrome/Firefox get reliable FCM
+    // delivery. A KENNEL chat polls everywhere: its pushes are routed to app
+    // builds, never to a portal browser.
+    if (!_isSafari && !isKennelThread) return;
     _pollTimer = Timer.periodic(const Duration(seconds: 15), (_) {
       unawaited(
         _refreshMessages().catchError((Object e, StackTrace st) {
@@ -322,14 +358,15 @@ class ChatSheetController extends GetxController {
     final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
     final accessToken = Utilities.generateToken(
       deviceId,
-      'hcportal_markEventChatRead',
+      'hcportal_$_markQuery',
       paramString: '$deviceSecret:$publicEventId',
     );
     final body = <String, dynamic>{
-      'queryType': 'markEventChatRead',
+      'queryType': _markQuery,
       'deviceId': deviceId,
       'accessToken': accessToken,
-      'publicEventId': publicEventId,
+      _idKey: publicEventId,
+      ..._threadKey,
     };
     final result = await ServiceCommon.sendHttpPostToHC6Api(body);
     if (kDebugMode) {
@@ -349,15 +386,16 @@ class ChatSheetController extends GetxController {
     final deviceSecret = (box.get(HIVE_DEVICE_SECRET) as String?) ?? '';
     final accessToken = Utilities.generateToken(
       deviceId,
-      'hcportal_getEventMessages',
+      'hcportal_$_getQuery',
       paramString: '$deviceSecret:$publicEventId',
     );
 
     final body = <String, dynamic>{
-      'queryType': 'getEventMessages',
+      'queryType': _getQuery,
       'deviceId': deviceId,
       'accessToken': accessToken,
-      'publicEventId': publicEventId,
+      _idKey: publicEventId,
+      ..._threadKey,
     };
     if (sinceSequenceCount != null) {
       body['sinceSequenceCount'] = sinceSequenceCount;
@@ -1093,15 +1131,16 @@ class ChatSheetController extends GetxController {
     // a captured token from being replayed to send a different message.
     final accessToken = Utilities.generateToken(
       deviceId,
-      'hcportal_sendEventMessage',
+      'hcportal_$_sendQuery',
       paramString: '$deviceSecret:$publicEventId:$uuid',
     );
 
     final body = <String, dynamic>{
-      'queryType': 'sendEventMessage',
+      'queryType': _sendQuery,
       'deviceId': deviceId,
       'accessToken': accessToken,
-      'publicEventId': publicEventId,
+      _idKey: publicEventId,
+      ..._threadKey,
       'messageId': uuid,
       'messageContent': content,
       'messageReleasabilityFlags': 63,
