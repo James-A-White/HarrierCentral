@@ -1,0 +1,69 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_markKennelChatRead",
+  "version": "1.0.0",
+  "description": "Portal read mark for one of a kennel's two chat threads (E9.F1.S33), through HC6.nonApi_markKennelChatRead. Token paramString '<deviceSecret>:<publicKennelId>'.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal device (HC6.ValidatePortalAuth)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived portal token."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "The kennel, by PUBLIC id (a browser holds public ids only), resolved to the internal id at the door. Unknown/removed: { Success 0, 'Kennel not found' }."
+    },
+    {
+      "name": "kennelThread",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "0 (default) the kennel's general chat, 1 its private Mismanagement chat (members only: HC6.UserInKennelMismanagement)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Result",
+      "description": "{ Success 1 } or { Success 0, ErrorMessage }.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "0"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "Why."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "MERGE HC.EventMessageBadgeCounts on (KennelId, UserId, Removed = 0): UPDATE LastSequenceCount = COALESCE(MAX(MessageSequenceCount), 0), LastReadAt = GETUTCDATE(), LastReadMessageId; or INSERT (UserId, KennelId, LastSequenceCount, LastReadAt, LastReadMessageId) with id/createdAt/updatedAt from defaults (lines 66-81)",
+    "INSERT HC.ErrorLog on NULL kennelId and on the CATCH path (after ROLLBACK)"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
