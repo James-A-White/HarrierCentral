@@ -1,6 +1,10 @@
 CREATE OR ALTER FUNCTION [HC6].[UserUnreadChatTotal]
 (
-    @userId UNIQUEIDENTIFIER
+    @userId   UNIQUEIDENTIFIER,
+    -- The DEVICE the number is for (2026-10-16): its push token. Required —
+    -- pass NULL only where there is no device, and then a Mismanagement
+    -- thread counts if the hasher has ANY device that lists it.
+    @fcmToken NVARCHAR(500)
 )
 RETURNS TABLE
 AS
@@ -13,8 +17,12 @@ AS
 --   notification_count (Android), so the icon is right even when the app
 --   is closed (2026-09-28). Inline so a CROSS APPLY per recipient stays set-based.
 -- Returns: one row { BadgeTotal INT } (0 when nothing is unread).
---   2026-10-16: a Mismanagement thread's unread counts only when the hasher
---   has a device on a build that lists it (HC6.MinBuildForKennelMismanagement).
+--   2026-10-16: a Mismanagement thread's unread counts only for a DEVICE
+--   whose build lists it (HC6.MinBuildForKennelMismanagement) — @fcmToken
+--   names the device. On an older device it is invisible, so counting it
+--   would put a number on that icon nothing there could clear; per device,
+--   not per hasher, so an officer with a new phone and an old iPad gets the
+--   right number on each (James, 2026-10-16).
 -- Author: Harrier Central
 -- Created: 2026-09-28
 -- =====================================================================
@@ -37,4 +45,5 @@ RETURN
     WHERE ISNULL(t.KennelThread, 0) = 0
        OR EXISTS (SELECT 1 FROM HC.Device d
                   WHERE d.UserId = @userId AND d.removed = 0
+                    AND (@fcmToken IS NULL OR d.FcmToken = @fcmToken)
                     AND TRY_CAST(d.BuildNumber AS INT) >= HC6.MinBuildForKennelMismanagement());
