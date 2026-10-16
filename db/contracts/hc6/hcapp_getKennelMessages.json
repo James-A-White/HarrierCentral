@@ -2,7 +2,7 @@
   "schema": "HC6",
   "name": "hcapp_getKennelMessages",
   "version": "1.0.0",
-  "description": "Reads a KENNEL-level chat thread (HC.EventMessage rows with KennelId = @kennelId and EventId NULL), newest first, in hcapp_getEventMessages' shape so the app's ChatPageController parses it unchanged (roomId = PublicKennelId). A delta fetch (@sinceSequenceCount) returns only newer messages; the removed-id, reaction-update and reactionsAsOf rowsets follow every call. Messages from a hasher the reader has blocked (HasherFriendMap.Ignore = 1) are hidden (E9.F1.S16). A FULL fetch is 'opening the chat' and turns a never-chosen kennel bell on (KennelNotificationPreference 0 -> 1 on the caller's HasherKennelMap row, E9.F1.S30, James 2026-10-11); an explicit choice (2 off, 3 silver bell, 4 on before the run) is never overridden and a visitor with no row is left alone. Auth: HC6.ValidateAppAuth (spNumber 65, @param NULL). No permission gate: any authenticated user may read any kennel's thread. Also polled by the web.",
+  "description": "Reads a KENNEL-level chat thread (HC.EventMessage rows with KennelId = @kennelId and EventId NULL), newest first, in hcapp_getEventMessages' shape so the app's ChatPageController parses it unchanged (roomId = PublicKennelId). A delta fetch (@sinceSequenceCount) returns only newer messages; the removed-id, reaction-update and reactionsAsOf rowsets follow every call. Messages from a hasher the reader has blocked (HasherFriendMap.Ignore = 1) are hidden (E9.F1.S16). A FULL fetch is 'opening the chat' and turns a never-chosen kennel bell on (KennelNotificationPreference 0 -> 1 on the caller's HasherKennelMap row, E9.F1.S30, James 2026-10-11); an explicit choice (2 off, 3 silver bell, 4 on before the run) is never overridden and a visitor with no row is left alone. Auth: HC6.ValidateAppAuth (spNumber 65, @param NULL). No permission gate: any authenticated user may read any kennel's thread. Also polled by the web. Since 2026-10-16 every read is of ONE thread's MessageType; @kennelThread 1 reads the private Mismanagement chat.",
   "parameters": [
     {
       "name": "deviceId",
@@ -38,6 +38,13 @@
       "nullable": true,
       "mapsToColumn": null,
       "description": "The last reactionsAsOf this client saw (E9.F1.S22). With it, the ReactionUpdates rowset carries reactions changed since then on messages at or below @sinceSequenceCount. NULL = that rowset is empty."
+    },
+    {
+      "name": "kennelThread",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Which of the kennel's two threads (E9.F1.S33): 0 (default) the general chat, 1 the private Mismanagement chat (MessageType 100 via HC6.KennelThreadMessageType). Every rowset reads only that thread. 1 for a caller not in HC6.UserInKennelMismanagement, or an unknown value: errorCode 1913, errorType 13 (logged)."
     }
   ],
   "rowsets": [

@@ -3,7 +3,10 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_getKennelMessages]
     @accessToken        NVARCHAR(1000)   = NULL,
     @kennelId           UNIQUEIDENTIFIER = NULL,
     @sinceSequenceCount INT              = NULL,
-    @reactionsSince     DATETIMEOFFSET(7) = NULL
+    @reactionsSince     DATETIMEOFFSET(7) = NULL,
+    -- 0 the kennel's general chat, 1 its private Mismanagement chat
+    -- (E9.F1.S33). Optional: every existing caller reads the general chat.
+    @kennelThread       SMALLINT         = 0
 AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_getKennelMessages
@@ -27,6 +30,11 @@ AS
 --   never sees a deletion). Clients find it by its column name. Additive.
 --   2026-10-11 (E9.F1.S30): a full fetch turns a never-chosen kennel bell
 --   (0) on. No rowset change.
+--   2026-10-16 (E9.F1.S33): optional @kennelThread. Every read is now of
+--   ONE thread's MessageType (HC6.KennelThreadMessageType), so a private
+--   Mismanagement message can never appear in the general chat. Thread 1
+--   is refused (errorType 13) unless HC6.UserInKennelMismanagement.
+-- Idempotency: read-only — the bell write sets a state (0 → 1, never toggled)
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -60,6 +68,22 @@ BEGIN
     VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Null kennelId', 'kennelId is required', @procName, @userId);
     SELECT @errorId AS errorId, 2 AS errorType, 1901 AS errorCode,
            'Missing kennel' AS errorTitle, 'A kennel must be specified.' AS errorUserMessage,
+           @procName AS errorProc;
+    RETURN;
+END
+
+DECLARE @messageType INT = HC6.KennelThreadMessageType(@kennelThread);
+IF (@messageType IS NULL
+    OR (@messageType <> 0 AND HC6.UserInKennelMismanagement(@userId, @kennelId) = 0))
+BEGIN
+    SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not in kennel mismanagement',
+            CONCAT('kennelId=', CAST(@kennelId AS VARCHAR(40)), ' kennelThread=', @kennelThread),
+            @procName, @userId);
+    SELECT @errorId AS errorId, 13 AS errorType, 1913 AS errorCode,
+           'Not available' AS errorTitle,
+           'This chat is only for the kennel''s mismanagement.' AS errorUserMessage,
            @procName AS errorProc;
     RETURN;
 END
@@ -106,6 +130,7 @@ LEFT JOIN HC.EventMessage rp ON rp.id = msg.ReplyToMessageId
 LEFT JOIN HC.Hasher rh ON rh.id = rp.UserId
 WHERE msg.KennelId = @kennelId
   AND msg.EventId IS NULL
+  AND msg.MessageType = @messageType
   AND msg.Removed = 0
   AND h.Removed = 0
   -- Messages from a hasher the reader has blocked are hidden (E9.F1.S16).
@@ -116,7 +141,8 @@ ORDER BY msg.createdAt DESC;
 
 SELECT UPPER(msg.id) AS removedId
 FROM HC.EventMessage msg
-WHERE msg.KennelId = @kennelId AND msg.EventId IS NULL AND msg.Removed = 1;
+WHERE msg.KennelId = @kennelId AND msg.EventId IS NULL AND msg.MessageType = @messageType
+  AND msg.Removed = 1;
 
 -- Reactions on messages the caller ALREADY holds (E9.F1.S22): a reaction
 -- changes an OLD row, and the delta above is by sequence count, so these
@@ -125,7 +151,7 @@ WHERE msg.KennelId = @kennelId AND msg.EventId IS NULL AND msg.Removed = 1;
 -- are what they were. Empty (never absent) when nothing changed.
 SELECT UPPER(msg.id) AS id, msg.ReactionsJson AS reactions
 FROM HC.EventMessage msg
-WHERE msg.KennelId = @kennelId AND msg.EventId IS NULL
+WHERE msg.KennelId = @kennelId AND msg.EventId IS NULL AND msg.MessageType = @messageType
   AND msg.Removed = 0
   AND @reactionsSince IS NOT NULL
   AND msg.ReactionsUpdatedAt > @reactionsSince
