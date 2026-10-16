@@ -15,7 +15,9 @@ AS
 --
 --   What is "waiting" (one line each; add a line here, nothing else):
 --     - photos to review: HC.KennelPhotos Status 1, with the count and the
---       oldest upload's date.
+--       oldest upload's date, and a link —
+--       https://www.hashruns.org/<slug>/review-photos — that the app (1482+)
+--       opens on the kennel's Review photos screen; the web explains it.
 --
 --   Only kennels with at least one Mismanagement member get a post — the
 --   thread has nobody to read it otherwise.
@@ -69,6 +71,7 @@ BEGIN TRY
 
     -- What is waiting, per kennel.
     SELECT k.id AS KennelId, k.PublicKennelId, k.KennelShortName,
+           LOWER(k.KennelUniqueShortName) AS Slug,
            p.N AS PhotoCount, p.Oldest AS PhotoOldest
     INTO #due
     FROM HC.Kennel k
@@ -92,7 +95,10 @@ BEGIN TRY
                   N'📷 ', d.PhotoCount, CASE WHEN d.PhotoCount = 1 THEN N' photo is' ELSE N' photos are' END,
                   N' waiting for review, the oldest since ', FORMAT(d.PhotoOldest, 'd MMM yyyy', 'en-GB'), N'.',
                   NCHAR(10), NCHAR(10),
-                  N'Open the kennel page and tap Review photos.') AS MessageContent
+                  -- A link the app opens on the kennel's Review photos
+                  -- screen, tapped in the chat or anywhere else (2026-10-16);
+                  -- without the app, the web page says where to go.
+                  N'Review them: https://www.hashruns.org/', d.Slug, N'/review-photos') AS MessageContent
     INTO #posts
     FROM #due d;
 
