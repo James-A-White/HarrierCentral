@@ -28,6 +28,7 @@ AS
 --   and who took it down.
 -- Author: Harrier Central
 -- Created: 2026-09-29
+-- 2026-10-16 (E9.F1.S33): A moderator deleting someone else’s message in a kennel’s Mismanagement chat must also be in HC6.UserInKennelMismanagement (2026-10-16, E9.F1.S33).
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -66,6 +67,12 @@ BEGIN TRY
         EXEC HC6.nonApi_mayModerateChat
             @userId = @userId, @eventId = @eventId, @kennelId = @kennelId,
             @allowed = @mayModerate OUTPUT;
+        -- A kennel's private Mismanagement chat (E9.F1.S33): a moderator
+        -- must also be in it. Today every chat moderator holds an office or
+        -- flag and so is; this keeps it true if that ever changes.
+        IF (@mayModerate = 1 AND @eventId IS NULL AND @kennelId IS NOT NULL AND @roomType <> 0
+            AND HC6.UserInKennelMismanagement(@userId, @kennelId) = 0)
+            SET @mayModerate = 0;
         IF (@mayModerate = 0)
         BEGIN
             SET @outcome = 3;
