@@ -1,3 +1,6 @@
+1.0.61+112
+    • Push credentials read through the storage SDK with the connection string (one FirebaseCredentials helper, five push paths) instead of an HTTP URL
+
 1.0.61+111
     • Kennel chat push names its thread: ThreadKind kennel / kennelMisman and KennelThread from the SP, so a tap opens the kennel's general or private Mismanagement chat (E9.F1.S33)
     • Portal kennel chat (new hcportal_sendKennelMessage) pushes through the app shim's kennel push
