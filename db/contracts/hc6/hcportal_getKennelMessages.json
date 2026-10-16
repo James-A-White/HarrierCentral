@@ -1,0 +1,238 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getKennelMessages",
+  "version": "1.0.0",
+  "description": "Portal read of one of a kennel's two chat threads (E9.F1.S33), through HC6.nonApi_getKennelMessages — the app's read — so both follow one set of rules. Token paramString '<deviceSecret>:<publicKennelId>'.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal device (HC6.ValidatePortalAuth)."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Short-lived portal token."
+    },
+    {
+      "name": "publicKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "Kennel.PublicKennelId",
+      "description": "The kennel, by PUBLIC id (a browser holds public ids only), resolved to the internal id at the door. Unknown/removed: { Success 0, 'Kennel not found' }."
+    },
+    {
+      "name": "sinceSequenceCount",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Delta fetch: only messages with MessageSequenceCount above this. NULL = full fetch, which also performs the bell-on update."
+    },
+    {
+      "name": "reactionsSince",
+      "type": "DATETIMEOFFSET(7)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "The last reactionsAsOf this client saw (E9.F1.S22). With it, the ReactionUpdates rowset carries reactions changed since then on messages at or below @sinceSequenceCount. NULL = that rowset is empty."
+    },
+    {
+      "name": "kennelThread",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "0 (default) the kennel's general chat, 1 its private Mismanagement chat (members only: HC6.UserInKennelMismanagement)."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "ErrorEnvelope",
+      "description": "On any refusal or error: { Success 0, ErrorMessage }.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "0"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "Why."
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Messages",
+      "description": "Live messages of the kennel thread the reader may see, ORDER BY createdAt DESC. Empty when nothing is newer than @sinceSequenceCount.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "EventMessage.id, UPPER-cased text (the app lowercases on arrival)."
+        },
+        {
+          "name": "type",
+          "type": "NVARCHAR(4)",
+          "nullable": false,
+          "description": "Literal 'text' on every row."
+        },
+        {
+          "name": "text",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "EventMessage.MessageContent."
+        },
+        {
+          "name": "roomId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "EventMessage.PublicKennelId (the kennel's public id)."
+        },
+        {
+          "name": "createdAt",
+          "type": "BIGINT",
+          "nullable": false,
+          "description": "Epoch milliseconds of EventMessage.createdAt."
+        },
+        {
+          "name": "authorId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "Hasher.PublicHasherId, UPPER-cased text."
+        },
+        {
+          "name": "authorFirstName",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Hasher.DisplayName (persisted computed column)."
+        },
+        {
+          "name": "authorImageUrl",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Hasher.Photo."
+        },
+        {
+          "name": "sequenceCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "EventMessage.MessageSequenceCount — the delta watermark."
+        },
+        {
+          "name": "messageKind",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "EventMessage.MessageKind: 0 text, 1 photo, 2 location."
+        },
+        {
+          "name": "canDelete",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 when the caller wrote it or may moderate this kennel's chat (HC6.nonApi_mayModerateChat)."
+        },
+        {
+          "name": "replyToMessageId",
+          "type": "NVARCHAR(36)",
+          "nullable": true,
+          "description": "EventMessage.ReplyToMessageId, UPPER-cased; NULL when not a reply (E9.F1.S21)."
+        },
+        {
+          "name": "replyToText",
+          "type": "NVARCHAR(200)",
+          "nullable": true,
+          "description": "First 200 characters of the quoted message; NULL when not a reply or the original was removed."
+        },
+        {
+          "name": "replyToKind",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "The quoted message's MessageKind."
+        },
+        {
+          "name": "replyToAuthor",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "The quoted message's author DisplayName."
+        },
+        {
+          "name": "replyToRemoved",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 when the quoted message exists but was removed."
+        },
+        {
+          "name": "reactions",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "EventMessage.ReactionsJson (E9.F1.S22)."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "RemovedMessageIds",
+      "description": "Every removed message in the thread (Removed = 1), so a client drops any it already drew — a delta by sequence number never sees a deletion. Find it by column name.",
+      "columns": [
+        {
+          "name": "removedId",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "EventMessage.id, UPPER-cased."
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "ReactionUpdates",
+      "description": "ALWAYS present (empty when @reactionsSince is NULL or nothing changed): { id, reactions } for live messages at or below @sinceSequenceCount whose ReactionsUpdatedAt is after @reactionsSince.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "NVARCHAR(36)",
+          "nullable": false,
+          "description": "EventMessage.id, UPPER-cased."
+        },
+        {
+          "name": "reactions",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "EventMessage.ReactionsJson."
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "name": "ReactionsAsOf",
+      "description": "One row — the server time to pass back as @reactionsSince.",
+      "columns": [
+        {
+          "name": "reactionsAsOf",
+          "type": "DATETIMEOFFSET(7)",
+          "nullable": false,
+          "description": "SYSDATETIMEOFFSET()."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "UPDATE HC.HasherKennelMap SET KennelNotificationPreference = 1 for the caller's non-removed row in this kennel when it is 0 — only on a full fetch (@sinceSequenceCount IS NULL), lines 75-78; the row's updatedAt trigger re-syncs it to the hasher's phones",
+    "EXEC HC6.nonApi_mayModerateChat (kennel scope) to decide canDelete, line 81",
+    "INSERT HC.ErrorLog on NULL kennelId (line 59) and from the CATCH block (lines 138-140, after ROLLBACK)"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
