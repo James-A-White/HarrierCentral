@@ -38,6 +38,7 @@ AS
 -- Returns: nothing; the OUTPUTs above.
 -- Author: Harrier Central
 -- Created: 2026-09-30
+-- 2026-10-16 (E9.F1.S33): A reaction on a kennel’s private Mismanagement chat (MessageType <> 0 with KennelId) is allowed only for HC6.UserInKennelMismanagement (2026-10-16, E9.F1.S33).
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -66,6 +67,9 @@ IF (@threadId IS NOT NULL)
                                      WHERE f.UserId = @userId AND f.ThreadId = @threadId) THEN 1 ELSE 0 END;
 ELSE IF (@eventId IS NULL AND @kennelId IS NULL)
     SET @allowed = HC6.UserMayEnterChatRoom(@userId, @messageType);
+-- A kennel's private Mismanagement chat (E9.F1.S33): its members only.
+ELSE IF (@eventId IS NULL AND @kennelId IS NOT NULL AND @messageType <> 0)
+    SET @allowed = HC6.UserInKennelMismanagement(@userId, @kennelId);
 IF (@allowed = 1 AND EXISTS (SELECT 1 FROM HC.HasherFriendMap blk
                              WHERE blk.UserId = @userId AND blk.Friend_UserId = @authorId AND blk.Ignore = 1))
     SET @allowed = 0;
