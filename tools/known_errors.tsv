@@ -83,7 +83,7 @@ sp hcapp_authorizeDevice Invite code not found	noise	mistyped or expired invite 
 sp hcapp_findHashersByHashName Invalid access token	noise	phone clock / stale token
 sp hcapp_getEventBadgeCount Invalid access token	noise	phone clock / stale token
 sp hcapp_getInviteCode Invite code not available	noise	mistyped or expired invite code
-sp hcapp_getTrackImports Invalid access token	noise	phone clock / stale token
+sp hcapp_getTrackImports Invalid access token	open	NOT the clock (2026-10-16, Inspector Gorse: every other call from the phone passes). The import screen's upload-token and ProcessTrackImport calls use plain http.post — no clock-offset learning, no fresh-token retry — and ProcessTrackImport re-checks the same token after a slice of up to 40 s. Fix: route them through the sendHttpPost retry path; authenticate once in ProcessTrackImport.
 sp hcapp_processPayment Invalid access token	noise	phone clock / stale token
 sp hcapp_processPayment Not authorised to take payment	noise	permission gate doing its job
 sp hcapp_sendEventMessage Not authorised to post	noise	permission gate doing its job
