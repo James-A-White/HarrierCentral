@@ -1234,7 +1234,7 @@ Harrier Central is built by one developer and a team of agents, so the agents' i
 
 | ID | Story | Status |
 |---|---|---|
-| `E18.F5.S1` | As **James**, I want a saved workflow that checks every HC6 SP touching kennel or money data against `hc-authorizations` and adversarially verifies each finding, so that the audit can be re-run before each release. First target: the seven portal SPs still using `0x40000081`. Related: `E16.F3.S3`. | `Next` |
+| `E18.F5.S1` | As **James**, I want a saved workflow that checks every HC6 SP touching kennel or money data against `hc-authorizations` and adversarially verifies each finding, so that the audit can be re-run before each release. First target: the seven portal SPs still using `0x40000081`. Related: `E16.F3.S3`. **Started 2026-10-16:** the reviewer brief is saved as `agents/prompts/permissions-audit.md` (inventory → batches of ~40 SPs per reviewer agent, plus the API endpoints → an adversarial second pass refutes each finding). Findings are kept out of this public repo. | `Building` |
 | `E18.F5.S2` | As **James**, I want `/code-review` and `/security-review` run on the dev-to-master diff as step zero of every dance, so that a release is reviewed before it is deployed. | `Next` |
 
 ### E18.F6 · Scheduled triage  
