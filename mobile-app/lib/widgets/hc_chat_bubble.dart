@@ -19,13 +19,20 @@ class HcChatBubble extends StatelessWidget {
   const HcChatBubble({
     required this.threadId,
     required this.isKennelThread,
+    this.kennelThread = 0,
     this.onDark = false,
     super.key,
   });
 
   final String threadId;
   final bool isKennelThread;
+
+  /// 1 = the kennel's Mismanagement chat (E9.F1.S33): its own count, and a
+  /// different glyph so the two kennel bubbles side by side are told apart.
+  final int kennelThread;
   final bool onDark;
+
+  bool get _misman => isKennelThread && kennelThread == 1;
 
   @override
   Widget build(BuildContext context) {
@@ -40,13 +47,21 @@ class HcChatBubble extends StatelessWidget {
       final ChatThreadState state = ns.chatThreadState(
         threadId,
         isKennelThread: isKennelThread,
+        kennelThread: kennelThread,
       );
       final int count = state == ChatThreadState.unread
-          ? ns.unreadCountFor(threadId)
+          ? ns.unreadCountFor(
+              _misman ? NotificationService.mismanBadgeKey(threadId) : threadId,
+            )
           : 0;
       return _forState(state, count);
     });
   }
+
+  /// A shield for the Mismanagement chat, the chat bubble for every other.
+  IconData get _solid => _misman ? Icons.admin_panel_settings : MaterialCommunityIcons.chat;
+  IconData get _outline =>
+      _misman ? Icons.admin_panel_settings_outlined : MaterialCommunityIcons.chat_outline;
 
   Widget _forState(ChatThreadState state, int count) {
     switch (state) {
@@ -71,18 +86,18 @@ class HcChatBubble extends StatelessWidget {
             padding: const EdgeInsets.all(4),
           ),
           child: Icon(
-            MaterialCommunityIcons.chat,
+            _solid,
             color: onDark ? Colors.white : hc_red,
           ),
         );
       case ChatThreadState.read:
         return Icon(
-          MaterialCommunityIcons.chat,
+          _solid,
           color: onDark ? Colors.white : Colors.black54,
         );
       case ChatThreadState.none:
         return Icon(
-          MaterialCommunityIcons.chat_outline,
+          _outline,
           color: onDark ? Colors.white70 : Colors.grey.shade500,
         );
     }
@@ -97,6 +112,7 @@ Future<void> openChatThread({
   required String threadId,
   required String publicThreadId,
   required bool isKennelThread,
+  int kennelThread = 0,
 }) async {
   await Get.to(
     () => ChatScaffold(
@@ -104,6 +120,7 @@ Future<void> openChatThread({
       eventId: threadId,
       publicEventId: publicThreadId,
       isKennelThread: isKennelThread,
+      kennelThread: kennelThread,
     ),
   );
   if (Get.isRegistered<NotificationService>()) {

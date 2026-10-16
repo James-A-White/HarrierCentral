@@ -8,6 +8,7 @@ class ChatPage extends StatelessWidget {
     required this.eventId,
     required this.publicEventId,
     this.isKennelThread = false,
+    this.kennelThread = 0,
     this.roomType,
     this.threadId,
     this.dmState,
@@ -35,6 +36,9 @@ class ChatPage extends StatelessWidget {
   final String eventId;
   final String publicEventId;
   final bool isKennelThread;
+
+  /// 0 a kennel's general chat, 1 its Mismanagement chat (E9.F1.S33).
+  final int kennelThread;
   final int? roomType;
   final HcId? threadId;
   final DmThreadState? dmState;
@@ -87,12 +91,13 @@ class ChatPage extends StatelessWidget {
     // thread gets a new controller rather than inheriting the old one.
     return GetBuilder<ChatPageController>(
       key: ValueKey<String>(
-        '$eventId|$publicEventId|$isKennelThread|$roomType|$threadId',
+        '$eventId|$publicEventId|$isKennelThread|$kennelThread|$roomType|$threadId',
       ),
       init: ChatPageController(
         eventId: eventId,
         publicEventId: publicEventId,
         isKennelThread: isKennelThread,
+        kennelThread: kennelThread,
         roomType: roomType,
         threadId: threadId,
         dmState: dmState,

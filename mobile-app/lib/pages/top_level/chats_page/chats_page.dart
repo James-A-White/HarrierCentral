@@ -509,6 +509,8 @@ class _ChatRows {
     // A room has no kennel, no run number and no date — its name IS the row.
     final String title = s.isRoomThread
         ? (s.eventName ?? 'Chat room')
+        : s.isMismanagementThread
+        ? '${s.kennelShortName ?? s.eventName ?? 'Kennel'} Mismanagement'
         : s.isKennelThread
         ? '${s.kennelShortName ?? s.eventName ?? 'Kennel'} Kennel Chat'
         : (s.kennelShortName != null && s.eventNumber != null)
@@ -528,6 +530,30 @@ class _ChatRows {
       child: ListTile(
         leading: s.isRoomThread
             ? ChatRoomCoin(iconUrl: s.roomIcon, size: 44)
+            : s.isMismanagementThread
+            // The kennel's logo, whole, with a shield on its corner: the
+            // Mismanagement chat beside the same kennel's general chat.
+            ? Stack(
+                clipBehavior: Clip.none,
+                children: <Widget>[
+                  KennelLogo(
+                    kennelId: s.kennelId,
+                    kennelLogoUrl: s.kennelLogo,
+                    kennelShortName: s.kennelShortName ?? '',
+                    logoHeight: 44,
+                  ),
+                  Positioned(
+                    right: -6,
+                    bottom: -6,
+                    child: Icon(
+                      Icons.admin_panel_settings,
+                      size: 20,
+                      color: hc_red,
+                      shadows: const <Shadow>[Shadow(color: Colors.white, blurRadius: 3)],
+                    ),
+                  ),
+                ],
+              )
             : KennelLogo(
                 kennelId: s.kennelId,
                 kennelLogoUrl: s.kennelLogo,
@@ -597,6 +623,8 @@ class _ChatRows {
               eventId: kennelThread ? s.kennelId! : s.eventId!,
               publicEventId: kennelThread ? s.publicKennelId! : s.publicEventId,
               isKennelThread: kennelThread,
+              // The kennel's Mismanagement chat (E9.F1.S33), not its general one.
+              kennelThread: s.isMismanagementThread ? 1 : 0,
             ),
           );
           // Refresh unread counts after leaving the chat so the badge and this

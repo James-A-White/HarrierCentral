@@ -532,17 +532,22 @@ class FutureRunListPageController extends GetxController {
       }
       return;
     }
-    if (threadKind == 'kennel') {
+    // A kennel has two threads (E9.F1.S33): 'kennelMisman' is its private
+    // Mismanagement chat, 'kennel' its general one.
+    if (threadKind == 'kennel' || threadKind == 'kennelMisman') {
+      final bool misman = threadKind == 'kennelMisman';
       final String kennelId = '${data['KennelId'] ?? ''}';
       final String publicKennelId = '${data['PublicKennelId'] ?? ''}';
       final String shortName = '${data['KennelShortName'] ?? ''}';
+      final String suffix = misman ? 'Mismanagement' : 'Kennel Chat';
       if (kennelId.isNotEmpty && publicKennelId.isNotEmpty) {
         await Get.to(
           () => ChatScaffold(
-            title: shortName.isEmpty ? 'Kennel Chat' : '$shortName Kennel Chat',
+            title: shortName.isEmpty ? suffix : '$shortName $suffix',
             eventId: kennelId,
             publicEventId: publicKennelId,
             isKennelThread: true,
+            kennelThread: misman ? 1 : 0,
           ),
         );
       }

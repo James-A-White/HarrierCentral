@@ -22,6 +22,7 @@ class ChatScaffold extends StatefulWidget {
     required this.eventId,
     required this.publicEventId,
     this.isKennelThread = false,
+    this.kennelThread = 0,
     this.roomType,
     this.dmState,
     super.key,
@@ -31,6 +32,9 @@ class ChatScaffold extends StatefulWidget {
   final String eventId;
   final String publicEventId;
   final bool isKennelThread;
+
+  /// 0 a kennel's general chat, 1 its Mismanagement chat (E9.F1.S33).
+  final int kennelThread;
   final int? roomType;
   final DmThreadState? dmState;
 
@@ -105,6 +109,7 @@ class _ChatScaffoldState extends State<ChatScaffold> {
     final bool p = await ChatPinService.isPinned(
       eventId: widget.isKennelThread ? null : widget.eventId,
       kennelId: widget.isKennelThread ? widget.eventId : null,
+      kennelThread: widget.kennelThread,
     );
     if (!mounted) return;
     setState(() {
@@ -126,6 +131,7 @@ class _ChatScaffoldState extends State<ChatScaffold> {
     final bool ok = await ChatPinService.setPin(
       eventId: (_isRoom || widget.isKennelThread) ? null : widget.eventId,
       kennelId: widget.isKennelThread ? widget.eventId : null,
+      kennelThread: widget.kennelThread,
       roomType: widget.roomType,
       pinned: next,
     );
@@ -401,6 +407,7 @@ class _ChatScaffoldState extends State<ChatScaffold> {
               eventId: widget.eventId,
               publicEventId: widget.publicEventId,
               isKennelThread: widget.isKennelThread,
+              kennelThread: widget.kennelThread,
               roomType: widget.roomType,
             ),
     );

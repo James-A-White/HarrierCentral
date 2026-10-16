@@ -76,6 +76,35 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
               // like the run page's; offline it says so rather than
               // vanishing.
               actions: <Widget>[
+                // The kennel's private Mismanagement chat (E9.F1.S33), for its
+                // office-holders and admins only — beside the general chat.
+                if (userInKennelMismanagement(
+                  mismanagementRoles:
+                      widget.kennelAggregateItem.hkm?.mismanagementRoles,
+                  appAccessFlags: widget.kennelAggregateItem.hkm?.appAccessFlags,
+                  removed: widget.kennelAggregateItem.hkm?.removed,
+                ))
+                  IconButton(
+                    tooltip: 'Mismanagement chat',
+                    icon: HcChatBubble(
+                      threadId:
+                          widget.kennelAggregateItem.kennel.publicKennelId,
+                      isKennelThread: true,
+                      kennelThread: 1,
+                      onDark: true,
+                    ),
+                    onPressed: () async {
+                      if (!Utilities.isConnected(showDialog: true)) return;
+                      final k = widget.kennelAggregateItem.kennel;
+                      await openChatThread(
+                        title: '${k.kennelShortName} Mismanagement',
+                        threadId: k.kennelId,
+                        publicThreadId: k.publicKennelId,
+                        isKennelThread: true,
+                        kennelThread: 1,
+                      );
+                    },
+                  ),
                 IconButton(
                   tooltip: 'Kennel chat',
                   icon: HcChatBubble(

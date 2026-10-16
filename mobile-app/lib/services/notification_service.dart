@@ -37,6 +37,11 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   /// publicEventId only in theory; the prefix removes the theory.
   static String dmBadgeKey(HcId threadId) => 'dm:$threadId';
 
+  /// Key for a kennel's Mismanagement chat (E9.F1.S33). It shares its
+  /// publicKennelId with the kennel's general chat, which is keyed by the bare
+  /// id, so it needs a prefix of its own or the two would overwrite each other.
+  static String mismanBadgeKey(String publicKennelId) => 'km:${publicKennelId.asUuid}';
+
   /// The Chats pills' two counts (E9.F1.S29). Folded from the same map and
   /// the same request list as [globalTotalBadgeCount], with the same
   /// never-below-zero rule, so Groups + Friends always equals the bubble.
@@ -232,9 +237,14 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
       for (final summary in serverChatSummary) {
         if (summary.isKennelThread &&
             (summary.publicKennelId ?? '').isNotEmpty) {
-          unreadEventCounts[summary.publicKennelId!] = summary.badgeCount.obs;
+          // The Mismanagement chat under its own key (E9.F1.S33), so the
+          // kennel's two threads never overwrite each other's count.
+          final String key = summary.isMismanagementThread
+              ? mismanBadgeKey(summary.publicKennelId!)
+              : summary.publicKennelId!;
+          unreadEventCounts[key] = summary.badgeCount.obs;
           if ((summary.messageCount ?? 0) > 0) {
-            withMessages.add(summary.publicKennelId!.asUuid);
+            withMessages.add(key.asUuid);
           }
         }
       }
@@ -297,7 +307,10 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
                     // earn a row.
                     // A DM is listed even with nothing in it yet: an
                     // accepted request needs somewhere to go (E9.F1.S19).
-                    ((s.messageCount ?? 0) > 0 || s.pinned || s.isDmThread) &&
+                    // A Mismanagement chat is listed as the server decides
+                    // (an office-holder sees it before anyone has posted).
+                    ((s.messageCount ?? 0) > 0 || s.pinned || s.isDmThread ||
+                        s.isMismanagementThread) &&
                     (s.eventId != null ||
                         s.isKennelThread ||
                         s.isRoomThread ||
@@ -836,18 +849,25 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   ///
   /// This is the local counterpart to the server-side markEventChatRead write —
   /// it makes the UI correct instantly; the SP is the durable backstop.
-  void clearUnreadForThread(String threadId, {bool isKennelThread = false}) {
+  void clearUnreadForThread(
+    String threadId, {
+    bool isKennelThread = false,
+    int kennelThread = 0,
+  }) {
     if (threadId.isEmpty) return;
+    final bool misman = isKennelThread && kennelThread == 1;
     final String id = threadId.asUuid;
+    // The key in unreadEventCounts: a Mismanagement chat has its own.
+    final String key = misman ? mismanBadgeKey(threadId) : id;
 
     var changed = false;
 
     // Zero the per-thread count (case-insensitive key match), then recompute the
     // global badge from the remaining unread threads.
-    for (final key in unreadEventCounts.keys) {
-      if (key.asUuid == id) {
-        if (unreadEventCounts[key]!.value != 0) {
-          unreadEventCounts[key]!.value = 0;
+    for (final k in unreadEventCounts.keys) {
+      if (k.asUuid == key) {
+        if (unreadEventCounts[k]!.value != 0) {
+          unreadEventCounts[k]!.value = 0;
           changed = true;
         }
         break;
@@ -862,7 +882,9 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
     for (int i = 0; i < unreadChatRuns.length; i++) {
       final EventChatSummary s = unreadChatRuns[i];
       final bool match = isKennelThread
-          ? (s.isKennelThread && (s.publicKennelId ?? '').asUuid == id)
+          ? (s.isKennelThread &&
+                s.isMismanagementThread == misman &&
+                (s.publicKennelId ?? '').asUuid == id)
           : (s.publicEventId.asUuid == id);
       if (!match || s.badgeCount == 0) continue;
       unreadChatRuns[i] = s.withBadgeCount(0);
@@ -1004,10 +1026,14 @@ class NotificationService extends GetxService with WidgetsBindingObserver {
   ChatThreadState chatThreadState(
     String threadId, {
     required bool isKennelThread,
+    int kennelThread = 0,
   }) {
     if (threadId.isEmpty) return ChatThreadState.none;
-    if (unreadCountFor(threadId) > 0) return ChatThreadState.unread;
-    return threadsWithMessages.contains(threadId.asUuid)
+    final String key = isKennelThread && kennelThread == 1
+        ? mismanBadgeKey(threadId)
+        : threadId;
+    if (unreadCountFor(key) > 0) return ChatThreadState.unread;
+    return threadsWithMessages.contains(key.asUuid)
         ? ChatThreadState.read
         : ChatThreadState.none;
   }

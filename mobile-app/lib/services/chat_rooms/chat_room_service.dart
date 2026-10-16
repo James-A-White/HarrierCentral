@@ -183,6 +183,9 @@ class ChatPinService {
     String? kennelId,
     int? roomType,
     String? threadId,
+    // With [kennelId]: 1 = the kennel's Mismanagement chat (E9.F1.S33), which
+    // pins on its own, independently of the kennel's general chat.
+    int kennelThread = 0,
     required bool pinned,
   }) async {
     final String userId = currentUserId;
@@ -208,6 +211,7 @@ class ChatPinService {
         'roomType': ?roomType,
         // A direct message (2026-10-01) — needs the SP that knows @threadId.
         'threadId': ?threadId,
+        if (kennelId != null && kennelThread == 1) 'kennelThread': 1,
         'pinned': pinned ? 1 : 0,
       });
     });
@@ -220,7 +224,10 @@ class ChatPinService {
       if (rows.isEmpty) return false;
       final row = rows[0] as Map<String, dynamic>;
       final ok = row['Success'] == 1 || row['Success'] == true;
-      if (ok) await _writeLocal(eventId, kennelId, pinned);
+      // The Mismanagement chat's pin is not on a synced row (it lives with the
+      // thread's read mark on the server), so there is nothing local to write;
+      // the chat list's next fetch carries it.
+      if (ok && kennelThread == 0) await _writeLocal(eventId, kennelId, pinned);
       return ok;
     } catch (e, s) {
       BootLogger.logError('[ERROR][CHAT]', 'room call failed: $e', s);
@@ -262,8 +269,22 @@ class ChatPinService {
   /// The kennel default lives here rather than in the column: NULL means "use
   /// the default", which is pinned for the home kennel (James, 2026-09-14).
   /// Keeping it a rule means the default can change without a backfill.
-  static Future<bool> isPinned({String? eventId, String? kennelId}) async {
+  static Future<bool> isPinned({
+    String? eventId,
+    String? kennelId,
+    int kennelThread = 0,
+  }) async {
     final String me = normalizeUuid(currentUserId);
+    // The Mismanagement chat (E9.F1.S33): its pin comes from the server's
+    // chat list, the only place it is held on the phone. Unpinned until set.
+    if (kennelId != null && kennelThread == 1) {
+      if (!Get.isRegistered<NotificationService>()) return false;
+      final HcId k = HcId(kennelId);
+      return Get.find<NotificationService>().unreadChatRuns.any(
+        (EventChatSummary s) =>
+            s.isMismanagementThread && s.kennelId != null && HcId(s.kennelId!) == k && s.pinned,
+      );
+    }
     try {
       if (eventId != null) {
         final h = tableModel.hasherEventMapTableHelper;

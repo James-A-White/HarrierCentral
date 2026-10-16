@@ -215,3 +215,16 @@ bool canEnterArea(
   }
   return false;
 }
+
+/// Is this hasher in the kennel's private Mismanagement chat (E9.F1.S33)?
+/// The client mirror of `HC6.UserInKennelMismanagement`: ANY office
+/// (MismanagementRoles, "no matter how minor" — James, 2026-10-16) or ANY app
+/// access flag on a live membership row. Decides only whether the button is
+/// shown — the server refuses everyone else whatever the app draws.
+bool userInKennelMismanagement({
+  required int? mismanagementRoles,
+  required int? appAccessFlags,
+  int? removed,
+}) =>
+    (removed ?? 0) == 0 &&
+    ((mismanagementRoles ?? 0) != 0 || (appAccessFlags ?? 0) != 0);

@@ -21,6 +21,7 @@ class ChatPageController extends GetxController {
     required this.eventId,
     required this.publicEventId,
     this.isKennelThread = false,
+    this.kennelThread = 0,
     this.roomType,
     this.threadId,
     this.dmState,
@@ -32,6 +33,23 @@ class ChatPageController extends GetxController {
   final String eventId;
   final String publicEventId;
   final bool isKennelThread;
+
+  /// Which of a kennel's two threads (E9.F1.S33, James 2026-10-16): 0 its
+  /// general chat, 1 its private Mismanagement chat for office-holders and
+  /// admins. Both have the same kennel ids, so this is the ONLY thing that
+  /// tells them apart — every kennel call sends it, every kennel push is
+  /// matched on it. Meaningless unless [isKennelThread].
+  final int kennelThread;
+
+  /// The kennel's Mismanagement chat.
+  bool get isMismanagementThread =>
+      _kind == _ThreadKind.kennel && kennelThread == 1;
+
+  /// The body key naming the kennel thread. Sent only for the Mismanagement
+  /// chat: every body key becomes an SP parameter, and the general chat's
+  /// calls stay byte-for-byte what they were.
+  Map<String, dynamic> get _kennelThreadKey =>
+      isMismanagementThread ? <String, dynamic>{'kennelThread': 1} : const <String, dynamic>{};
 
   /// A direct message thread (E9.F1.S7) between this hasher and one other,
   /// named by its ThreadId alone — no run, no kennel, no room. Read and
@@ -261,6 +279,7 @@ class ChatPageController extends GetxController {
         notifications.clearUnreadForThread(
           publicEventId,
           isKennelThread: isKennelThread,
+          kennelThread: kennelThread,
         );
       }
     }
@@ -301,6 +320,11 @@ class ChatPageController extends GetxController {
         return pushed != null && pushed == roomType;
       case _ThreadKind.kennel:
         // eventId holds the KENNEL id for a kennel thread (see the chat list).
+        // A kennel has two threads (E9.F1.S33): the push's ThreadKind says
+        // which, 'kennelMisman' for the Mismanagement chat; an older server
+        // sends 'kennel' for the general one.
+        final bool pushedMisman = '${data['ThreadKind'] ?? ''}' == 'kennelMisman';
+        if (pushedMisman != isMismanagementThread) return false;
         final String? pushed = data['KennelId'] as String?;
         return pushed != null && pushed.asUuid == eventId.asUuid;
       case _ThreadKind.event:
@@ -515,6 +539,7 @@ class ChatPageController extends GetxController {
           paramString: deviceSecret,
         ),
         _idKey!: eventId,
+        ..._kennelThreadKey,
       }),
     );
 
@@ -539,6 +564,7 @@ class ChatPageController extends GetxController {
       // same call that reads them.
       if (roomType != null) 'roomType': roomType,
       if (_readMarksRead) 'markRead': 1,
+      ..._kennelThreadKey,
     };
     if (sinceSequenceCount != null) {
       body['sinceSequenceCount'] = sinceSequenceCount;
@@ -929,6 +955,7 @@ class ChatPageController extends GetxController {
         if (kind != ChatMessageKind.text) 'messageKind': kind,
         // Optional on every send SP: a quoted message (E9.F1.S21).
         'replyToMessageId': ?replyToMessageId,
+        ..._kennelThreadKey,
       }),
       // A DM's refusal — "You can't message <name>." (2013) — is an answer
       // about the conversation, not a fault: it goes in a toast under the

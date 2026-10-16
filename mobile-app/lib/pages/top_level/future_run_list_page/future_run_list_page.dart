@@ -1493,10 +1493,17 @@ class EventChatSummary {
   /// state (E9.F1.S32, 2026-10-12). Null before that server change.
   final HcId? otherHasherId;
 
+  /// Which of a kennel's two threads this row is (E9.F1.S33): 0 its general
+  /// chat, 1 its private Mismanagement chat; null for runs, rooms and DMs,
+  /// and on every row from a server before 2026-10-16. The two kennel rows
+  /// share kennelId and publicKennelId — this is what tells them apart.
+  final int? kennelThread;
+
   EventChatSummary({
     required this.publicEventId,
     required this.badgeCount,
     this.pinned = false,
+    this.kennelThread,
     this.roomType,
     this.roomIcon,
     this.threadId,
@@ -1520,6 +1527,9 @@ class EventChatSummary {
   /// Kennel-thread rows (kennel-level chat) carry kennelId/publicKennelId and
   /// have NO event identity.
   bool get isKennelThread => eventId == null && kennelId != null;
+
+  /// A kennel's private Mismanagement chat (E9.F1.S33).
+  bool get isMismanagementThread => isKennelThread && kennelThread == 1;
 
   /// A platform-wide room — no run, no kennel, just a room type.
   bool get isRoomThread => roomType != null;
@@ -1552,6 +1562,7 @@ class EventChatSummary {
     otherDisplayName: otherDisplayName,
     otherPhoto: otherPhoto,
     otherHasherId: otherHasherId,
+    kennelThread: kennelThread,
   );
 
   factory EventChatSummary.fromJson(Map<String, dynamic> json) {
@@ -1580,6 +1591,7 @@ class EventChatSummary {
       otherDisplayName: json['OtherDisplayName'] as String?,
       otherPhoto: json['OtherPhoto'] as String?,
       otherHasherId: HcId.tryParse(json['OtherHasherId']),
+      kennelThread: (json['KennelThread'] as num?)?.toInt(),
     );
   }
 
