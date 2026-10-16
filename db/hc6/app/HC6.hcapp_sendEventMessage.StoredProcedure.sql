@@ -402,7 +402,7 @@ SELECT DISTINCT a.UserId, a.FcmToken,
                     AND TRY_CAST(dv.BuildNumber AS INT) >= HC6.MinBuildForIconBadge())
      THEN bt.BadgeTotal END AS BadgeTotal
 FROM #pushAudience a
-CROSS APPLY HC6.UserUnreadChatTotal(a.UserId) bt
+CROSS APPLY HC6.UserUnreadChatTotal(a.UserId, a.FcmToken) bt
 WHERE a.Buzz = 1;
 
 -- ---------------------------------------------------------------
@@ -414,7 +414,7 @@ SELECT DISTINCT a.UserId, a.FcmToken,
                     AND TRY_CAST(dv.BuildNumber AS INT) >= HC6.MinBuildForIconBadge())
      THEN bt.BadgeTotal END AS BadgeTotal
 FROM #pushAudience a
-CROSS APPLY HC6.UserUnreadChatTotal(a.UserId) bt
+CROSS APPLY HC6.UserUnreadChatTotal(a.UserId, a.FcmToken) bt
 WHERE a.Buzz = 0 AND a.Silent = 1
   -- A token already buzzed (another account on the same phone) is not sent
   -- a second, silent copy.
