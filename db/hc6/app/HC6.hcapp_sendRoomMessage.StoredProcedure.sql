@@ -344,14 +344,14 @@ SELECT DISTINCT a.UserId, a.FcmToken,
     CASE WHEN EXISTS (SELECT 1 FROM HC.Device dv WHERE dv.FcmToken = a.FcmToken
                     AND TRY_CAST(dv.BuildNumber AS INT) >= HC6.MinBuildForIconBadge())
      THEN bt.BadgeTotal END AS BadgeTotal FROM #roomAudience a
-CROSS APPLY HC6.UserUnreadChatTotal(a.UserId) bt WHERE a.Pref = 0;
+CROSS APPLY HC6.UserUnreadChatTotal(a.UserId, a.FcmToken) bt WHERE a.Pref = 0;
 
 -- Rowset 3: silent (data-only) recipients — the badge moves, nothing buzzes
 SELECT DISTINCT a.UserId, a.FcmToken,
     CASE WHEN EXISTS (SELECT 1 FROM HC.Device dv WHERE dv.FcmToken = a.FcmToken
                     AND TRY_CAST(dv.BuildNumber AS INT) >= HC6.MinBuildForIconBadge())
      THEN bt.BadgeTotal END AS BadgeTotal FROM #roomAudience a
-CROSS APPLY HC6.UserUnreadChatTotal(a.UserId) bt WHERE a.Pref = 1;
+CROSS APPLY HC6.UserUnreadChatTotal(a.UserId, a.FcmToken) bt WHERE a.Pref = 1;
 
 DROP TABLE #roomAudience;
 
