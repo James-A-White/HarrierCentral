@@ -1,3 +1,9 @@
+1.0.61+111
+    • Kennel chat push names its thread: ThreadKind kennel / kennelMisman and KennelThread from the SP, so a tap opens the kennel's general or private Mismanagement chat (E9.F1.S33)
+    • Portal kennel chat (new hcportal_sendKennelMessage) pushes through the app shim's kennel push
+    • KennelRemindersTimer: Mondays hourly, the SP posts at 09:00 London — the weekly Mismanagement reminder (photos to review); OFF until KENNEL_REMINDERS_ENABLED=1
+    • KennelRemindersTest: dry-run / test post for one kennel, behind the internal secret
+
 1.0.61+110
     • PublicApi (kennels' Data APIs): a missing key's 400 says publicKennelId or apiKey (it said accessToken); the API key stays the only credential (E20.F1.S1)
 
