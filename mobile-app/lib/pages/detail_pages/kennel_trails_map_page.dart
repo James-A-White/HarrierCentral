@@ -39,6 +39,24 @@ class KennelTrailsMapController extends GetxController {
   List<latlng.LatLng> focus = const <latlng.LatLng>[];
   int busiest = 1;
 
+  /// Each trail's colour by age (James, 2026-10-16): newest green, round the
+  /// colour wheel through blue and purple to red for the oldest. By rank, not
+  /// by date, so a kennel with a burst of recent trails still uses the whole
+  /// wheel. A trail with no date counts as the oldest.
+  Map<HcId, Color> ageColors = const <HcId, Color>{};
+
+  /// The newest and oldest trail dates, for the key.
+  DateTime? newestDay;
+  DateTime? oldestDay;
+
+  /// Green (120°) at t = 0 to red (360°) at t = 1, the long way round.
+  static Color ageColor(double t) => HSLColor.fromAHSL(
+    1,
+    (120 + 240 * t.clamp(0.0, 1.0)) % 360,
+    0.85,
+    0.45,
+  ).toColor();
+
   int get startCount =>
       places.fold<int>(0, (int n, KennelStartPlace p) => n + p.runs.length);
 
@@ -83,7 +101,24 @@ class KennelTrailsMapController extends GetxController {
       1,
       (int m, KennelStartPlace p) => math.max(m, p.runs.length),
     );
-    trails.assignAll(got.trails);
+    // Oldest first, so the newest trails are drawn on top.
+    final List<KennelRunTrail> byAge = got.trails.toList()
+      ..sort(
+        (KennelRunTrail a, KennelRunTrail b) =>
+            (a.startLocal ?? DateTime(0)).compareTo(b.startLocal ?? DateTime(0)),
+      );
+    final int n = byAge.length;
+    ageColors = <HcId, Color>{
+      for (int i = 0; i < n; i++)
+        byAge[i].eventId: ageColor(n <= 1 ? 0 : (n - 1 - i) / (n - 1)),
+    };
+    final List<DateTime> days = <DateTime>[
+      for (final KennelRunTrail t in byAge)
+        if (t.startLocal != null) t.startLocal!,
+    ];
+    oldestDay = days.isEmpty ? null : days.first;
+    newestDay = days.isEmpty ? null : days.last;
+    trails.assignAll(byAge);
     places.assignAll(grouped);
   }
 
@@ -258,21 +293,26 @@ class KennelTrailsMapPage extends StatelessWidget {
                     points: l.points,
                     hitValue: t.eventId,
                     strokeWidth: sel?.eventId == t.eventId ? 6 : 3,
-                    color: OfficialTrailLane.colorOf(l.type).withValues(
+                    color:
+                        (c.ageColors[t.eventId] ??
+                                KennelTrailsMapController.ageColor(1))
+                            .withValues(
                       alpha: sel == null || sel.eventId == t.eventId
                           ? 0.85
                           : 0.35,
                     ),
                   ),
             ];
-            // The selected trail is drawn last, so it sits on top.
+            // The selected trail is drawn last, so it sits on top. Moved,
+            // not sorted: List.sort is not stable, and the rest must keep
+            // their oldest-first order.
             if (sel != null) {
-              lines.sort(
-                (Polyline<String> a, Polyline<String> b) =>
-                    (a.hitValue == sel.eventId ? 1 : 0).compareTo(
-                      b.hitValue == sel.eventId ? 1 : 0,
-                    ),
-              );
+              final List<Polyline<String>> picked = lines
+                  .where((Polyline<String> p) => p.hitValue == sel.eventId)
+                  .toList();
+              lines
+                ..removeWhere((Polyline<String> p) => p.hitValue == sel.eventId)
+                ..addAll(picked);
             }
             return Stack(
               children: <Widget>[
@@ -366,11 +406,24 @@ class KennelTrailsMapPage extends StatelessWidget {
                     child: place != null
                         ? _placeCard(c, place, placeIdx)
                         : sel == null
-                        ? Text(
-                            '${<String>[if (trails.isNotEmpty) '${trails.length} run ${trails.length == 1 ? 'trail' : 'trails'}', if (places.isNotEmpty) '${c.startCount} runs from ${places.length} ${places.length == 1 ? 'start' : 'starts'}'].join(' · ')}\n'
-                            'tap a ${trails.isNotEmpty ? 'trail or ' : ''}start to see its run',
-                            style: ts_body,
-                            textAlign: TextAlign.center,
+                        ? Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              Text(
+                                '${<String>[if (trails.isNotEmpty) '${trails.length} run ${trails.length == 1 ? 'trail' : 'trails'}', if (places.isNotEmpty) '${c.startCount} runs from ${places.length} ${places.length == 1 ? 'start' : 'starts'}'].join(' · ')}\n'
+                                'tap a ${trails.isNotEmpty ? 'trail or ' : ''}start to see its run',
+                                style: ts_body,
+                                textAlign: TextAlign.center,
+                              ),
+                              if (trails.length > 1) ...<Widget>[
+                                const SizedBox(height: 8),
+                                _AgeKey(
+                                  newest: c.newestDay,
+                                  oldest: c.oldestDay,
+                                ),
+                              ],
+                            ],
                           )
                         : Column(
                             mainAxisSize: MainAxisSize.min,
@@ -533,6 +586,48 @@ class KennelTrailsMapPage extends StatelessWidget {
       ],
     );
   }
+}
+
+/// The trail colours' key: a strip from green (newest) round to red
+/// (oldest), with the dates at its ends.
+class _AgeKey extends StatelessWidget {
+  const _AgeKey({this.newest, this.oldest});
+  final DateTime? newest;
+  final DateTime? oldest;
+
+  static final DateFormat _month = DateFormat('MMM yyyy');
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: <Widget>[
+      Text(
+        newest != null ? 'Newest\n${_month.format(newest!)}' : 'Newest',
+        style: ts_body.copyWith(color: Colors.white70, fontSize: 12),
+        textAlign: TextAlign.center,
+      ),
+      const SizedBox(width: 8),
+      Expanded(
+        child: Container(
+          height: 8,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(4),
+            gradient: LinearGradient(
+              colors: <Color>[
+                for (int i = 0; i <= 8; i++)
+                  KennelTrailsMapController.ageColor(i / 8),
+              ],
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(width: 8),
+      Text(
+        oldest != null ? 'Oldest\n${_month.format(oldest!)}' : 'Oldest',
+        style: ts_body.copyWith(color: Colors.white70, fontSize: 12),
+        textAlign: TextAlign.center,
+      ),
+    ],
+  );
 }
 
 /// A start-point pin (James, 2026-10-03): a coloured dot with a black
