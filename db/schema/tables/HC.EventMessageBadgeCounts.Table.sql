@@ -18,6 +18,8 @@ CREATE TABLE [HC].[EventMessageBadgeCounts] (
 	[MessageType] [int] NOT NULL CONSTRAINT [DF_EventMessageBadgeCounts_MessageType] DEFAULT ((0)),
 	[ThreadId] [uniqueidentifier] NULL,
 	[ParticipationState] [smallint] NOT NULL CONSTRAINT [DF_EventMessageBadgeCounts_ParticipationState] DEFAULT ((0)),
+	-- The thread's pin where it has no other home: the kennel Mismanagement chat (MessageType 100, E9.F1.S33). NULL = never chosen = unpinned. Other threads pin on HasherKennelMap / HasherEventMap / HasherFriendMap.Pinned and HC.Hasher.Unpinned*Rooms.
+	[Pinned] [smallint] NULL,
 	CONSTRAINT [PK_EventMessageBadgeCounts] PRIMARY KEY CLUSTERED ([id])
 );
 GO

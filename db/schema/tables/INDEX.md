@@ -39,7 +39,7 @@ legacy schemas, and TSA (defunct; its old files are left as they were).
 | [HC.ErrorLog](HC.ErrorLog.Table.sql) | 18 | 2 | 0 |
 | [HC.Event](HC.Event.Table.sql) | 146 | 21 | 3 |
 | [HC.EventMessage](HC.EventMessage.Table.sql) | 22 | 4 | 2 |
-| [HC.EventMessageBadgeCounts](HC.EventMessageBadgeCounts.Table.sql) | 14 | 3 | 0 |
+| [HC.EventMessageBadgeCounts](HC.EventMessageBadgeCounts.Table.sql) | 15 | 3 | 0 |
 | [HC.EventTrack](HC.EventTrack.Table.sql) | 5 | 1 | 0 |
 | [HC.GoogleCalendarEvent](HC.GoogleCalendarEvent.Table.sql) | 10 | 2 | 1 |
 | [HC.Hasher](HC.Hasher.Table.sql) | 58 | 6 | 8 |
