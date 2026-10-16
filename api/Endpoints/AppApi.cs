@@ -391,17 +391,14 @@ namespace HcWebApi.Endpoints
                 }
 
                 // Generate new token from Firebase service account
-                string jsonUrl = "https://harriercentral.blob.core.windows.net/credentials/firebase_credentials.json";
+                // From the PRIVATE credentials container (FirebaseCredentials, 2026-10-16).
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-                var httpResponse = await _httpClient.GetAsync(jsonUrl, cts.Token);
-
-                if (!httpResponse.IsSuccessStatusCode)
+                string? jsonContent = await FirebaseCredentials.LoadJsonAsync(cts.Token);
+                if (string.IsNullOrEmpty(jsonContent))
                 {
                     Console.WriteLine("Error: Failed to retrieve service account JSON from Azure Blob Storage.");
                     return null;
                 }
-
-                string jsonContent = await httpResponse.Content.ReadAsStringAsync();
 
                 GoogleCredential credential = GoogleCredential
                     .FromJson(jsonContent)
