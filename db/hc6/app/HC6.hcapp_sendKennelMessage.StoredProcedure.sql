@@ -244,10 +244,6 @@ BEGIN TRY
 -- ---------------------------------------------------------------
 -- Rowset 0: message detail
 -- ---------------------------------------------------------------
-DECLARE @sendToMismanagement SMALLINT = @messageReleasabilityFlags & 0x0001;
-DECLARE @sendToMembers       SMALLINT = @messageReleasabilityFlags & 0x0002;
-DECLARE @sendToFollowers     SMALLINT = @messageReleasabilityFlags & 0x0004;
-DECLARE @sendToEveryone      SMALLINT = @messageReleasabilityFlags & 0x0020;
 
 SELECT
     msg.id                                   AS MessageId,
@@ -285,46 +281,12 @@ WHERE msg.id = @messageId AND msg.removed = 0 AND h.Removed = 0;
 -- A kennel message is not tied to a run, so "on before the run" (4) has no
 -- window to sit inside and is treated as on, as it always was here.
 -- ---------------------------------------------------------------
-DECLARE @idleCutoff DATETIMEOFFSET(7) = DATEADD(DAY, -180, SYSDATETIMEOFFSET());
--- Builds that cannot route a push with no event are left out entirely.
--- One place owns the number: HC6.MinBuildForChatPush.
-DECLARE @minPushBuild INT = HC6.MinBuildForChatPush();
-
-SELECT DISTINCT
-    hkm.UserId,
-    device.FcmToken,
-    COALESCE(hkm.KennelNotificationPreference, 0) AS Pref
+-- The audience is HC6.KennelChatPushAudience (2026-10-16, E9.F1.S33): the
+-- rules that were written out here, moved verbatim so the weekly
+-- Mismanagement reminder pushes to exactly the same people.
+SELECT a.UserId, a.FcmToken, a.Pref
 INTO #pushAudience
-FROM HC.HasherKennelMap hkm
-INNER JOIN HC.Hasher h      ON h.id          = hkm.UserId
-INNER JOIN HC.Device device ON device.UserId = hkm.UserId
-WHERE hkm.KennelId = @kennelId
-  AND hkm.removed  = 0
-  AND h.Removed    = 0
-  AND device.FcmToken  IS NOT NULL
-  -- A hasher who has blocked the sender gets nothing from them (E9.F1.S16).
-  AND NOT EXISTS (SELECT 1 FROM HC.HasherFriendMap blk
-                  WHERE blk.UserId = hkm.UserId AND blk.Friend_UserId = @userId AND blk.Ignore = 1)
-  AND device.removed   = 0
-  AND device.LastLogin >= @idleCutoff
-  -- BuildNumber is NVARCHAR and can be '<unknown>': TRY_CAST yields NULL,
-  -- the comparison is UNKNOWN, and the device is excluded. Fail closed.
-  AND TRY_CAST(device.BuildNumber AS INT) >= @minPushBuild
-  AND COALESCE(hkm.KennelNotificationPreference, 0) IN (1, 3, 4)
-  AND (
-      -- The general chat: the releasability flags choose the audience.
-      (@messageType = 0 AND (
-          @sendToEveryone       != 0
-       OR (@sendToMismanagement != 0 AND hkm.MismanagementRoles != 0)
-       OR (@sendToMembers       != 0 AND hkm.MembershipExpirationDate > GETDATE())
-       OR (@sendToFollowers     != 0 AND hkm.Following = 1)))
-      -- The Mismanagement chat: its members and nobody else, whatever the
-      -- flags say — the same rule as HC6.UserInKennelMismanagement, written
-      -- set-based on this row — and only builds that can open it.
-   OR (@messageType <> 0
-       AND (ISNULL(hkm.MismanagementRoles, 0) <> 0 OR ISNULL(hkm.AppAccessFlags, 0) <> 0)
-       AND TRY_CAST(device.BuildNumber AS INT) >= HC6.MinBuildForKennelMismanagement())
-  );
+FROM HC6.KennelChatPushAudience(@kennelId, @messageType, @messageReleasabilityFlags, @userId) a;
 
 -- A resend notifies nobody: its first send already did.
 IF (@isResend = 1) DELETE FROM #pushAudience;
