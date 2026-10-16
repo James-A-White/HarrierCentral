@@ -150,7 +150,7 @@ BEGIN TRY
         SELECT DISTINCT d.UserId, d.FcmToken,
                CASE WHEN TRY_CAST(d.BuildNumber AS INT) >= HC6.MinBuildForIconBadge() THEN bt.BadgeTotal END AS BadgeTotal
         FROM HC.Device d
-        CROSS APPLY HC6.UserUnreadChatTotal(d.UserId) bt
+        CROSS APPLY HC6.UserUnreadChatTotal(d.UserId, d.FcmToken) bt
         WHERE d.UserId = @targetId AND d.removed = 0 AND d.FcmToken IS NOT NULL
           AND d.LastLogin >= @idleCutoff
           AND TRY_CAST(d.BuildNumber AS INT) >= HC6.MinBuildForDmPush();
