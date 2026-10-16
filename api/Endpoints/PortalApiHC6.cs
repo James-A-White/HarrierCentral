@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Data;
@@ -161,6 +162,14 @@ namespace HcWebApi.Endpoints
                         break;
                     case "markEventChatRead":
                         await SendReadSyncAsync(multipleResults, (string)data.publicEventId, log);
+                        break;
+                    // Kennel chat from the portal (E9.F1.S33): the same push as
+                    // the app's kennel send — rowsets 0 detail, 1 visible,
+                    // 2 silent from the shared HC6.nonApi_sendKennelMessage —
+                    // through the app shim's code, so there is one kennel push.
+                    case "sendKennelMessage":
+                        _ = new AppApiHC6(NullLogger<AppApiHC6>.Instance)
+                                .SendChatNotifications(multipleResults, AppApiHC6.ChatPushKind.Kennel, log);
                         break;
                     case "approveKennelRequest":
                         // The welcome carries the new admin's sign-in code: send

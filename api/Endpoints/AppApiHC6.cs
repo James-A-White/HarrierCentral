@@ -710,7 +710,12 @@ namespace HcWebApi.Endpoints
                 var data = new Dictionary<string, string> { ["MessageType"] = "0" };
                 void Put(string k, string? v) { if (!string.IsNullOrEmpty(v)) data[k] = v!; }
 
-                Put("ThreadKind",      kind switch { ChatPushKind.Room => "room", ChatPushKind.Dm => "dm", _ => "kennel" });
+                // A kennel has two threads (E9.F1.S33): the SP's detail row says
+                // which — 'kennel' (general) or 'kennelMisman' (Mismanagement) —
+                // so the tap opens the right one. An older SP sends no column:
+                // the general chat, as before.
+                Put("ThreadKind",      kind switch { ChatPushKind.Room => "room", ChatPushKind.Dm => "dm",
+                                                     _ => Str("ThreadKind") ?? "kennel" });
                 Put("MessageId",       Str("MessageId"));
                 Put("Title",           Str("MessageTitle"));
                 Put("Message",         Str("MessageContent"));
@@ -732,6 +737,7 @@ namespace HcWebApi.Endpoints
                     Put("KennelId",         Str("KennelId"));
                     Put("PublicKennelId",   Str("PublicKennelId"));
                     Put("KennelShortName",  Str("KennelShortName"));
+                    Put("KennelThread",     Str("KennelThread"));
                 }
 
                 string? accessToken = await GetFirebaseAccessTokenAsync();
