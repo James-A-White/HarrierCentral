@@ -1,3 +1,16 @@
+## 3.1.10+1480 (2026-10-16)
+
+### Fixes
+
+- **Past runs on the Runs page**: no longer vanish after pulling to refresh
+  the kennel list, which left the list opening on a pull-to-refresh with no
+  Past Runs section above it.
+
+### New Features
+
+- **Kennel trail map coloured by age**: newest trail green, round through
+  blue and purple to red for the oldest, newest drawn on top, with a key.
+
 ## 3.1.10+1479 (2026-10-15)
 
 ### New Features
