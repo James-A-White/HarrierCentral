@@ -1,0 +1,284 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_sendKennelMessage",
+  "version": "1.0.0",
+  "description": "THE post to one of a kennel's two chat threads (E9.F1.S33), shared by hcapp_sendKennelMessage (app, and the web through it) and hcportal_sendKennelMessage (portal). Caller authenticates and passes @userId. Refusals return no rowset and set the error OUTPUTs (logged here); success returns hcapp_sendKennelMessage's three rowsets. Push audience: HC6.KennelChatPushAudience.",
+  "parameters": [
+    {
+      "name": "userId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Hasher.id",
+      "description": "The authenticated sender (internal id)."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.KennelId",
+      "description": "The kennel whose chat receives the message. Required; NULL → errorCode 1901."
+    },
+    {
+      "name": "messageId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.id",
+      "description": "Client-generated message UUID. Required; NULL → errorCode 1901. A duplicate id is a PK violation caught by the CATCH (errorCode 1933) — the insert is not idempotent."
+    },
+    {
+      "name": "messageTitle",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.MessageTitle",
+      "description": "Optional title; NULL is stored as ''. Rowset 0 returns it prefixed with the sender's DisplayName + ' - '."
+    },
+    {
+      "name": "messageContent",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.MessageContent",
+      "description": "Message body (text, a chat-photos blob URL, or a map link by @messageKind). Required; empty/NULL → 1901. More than 4,000 UTF-16 code units (the column width) is REFUSED with 1902 rather than truncated — the parameter is MAX for that reason."
+    },
+    {
+      "name": "messageReleasabilityFlags",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.MessageReleasabilityFlags",
+      "description": "Push-audience bitmask: 0x0001 mismanagement, 0x0002 members (MembershipExpirationDate in the future), 0x0004 followers, 0x0020 everyone. NULL → 63 (all). 0x0008 RSVPs and 0x0010 hares are stored but ignored here — a kennel thread has no run."
+    },
+    {
+      "name": "messageKind",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.MessageKind",
+      "description": "0 text (default), 1 photo, 2 location (E9.F1.S11/S12). NULL → 0. Validated by HC6.ChatMessageKindError; a bad kind/content pairing → 1903."
+    },
+    {
+      "name": "replyToMessageId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "EventMessage.ReplyToMessageId",
+      "description": "The message this one quotes (E9.F1.S21). Kept only when it is a message of THIS kennel thread (KennelId match, EventId NULL); otherwise silently cleared and the message sends without a quote."
+    },
+    {
+      "name": "kennelThread",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Which of the kennel's two threads (E9.F1.S33): 0 (default) the general chat, 1 the private Mismanagement chat (stored as MessageType 100). Thread 1 is refused for a caller not in HC6.UserInKennelMismanagement (errorCode 1913, errorType 13, logged) and pushes only the kennel's mismanagement on builds >= HC6.MinBuildForKennelMismanagement, ignoring the releasability flags."
+    },
+    {
+      "name": "hcVersion",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client version for HC.ErrorLog rows."
+    },
+    {
+      "name": "callerProcName",
+      "type": "NVARCHAR(128)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Wrapper name for HC.ErrorLog rows."
+    },
+    {
+      "name": "errorCode",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "OUTPUT: NULL on success; 1901 missing fields, 1902 too long, 1903 bad kind, 1913 not in mismanagement / unknown thread, 1933 unexpected (not stored)."
+    },
+    {
+      "name": "errorType",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "OUTPUT: 2, 13 or 5."
+    },
+    {
+      "name": "errorId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "OUTPUT: the HC.ErrorLog row id."
+    },
+    {
+      "name": "errorTitle",
+      "type": "NVARCHAR(200)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "OUTPUT: short title."
+    },
+    {
+      "name": "errorUserMessage",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "OUTPUT: message for the user."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "InsertedMessage",
+      "description": "On success: the just-inserted message, one row, for the sender's optimistic UI and the API's push body.",
+      "columns": [
+        {
+          "name": "MessageId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "EventMessage.id — the client-supplied messageId."
+        },
+        {
+          "name": "KennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "EventMessage.KennelId."
+        },
+        {
+          "name": "PublicKennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "EventMessage.PublicKennelId, copied from Kennel.PublicKennelId at insert."
+        },
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Hasher.PublicHasherId of the sender (not the internal id)."
+        },
+        {
+          "name": "UserDisplayName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Hasher.DisplayName (persisted computed column)."
+        },
+        {
+          "name": "UserPhoto",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Hasher.Photo."
+        },
+        {
+          "name": "MessageTitle",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "DisplayName + ' - ' + EventMessage.MessageTitle ('' when none was given)."
+        },
+        {
+          "name": "MessageContent",
+          "type": "NVARCHAR(MAX)",
+          "nullable": false,
+          "description": "HC6.ChatMessagePreview(MessageKind, MessageContent): the text, or a photo/location placeholder. The API uses it as the push body — it is NOT the raw stored content for a photo or location."
+        },
+        {
+          "name": "MessageKind",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 text, 1 photo, 2 location."
+        },
+        {
+          "name": "MessageReleasabilityFlags",
+          "type": "INT",
+          "nullable": false,
+          "description": "EventMessage.MessageReleasabilityFlags as stored (63 when the caller passed NULL)."
+        },
+        {
+          "name": "EventChatMessageCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0 — kept for shape parity with hcapp_sendEventMessage."
+        },
+        {
+          "name": "MessageType",
+          "type": "INT",
+          "nullable": false,
+          "description": "EventMessage.MessageType — 0 for a kennel thread (non-zero values name a global room)."
+        },
+        {
+          "name": "KennelShortName",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "Kennel.KennelShortName, so the phone can title the thread a push opens. Added 2026-09-18."
+        },
+        {
+          "name": "KennelThread",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "@kennelThread as posted: 0 general chat, 1 Mismanagement chat (E9.F1.S33, 2026-10-16)."
+        },
+        {
+          "name": "ThreadKind",
+          "type": "VARCHAR(12)",
+          "nullable": false,
+          "description": "'kennel' or 'kennelMisman' — the push payload's ThreadKind, so the phone opens the right thread (E9.F1.S33)."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "VisiblePushRecipients",
+      "description": "On success: one row per distinct FCM token whose hasher's KennelNotificationPreference is 1 (on) or 4 (on before the run — treated as on, a kennel thread has no run window). Audience: HasherKennelMap rows for @kennelId, not removed, hasher not removed, device not removed with a token and LastLogin within 180 days, build >= HC6.MinBuildForChatPush() (TRY_CAST — '<unknown>' fails closed), not blocking the sender (HasherFriendMap.Ignore), and matching the releasability bits. The sender's own devices are included on purpose (the echo drives the delivered tick). May be empty.",
+      "columns": [
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HasherKennelMap.UserId — the internal Hasher.id."
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Device.FcmToken (filtered IS NOT NULL)."
+        },
+        {
+          "name": "BadgeTotal",
+          "type": "INT",
+          "nullable": true,
+          "description": "HC6.UserUnreadChatTotal for the recipient — the app-icon badge the API puts in aps.badge / notification_count. NULL when no device with that token is on a build >= HC6.MinBuildForIconBadge() (older apps never lower the icon)."
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "SilentPushRecipients",
+      "description": "On success: the same audience with KennelNotificationPreference 3 (on but muted) — a data-only push so the badge moves without a notification. Same columns as rowset 1. May be empty.",
+      "columns": [
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HasherKennelMap.UserId — the internal Hasher.id."
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR(500)",
+          "nullable": false,
+          "description": "Device.FcmToken."
+        },
+        {
+          "name": "BadgeTotal",
+          "type": "INT",
+          "nullable": true,
+          "description": "As rowset 1."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.EventMessage (KennelId set, EventId NULL) — fires HC.trgCreateSeqNum (assigns MessageSequenceCount) and HC.trgEventMessageActivityCount (no-op for a kennel thread: EventId is NULL).",
+    "INSERT HC.HasherKennelMap (UserId, KennelId, Following 0, MemberSince NULL, KennelNotificationPreference 1) when the sender has no row for the kennel (existence check WITH (UPDLOCK, HOLDLOCK) ignores `removed`, so a removed row is never revived); else UPDATE KennelNotificationPreference 0 → 1 on a live row (2/3/4 untouched). The kennel bell also governs that kennel's RSVP and check-in reminders.",
+    "MERGE HC.EventMessageBadgeCounts (UserId, KennelId) — the sender's last-read position moves to the new MessageSequenceCount so they never see their own message as unread.",
+    "INSERT HC.ErrorLog on every refused path and in the CATCH.",
+    "The API shim fans out FCM pushes from rowsets 1 and 2 (visible / silent); nothing is queued in the database."
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
