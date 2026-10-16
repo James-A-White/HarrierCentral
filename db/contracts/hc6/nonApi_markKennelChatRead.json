@@ -1,0 +1,91 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_markKennelChatRead",
+  "version": "1.0.0",
+  "description": "THE read mark for one of a kennel's two chat threads (E9.F1.S33), shared by hcapp_markKennelChatRead and hcportal_markKennelChatRead. Writes the (UserId, KennelId, MessageType) EventMessageBadgeCounts row at the thread's current maximum. No rowset; the error OUTPUTs say what went wrong (logged here).",
+  "parameters": [
+    {
+      "name": "userId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": false,
+      "mapsToColumn": "Hasher.id",
+      "description": "The authenticated user (internal id)."
+    },
+    {
+      "name": "kennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "EventMessageBadgeCounts.KennelId",
+      "description": "Kennel whose thread (EventMessage rows with KennelId set and EventId NULL) was read. NULL: errorCode 1901, errorType 2."
+    },
+    {
+      "name": "kennelThread",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Which of the kennel's two threads (E9.F1.S33): 0 (default) the general chat, 1 the private Mismanagement chat (MessageType 100). The read mark is the (UserId, KennelId, MessageType) row and the max is of that thread only. 1 for a caller not in HC6.UserInKennelMismanagement, or an unknown value: errorCode 1913, errorType 13 (logged)."
+    },
+    {
+      "name": "hcVersion",
+      "type": "NVARCHAR(100)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Client version for HC.ErrorLog rows."
+    },
+    {
+      "name": "callerProcName",
+      "type": "NVARCHAR(128)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Wrapper name for HC.ErrorLog rows."
+    },
+    {
+      "name": "errorCode",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "OUTPUT: NULL on success; 1901 no kennel, 1913 not in mismanagement / unknown thread, 1933 unexpected."
+    },
+    {
+      "name": "errorType",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "OUTPUT: 2, 13 or 5."
+    },
+    {
+      "name": "errorId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "OUTPUT: the HC.ErrorLog row id."
+    },
+    {
+      "name": "errorTitle",
+      "type": "NVARCHAR(200)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "OUTPUT: short title."
+    },
+    {
+      "name": "errorUserMessage",
+      "type": "NVARCHAR(500)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "OUTPUT: message for the user."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [
+    "MERGE HC.EventMessageBadgeCounts on (KennelId, UserId, Removed = 0): UPDATE LastSequenceCount = COALESCE(MAX(MessageSequenceCount), 0), LastReadAt = GETUTCDATE(), LastReadMessageId; or INSERT (UserId, KennelId, LastSequenceCount, LastReadAt, LastReadMessageId) with id/createdAt/updatedAt from defaults (lines 66-81)",
+    "INSERT HC.ErrorLog on NULL kennelId and on the CATCH path (after ROLLBACK)"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
