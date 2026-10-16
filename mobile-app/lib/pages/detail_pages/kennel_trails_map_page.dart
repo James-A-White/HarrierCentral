@@ -34,6 +34,15 @@ class KennelTrailsMapController extends GetxController {
   /// Which of the selected place's runs is shown (0 = newest).
   final RxInt placeRunIndex = 0.obs;
 
+  /// Everything the server sent; [trails] and [places] are these narrowed
+  /// by the search bar.
+  List<KennelRunTrail> _allTrails = const <KennelRunTrail>[];
+  List<KennelRunStart> _allStarts = const <KennelRunStart>[];
+
+  /// The search bar (the Runs page's, same rules: "+" OR, "," AND, "not ").
+  final TextEditingController searchController = TextEditingController();
+  final RxString searchText = ''.obs;
+
   /// Where the map opens and the busiest place's run count — worked out
   /// once on load (focusArea compares every pair of places).
   List<latlng.LatLng> focus = const <latlng.LatLng>[];
@@ -74,6 +83,7 @@ class KennelTrailsMapController extends GetxController {
   void onClose() {
     mapController.dispose();
     trailHits.dispose();
+    searchController.dispose();
     super.onClose();
   }
 
@@ -118,8 +128,88 @@ class KennelTrailsMapController extends GetxController {
     ];
     oldestDay = days.isEmpty ? null : days.first;
     newestDay = days.isEmpty ? null : days.last;
+    _allTrails = byAge;
+    _allStarts = got.starts;
     trails.assignAll(byAge);
     places.assignAll(grouped);
+    if (searchText.value.trim().isNotEmpty) applySearch(searchText.value);
+  }
+
+  static final DateFormat _searchDay = DateFormat('d MMMM yyyy');
+
+  /// What a run is found by: its number, its name and its date.
+  static String _searchable(int number, String name, DateTime? day) =>
+      '#$number $number $name ${day == null ? '' : _searchDay.format(day)}';
+
+  /// Narrows the trails and the start pins to the runs the text matches.
+  /// The colours stay those of the whole set, so a trail keeps its age.
+  void applySearch(String text) {
+    searchText.value = text;
+    final SearchQuery q = SearchQuery(text);
+    trails.assignAll(
+      q.isEmpty
+          ? _allTrails
+          : _allTrails.where(
+              (KennelRunTrail t) =>
+                  q.matches(_searchable(t.eventNumber, t.eventName, t.startLocal)),
+            ),
+    );
+    places.assignAll(
+      KennelRunStart.group(
+        q.isEmpty
+            ? _allStarts
+            : _allStarts
+                  .where(
+                    (KennelRunStart r) => q.matches(
+                      _searchable(r.eventNumber, r.eventName, r.startLocal),
+                    ),
+                  )
+                  .toList(),
+      ),
+    );
+    final KennelRunTrail? sel = selected.value;
+    if (sel != null && !trails.any((KennelRunTrail t) => t.eventId == sel.eventId)) {
+      selected.value = null;
+    }
+    selectedPlace.value = null;
+  }
+
+  void clearSearch() {
+    searchController.text = '';
+    applySearch('');
+  }
+
+  /// Whether the selected trail has a newer / older one to step to.
+  bool get hasNewerTrail => _selectedIndex >= 0 && _selectedIndex < trails.length - 1;
+  bool get hasOlderTrail => _selectedIndex > 0;
+
+  int get _selectedIndex {
+    final KennelRunTrail? sel = selected.value;
+    if (sel == null) return -1;
+    return trails.indexWhere((KennelRunTrail t) => t.eventId == sel.eventId);
+  }
+
+  /// The arrows on the selected trail's card (James, 2026-10-16): step to the
+  /// next run in time, newer (+1) or older (-1), and bring it into view.
+  /// [trails] is held oldest first.
+  void stepTrail(int delta) {
+    final int i = _selectedIndex;
+    if (i < 0) return;
+    final int j = (i + delta).clamp(0, trails.length - 1);
+    if (j == i) return;
+    selected.value = trails[j];
+    final List<latlng.LatLng> pts = <latlng.LatLng>[
+      for (final OfficialTrailLane l in trails[j].lanes) ...l.points,
+    ];
+    if (pts.length > 1) {
+      mapController.fitCamera(
+        CameraFit.coordinates(
+          coordinates: pts,
+          // Room at the bottom for the card that covers the map there.
+          padding: const EdgeInsets.fromLTRB(40, 40, 40, 200),
+        ),
+      );
+    }
   }
 
   void selectPlace(KennelStartPlace p) {
@@ -238,7 +328,94 @@ class KennelTrailsMapPage extends StatelessWidget {
         ),
         body: DecoratedBox(
           decoration: Backgrounds.defaultHcBackground(),
-          child: Obx(() {
+          child: Column(
+            children: <Widget>[
+              _searchBar(c),
+              Expanded(child: _map(c, imperial)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// The Runs page's search bar (James, 2026-10-16): white field, X to
+  /// clear, and the count line under it.
+  Widget _searchBar(KennelTrailsMapController c) => Column(
+    mainAxisSize: MainAxisSize.min,
+    children: <Widget>[
+      Container(
+        color: Colors.white,
+        height: 50,
+        padding: const EdgeInsets.only(left: 14.0),
+        child: Material(
+          color: Colors.transparent,
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: TextField(
+                  onTapOutside: (_) =>
+                      FocusManager.instance.primaryFocus?.unfocus(),
+                  textInputAction: TextInputAction.done,
+                  autocorrect: false,
+                  onChanged: c.applySearch,
+                  controller: c.searchController,
+                  keyboardType: TextInputType.text,
+                  style: ts_footnoteBlack,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    icon: const Icon(FontAwesome.search, color: Colors.black),
+                    hintText: 'Search...',
+                    hintStyle: ts_searchLabel,
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 40,
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    shape: button_shape,
+                    textStyle: TextStyle(color: Colors.grey.shade700),
+                    backgroundColor: Colors.white,
+                  ),
+                  onPressed: c.clearSearch,
+                  child: Text(
+                    'X',
+                    style: ts_headingBlack.copyWith(
+                      color: Colors.grey.shade700,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
+      Container(
+        color: Colors.grey.shade200,
+        height: 24.0,
+        child: Obx(() {
+          final int t = c.trails.length;
+          final int r = c.startCount;
+          final bool loading = c.loading.value;
+          return Align(
+            alignment: Alignment.center,
+            child: Text(
+              loading
+                  ? 'Loading trails…'
+                  : 'Showing $t ${t == 1 ? 'trail' : 'trails'}, $r ${r == 1 ? 'start' : 'starts'}',
+              style: ts_titleSmallCondensedBlack,
+            ),
+          );
+        }),
+      ),
+      const Divider(height: 1.0, thickness: 1.0, color: Colors.grey),
+    ],
+  );
+
+  Widget _map(KennelTrailsMapController c, bool imperial) => Obx(() {
             // Every Rx read before any branch (an Obx that can skip its
             // reads throws).
             final bool loading = c.loading.value;
@@ -249,6 +426,7 @@ class KennelTrailsMapPage extends StatelessWidget {
             final List<KennelStartPlace> places = c.places.toList();
             final KennelStartPlace? place = c.selectedPlace.value;
             final int placeIdx = c.placeRunIndex.value;
+            final bool searching = c.searchText.value.trim().isNotEmpty;
             if (loading) {
               return const Center(child: HcAppCircularProgressIndicator());
             }
@@ -262,6 +440,8 @@ class KennelTrailsMapPage extends StatelessWidget {
                       Text(
                         failed
                             ? "The trails couldn't be loaded. Check your connection and try again."
+                            : searching
+                            ? 'No runs match your search.'
                             : "$kennelShortName doesn't have any run trails yet. "
                                   "A run's trail appears here once its hare's trail "
                                   'is saved with the run.',
@@ -429,25 +609,60 @@ class KennelTrailsMapPage extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: <Widget>[
-                              Text(
-                                sel.eventName.isNotEmpty
-                                    ? sel.eventName
-                                    : 'Run ${sel.eventNumber}',
-                                style: ts_titleMediumBold,
-                                textAlign: TextAlign.center,
-                              ),
-                              Text(
-                                <String>[
-                                  if (sel.startLocal != null)
-                                    _day.format(sel.startLocal!),
-                                  if (sel.distanceM != null)
-                                    formatDistance(
-                                      sel.distanceM!.toDouble(),
-                                      imperial: imperial,
+                              Row(
+                                children: <Widget>[
+                                  IconButton(
+                                    tooltip: 'Newer run',
+                                    icon: const Icon(
+                                      Icons.chevron_left,
+                                      color: Colors.white,
                                     ),
-                                ].join(' · '),
-                                style: ts_body.copyWith(color: Colors.white70),
-                                textAlign: TextAlign.center,
+                                    onPressed: c.hasNewerTrail
+                                        ? () => c.stepTrail(1)
+                                        : null,
+                                  ),
+                                  Expanded(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: <Widget>[
+                                        Text(
+                                          sel.eventName.isNotEmpty
+                                              ? sel.eventName
+                                              : 'Run ${sel.eventNumber}',
+                                          style: ts_titleMediumBold,
+                                          textAlign: TextAlign.center,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        Text(
+                                          <String>[
+                                            if (sel.startLocal != null)
+                                              _day.format(sel.startLocal!),
+                                            if (sel.distanceM != null)
+                                              formatDistance(
+                                                sel.distanceM!.toDouble(),
+                                                imperial: imperial,
+                                              ),
+                                          ].join(' · '),
+                                          style: ts_body.copyWith(
+                                            color: Colors.white70,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  IconButton(
+                                    tooltip: 'Older run',
+                                    icon: const Icon(
+                                      Icons.chevron_right,
+                                      color: Colors.white,
+                                    ),
+                                    onPressed: c.hasOlderTrail
+                                        ? () => c.stepTrail(-1)
+                                        : null,
+                                  ),
+                                ],
                               ),
                               const SizedBox(height: 8),
                               Wrap(
@@ -499,11 +714,7 @@ class KennelTrailsMapPage extends StatelessWidget {
                   ),
               ],
             );
-          }),
-        ),
-      ),
-    );
-  }
+          });
 
   /// The selected start point: which run (stepping through every run that
   /// started there), and a way into it.
