@@ -210,6 +210,18 @@ The deploy commands themselves are `ask` rules in `.claude/settings.json`:
 and any push to `master` (which deploys the portal through CI). Claude Code
 stops for James's approval on each one, in every permission mode.
 
+**Never change a service's tier, size or capacity without James's approval
+(James, 2026-10-17).** This covers anything that changes what a cloud resource
+costs or how much it can do: an App Service / Functions plan (Y1, B1, EP1 …),
+a SQL database's tier or DTU/vCore size, a storage account's SKU, replication
+or access tier, a Static Web App's plan, a Key Vault SKU, Communication
+Services or OpenAI capacity, scaling out or in, autoscale rules, region or
+redundancy — and creating any new billable resource. Ask first, in the
+conversation, every time; approval for one change is not approval for the
+next. Reading a tier (`az … show`) is always fine. Why: a tier change moves
+the bill and can restart or throttle production, and James set the current
+sizes deliberately (the S0 trial and return to S1, September 2026).
+
 **Every public-web deploy gets its own version (James, 2026-10-15).** The web
 has no build number, so each deploy bumps the last part of `"version"` in
 `public-web/package.json` (and `package-lock.json`): 0.21.75 → 0.21.76, with
