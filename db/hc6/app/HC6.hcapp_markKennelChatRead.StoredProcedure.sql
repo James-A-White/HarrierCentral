@@ -22,6 +22,7 @@ AS
 --   only, so reading one of a kennel's two threads never clears the other.
 --   Before this the MERGE matched any of the user's rows for the kennel.
 --   Thread 1 is refused (errorType 13) unless HC6.UserInKennelMismanagement.
+--   The mark is HC6.nonApi_markKennelChatRead (shared with the portal).
 -- Idempotency: set-state — writes the read mark to the thread's current maximum
 -- =====================================================================
 SET NOCOUNT ON;
@@ -47,70 +48,29 @@ BEGIN
     RETURN;
 END
 
-IF (@kennelId IS NULL)
-BEGIN
-    SET @errorId = NEWID();
-    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Null kennelId', 'kennelId is required', @procName, @userId);
-    SELECT @errorId AS errorId, 2 AS errorType, 1901 AS errorCode,
-           'Missing kennel' AS errorTitle, 'A kennel must be specified.' AS errorUserMessage,
-           @procName AS errorProc;
-    RETURN;
-END
-
-DECLARE @messageType INT = HC6.KennelThreadMessageType(@kennelThread);
-IF (@messageType IS NULL
-    OR (@messageType <> 0 AND HC6.UserInKennelMismanagement(@userId, @kennelId) = 0))
-BEGIN
-    SET @errorId = NEWID();
-    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not in kennel mismanagement',
-            CONCAT('kennelId=', CAST(@kennelId AS VARCHAR(40)), ' kennelThread=', @kennelThread),
-            @procName, @userId);
-    SELECT @errorId AS errorId, 13 AS errorType, 1913 AS errorCode,
-           'Not available' AS errorTitle,
-           'This chat is only for the kennel''s mismanagement.' AS errorUserMessage,
-           @procName AS errorProc;
-    RETURN;
-END
-
+-- The mark itself is HC6.nonApi_markKennelChatRead (2026-10-16), shared with
+-- the portal's hcportal_markKennelChatRead.
+DECLARE @eTitle NVARCHAR(200), @eMsg NVARCHAR(500);
+DECLARE @hcv NVARCHAR(100) = HC6.DeviceHcVersion(@deviceId);
 BEGIN TRY
-    DECLARE @maxSeq INT;
-    DECLARE @lastMessageId UNIQUEIDENTIFIER;
+    EXEC HC6.nonApi_markKennelChatRead
+        @userId = @userId, @kennelId = @kennelId, @kennelThread = @kennelThread,
+        @hcVersion = @hcv, @callerProcName = @procName,
+        @errorCode = @errorCode OUTPUT, @errorType = @errorType OUTPUT, @errorId = @errorId OUTPUT,
+        @errorTitle = @eTitle OUTPUT, @errorUserMessage = @eMsg OUTPUT;
 
-    SELECT @maxSeq = MAX(MessageSequenceCount)
-    FROM HC.EventMessage
-    WHERE KennelId = @kennelId AND EventId IS NULL AND MessageType = @messageType AND removed = 0;
-
-    SELECT TOP 1 @lastMessageId = id
-    FROM HC.EventMessage
-    WHERE KennelId = @kennelId AND EventId IS NULL AND MessageType = @messageType AND removed = 0
-    ORDER BY createdAt DESC;
-
-    BEGIN TRANSACTION;
-
-    MERGE HC.EventMessageBadgeCounts WITH (HOLDLOCK) AS target
-    USING (SELECT @kennelId AS KennelId, @userId AS UserId, @messageType AS MessageType) AS source
-    ON (    target.KennelId    = source.KennelId
-        AND target.UserId      = source.UserId
-        AND target.EventId     IS NULL
-        AND target.MessageType = source.MessageType
-        AND target.Removed     = 0)
-    WHEN MATCHED THEN
-        UPDATE SET target.LastSequenceCount = COALESCE(@maxSeq, 0),
-                   target.LastReadAt        = GETUTCDATE(),
-                   target.LastReadMessageId = @lastMessageId
-    WHEN NOT MATCHED BY TARGET THEN
-        INSERT (UserId, KennelId, MessageType, LastSequenceCount, LastReadAt, LastReadMessageId)
-        VALUES (source.UserId, source.KennelId, source.MessageType, COALESCE(@maxSeq, 0), GETUTCDATE(), @lastMessageId);
-
-    COMMIT TRANSACTION;
-    SELECT 1 AS success;
+    -- A missing kennel or a refusal answers with the app's error envelope,
+    -- an unexpected error with { success: 0 }, as before.
+    IF (@errorCode IN (1901, 1913))
+        SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+               @eTitle AS errorTitle, @eMsg AS errorUserMessage, @procName AS errorProc;
+    ELSE
+        SELECT CASE WHEN @errorCode IS NULL THEN 1 ELSE 0 END AS success;
 END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     SET @errorId = NEWID();
     INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
-    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
+    VALUES (@errorId, @hcv, 'Unhandled error', ERROR_MESSAGE(), @procName, @userId);
     SELECT 0 AS success;
 END CATCH
