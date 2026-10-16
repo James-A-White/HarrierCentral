@@ -218,7 +218,11 @@ SELECT
     h.PublicHasherId                         AS UserId,
     h.DisplayName                            AS UserDisplayName,
     h.Photo                                  AS UserPhoto,
-    h.DisplayName + ' - ' + msg.MessageTitle AS MessageTitle,
+    -- The push title: "<sender> - <title>", or the sender alone when the
+    -- message has no title (every app post and every reminder) — it read
+    -- "Harrier Central -" until 2026-10-16.
+    CASE WHEN LEN(COALESCE(msg.MessageTitle, '')) = 0 THEN h.DisplayName
+         ELSE h.DisplayName + ' - ' + msg.MessageTitle END AS MessageTitle,
     -- The preview, not the raw URL: the shim uses this as the push body.
     HC6.ChatMessagePreview(msg.MessageKind, msg.MessageContent) AS MessageContent,
     msg.MessageKind                          AS MessageKind,
