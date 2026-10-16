@@ -1,7 +1,9 @@
 CREATE OR ALTER PROCEDURE [HC6].[hcapp_markKennelChatRead]
     @deviceId    UNIQUEIDENTIFIER = NULL,
     @accessToken NVARCHAR(1000)   = NULL,
-    @kennelId    UNIQUEIDENTIFIER = NULL
+    @kennelId    UNIQUEIDENTIFIER = NULL,
+    -- 0 the general chat, 1 the private Mismanagement chat (E9.F1.S33).
+    @kennelThread SMALLINT        = 0
 AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_markKennelChatRead
@@ -15,6 +17,12 @@ AS
 -- Created: 2026-07-06
 -- HC5 Source: none (new — kennel chat, design of record)
 -- Breaking Changes: none
+--   2026-10-16 (E9.F1.S33): optional @kennelThread. The read mark is the
+--   row for (UserId, KennelId, MessageType) and the max is of that thread
+--   only, so reading one of a kennel's two threads never clears the other.
+--   Before this the MERGE matched any of the user's rows for the kennel.
+--   Thread 1 is refused (errorType 13) unless HC6.UserInKennelMismanagement.
+-- Idempotency: set-state — writes the read mark to the thread's current maximum
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -50,33 +58,51 @@ BEGIN
     RETURN;
 END
 
+DECLARE @messageType INT = HC6.KennelThreadMessageType(@kennelThread);
+IF (@messageType IS NULL
+    OR (@messageType <> 0 AND HC6.UserInKennelMismanagement(@userId, @kennelId) = 0))
+BEGIN
+    SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not in kennel mismanagement',
+            CONCAT('kennelId=', CAST(@kennelId AS VARCHAR(40)), ' kennelThread=', @kennelThread),
+            @procName, @userId);
+    SELECT @errorId AS errorId, 13 AS errorType, 1913 AS errorCode,
+           'Not available' AS errorTitle,
+           'This chat is only for the kennel''s mismanagement.' AS errorUserMessage,
+           @procName AS errorProc;
+    RETURN;
+END
+
 BEGIN TRY
     DECLARE @maxSeq INT;
     DECLARE @lastMessageId UNIQUEIDENTIFIER;
 
     SELECT @maxSeq = MAX(MessageSequenceCount)
     FROM HC.EventMessage
-    WHERE KennelId = @kennelId AND EventId IS NULL AND removed = 0;
+    WHERE KennelId = @kennelId AND EventId IS NULL AND MessageType = @messageType AND removed = 0;
 
     SELECT TOP 1 @lastMessageId = id
     FROM HC.EventMessage
-    WHERE KennelId = @kennelId AND EventId IS NULL AND removed = 0
+    WHERE KennelId = @kennelId AND EventId IS NULL AND MessageType = @messageType AND removed = 0
     ORDER BY createdAt DESC;
 
     BEGIN TRANSACTION;
 
     MERGE HC.EventMessageBadgeCounts WITH (HOLDLOCK) AS target
-    USING (SELECT @kennelId AS KennelId, @userId AS UserId) AS source
-    ON (    target.KennelId = source.KennelId
-        AND target.UserId   = source.UserId
-        AND target.Removed  = 0)
+    USING (SELECT @kennelId AS KennelId, @userId AS UserId, @messageType AS MessageType) AS source
+    ON (    target.KennelId    = source.KennelId
+        AND target.UserId      = source.UserId
+        AND target.EventId     IS NULL
+        AND target.MessageType = source.MessageType
+        AND target.Removed     = 0)
     WHEN MATCHED THEN
         UPDATE SET target.LastSequenceCount = COALESCE(@maxSeq, 0),
                    target.LastReadAt        = GETUTCDATE(),
                    target.LastReadMessageId = @lastMessageId
     WHEN NOT MATCHED BY TARGET THEN
-        INSERT (UserId, KennelId, LastSequenceCount, LastReadAt, LastReadMessageId)
-        VALUES (source.UserId, source.KennelId, COALESCE(@maxSeq, 0), GETUTCDATE(), @lastMessageId);
+        INSERT (UserId, KennelId, MessageType, LastSequenceCount, LastReadAt, LastReadMessageId)
+        VALUES (source.UserId, source.KennelId, source.MessageType, COALESCE(@maxSeq, 0), GETUTCDATE(), @lastMessageId);
 
     COMMIT TRANSACTION;
     SELECT 1 AS success;

@@ -2,7 +2,7 @@
   "schema": "HC6",
   "name": "hcapp_markKennelChatRead",
   "version": "1.1.0",
-  "description": "Marks a KENNEL-level chat thread as read for the calling user: upserts the (UserId, KennelId) row in HC.EventMessageBadgeCounts with the thread's current MAX(MessageSequenceCount) (0 when the thread is empty), LastReadAt and LastReadMessageId. Mirrors hcapp_markEventChatRead, but returns a bare {success} and no FCM fan-out rowset — other devices learn of the read on their next badge poll, not by silent push. Auth: HC6.ValidateAppAuth (spNumber 66, @param NULL); no permission gate — any authenticated user may mark any kennel thread read for themselves. Since 2026-10-13 its MERGE into HC.EventMessageBadgeCounts holds HOLDLOCK: the table has no unique key on (UserId, EventId, KennelId, ThreadId, MessageType), and two concurrent MERGEs could each insert a row.",
+  "description": "Marks a KENNEL-level chat thread as read for the calling user: upserts the (UserId, KennelId) row in HC.EventMessageBadgeCounts with the thread's current MAX(MessageSequenceCount) (0 when the thread is empty), LastReadAt and LastReadMessageId. Mirrors hcapp_markEventChatRead, but returns a bare {success} and no FCM fan-out rowset — other devices learn of the read on their next badge poll, not by silent push. Auth: HC6.ValidateAppAuth (spNumber 66, @param NULL); no permission gate — any authenticated user may mark any kennel thread read for themselves. Since 2026-10-13 its MERGE into HC.EventMessageBadgeCounts holds HOLDLOCK: the table has no unique key on (UserId, EventId, KennelId, ThreadId, MessageType), and two concurrent MERGEs could each insert a row. Since 2026-10-16 the read mark is per thread (MessageType), so reading one of a kennel's two threads never clears the other.",
   "parameters": [
     {
       "name": "deviceId",
@@ -24,6 +24,13 @@
       "nullable": true,
       "mapsToColumn": "EventMessageBadgeCounts.KennelId",
       "description": "Kennel whose thread (EventMessage rows with KennelId set and EventId NULL) was read. NULL: errorCode 1901, errorType 2."
+    },
+    {
+      "name": "kennelThread",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Which of the kennel's two threads (E9.F1.S33): 0 (default) the general chat, 1 the private Mismanagement chat (MessageType 100). The read mark is the (UserId, KennelId, MessageType) row and the max is of that thread only. 1 for a caller not in HC6.UserInKennelMismanagement, or an unknown value: errorCode 1913, errorType 13 (logged)."
     }
   ],
   "rowsets": [
