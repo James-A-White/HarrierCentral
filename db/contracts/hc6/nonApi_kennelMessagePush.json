@@ -1,0 +1,175 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_kennelMessagePush",
+  "version": "1.0.0",
+  "description": "The push for a kennel-thread message not posted by a client (the weekly Mismanagement reminder, E9.F1.S33), in hcapp_sendKennelMessage's three-rowset shape so the API's kennel-chat push code (SendChatNotifications, ChatPushKind.Kennel) sends it unchanged. Audience = HC6.KennelChatPushAudience, the same function the send uses. The API timer calls it once per NEW reminder (AlreadyPosted = 0); calling it again would push again. Not reachable from a client.",
+  "parameters": [
+    {
+      "name": "messageId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "A kennel-thread message (KennelId set, EventId NULL, not removed). Anything else: all three rowsets empty."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "MessageDetail",
+      "description": "As hcapp_sendKennelMessage rowset 0, including KennelThread and ThreadKind ('kennel' / 'kennelMisman'). Empty for an unknown message.",
+      "columns": [
+        {
+          "name": "MessageId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "KennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "PublicKennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Sender's PUBLIC hasher id."
+        },
+        {
+          "name": "UserDisplayName",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "UserPhoto",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "MessageTitle",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "MessageContent",
+          "type": "NVARCHAR",
+          "nullable": true,
+          "description": "HC6.ChatMessagePreview — the push body."
+        },
+        {
+          "name": "MessageKind",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "MessageReleasabilityFlags",
+          "type": "INT",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "EventChatMessageCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Always 0."
+        },
+        {
+          "name": "MessageType",
+          "type": "INT",
+          "nullable": false,
+          "description": "0 or 100."
+        },
+        {
+          "name": "KennelShortName",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": ""
+        },
+        {
+          "name": "KennelThread",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 general, 1 Mismanagement."
+        },
+        {
+          "name": "ThreadKind",
+          "type": "VARCHAR(12)",
+          "nullable": false,
+          "description": "'kennel' / 'kennelMisman'."
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "VisiblePushRecipients",
+      "description": "Bell 1 or 4.",
+      "columns": [
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Recipient hasher (internal id)."
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Device token."
+        },
+        {
+          "name": "BadgeTotal",
+          "type": "INT",
+          "nullable": true,
+          "description": "HC6.UserUnreadChatTotal for the app icon; NULL below HC6.MinBuildForIconBadge."
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "SilentPushRecipients",
+      "description": "Bell 3 (silver bell).",
+      "columns": [
+        {
+          "name": "UserId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Recipient hasher (internal id)."
+        },
+        {
+          "name": "FcmToken",
+          "type": "NVARCHAR",
+          "nullable": false,
+          "description": "Device token."
+        },
+        {
+          "name": "BadgeTotal",
+          "type": "INT",
+          "nullable": true,
+          "description": "HC6.UserUnreadChatTotal for the app icon; NULL below HC6.MinBuildForIconBadge."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "None: read-only. THROWs after logging to HC.ErrorLog on error."
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
