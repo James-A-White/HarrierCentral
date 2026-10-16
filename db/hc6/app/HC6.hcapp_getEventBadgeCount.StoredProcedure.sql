@@ -62,6 +62,12 @@ AS
 -- Breaking Changes:
 --   Token standardised to DeviceSecret only (HC5 had dead code for
 --     event-bound compound token that was commented out).
+--   2026-10-16 (E9.F1.S33): list mode gains a LAST column, KennelThread
+--     (0 general kennel chat, 1 its private Mismanagement chat, NULL for
+--     every other thread); Mismanagement rows go only to app builds >=
+--     HC6.MinBuildForKennelMismanagement and never to the web. Mark all
+--     read advances and creates read marks per kennel THREAD (MessageType).
+-- Idempotency: set-state — mark all read writes each read mark to its thread's current maximum
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -134,11 +140,14 @@ BEGIN
                     (SELECT MAX(em.MessageSequenceCount)
                      FROM HC.EventMessage em
                      WHERE em.EventId = embc.EventId AND em.Removed = 0)
+                -- A kennel row is ONE of the kennel's two threads, by
+                -- MessageType (E9.F1.S33: 0 general, 100 Mismanagement).
                 WHEN embc.KennelId IS NOT NULL THEN
                     (SELECT MAX(em.MessageSequenceCount)
                      FROM HC.EventMessage em
                      WHERE em.KennelId = embc.KennelId
-                       AND em.EventId IS NULL AND em.Removed = 0)
+                       AND em.EventId IS NULL AND em.MessageType = embc.MessageType
+                       AND em.Removed = 0)
                 -- A ROOM row: EventId and KennelId are BOTH NULL and the room
                 -- is identified by MessageType alone. It used to fall into the
                 -- kennel ELSE above, where `em.KennelId = embc.KennelId` is
@@ -166,24 +175,31 @@ BEGIN
     -- them in), so the UPDATE above can't clear them. Create a caught-up row for
     -- every followed kennel thread that has unseen messages but no row yet, so
     -- "clear all" actually sticks across the next server fetch.
-    INSERT HC.EventMessageBadgeCounts (UserId, KennelId, LastSequenceCount, LastReadAt)
-    SELECT @userId, t.KennelId, t.MaxSeq, GETUTCDATE()
+    -- Per kennel THREAD (E9.F1.S33): the general chat (MessageType 0) for any
+    -- HasherKennelMap row, the Mismanagement chat (100) only for its members.
+    INSERT HC.EventMessageBadgeCounts (UserId, KennelId, MessageType, LastSequenceCount, LastReadAt)
+    SELECT @userId, t.KennelId, t.MessageType, t.MaxSeq, GETUTCDATE()
     FROM (
-        SELECT em.KennelId, MAX(em.MessageSequenceCount) AS MaxSeq
+        SELECT em.KennelId, em.MessageType, MAX(em.MessageSequenceCount) AS MaxSeq
         FROM HC.EventMessage em
-        WHERE em.KennelId IS NOT NULL AND em.EventId IS NULL AND em.Removed = 0
-        GROUP BY em.KennelId
+        WHERE em.KennelId IS NOT NULL AND em.EventId IS NULL AND em.MessageType IN (0, 100)
+          AND em.Removed = 0
+        GROUP BY em.KennelId, em.MessageType
     ) AS t
     -- EXISTS (not JOIN) so a duplicate HasherKennelMap row can't fan out into
     -- duplicate badge inserts for the same kennel.
     WHERE EXISTS (
         SELECT 1 FROM HC.HasherKennelMap hkm
-        WHERE hkm.KennelId = t.KennelId AND hkm.UserId = @userId)
+        WHERE hkm.KennelId = t.KennelId AND hkm.UserId = @userId
+          AND (t.MessageType = 0
+               OR (hkm.removed = 0
+                   AND (ISNULL(hkm.MismanagementRoles, 0) <> 0 OR ISNULL(hkm.AppAccessFlags, 0) <> 0))))
       AND NOT EXISTS (
         SELECT 1 FROM HC.EventMessageBadgeCounts embc WITH (UPDLOCK, HOLDLOCK)
         WHERE embc.UserId = @userId
           AND embc.KennelId = t.KennelId
-          AND embc.EventId IS NULL);
+          AND embc.EventId IS NULL
+          AND embc.MessageType = t.MessageType);
 
     -- Rooms need the same caught-up row, for the same reason kennels do: a
     -- hasher who has never opened a role room has NO badge row, so the UPDATE
@@ -327,9 +343,17 @@ SELECT BadgeCount, PublicEventId, EventId, EventName, EventNumber,
        ThreadId, OtherPublicHasherId, OtherDisplayName, OtherPhoto,
        -- Internal id, for the phone's hasher lists (E9.F1.S32). A browser
        -- holds only public ids and never gets it.
-       CASE WHEN @isWeb = 1 THEN NULL ELSE OtherHasherId END AS OtherHasherId
+       CASE WHEN @isWeb = 1 THEN NULL ELSE OtherHasherId END AS OtherHasherId,
+       -- 0 a kennel's general chat, 1 its Mismanagement chat, NULL otherwise
+       -- (E9.F1.S33). The two kennel rows share PublicKennelId.
+       KennelThread
 FROM HC6.UserUnreadChatThreads(@userId)
-WHERE ThreadId IS NULL OR @isWeb = 1 OR @dmBuild >= HC6.MinBuildForDmPush();
+WHERE (ThreadId IS NULL OR @isWeb = 1 OR @dmBuild >= HC6.MinBuildForDmPush())
+  -- A Mismanagement row only to builds that can open it (an older one
+  -- would list it as a second copy of the general chat), and never to the
+  -- web, which has no Mismanagement chat.
+  AND (ISNULL(KennelThread, 0) = 0
+       OR (@isWeb = 0 AND @dmBuild >= HC6.MinBuildForKennelMismanagement()));
 
 END TRY
 BEGIN CATCH

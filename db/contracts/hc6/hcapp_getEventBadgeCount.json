@@ -252,6 +252,12 @@
           "type": "UNIQUEIDENTIFIER",
           "nullable": true,
           "description": "DMs only: the other hasher's INTERNAL id, for the phone's hasher lists (E9.F1.S32, 2026-10-12). NULL for a browser."
+        },
+        {
+          "name": "KennelThread",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "0 a kennel's general chat, 1 its private Mismanagement chat (E9.F1.S33, 2026-10-16), NULL for run, room and DM threads. The two kennel rows share PublicKennelId. Mismanagement rows only to app builds >= HC6.MinBuildForKennelMismanagement, never to the web."
         }
       ]
     }

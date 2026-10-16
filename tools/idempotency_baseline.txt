@@ -17,7 +17,6 @@ NO-DECLARATION hcapp_endDirectMessage
 NO-DECLARATION hcapp_findRunForTrack
 NO-DECLARATION hcapp_gdprDelete
 NO-DECLARATION hcapp_getDirectMessages
-NO-DECLARATION hcapp_getEventBadgeCount
 NO-DECLARATION hcapp_getEventMessages
 NO-DECLARATION hcapp_getRoomMessages
 NO-DECLARATION hcapp_getRunEmailContext
