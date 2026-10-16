@@ -2,7 +2,7 @@
   "schema": "HC6",
   "name": "hcapp_setChatPin",
   "version": "1.1.0",
-  "description": "Pins or unpins ONE chat for the calling hasher (E9.F1.S8) — a run, a kennel, a global room or a direct message; one SP because the pin icon is one control. Exactly one of @eventId / @kennelId / @roomType / @threadId names the chat. Auth: HC6.ValidateAppAuth (spNumber 108, @param NULL). Permission gate: the hasher may only pin their OWN chats — @userId comes from the token, never a parameter. A room additionally passes HC6.UserMayEnterChatRoom (so a pin cannot probe which rooms exist); a DM requires the caller's own HasherFriendMap row for the thread (never created here). Run and kennel chats need no further gate: a pin is a private preference. Storage differs by kind, deliberately: run → HasherEventMap.Pinned 0/1; kennel → HasherKennelMap.Pinned 0/1 (NULL = default, home kennel); DM → HasherFriendMap.Pinned on the caller's row; room → a bit in HC.Hasher.UnpinnedMismanagementRooms / UnpinnedAppAccessRooms, where a SET bit means 'turned off' (the mirrors store deviations), so pinning CLEARS the catalog's GrantMask bit and unpinning SETS it. MISSING HasherEventMap / HasherKennelMap rows ARE CREATED (James, 2026-09-14) in the neutral shape — only the keys and Pinned supplied, AttendenceState 0 / RsvpState 0 / IsHare 0 — which history and run counts ignore (both filter AttendenceState >= 20). Write SP: returns the standard success envelope. Since 2026-10-13 a kennel pin that has to create the HasherKennelMap row creates it with Following = 0 and MemberSince NULL (as hcapp_sendKennelMessage), under UPDLOCK/HOLDLOCK.",
+  "description": "Pins or unpins ONE chat for the calling hasher (E9.F1.S8) — a run, a kennel, a global room or a direct message; one SP because the pin icon is one control. Exactly one of @eventId / @kennelId / @roomType / @threadId names the chat. Auth: HC6.ValidateAppAuth (spNumber 108, @param NULL). Permission gate: the hasher may only pin their OWN chats — @userId comes from the token, never a parameter. A room additionally passes HC6.UserMayEnterChatRoom (so a pin cannot probe which rooms exist); a DM requires the caller's own HasherFriendMap row for the thread (never created here). Run and kennel chats need no further gate: a pin is a private preference. Storage differs by kind, deliberately: run → HasherEventMap.Pinned 0/1; kennel → HasherKennelMap.Pinned 0/1 (NULL = default, home kennel); DM → HasherFriendMap.Pinned on the caller's row; room → a bit in HC.Hasher.UnpinnedMismanagementRooms / UnpinnedAppAccessRooms, where a SET bit means 'turned off' (the mirrors store deviations), so pinning CLEARS the catalog's GrantMask bit and unpinning SETS it. MISSING HasherEventMap / HasherKennelMap rows ARE CREATED (James, 2026-09-14) in the neutral shape — only the keys and Pinned supplied, AttendenceState 0 / RsvpState 0 / IsHare 0 — which history and run counts ignore (both filter AttendenceState >= 20). Write SP: returns the standard success envelope. Since 2026-10-13 a kennel pin that has to create the HasherKennelMap row creates it with Following = 0 and MemberSince NULL (as hcapp_sendKennelMessage), under UPDLOCK/HOLDLOCK. Since 2026-10-16 a kennel's Mismanagement chat (@kennelThread 1) pins on its own, independently of the general chat.",
   "parameters": [
     {
       "name": "deviceId",
@@ -52,6 +52,13 @@
       "nullable": true,
       "mapsToColumn": "HasherEventMap.Pinned",
       "description": "1 pin, 0 unpin. Required: NULL or any other value is refused. Also maps to HasherKennelMap.Pinned and HasherFriendMap.Pinned, and (inverted) to the Hasher.Unpinned*Rooms bit."
+    },
+    {
+      "name": "kennelThread",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "With @kennelId (E9.F1.S33): 0 (default) the kennel's general chat, pinned on HasherKennelMap.Pinned; 1 its private Mismanagement chat, pinned on the caller's EventMessageBadgeCounts row for (KennelId, MessageType 100), created if absent. 1 for a caller not in HC6.UserInKennelMismanagement, or an unknown value: Success 0 (logged)."
     }
   ],
   "rowsets": [

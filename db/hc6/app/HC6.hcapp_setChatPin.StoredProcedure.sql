@@ -6,7 +6,10 @@ CREATE OR ALTER PROCEDURE [HC6].[hcapp_setChatPin]
     @kennelId    UNIQUEIDENTIFIER = NULL,
     @roomType    INT              = NULL,
     @threadId    UNIQUEIDENTIFIER = NULL,   -- a direct message (2026-10-01)
-    @pinned      SMALLINT         = NULL   -- 1 pin, 0 unpin
+    @pinned      SMALLINT         = NULL,  -- 1 pin, 0 unpin
+    -- With @kennelId: 0 the general chat, 1 the private Mismanagement chat
+    -- (E9.F1.S33) — each pinned on its own.
+    @kennelThread SMALLINT        = 0
 AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_setChatPin
@@ -17,6 +20,9 @@ AS
 --   db/hc6/app/archive/2026-09-15_chat_pinning.sql for the reasoning:
 --     run     HasherEventMap.Pinned    0/1
 --     kennel  HasherKennelMap.Pinned   0/1, NULL = default (home kennel)
+--     kennel Mismanagement chat (@kennelThread 1, 2026-10-16)
+--             EventMessageBadgeCounts.Pinned on the caller's row for
+--             (KennelId, MessageType 100); NULL = unpinned
 --     room    HC.Hasher.Unpinned*Rooms bit SET means "turned off"
 --     DM      HasherFriendMap.Pinned   0/1 on the caller's own row for the
 --             thread (2026-10-01) — never created here: no row, no DM
@@ -32,6 +38,7 @@ AS
 --   history and run counts both filter on AttendenceState >= 20, so a
 --   neutral row is invisible to both.
 --
+-- Idempotency: set-state — writes the pin (1/0), never toggles it
 -- Authorization: a hasher may only pin their OWN chats, and @userId comes
 --   from the token, never from a parameter — so there is nothing to spoof.
 --   Rooms additionally go through HC6.UserMayEnterChatRoom, the same gate as
@@ -98,6 +105,19 @@ BEGIN
     RETURN;
 END
 
+IF (@kennelId IS NOT NULL
+    AND (HC6.KennelThreadMessageType(@kennelThread) IS NULL
+         OR (COALESCE(@kennelThread, 0) <> 0 AND HC6.UserInKennelMismanagement(@userId, @kennelId) = 0)))
+BEGIN
+    SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not in kennel mismanagement',
+            CONCAT('kennelId=', CAST(@kennelId AS VARCHAR(40)), ' kennelThread=', @kennelThread),
+            @procName, @userId);
+    SELECT 0 AS Success, 'This chat is only for the kennel''s mismanagement.' AS ErrorMessage;
+    RETURN;
+END
+
 IF (@roomType IS NOT NULL AND HC6.UserMayEnterChatRoom(@userId, @roomType) = 0)
 BEGIN
     SET @errorId = NEWID();
@@ -133,7 +153,7 @@ BEGIN TRY
     -- NULL: once someone has touched the control, their choice is theirs
     -- and must not silently revert if the home kennel changes.
     -- ---------------------------------------------------------------
-    IF (@kennelId IS NOT NULL)
+    IF (@kennelId IS NOT NULL AND COALESCE(@kennelThread, 0) = 0)
     BEGIN
         -- A new row (2026-10-13) is created the way posting in the kennel's
         -- chat creates one (hcapp_sendKennelMessage): Following = 0 and
@@ -147,6 +167,24 @@ BEGIN TRY
         ELSE
             INSERT HC.HasherKennelMap (UserId, KennelId, Pinned, Following, MemberSince)
             VALUES (@userId, @kennelId, @pinned, 0, NULL);
+    END
+
+    -- ---------------------------------------------------------------
+    -- A kennel's MISMANAGEMENT chat (E9.F1.S33): its own pin on the
+    -- caller's read-mark row for that thread, made if they have none yet
+    -- (LastSequenceCount 0 reads exactly as no row: everything unread).
+    -- ---------------------------------------------------------------
+    IF (@kennelId IS NOT NULL AND COALESCE(@kennelThread, 0) <> 0)
+    BEGIN
+        DECLARE @mt INT = HC6.KennelThreadMessageType(@kennelThread);
+        MERGE HC.EventMessageBadgeCounts WITH (HOLDLOCK) AS t
+        USING (SELECT @userId AS UserId, @kennelId AS KennelId, @mt AS MessageType) AS s
+        ON (t.UserId = s.UserId AND t.KennelId = s.KennelId AND t.EventId IS NULL
+            AND t.ThreadId IS NULL AND t.MessageType = s.MessageType)
+        WHEN MATCHED THEN UPDATE SET t.Pinned = @pinned
+        WHEN NOT MATCHED BY TARGET THEN
+            INSERT (UserId, KennelId, MessageType, LastSequenceCount, Pinned)
+            VALUES (s.UserId, s.KennelId, s.MessageType, 0, @pinned);
     END
 
     -- ---------------------------------------------------------------

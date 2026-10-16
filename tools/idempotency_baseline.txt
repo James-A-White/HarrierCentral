@@ -37,7 +37,6 @@ NO-DECLARATION hcapp_sendDirectMessage
 NO-DECLARATION hcapp_sendEventMessage
 NO-DECLARATION hcapp_sendRoomMessage
 NO-DECLARATION hcapp_setBulkEventAttendence
-NO-DECLARATION hcapp_setChatPin
 NO-DECLARATION hcapp_setChatRoomParticipation
 NO-DECLARATION hcapp_setDirectMessageMute
 NO-DECLARATION hcapp_setDirectMessagePreference
