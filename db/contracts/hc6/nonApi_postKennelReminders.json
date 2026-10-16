@@ -1,0 +1,81 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_postKennelReminders",
+  "version": "1.0.0",
+  "description": "Weekly reminder in each kennel's private Mismanagement chat (E9.F1.S33, from BT-15). Posts Monday 09:00 London (London hour checked here; the API timer runs hourly on Mondays) one message per kennel with something waiting — today: photos to review (HC.KennelPhotos Status 1: count and oldest) — from the Harrier Central system hasher, MessageType 100. Only kennels with at least one Mismanagement member. The message id is a GUID derived from (kennel, ISO week), so a rerun the same week finds it and posts nothing. Called by the API timer only; not reachable from a client (nonApi_).",
+  "parameters": [
+    {
+      "name": "force",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "1 = post now whatever the day and hour (tests). Default 0."
+    },
+    {
+      "name": "onlyKennelId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "One kennel only (tests). NULL = every kennel due."
+    },
+    {
+      "name": "dryRun",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "1 = return what would be posted (AlreadyPosted says if it already is) and write nothing."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Reminders",
+      "description": "One row per kennel due this week, ordered by KennelShortName; empty outside Monday 09:xx London unless @force.",
+      "columns": [
+        {
+          "name": "MessageId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The week's send id for the kennel."
+        },
+        {
+          "name": "KennelId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "Kennel."
+        },
+        {
+          "name": "KennelShortName",
+          "type": "NVARCHAR(25)",
+          "nullable": true,
+          "description": "Kennel short name."
+        },
+        {
+          "name": "MessageContent",
+          "type": "NVARCHAR(4000)",
+          "nullable": false,
+          "description": "The reminder text."
+        },
+        {
+          "name": "AlreadyPosted",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 = this week's reminder already existed: the caller must NOT push it again."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "INSERT HC.EventMessage (MessageType 100, sender Harrier Central a7c0e6f2-5b1d-4c8e-9f3a-0d2b6e4c1a01) per kennel not yet posted this week, one transaction per kennel, existence checked WITH (UPDLOCK, HOLDLOCK)",
+    "INSERT LOG.GeneralLog one summary row per run (StrParam1 = ISO week)",
+    "THROWs after logging to HC.ErrorLog on any error (and when the Harrier Central hasher is missing)"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
