@@ -15,7 +15,12 @@ AS
 --   messages, and the platform-wide rooms. See hcapp_getEventBadgeCount for
 --   the columns and the unread rules (unread before first open; ignore (2)
 --   forces 0; muted (3) still counts).
--- Returns: one row per thread, the hcapp_getEventBadgeCount Mode 3 shape.
+-- Returns: one row per thread, the hcapp_getEventBadgeCount Mode 3 shape,
+--   plus KennelThread (2026-10-16, E9.F1.S33): NULL for a run, room or DM,
+--   0 a kennel's general chat, 1 its private Mismanagement chat. The two
+--   kennel threads share KennelId and PublicKennelId and are told apart by
+--   this column alone. The general arms read MessageType 0 ONLY, so a
+--   private message can never count or list as general chat.
 -- Author: Harrier Central
 -- Created: 2026-09-28
 -- =====================================================================
@@ -65,7 +70,8 @@ SELECT
     CAST(NULL AS UNIQUEIDENTIFIER) AS OtherPublicHasherId,
     CAST(NULL AS NVARCHAR(250))    AS OtherDisplayName,
     CAST(NULL AS NVARCHAR(500))    AS OtherPhoto,
-    CAST(NULL AS UNIQUEIDENTIFIER) AS OtherHasherId
+    CAST(NULL AS UNIQUEIDENTIFIER) AS OtherHasherId,
+    CAST(NULL AS SMALLINT)        AS KennelThread
 FROM (
     SELECT em.EventId,
            MAX(em.MessageSequenceCount) AS MaxSeq,
@@ -177,14 +183,16 @@ SELECT
     CAST(NULL AS UNIQUEIDENTIFIER) AS OtherPublicHasherId,
     CAST(NULL AS NVARCHAR(250))    AS OtherDisplayName,
     CAST(NULL AS NVARCHAR(500))    AS OtherPhoto,
-    CAST(NULL AS UNIQUEIDENTIFIER) AS OtherHasherId
+    CAST(NULL AS UNIQUEIDENTIFIER) AS OtherHasherId,
+    CAST(0 AS SMALLINT)        AS KennelThread
 FROM (
     SELECT em.KennelId,
            MAX(em.MessageSequenceCount) AS MaxSeq,
            COUNT(*)                     AS MsgCount,
            MAX(em.createdAt)            AS LastMessageAt
     FROM HC.EventMessage em
-    WHERE em.KennelId IS NOT NULL AND em.EventId IS NULL AND em.Removed = 0
+    WHERE em.KennelId IS NOT NULL AND em.EventId IS NULL AND em.MessageType = 0
+      AND em.Removed = 0
     GROUP BY em.KennelId
 ) AS t
 INNER JOIN HC.Kennel k ON k.id = t.KennelId
@@ -208,7 +216,7 @@ CROSS APPLY (
            OR h.IsHomeKennel = 1
            OR h.Pinned = 1
            OR EXISTS (SELECT 1 FROM HC.EventMessage p
-                      WHERE p.KennelId = t.KennelId AND p.EventId IS NULL
+                      WHERE p.KennelId = t.KennelId AND p.EventId IS NULL AND p.MessageType = 0
                         AND p.UserId = @userId AND p.Removed = 0))
     ORDER BY h.Following DESC, h.Pinned DESC
 ) AS hkm
@@ -216,6 +224,7 @@ OUTER APPLY (
     SELECT TOP 1 b.LastSequenceCount
     FROM HC.EventMessageBadgeCounts b
     WHERE b.KennelId = t.KennelId AND b.UserId = @userId AND b.EventId IS NULL
+      AND b.MessageType = 0
     ORDER BY b.Removed, b.LastSequenceCount DESC
 ) AS embc
 OUTER APPLY (
@@ -226,7 +235,7 @@ OUTER APPLY (
     -- key and finds nothing.
     SELECT COUNT(*) AS N
     FROM HC.EventMessage bm
-    WHERE bm.KennelId = t.KennelId AND bm.EventId IS NULL
+    WHERE bm.KennelId = t.KennelId AND bm.EventId IS NULL AND bm.MessageType = 0
       AND bm.Removed = 0
       AND bm.MessageSequenceCount > COALESCE(embc.LastSequenceCount, 0)
       AND EXISTS (SELECT 1 FROM HC.HasherFriendMap blk
@@ -270,7 +279,8 @@ SELECT
     CAST(NULL AS UNIQUEIDENTIFIER) AS OtherPublicHasherId,
     CAST(NULL AS NVARCHAR(250))    AS OtherDisplayName,
     CAST(NULL AS NVARCHAR(500))    AS OtherPhoto,
-    CAST(NULL AS UNIQUEIDENTIFIER) AS OtherHasherId
+    CAST(NULL AS UNIQUEIDENTIFIER) AS OtherHasherId,
+    CAST(0 AS SMALLINT)        AS KennelThread
 FROM HC.Kennel k
 CROSS APPLY (
     -- TOP 1 for the same reason as above: HasherKennelMap is not guaranteed
@@ -286,7 +296,87 @@ WHERE k.Removed = 0
             ELSE 0 END) = 1
   AND NOT EXISTS (
         SELECT 1 FROM HC.EventMessage em
-        WHERE em.KennelId = k.id AND em.EventId IS NULL AND em.Removed = 0)
+        WHERE em.KennelId = k.id AND em.EventId IS NULL AND em.MessageType = 0
+          AND em.Removed = 0)
+
+UNION ALL
+
+-- ---------------------------------------------------------------
+-- KENNEL MISMANAGEMENT threads (E9.F1.S33, James 2026-10-16): each kennel's
+-- private chat for its office-holders and admins, MessageType 100. Driven
+-- from the hasher's OWN HasherKennelMap rows that make them a member — the
+-- set-based form of HC6.UserInKennelMismanagement — and vanishes the moment
+-- they lose the office. LISTED when it has a message, when they hold an
+-- actual office there (MismanagementRoles), or when they pinned it: an
+-- admin FLAG alone does not list an empty thread, because the people who
+-- set up or import kennels hold flags on hundreds (Opee 199, Tuna Melt 394
+-- on 2026-10-16) and their Chats would fill with empty threads. They are
+-- still members — the kennel page opens it, and it lists the moment
+-- something is posted (a weekly reminder). Unread rules as the general
+-- kennel thread (no read mark = all unread; bell off (2) forces 0; blocked
+-- senders don't count). Pinned is its OWN pin
+-- (EventMessageBadgeCounts.Pinned on this thread's row): NULL = unpinned.
+-- ---------------------------------------------------------------
+SELECT
+    CASE WHEN m.KennelNotificationPreference = 2 THEN 0
+         ELSE ISNULL(t.MaxSeq, 0) - ISNULL(embc.LastSequenceCount, 0) - blocked.N
+    END                                            AS BadgeCount,
+    CAST(NULL AS UNIQUEIDENTIFIER)                 AS PublicEventId,
+    CAST(NULL AS UNIQUEIDENTIFIER)                 AS EventId,
+    k.KennelName                                   AS EventName,
+    0                                              AS EventNumber,
+    CAST(NULL AS DATETIMEOFFSET(7))                AS EventStartDatetimeGmt,
+    CAST(NULL AS NVARCHAR(500))                    AS EventImage,
+    k.id                                           AS KennelId,
+    k.PublicKennelId                               AS PublicKennelId,
+    k.KennelShortName,
+    k.KennelLogo,
+    ISNULL(t.MsgCount, 0)                          AS MessageCount,
+    t.LastMessageAt                                AS LastMessageAt,
+    ISNULL(embc.Pinned, 0)                         AS Pinned,
+    CAST(NULL AS INT)                              AS RoomType,
+    CAST(NULL AS NVARCHAR(500))                    AS RoomIcon,
+    CAST(NULL AS UNIQUEIDENTIFIER) AS ThreadId,
+    CAST(NULL AS UNIQUEIDENTIFIER) AS OtherPublicHasherId,
+    CAST(NULL AS NVARCHAR(250))    AS OtherDisplayName,
+    CAST(NULL AS NVARCHAR(500))    AS OtherPhoto,
+    CAST(NULL AS UNIQUEIDENTIFIER) AS OtherHasherId,
+    CAST(1 AS SMALLINT)            AS KennelThread
+FROM HC.Kennel k
+CROSS APPLY (
+    -- TOP 1: HasherKennelMap is not guaranteed unique per (user, kennel).
+    SELECT TOP 1 h.KennelNotificationPreference, ISNULL(h.MismanagementRoles, 0) AS Roles
+    FROM HC.HasherKennelMap h
+    WHERE h.KennelId = k.id AND h.UserId = @userId AND h.removed = 0
+      AND (ISNULL(h.MismanagementRoles, 0) <> 0 OR ISNULL(h.AppAccessFlags, 0) <> 0)
+    ORDER BY ISNULL(h.MismanagementRoles, 0) DESC, h.KennelNotificationPreference DESC
+) AS m
+OUTER APPLY (
+    SELECT MAX(em.MessageSequenceCount) AS MaxSeq,
+           COUNT(*)                     AS MsgCount,
+           MAX(em.createdAt)            AS LastMessageAt
+    FROM HC.EventMessage em
+    WHERE em.KennelId = k.id AND em.EventId IS NULL AND em.MessageType = 100
+      AND em.Removed = 0
+) AS t
+OUTER APPLY (
+    SELECT TOP 1 b.LastSequenceCount, b.Pinned
+    FROM HC.EventMessageBadgeCounts b
+    WHERE b.KennelId = k.id AND b.UserId = @userId AND b.EventId IS NULL
+      AND b.ThreadId IS NULL AND b.MessageType = 100
+    ORDER BY b.Removed, b.LastSequenceCount DESC
+) AS embc
+OUTER APPLY (
+    SELECT COUNT(*) AS N
+    FROM HC.EventMessage bm
+    WHERE bm.KennelId = k.id AND bm.EventId IS NULL AND bm.MessageType = 100
+      AND bm.Removed = 0
+      AND bm.MessageSequenceCount > ISNULL(embc.LastSequenceCount, 0)
+      AND EXISTS (SELECT 1 FROM HC.HasherFriendMap blk
+                  WHERE blk.UserId = @userId AND blk.Friend_UserId = bm.UserId AND blk.Ignore = 1)
+) AS blocked
+WHERE k.Removed = 0
+  AND (ISNULL(t.MsgCount, 0) > 0 OR m.Roles <> 0 OR embc.Pinned = 1)
 
 UNION ALL
 
@@ -331,7 +421,8 @@ SELECT
     CAST(NULL AS UNIQUEIDENTIFIER) AS OtherPublicHasherId,
     CAST(NULL AS NVARCHAR(250))    AS OtherDisplayName,
     CAST(NULL AS NVARCHAR(500))    AS OtherPhoto,
-    CAST(NULL AS UNIQUEIDENTIFIER) AS OtherHasherId
+    CAST(NULL AS UNIQUEIDENTIFIER) AS OtherHasherId,
+    CAST(NULL AS SMALLINT)        AS KennelThread
 FROM HC6.ChatRoomCatalog() c
 LEFT JOIN HC.Hasher hs ON hs.id = @userId
 OUTER APPLY (
@@ -404,7 +495,8 @@ SELECT
     -- hashers on the phone is keyed by it (the user sync's hasherId), so the
     -- DM bubble on those rows can say friend / talked / not yet. The web is
     -- never sent it (hcapp_getEventBadgeCount blanks it for a browser).
-    o.id                                           AS OtherHasherId
+    o.id                                           AS OtherHasherId,
+    CAST(NULL AS SMALLINT)        AS KennelThread
 FROM HC.HasherFriendMap f
 INNER JOIN HC.Hasher o ON o.id = f.Friend_UserId AND o.Removed = 0
 OUTER APPLY (
