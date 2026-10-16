@@ -135,7 +135,7 @@ BEGIN TRY
            CASE WHEN TRY_CAST(device.BuildNumber AS INT) >= HC6.MinBuildForIconBadge()
                 THEN bt.BadgeTotal END AS BadgeTotal
     FROM HC.Device device
-    CROSS APPLY HC6.UserUnreadChatTotal(@userId) bt
+    CROSS APPLY HC6.UserUnreadChatTotal(@userId, device.FcmToken) bt
     WHERE device.UserId    = @userId
       AND device.id       != @deviceId
       AND device.FcmToken IS NOT NULL;
