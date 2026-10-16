@@ -27,6 +27,7 @@ AS
 --          rowset 2 — { reviewerEmail } (the API strips it)
 -- Author: Harrier Central
 -- Created: 2026-09-29
+-- 2026-10-16 (E9.F1.S33): A message in a kennel’s Mismanagement chat can be reported only by its members (HC6.UserInKennelMismanagement); to anyone else it is ’no longer in the chat’. The thread label says Mismanagement chat (2026-10-16, E9.F1.S33).
 -- HC5 Source: none (new)
 -- Breaking Changes: none
 -- =====================================================================
@@ -59,6 +60,12 @@ SELECT @senderId = em.UserId, @eventId = em.EventId, @kennelId = em.KennelId, @t
        @kind = em.MessageKind, @content = em.MessageContent, @messageAt = em.createdAt
 FROM HC.EventMessage em WHERE em.id = @messageId;
 
+-- A kennel's private Mismanagement chat (E9.F1.S33) is reported only by its
+-- members: to anyone else the message does not exist, and is answered so.
+IF (@senderId IS NOT NULL AND @eventId IS NULL AND @kennelId IS NOT NULL AND @roomType <> 0
+    AND HC6.UserInKennelMismanagement(@userId, @kennelId) = 0)
+    SET @senderId = NULL;
+
 IF (@senderId IS NULL OR @senderId = @userId OR LEN(COALESCE(@reason, '')) > 1000)
 BEGIN
     SET @errorId = NEWID();
@@ -80,7 +87,9 @@ DECLARE @threadLabel NVARCHAR(400) =
     CASE WHEN @eventId IS NOT NULL THEN
              (SELECT k.KennelShortName + N' — ' + e.EventName FROM HC.Event e JOIN HC.Kennel k ON k.id = e.KennelId WHERE e.id = @eventId)
          WHEN @kennelId IS NOT NULL THEN
-             (SELECT k.KennelShortName + N' kennel chat' FROM HC.Kennel k WHERE k.id = @kennelId)
+             (SELECT k.KennelShortName + CASE WHEN @roomType = 0 THEN N' kennel chat'
+                                              ELSE N' Mismanagement chat' END
+              FROM HC.Kennel k WHERE k.id = @kennelId)
          WHEN @threadId IS NOT NULL THEN
              (SELECT N'DM: ' + s.DisplayName + N' ↔ ' + o.DisplayName
               FROM HC.HasherFriendMap f JOIN HC.Hasher s ON s.id = f.UserId JOIN HC.Hasher o ON o.id = f.Friend_UserId
