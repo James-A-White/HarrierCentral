@@ -734,11 +734,21 @@ class FutureRunListPageController extends GetxController {
       allPastRuns = <RunDetailsAggregate>[];
       return;
     }
-    allPastRuns = await QueryRuns.getRunDetailsAggregates(
+    final fresh = await QueryRuns.getRunDetailsAggregates(
       true,
       runsTimeScope: RunsTimeScope.past,
       runsToDisplay: RunsToDisplay.allRuns,
     );
+    // Same guard as the future list (refreshFromTable, _applyDataUpdate):
+    // never replace past runs we hold with an empty read. The past query
+    // joins the kennels and memberships, and the kennel list's pull-to-refresh
+    // deletes both before re-fetching them; a re-read in that window came
+    // back empty and stuck, so the list lost its "Past Runs" section and
+    // opened on a pull-to-refresh (James, 2026-10-15). A pull-to-refresh of
+    // this list clears allPastRuns once its fetch has landed, so a genuine
+    // "no past runs" still shows.
+    if (fresh.isEmpty && (allPastRuns?.isNotEmpty ?? false)) return;
+    allPastRuns = fresh;
   }
 
   /// filterRuns() provides a complex filtering (search) option
@@ -1186,6 +1196,9 @@ class FutureRunListPageController extends GetxController {
 
       if (fetchOk) {
         await _dropRunTableBackups(runTables);
+        // The tables are complete again, so the next read is the truth even
+        // if it is empty (see _loadPastRuns).
+        allPastRuns = null;
       } else {
         // Fetch failed after the clear — roll back so the user keeps their runs.
         await _restoreRunTables(runTables);

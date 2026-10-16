@@ -496,6 +496,13 @@ class KennelsListPageController extends GetxController {
       debugText: 'kennel_list_controller: Kennels, HKM (pull-to-refresh)',
     );
     await refreshFromTable(true);
+    // The runs list reads these two tables too (followed kennels decide which
+    // past runs show), and anything it read while they were empty is wrong.
+    // Re-read it now they are back (James, 2026-10-15: past runs vanished
+    // after this refresh).
+    if (Get.isRegistered<FutureRunListPageController>()) {
+      await Get.find<FutureRunListPageController>().reloadAndFlash();
+    }
   }
 
   Future<void> navigateToKennelAdmin(BuildContext context, int index) async {
