@@ -19,7 +19,7 @@ CREATE TABLE [HC].[EmailLog] (
 	[UserId] [uniqueidentifier] NULL,
 	-- What was sent: 2 = app version upgrade (E19.F3.S3). Each kind applies its own repeat rules in its queries, never here.
 	[EmailKind] [smallint] NULL,
-	-- 0 queued (recorded before the send), 1 sent, 2 failed (reason in ServerReply).
+	-- 0 queued (recorded before the send), 3 sending (claimed by a sender), 1 sent, 2 failed (reason in ServerReply).
 	[Status] [smallint] NULL,
 	-- The subject as sent.
 	[Subject] [nvarchar](250) NULL,
