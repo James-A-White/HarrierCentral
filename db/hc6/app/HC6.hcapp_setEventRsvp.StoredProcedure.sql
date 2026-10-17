@@ -320,6 +320,14 @@ BEGIN TRY
             SET @serverMessage = 'The RSVP status has not changed for ' + COALESCE(@hasherName, 'User');
         END
 
+        -- An admin marking a hasher hare who is ALREADY a hare (they marked
+        -- themselves) skips the update above (nothing visible changes), so
+        -- appoint them here (E8.F5.S6, found in the live test 2026-10-17).
+        IF (@isHare = 1 AND @appointer IS NOT NULL AND @hemId IS NOT NULL)
+            UPDATE HC.HasherEventMap
+            SET HareAppointedBy = @appointer, updatedAt = GETDATE()
+            WHERE id = @hemId AND IsHare = 1 AND HareAppointedBy IS NULL;
+
         -- Update Event.Hares aggregate if isHare state changed
         DECLARE @newHareState SMALLINT;
         SELECT @newHareState = hem.IsHare
