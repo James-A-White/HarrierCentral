@@ -1,3 +1,6 @@
+1.0.61+116
+    • Version email: {senderHashName} placeholder (the platform admin pressing Send); the AI feature list never mentions security fixes or weaknesses
+
 1.0.61+115
     • Version email: {hashName} placeholder as well as {firstName} (each falls back to the other)
 

@@ -1,3 +1,11 @@
+## 3.1.10+1484 (2026-10-17)
+
+### Fixes
+
+- **Pack off**: picking the kennel's usual pack-off time for a run no longer
+  gives the run a setting of its own, so it keeps following the kennel if the
+  kennel's pack-off later changes.
+
 ## 3.1.10+1483 (2026-10-17)
 
 ### Fixes

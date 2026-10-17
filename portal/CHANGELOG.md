@@ -1,3 +1,10 @@
+## 2.0.87+782 (2026-10-17)
+### Improvements
+- **Version email**: a {senderHashName} placeholder for the admin sending it; the draft signs off "On-On, {senderHashName}" and gives no reason for retiring the old version.
+
+### Fixes
+- **Pack off**: picking the kennel's usual pack-off time for a run no longer saves a setting of its own, so the run keeps following the kennel (an untouched OK on the picker used to pin a run to "at the gather").
+
 ## 2.0.87+781 (2026-10-17)
 ### Improvements
 - **HC Admin Tools**: the tools flow into rows that fit the window instead of one column, each with its own coloured icon.
