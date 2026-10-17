@@ -185,6 +185,18 @@ class ServiceCommon {
       return ERROR_NO_CONNECTION;
     }
 
+    // A request that names an EMPTY device id cannot be authenticated: the
+    // server fails converting '' to an id (an unlogged-cause 500), and the
+    // transport then retries it five times. It happens while the device's
+    // credentials are being replaced — after "Device No Longer Registered" or
+    // mid-sign-up — when a background sync still runs (2026-10-17: 5x 500 on
+    // hcapp_syncUserData). Don't send it; the next boot or sign-in carries a
+    // real id.
+    if (hasEmptyDeviceId(bodyFactory())) {
+      BootLogger.logBreadcrumb('HTTP: request with an empty deviceId not sent');
+      return ERROR_HANDLED;
+    }
+
     final int maxAttempts = noRetries ? 1 : _maxRetryAttempts;
     bool tokenRetryUsed = false;
     bool suspendRetryUsed = false;
@@ -394,6 +406,23 @@ class ServiceCommon {
   /// log free of checkConnection 500/network-error noise.
   static bool _isConnectionProbe(String requestBody) =>
       requestBody.contains('"queryType":"checkConnection"');
+
+  /// True when [body] is a JSON object whose "deviceId" is an EMPTY STRING.
+  /// null is deliberate and allowed: sign-up sends deviceId null to create an
+  /// account before the phone has a device (hcapp_addEditUser). The server
+  /// converts null fine; it is '' it cannot convert. A body without the key
+  /// (or one that is not JSON) is left alone.
+  @visibleForTesting
+  static bool hasEmptyDeviceId(String body) {
+    try {
+      final dynamic j = jsonDecode(body);
+      if (j is Map && j.containsKey('deviceId')) {
+        final dynamic d = j['deviceId'];
+        return d is String && d.trim().isEmpty;
+      }
+    } catch (_) {}
+    return false;
+  }
 
   static bool _isRetryableStatus(int statusCode) {
     // Our own timeout sentinel — don't retry, fail fast. Checked before the
