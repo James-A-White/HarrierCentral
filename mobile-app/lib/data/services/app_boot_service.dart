@@ -70,11 +70,10 @@ class AppBootService {
       '[BOOT] checkForInternetConnection done: ${DateTime.now().millisecondsSinceEpoch}ms',
     );
 
-    // 1.x → 2.x migration: userId exists in legacy prefs but no deviceId yet.
-    if (userId != null && deviceId == null) {
-      await _handleLegacyMigration(userId);
-      return;
-    }
+    // (The 1.x → 2.x branch that signed a device in by its userId alone is
+    // gone, 2026-10-17: the server refuses that path. A device with a userId
+    // but no deviceId — after "Device No Longer Registered" or stale prefs —
+    // re-authorises with its saved reset code below, or onboards.)
 
     // No registered device. If the reset code survived in the keychain, this is
     // a wiped/reset device that can re-authorise itself with no user input
@@ -468,27 +467,6 @@ class AppBootService {
     } catch (_) {
       return ReauthorizeOutcome.transientFailure;
     }
-  }
-
-  /// 1.x → 2.x migration: register this device and reboot into the entry page
-  /// so that the normal boot flow runs with a complete credential set.
-  Future<void> _handleLegacyMigration(String userId) async {
-    await setStringPref(StringPrefsEnum.bootType, BOOT_TYPE_UPGRADE_1_2);
-    final AuthorizeDeviceService srv = AuthorizeDeviceService();
-    await srv.authorizeDevice(userId: userId);
-    await DBProvider.deleteDb(DB_NAME);
-    await Get.deleteAll(force: true);
-    // Re-register the services the next boot needs (AppModel first among
-    // them): deleteAll took them with it, and the reset path at
-    // resetAndReboot does the same before it restarts. Without this the new
-    // AppEntryPage's boot threw '"AppModel" not found' at
-    // _prepareDeviceContext and the app sat on a blank gradient (seen on the
-    // simulator 2026-10-09 with userId present and deviceId null).
-    await initServices();
-    await Navigator.of(navigatorKey.currentContext!).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const AppEntryPage()),
-      (route) => false,
-    );
   }
 
   /// No API response — show a network error for first-time users (who have no
