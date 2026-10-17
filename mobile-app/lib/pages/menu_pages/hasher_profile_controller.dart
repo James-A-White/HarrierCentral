@@ -300,14 +300,23 @@ class HasherProfileController extends GetxController {
 
     isLoading.value = true;
 
+    // Another hasher's profile sends only the personal fields the admin
+    // CHANGED ('' / 0 = leave as is in the SP). Once a hasher has signed in,
+    // their name, email, photo and settings are theirs alone and the SP
+    // refuses any of them from an admin (SP 76, James 2026-10-17) — sending
+    // the unchanged values made every save fail, run counts included.
+    final bool other = pageType == EnumMyProfilePageType.anyHasherProfile;
+    String changed(String now, String? was) =>
+        (other && now == (was ?? '')) ? '' : now;
+
     final HashersService srv = HashersService();
     final String responseBody = await srv.addEditUser(
       targetUserId: hasher.hasherId,
-      firstName: firstNameController.text,
-      lastName: lastNameController.text,
+      firstName: changed(firstNameController.text, hasher.firstName),
+      lastName: changed(lastNameController.text, hasher.lastName),
       email: emailController.text,
-      hashName: hashNameController.text,
-      photo: newPhoto.value,
+      hashName: changed(hashNameController.text, hasher.hashName),
+      photo: changed(newPhoto.value, hasher.photo),
       eventId: eventId,
       kennelId: kennelId.isEmpty ? GUID_EMPTY : kennelId,
       historicalTotalRunCount: previousRunCountController.text,
@@ -324,7 +333,10 @@ class HasherProfileController extends GetxController {
       // turning their auto-show radius off.
       preferences: -1,
       followKennelOnAddNewUser: addAsKennelFollower.value ? 1 : 0,
-      nameDisplayPreference: nameDisplayPreference.value,
+      nameDisplayPreference:
+          (other && nameDisplayPreference.value == hasher.dispPref)
+          ? 0
+          : nameDisplayPreference.value,
     );
     if (isClosed) return noPop;
 
