@@ -1,0 +1,115 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_thirdPartySignIn",
+  "version": "1.0.0",
+  "description": "Sign in with Apple/Google, verified rebuild (E1.F1.S8). Called ONLY by the API's ThirdPartySignIn endpoint after it has verified the provider's signed identity token; every identity value comes from inside that token. Finds the hasher by provider id, else by the provider's VERIFIED email (linking it), else creates one (reset code from trgGenerateQrCode). Returns the reset code; the app signs the phone in with it via hcapp_authorizeDevice. Removed/deleted accounts refused. Idempotency: locked-upsert (app lock on provider + id).",
+  "parameters": [
+    {
+      "name": "provider",
+      "type": "NVARCHAR(20)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.ThirdPartyLoginType",
+      "description": "'apple' | 'google'."
+    },
+    {
+      "name": "providerUserId",
+      "type": "NVARCHAR(255)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.ThirdPartyUserId",
+      "description": "The token's 'sub' (stable per app)."
+    },
+    {
+      "name": "email",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.ThirdPartyEmail",
+      "description": "The token's email."
+    },
+    {
+      "name": "emailVerified",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "1 when the token says the email is verified."
+    },
+    {
+      "name": "firstName",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.FirstName",
+      "description": "From the app (Apple sends names only on first authorisation); used only for a new account."
+    },
+    {
+      "name": "lastName",
+      "type": "NVARCHAR(250)",
+      "nullable": true,
+      "mapsToColumn": "Hasher.LastName",
+      "description": "As firstName."
+    },
+    {
+      "name": "hcVersion",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "For logging."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "{ Success, ErrorMessage }.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 or 0"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(255)",
+          "nullable": true,
+          "description": "Why, on 0"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "SignIn",
+      "description": "On success.",
+      "columns": [
+        {
+          "name": "ResetCode",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": "URC:\u2026 \u2014 the app signs in with it"
+        },
+        {
+          "name": "IsNewAccount",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 = created now"
+        },
+        {
+          "name": "Linked",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 = an existing account was linked by verified email now"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [
+    "May link HC.Hasher.ThirdParty* on an existing hasher",
+    "May insert HC.Hasher (and HC.LaunchAndLogin)"
+  ],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
