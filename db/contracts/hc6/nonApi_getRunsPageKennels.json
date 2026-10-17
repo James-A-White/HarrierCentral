@@ -79,6 +79,12 @@
           "description": "hh:mm from Kennel.DefaultRunStartTime."
         },
         {
+          "name": "PackOffMinutes",
+          "type": "SMALLINT",
+          "nullable": true,
+          "description": "Kennel.PackOffMinutes: minutes from gather to pack-off; NULL = sets off at the gather. The importer reads a page's set-off time back to the gather with it (2026-10-17)."
+        },
+        {
           "name": "CityName",
           "type": "NVARCHAR(100)",
           "nullable": true,

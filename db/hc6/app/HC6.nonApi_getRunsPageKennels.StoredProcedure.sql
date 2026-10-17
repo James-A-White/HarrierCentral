@@ -11,7 +11,7 @@ AS
 --   read against it) and its latest run, default start time and time zone.
 -- Returns: rowset 0 — { KennelId, KennelName, KennelShortName, RunsPageUrl,
 --   RunsPageHash, LocalToday, TimeZoneName, LatestRunNumber, LatestRunDate,
---   DefaultStartTime, CityName, CountryName, AnchorLat, AnchorLon }
+--   DefaultStartTime, PackOffMinutes, CityName, CountryName, AnchorLat, AnchorLon }
 -- Changes: 2026-10-15 — kennels on Google Calendar (2) are read too (E3.F6.S5).
 --   2026-10-14 — the anchor is the kennel's point only when both halves are
 --   in range, else the city's (DH3's Latitude 999 failed every geocode).
@@ -35,6 +35,10 @@ BEGIN TRY
             -- DefaultRunStartTime smuggles a day-of-week in its fractional
             -- seconds (reference_default_run_start_time_hack): hh:mm only.
             CONVERT(NVARCHAR(5), k.DefaultRunStartTime, 108) AS DefaultStartTime,
+            -- Minutes from gather to pack-off (2026-10-17): a page that gives
+            -- only the time the pack SETS OFF ("start at 19.15") is read back
+            -- to the gather with it. NULL = sets off at the gather.
+            k.PackOffMinutes                              AS PackOffMinutes,
             -- Where the club is (2026-10-05): the AI writes each run's start
             -- as a full search address using the city and country when the
             -- page leaves them out, and a geocoded point is accepted only
