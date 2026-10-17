@@ -132,9 +132,8 @@ BEGIN
     SELECT @rsvpKennelId = KennelId FROM HC.Event WHERE id = @eventId;
 
     DECLARE @rsvpAllowed SMALLINT = 0;
-    DECLARE @rsvpIsHare  SMALLINT = CASE WHEN EXISTS (
-            SELECT 1 FROM HC.HasherEventMap
-            WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1) THEN 1 ELSE 0 END;
+    -- Hare rights need an APPOINTED hare (E8.F5.S6, 2026-10-17): HC6.IsAppointedHare.
+    DECLARE @rsvpIsHare  SMALLINT = HC6.IsAppointedHare(@userId, @eventId);
     IF (@rsvpKennelId IS NOT NULL)
         EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @rsvpKennelId,
              @functionKey = 'manageAttendance', @isHareOfEvent = @rsvpIsHare,
@@ -173,6 +172,20 @@ DECLARE @hasherName          NVARCHAR(120);
 
 SELECT @kennelId = evt.KennelId, @eventDate = evt.EventStartDatetime
 FROM HC.Event evt WHERE evt.id = @eventId;
+
+-- Who appoints a hare (E8.F5.S6, James 2026-10-17): marking someone hare
+-- APPOINTS them (HareAppointedBy, which carries the run's hare rights) only
+-- when the caller manages attendance by role or flag — not by being a hare
+-- of the run. A hasher marking themselves hare is haring (history), not
+-- appointed. Same rule as hcapp_setEventAttendence.
+DECLARE @appointer UNIQUEIDENTIFIER = NULL;
+IF (@isHare = 1 AND @kennelId IS NOT NULL)
+BEGIN
+    DECLARE @apptAllowed SMALLINT = 0;
+    EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'manageAttendance',
+         @isHareOfEvent = 0, @allowed = @apptAllowed OUTPUT;
+    IF (@apptAllowed = 1) SET @appointer = @userId;
+END
 
 IF (@hemId IS NULL)
 BEGIN
@@ -266,6 +279,11 @@ BEGIN TRY
             UPDATE HC.HasherEventMap SET
                 RsvpState                    = COALESCE(@rsvpState, RsvpState),
                 IsHare                       = COALESCE(@isHare,    IsHare),
+                -- Un-marked (incl. RSVP No): no longer appointed. Marked by an
+                -- admin: appointed (first appointer kept). Self: unchanged.
+                HareAppointedBy              = CASE WHEN @isHare = 0 THEN NULL
+                                                    WHEN @isHare = 1 AND @appointer IS NOT NULL THEN COALESCE(HareAppointedBy, @appointer)
+                                                    ELSE HareAppointedBy END,
                 EventNotificationPreference  = COALESCE(@kennelNotificationPreference, EventNotificationPreference),
                 EventEmailAlertPreference    = COALESCE(@emailAlertPreference,         EventEmailAlertPreference),
                 updatedAt                    = GETDATE()
@@ -277,7 +295,7 @@ BEGIN TRY
 
             INSERT INTO HC.HasherEventMap
                 ([id], [EventId], [KennelId], [UserId],
-                 [RsvpState], [IsHare], [VirginVisitorType],
+                 [RsvpState], [IsHare], [HareAppointedBy], [VirginVisitorType],
                  [EventNotificationPreference], [updatedAt])
             VALUES
                 (@hemId, @eventId, @kennelId, @hasherId,
@@ -285,6 +303,7 @@ BEGIN TRY
                  -- the hare flag; NULL failed the NOT NULL column (2026-10-13).
                  COALESCE(@rsvpState, 0),
                  CASE WHEN @isHare > 0 THEN 1 ELSE 0 END,
+                 CASE WHEN @isHare > 0 THEN @appointer END,
                  0,
                  @kennelNotificationPreference,
                  GETDATE());
