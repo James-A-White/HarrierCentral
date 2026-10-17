@@ -177,11 +177,13 @@ These are firm decisions that must not be revisited or worked around:
 
 - **Payments: any kennel admin may SEE who paid for a run; only Hash Cash
   may CHANGE payments (James, 2026-10-17).** Reading a run's payments
-  (who paid, how, how much) is open to that kennel's admins. Recording,
-  confirming, cancelling or editing a payment — and anything that spends
-  credit — needs the Hash Cash permission (`takePayment` and its siblings in
-  `HC.PermissionFunction`). Details and open points: `hc-authorizations`
-  skill, "Money: see vs change".
+  (who paid, how, how much) may be open to any of that kennel's admins — a
+  Hare Raiser downloading a run report with payment details is fine.
+  Recording, confirming, cancelling or editing a payment — and anything that
+  spends credit — needs the Hash Cash permission: the `takePayment` /
+  `bulkPayment` grants in `HC.PermissionFunction`, which stay as they are
+  (GM, VGM, RA, Hash Cash, Hash Bank, the Manage hash cash flag, the run's
+  hare). Details: `hc-authorizations` skill, "Money: see vs change".
 
 - **Real names are not secret (James, 2026-10-17).** A hasher's first and
   last name may reach any signed-in user — the user sync sends them to every

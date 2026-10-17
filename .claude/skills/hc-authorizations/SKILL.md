@@ -149,17 +149,15 @@ takeover. The rule is what keeps "fix a placeholder email" from becoming that.
   spending a hasher's credit, need the **Hash Cash** permission only.
   The self-service exemption stays: a hasher may settle their OWN run fee by
   credit or bank-transfer claim (`hcapp_processPayment`).
-- **Where it stands (live grants, 2026-10-17):** `viewPaymentReport`,
-  `takePayment` and `bulkPayment` all go to the same seven grantors: GM,
-  VGM, RA, Hash Cash, Hash Bank, the Manage hash cash flag, and the run's
-  hare. So seeing is narrower than the rule (other admins cannot see who
-  paid). Whether changing is wider than the rule depends on whether "Hash
-  Cash permissions" means the takePayment grant (as set in the matrix) or
-  only the Hash Cash role and flag. Not yet decided, and nothing has been changed:
-  - what "kennel admin" means for seeing (any office-holder? any
-    AppAccessFlags bit?);
-  - whether GM / VGM / RA / Hash Bank / hares keep the money writes
-    (hares: E8.F5.S6, admin-appointed hares only).
+- **"Hash Cash permission" = the `takePayment` / `bulkPayment` grants as they
+  stand** (James, 2026-10-17: "keep it the way it is"): GM, VGM, RA, Hash
+  Cash, Hash Bank, the Manage hash cash flag, and the run's hare (hares:
+  E8.F5.S6 narrows that to admin-appointed hares). Do not narrow it to the
+  Hash Cash role alone.
+- **Wider seeing is allowed, not required.** `viewPaymentReport` holds the
+  same seven today; giving another admin role sight of payments (e.g. a Hare
+  Raiser's run report showing who paid) needs no special case and is not an
+  audit finding. Widening the grant itself is a matrix change for James.
 
 ## Where gates live
 

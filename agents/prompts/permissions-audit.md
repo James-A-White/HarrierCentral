@@ -78,8 +78,10 @@ Ignore anything TSA-related entirely and do not mention it.
 9. **Money: see vs change** (James, 2026-10-17): any admin of the kennel may
    SEE who paid for a run (and how much) — not a finding. Recording,
    confirming, cancelling or editing a payment, or spending credit, must need
-   the Hash Cash permission; a money write gated on anything weaker (RA,
-   ManageRuns, a hare) IS a finding. A hasher settling their OWN fee is the
+   the Hash Cash permission — the `takePayment` / `bulkPayment` grants (GM,
+   VGM, RA, Hash Cash, Hash Bank, Manage hash cash flag, the run's hare). A
+   money write gated on anything else (ManageRuns, IsAdmin, membership) IS a
+   finding. A hasher settling their OWN fee is the
    one self-service exemption.
 10. **Writes by design open to all** are NOT findings when the product says so:
    anyone may post in a kennel's general chat; a hasher's own RSVP,
