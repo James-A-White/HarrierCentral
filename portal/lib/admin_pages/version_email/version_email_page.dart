@@ -18,7 +18,7 @@ const String _kFeaturesHeading = "What's new since your version:";
 
 const String _kDraftSubject = 'Please update Harrier Central — your version is retiring';
 
-const String _kDraftBody = '''Hi {firstName},
+const String _kDraftBody = '''Hi {hashName},
 
 You're using an older version of the Harrier Central app. We're retiring it to keep everyone's accounts and run payments safe, and after 1 December 2026 it will stop working.
 
@@ -386,7 +386,7 @@ class _Editor extends StatelessWidget {
           decoration: const InputDecoration(
             labelText: 'Email',
             helperText: 'Plain text. A blank line starts a paragraph; links become clickable; '
-                '{firstName} is each person\'s first name. The store buttons are added under the text.',
+                '{hashName} / {firstName} are each person\'s hash name / first name. The store buttons are added under the text.',
             helperMaxLines: 2,
             alignLabelWithHint: true,
             border: OutlineInputBorder(),
