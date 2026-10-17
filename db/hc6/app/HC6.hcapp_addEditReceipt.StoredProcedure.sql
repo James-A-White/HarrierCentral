@@ -120,9 +120,8 @@ DECLARE @receiptKennelId UNIQUEIDENTIFIER;
 SELECT @receiptKennelId = KennelId FROM HC.Event WHERE id = @eventId;
 
 DECLARE @receiptAllowed SMALLINT;
-DECLARE @receiptIsHare SMALLINT = CASE WHEN EXISTS (
-        SELECT 1 FROM HC.HasherEventMap
-        WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1) THEN 1 ELSE 0 END;
+-- Hare rights need an APPOINTED hare (E8.F5.S6, 2026-10-17): HC6.IsAppointedHare.
+DECLARE @receiptIsHare SMALLINT = HC6.IsAppointedHare(@userId, @eventId);
 EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @receiptKennelId, @functionKey = 'manageReceipts', @isHareOfEvent = @receiptIsHare, @allowed = @receiptAllowed OUTPUT;
 
 IF (@receiptAllowed = 0)
