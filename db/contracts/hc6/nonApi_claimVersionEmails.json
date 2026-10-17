@@ -1,0 +1,76 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_claimVersionEmails",
+  "version": "1.0.0",
+  "description": "The API's VersionEmail sender claims the next @take queued rows of a send: Status 0 -> 3 (sending) in one UPDATE with READPAST, so two senders split the rows and never mail one person twice. Internal (API only). Idempotency: compare-and-set.",
+  "parameters": [
+    {
+      "name": "sendId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "EmailLog.SendId",
+      "description": "The send."
+    },
+    {
+      "name": "take",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "1..50, default 10."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Claimed",
+      "description": "What each email needs.",
+      "columns": [
+        {
+          "name": "EmailLogId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.EmailLog.id"
+        },
+        {
+          "name": "Email",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "FirstName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "First name, else hash name"
+        },
+        {
+          "name": "Subject",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "IsIos",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Has an iPhone on record"
+        },
+        {
+          "name": "IsAndroid",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Has an Android phone on record"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
