@@ -54,8 +54,8 @@ BEGIN
 END
 
 DECLARE @isHare SMALLINT = 0, @allowed SMALLINT = 0;
-IF EXISTS (SELECT 1 FROM HC.HasherEventMap hem WHERE hem.EventId = @eventId AND hem.UserId = @hasherId AND hem.IsHare = 1)
-    SET @isHare = 1;
+-- Hare rights need an APPOINTED hare (E8.F5.S6, 2026-10-17): HC6.IsAppointedHare.
+SET @isHare = HC6.IsAppointedHare(@hasherId, @eventId);
 EXEC HC6.CheckKennelPermission @userId = @hasherId, @kennelId = @kennelId, @functionKey = 'createEditRuns',
      @isHareOfEvent = @isHare, @allowed = @allowed OUTPUT;
 IF (@allowed = 0)
