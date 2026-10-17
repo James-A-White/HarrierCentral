@@ -54,8 +54,10 @@ BEGIN TRY
     DECLARE @isHare SMALLINT = HC6.IsAppointedHare(@userId, @eventId);
     DECLARE @canEdit SMALLINT = 0;
     IF (@kennelId IS NOT NULL)
+        -- Its own permission (James, 2026-10-17): the appointed hare, Hare Raiser,
+        -- GM, VGM and Super Admin — not everyone who may edit runs.
         EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId,
-             @functionKey = 'createEditRuns', @isHareOfEvent = @isHare, @allowed = @canEdit OUTPUT;
+             @functionKey = 'manageOfficialTrail', @isHareOfEvent = @isHare, @allowed = @canEdit OUTPUT;
 
     DECLARE @now DATETIMEOFFSET = SYSDATETIMEOFFSET();
     DECLARE @available SMALLINT = CASE
