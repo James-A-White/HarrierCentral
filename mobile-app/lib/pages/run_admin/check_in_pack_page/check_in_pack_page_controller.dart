@@ -405,6 +405,9 @@ class CheckInPackController extends GetxController
           NULL AS membershipExpirationDate,
           0 AS isFollowing,
           hem2.isHare AS isHare,
+          /* Both halves of the UNION carry the same columns, in order: a
+             column on one half only emptied the check-in list (2026-10-17). */
+          CASE WHEN COALESCE(hem2.${tableModel.hasherEventMapTableHelper.colIsHare}, 0) = 1 AND hem2.${tableModel.hasherEventMapTableHelper.colHareAppointedBy} IS NOT NULL THEN 1 ELSE 0 END AS isAppointedHare,
           CASE 
               WHEN pay2.hemId IS NULL 
               THEN NULL
@@ -459,6 +462,8 @@ class CheckInPackController extends GetxController
           hkm4.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate} AS membershipExpirationDate,
           hkm4.${tableModel.hasherKennelMapTableHelper.colFollowing} AS isFollowing,
           hem3.isHare AS isHare,
+          /* Same column, same place, in every part of the UNION. */
+          CASE WHEN COALESCE(hem3.${tableModel.hasherEventMapTableHelper.colIsHare}, 0) = 1 AND hem3.${tableModel.hasherEventMapTableHelper.colHareAppointedBy} IS NOT NULL THEN 1 ELSE 0 END AS isAppointedHare,
           CASE 
               WHEN pay3.hemId IS NULL 
               THEN NULL

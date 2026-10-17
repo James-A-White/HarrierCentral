@@ -1,3 +1,10 @@
+## 3.1.10+1486 (2026-10-17)
+
+### Fixes
+
+- **Check-in list empty in 1485**: the run admin's check-in list showed no
+  hashers (the counters were right). Fixed.
+
 ## 3.1.10+1485 (2026-10-17)
 
 ### New Features
