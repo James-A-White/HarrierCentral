@@ -1206,7 +1206,9 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
           Container(
             margin: const EdgeInsets.only(bottom: 20),
             width: _buttonWidth,
-            height: _buttonHeight,
+            // At least the other buttons' height, taller when the label takes
+            // two lines (James, 2026-10-17: keep 20 pt, let the button grow).
+            constraints: const BoxConstraints(minHeight: _buttonHeight),
             child: StyleForConnected(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -1229,15 +1231,12 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.only(left: 12, right: 10),
-                        // Two lines at the button's 20 pt do not fit its fixed
-                        // height (the second line was cut off, 2026-10-17):
-                        // shrink to fit, as a long kennel name needs.
-                        child: AutoSizeText(
-                          'Add ${agg.kennel.kennelShortName} runs to my calendar',
+                        // The kennel's name is already the page title.
+                        child: Text(
+                          'Add runs to my calendar',
                           style: ts_button,
                           textAlign: TextAlign.center,
                           maxLines: 2,
-                          minFontSize: 12,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
