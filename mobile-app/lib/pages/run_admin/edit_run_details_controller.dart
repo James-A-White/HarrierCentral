@@ -141,7 +141,11 @@ class EditRunDetailsController extends GetxController
       return 'The pack-off must be within ${RunPackOff.maxMinutes ~/ 60} hours '
           'of the gather.';
     }
-    mutate(() => packOffOverride = minutes);
+    // A time that matches the kennel's default IS the kennel's default: keep
+    // following the kennel, so a later change to its default still applies.
+    // An OK on the picker without changing it otherwise saved this run's own
+    // 0 and hid the kennel's default when one was set (SWH3 #1814, 2026-10-17).
+    mutate(() => packOffOverride = RunPackOff.overrideFor(minutes, kennelPackOffMinutes));
     return null;
   }
 

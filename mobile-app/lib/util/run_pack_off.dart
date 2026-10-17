@@ -36,6 +36,13 @@ class RunPackOff {
   static const int sendClear = -2;
 
   /// Minutes after the gather that the pack leaves; 0 = at the gather.
+  /// The run's own setting for a picked pack-off of [pickedMinutes]: null —
+  /// follow the kennel — when it matches the kennel's default (null = at the
+  /// gather, 0), so an OK on the picker without changing it never saves an
+  /// override that later hides a kennel default (SWH3 #1814, 2026-10-17).
+  static int? overrideFor(int pickedMinutes, int? kennelMinutes) =>
+      pickedMinutes == (kennelMinutes ?? 0) ? null : pickedMinutes;
+
   static int effectiveMinutes({int? runMinutes, int? kennelMinutes}) {
     final int m = runMinutes ?? kennelMinutes ?? 0;
     return m < 0 ? 0 : m;

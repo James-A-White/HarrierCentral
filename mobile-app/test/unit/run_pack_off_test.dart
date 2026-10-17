@@ -59,4 +59,20 @@ void main() {
     expect(RunPackOff.describeMinutes(60), '1 h after the gather');
     expect(RunPackOff.describeMinutes(90), '1 h 30 min after the gather');
   });
+
+  group('overrideFor', () {
+    test('the gather time with no kennel default follows the kennel', () {
+      expect(RunPackOff.overrideFor(0, null), isNull);
+    });
+    test('the kennel default time follows the kennel', () {
+      expect(RunPackOff.overrideFor(30, 30), isNull);
+    });
+    test('the gather time when the kennel sets off later is the run\'s own 0', () {
+      expect(RunPackOff.overrideFor(0, 30), 0);
+    });
+    test('any other time is the run\'s own', () {
+      expect(RunPackOff.overrideFor(45, 30), 45);
+      expect(RunPackOff.overrideFor(15, null), 15);
+    });
+  });
 }
