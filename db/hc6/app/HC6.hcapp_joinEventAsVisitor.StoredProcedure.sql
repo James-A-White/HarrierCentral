@@ -87,8 +87,8 @@ END
 -- run's attendance — the check-in screen's own feature — and this SP had no
 -- check at all, so any signed-in hasher could add visitors to any run.
 DECLARE @visKennelId UNIQUEIDENTIFIER = (SELECT e.KennelId FROM HC.Event e WHERE e.id = @eventId);
-DECLARE @visIsHare SMALLINT = CASE WHEN EXISTS (SELECT 1 FROM HC.HasherEventMap
-        WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1) THEN 1 ELSE 0 END;
+-- Hare rights need an APPOINTED hare (E8.F5.S6, 2026-10-17): HC6.IsAppointedHare.
+DECLARE @visIsHare SMALLINT = HC6.IsAppointedHare(@userId, @eventId);
 DECLARE @visAllowed SMALLINT = 0;
 IF (@visKennelId IS NOT NULL)
     EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @visKennelId, @functionKey = 'manageAttendance',
