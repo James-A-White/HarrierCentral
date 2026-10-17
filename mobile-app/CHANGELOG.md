@@ -1,3 +1,11 @@
+## 3.1.10+1488 (2026-10-17)
+
+### New Features
+
+- **Sign in with Apple** on the Get Started screen (iPhone). Your Apple
+  sign-in is checked by Harrier Central's server; an existing account is
+  found by the email Apple confirms, and a new one is made otherwise.
+
 ## 3.1.10+1487 (2026-10-17)
 
 ### Fixes

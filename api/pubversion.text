@@ -1,3 +1,6 @@
+1.0.61+121
+    • ThirdPartySignIn: Sign in with Apple verified on the server (Apple's keys, issuer, audience, expiry, nonce) → nonApi_thirdPartySignIn → reset code; Google ready but off until its OAuth client ids are set (E1.F1.S8)
+
 1.0.61+120
     • ProcessTrackImport returns the job after a slice without re-checking the token (a 40 s slice left it too old: 'Invalid access token', and the phone read the error as a job)
 
