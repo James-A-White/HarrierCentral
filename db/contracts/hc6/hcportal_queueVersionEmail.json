@@ -1,7 +1,7 @@
 {
   "schema": "HC6",
   "name": "hcportal_queueVersionEmail",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "HC Admin Tools > Version email (E19.F3.S3): records who a send goes to BEFORE anything is sent — one HC.EmailLog row per eligible person (HC6.VersionEmailAudience), EmailKind 2, Status 0 — under the portal-minted @sendId. API-ONLY: called by the VersionEmail route with the portal's token; refused on the general portal route (ApiOnlyQueryTypes). @test = 1 queues nothing and returns the caller's own address. Auth: HC6.ValidatePortalAuth; the caller must hold a live HC.PlatformAdmin row with CanManageNewsflash = 1. Idempotency: client-id (@sendId; a repeat queues nothing new; an app lock serialises sends so the 30-day rule cannot be passed twice).",
   "parameters": [
     {
@@ -102,6 +102,12 @@
           "type": "NVARCHAR(250)",
           "nullable": false,
           "description": "The caller's"
+        },
+        {
+          "name": "HashName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "Hash name, else first name ({hashName})"
         },
         {
           "name": "Name",

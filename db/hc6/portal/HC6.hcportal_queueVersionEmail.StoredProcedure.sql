@@ -23,8 +23,8 @@ AS
 -- Returns:
 --   rowset 0 — { Success, ErrorMessage }.
 --   rowset 1 (on success) — { Queued (rows for this send), NewlyQueued
---     (0 on a repeat), Email, FirstName, Name } — the last three are the
---     CALLER's, for a test.
+--     (0 on a repeat), Email, FirstName, HashName, Name } — the last four
+--     are the CALLER's, for a test.
 -- Author: Harrier Central
 -- Created: 2026-10-17
 -- HC5 Source: none (new)
@@ -91,6 +91,7 @@ BEGIN TRY
     SELECT 1 AS Success, NULL AS ErrorMessage;
     SELECT @queued AS Queued, @new AS NewlyQueued,
            h.Email, COALESCE(NULLIF(LTRIM(RTRIM(h.FirstName)), ''), NULLIF(LTRIM(RTRIM(h.HashName)), ''), '') AS FirstName,
+           COALESCE(NULLIF(LTRIM(RTRIM(h.HashName)), ''), NULLIF(LTRIM(RTRIM(h.FirstName)), ''), '') AS HashName,
            h.DisplayName AS Name
     FROM HC.Hasher h WHERE h.id = @callerId;
 END TRY
