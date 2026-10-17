@@ -184,7 +184,10 @@ namespace HcWebApi.Endpoints
         }
 
         /// <summary>New Features and Improvements from every entry newer than
-        /// <paramref name="fromBuild"/>, newest first, capped for the model.</summary>
+        /// <paramref name="fromBuild"/>, newest first, capped for the model —
+        /// leaving out entries for admins and other roles, judged by each
+        /// entry's title and first sentence (James, 2026-10-17: only what
+        /// everyone can use). The prompt says the same; this is the backstop.</summary>
         private static async Task<string> ChangelogSinceAsync(int fromBuild)
         {
             if (changelogCache is not { } c || DateTime.UtcNow - c.at > TimeSpan.FromMinutes(30))
@@ -198,25 +201,60 @@ namespace HcWebApi.Endpoints
                 var head = Regex.Match(section, @"^\S+\+(\d+)");
                 if (!head.Success || int.Parse(head.Groups[1].Value) <= fromBuild) continue;
                 bool keep = false;
+                var entry = new StringBuilder();
+                void Flush()
+                {
+                    if (entry.Length > 0 && !IsAdminEntry(entry.ToString())) sb.Append(entry);
+                    entry.Clear();
+                }
                 foreach (string line in section.Split('\n').Skip(1))
                 {
                     if (line.StartsWith("### "))
                     {
+                        Flush();
                         keep = Regex.IsMatch(line, @"New Features|Improvements", RegexOptions.IgnoreCase);
                         continue;
                     }
-                    if (keep && line.Trim().Length > 0) sb.AppendLine(line.TrimEnd());
+                    if (!keep || line.Trim().Length == 0) continue;
+                    if (line.StartsWith("- ")) Flush();
+                    entry.AppendLine(line.TrimEnd());
                 }
+                Flush();
                 if (sb.Length > 120_000) break;
             }
             return sb.ToString();
         }
 
+        // Words that mark an entry as for admins or another role, or as
+        // internal work. Matched against the entry's title and first sentence
+        // only, so an everyone-feature that mentions moderators later on (Direct
+        // messages) stays in.
+        private static readonly Regex AdminWords = new(
+            @"\b(admins?|administrators?|hare raisers?|office[- ]holders?|mismanagement|hash cash|kennel settings?|portal|" +
+            @"platform|permissions?|run editors?|edit(ing)? (a |the )?runs?|run admin|super admin|treasurer|reports?|" +
+            @"import(s|ed|ing)?|roster|merge|moderat\w+|photo review\w*|review photos|take payments?|record(ing)? payments?|" +
+            @"charges tab|device health|dead code|refactor\w*|migrat\w+)\b",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        private static bool IsAdminEntry(string entry)
+        {
+            string flat = Regex.Replace(entry, @"\s+", " ").Trim();
+            var m = Regex.Match(flat, @"^- \*\*(.+?)\*\*(.*)$");
+            string head = m.Success
+                ? m.Groups[1].Value + " " + Regex.Split(m.Groups[2].Value, @"(?<=[.!?])\s")[0]
+                : flat;
+            if (head.Length > 260) head = head[..260];
+            return AdminWords.IsMatch(head);
+        }
+
         private const string FeaturesPrompt =
             "You pick the five most important new features of Harrier Central, the app hash running clubs (kennels) " +
             "use for their runs, for hashers still on an OLD version, so they will want to update. You are given the " +
-            "app's changelog lines added since their version, newest first. Choose what an ordinary hasher would notice " +
-            "and value — big, visible things — not admin-only tools, fixes or technical changes. Group related entries " +
+            "app's changelog lines added since their version, newest first. Choose ONLY features every hasher can use, " +
+            "with no role in a kennel: never anything for admins, hares, hare raisers, GMs, office-holders, Hash Cash, " +
+            "the run editor, kennel settings, payments taken by the kennel, down-down or award lists, photo review, " +
+            "reports or the portal. Prefer what an ordinary hasher would notice and value — big, visible things — not " +
+            "fixes or technical changes. Group related entries " +
             "into one feature. Each feature: a short name, an em dash, then one plain sentence. No build numbers, no " +
             "code or table names, no hype. Never mention security, safety fixes or weaknesses of the old version — " +
             "this goes to the public. Return JSON {\"features\": [five strings]}.";
