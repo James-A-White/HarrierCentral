@@ -1,3 +1,28 @@
+## 3.1.10+1485 (2026-10-17)
+
+### New Features
+
+- **Appointed hares**: only a hare appointed by a run or kennel admin can take
+  payments, edit the run, open run admin or set the official trail. Marking
+  yourself as hare still counts in your haring history. On the check-in
+  screen a self-declared hare shows in orange with "Tap to appoint"; tapping
+  Will hare appoints them.
+- **Official trail**: set by the run's appointed hare, the Hare Raiser, GM,
+  VGM or a Super Admin.
+
+### Improvements
+
+- **Add to calendar**: "This run only" says it is a snapshot that won't follow
+  later changes; "All <kennel> runs (recommended)" subscribes and keeps up to
+  date.
+- **Kennel page**: "Add runs to my calendar" at full size, centred, on a
+  button that grows to two lines.
+
+### Fixes
+
+- A phone that lost its registration signs back in with its saved code
+  instead of an old upgrade path.
+
 ## 3.1.10+1484 (2026-10-17)
 
 ### Fixes

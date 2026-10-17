@@ -1,3 +1,6 @@
+0.21.78 (2026-10-17)
+    • Run page: Add to calendar — this run only (snapshot .ics) or all the kennel's runs (recommended, subscribe), as the app
+
 0.21.77 (2026-10-16)
     • /<slug>/review-photos — the weekly Mismanagement reminder's link without the app: says photo review is in the app (the app opens it on Review photos); not indexed
 

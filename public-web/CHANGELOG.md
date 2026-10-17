@@ -1,5 +1,9 @@
 # public-web Changelog
 
+## 0.21.78 (2026-10-17)
+
+- **Add to calendar** on a run's page (upcoming runs), as the app: *This run only* downloads the run as a one-off snapshot (`/<slug>/<run>/run.ics` — later changes won't follow, and the file says so), or *All <kennel> runs (recommended)* subscribes to the kennel's calendar (Apple / Outlook, Google).
+
 ## 0.21.77 (2026-10-16)
 
 - `/<slug>/review-photos`: where the weekly Mismanagement reminder's "Review them" link lands without the app — photo review is in the Harrier Central app, which opens this link on the kennel's Review photos screen. Not indexed.
