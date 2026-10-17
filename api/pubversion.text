@@ -1,3 +1,6 @@
+1.0.61+119
+    • A deadlocked SP call (SQL 1205) is retried on the server (app and portal routes), so the phone no longer shows 'Connection Issue' for it; a deadlock while reading results is no longer swallowed as a half-read success
+
 1.0.61+118
     • Removed GenericJsonQuery (replaced by GenericJsonQueryHC6 in May 2026)
 
