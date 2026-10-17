@@ -1,3 +1,6 @@
+1.0.61+117
+    • Version email: the top-5 features come only from what everyone can use — admin and role entries are filtered out before the model, and the prompt names the roles to leave out
+
 1.0.61+116
     • Version email: {senderHashName} placeholder (the platform admin pressing Send); the AI feature list never mentions security fixes or weaknesses
 
