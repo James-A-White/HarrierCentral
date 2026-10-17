@@ -339,6 +339,14 @@ BEGIN TRY
             SET @recalculateRunNumbers = 1;
         END
 
+        -- An admin marking a hasher hare who is ALREADY a hare (they marked
+        -- themselves) changes nothing above, so appoint them here (E8.F5.S6,
+        -- found in the live test 2026-10-17). Every path, one statement.
+        IF (@isHare = 1 AND @appointer IS NOT NULL AND @hemId IS NOT NULL)
+            UPDATE HC.HasherEventMap
+            SET HareAppointedBy = @appointer, updatedAt = GETDATE()
+            WHERE id = @hemId AND IsHare = 1 AND HareAppointedBy IS NULL;
+
         -- Update Event.Hares aggregate if isHare flag changed
         -- Rebuilding from the flags alone replaced admin-typed text wholesale
         -- (co-hares who were never flagged vanished), so only text this SP
