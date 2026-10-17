@@ -326,9 +326,8 @@ BEGIN TRY
             WHERE hem.id = @hasherEventMapId;
 
         DECLARE @payAllowed SMALLINT;
-        DECLARE @payIsHare SMALLINT = CASE WHEN @eventId IS NOT NULL AND EXISTS (
-                SELECT 1 FROM HC.HasherEventMap
-                WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1) THEN 1 ELSE 0 END;
+        -- Hare rights need an APPOINTED hare (E8.F5.S6, 2026-10-17): HC6.IsAppointedHare.
+        DECLARE @payIsHare SMALLINT = HC6.IsAppointedHare(@userId, @eventId);
         EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @payKennelId, @functionKey = 'takePayment', @isHareOfEvent = @payIsHare, @allowed = @payAllowed OUTPUT;
 
         -- Who is being charged? @userIdWhoPaid on the self-service paths (they
