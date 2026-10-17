@@ -1,0 +1,142 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_getTrackImportJob",
+  "version": "1.0.0",
+  "description": "One track import job, as hcapp_getTrackImports returns it with @jobId, for ProcessTrackImport to send back after a slice without re-checking the (by then possibly expired) token. Internal (API only). Idempotency: read-only.",
+  "parameters": [
+    {
+      "name": "jobId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "TrackImport.id",
+      "description": "The job."
+    },
+    {
+      "name": "hasherId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "TrackImport.HasherId",
+      "description": "The job's owner, from the authenticated first read."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Job",
+      "description": "The job row, or none.",
+      "columns": [
+        {
+          "name": "jobId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.TrackImport.id."
+        },
+        {
+          "name": "hasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "The uploader."
+        },
+        {
+          "name": "fileName",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "As uploaded."
+        },
+        {
+          "name": "blobUrl",
+          "type": "NVARCHAR(1000)",
+          "nullable": true,
+          "description": "Single-job form only; NULL in the list."
+        },
+        {
+          "name": "byteSize",
+          "type": "BIGINT",
+          "nullable": true,
+          "description": "Upload size."
+        },
+        {
+          "name": "kind",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 unknown \u00b7 1 gpx \u00b7 2 tcx \u00b7 3 fit \u00b7 4 zip (set by the processor)."
+        },
+        {
+          "name": "status",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "0 uploaded \u00b7 1 processing \u00b7 2 done \u00b7 3 failed."
+        },
+        {
+          "name": "uploadedAt",
+          "type": "DATETIME2(3)",
+          "nullable": false,
+          "description": "UTC."
+        },
+        {
+          "name": "startedAt",
+          "type": "DATETIME2(3)",
+          "nullable": true,
+          "description": "UTC; first slice."
+        },
+        {
+          "name": "processedAt",
+          "type": "DATETIME2(3)",
+          "nullable": true,
+          "description": "UTC; done or failed."
+        },
+        {
+          "name": "nextIndex",
+          "type": "INT",
+          "nullable": false,
+          "description": "Activities before this index are done."
+        },
+        {
+          "name": "activityCount",
+          "type": "INT",
+          "nullable": true,
+          "description": "Activities found in the file."
+        },
+        {
+          "name": "importedCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "imported + replaced."
+        },
+        {
+          "name": "skippedCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Everything not imported and not held."
+        },
+        {
+          "name": "heldCount",
+          "type": "INT",
+          "nullable": false,
+          "description": "Awaiting the hasher's choice."
+        },
+        {
+          "name": "errorMessage",
+          "type": "NVARCHAR(2500)",
+          "nullable": true,
+          "description": "When status = 3."
+        },
+        {
+          "name": "resultJson",
+          "type": "NVARCHAR(MAX)",
+          "nullable": true,
+          "description": "Single-job form only: {activities:[{i,name,format,sport,startUtc,endUtc,lat,lng,points,distanceM,outcome,eventId,eventName,kennelName,candidates,error}]}. Every activity found, matched or not."
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
