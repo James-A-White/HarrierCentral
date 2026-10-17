@@ -130,9 +130,8 @@ BEGIN TRY
         -- Authorization: feature "Manage attendance" (see /hc-authorizations).
         -- Run-scoped: a hare for THIS event may set attendance for it.
         DECLARE @bulkAttAllowed SMALLINT;
-        DECLARE @bulkIsHare SMALLINT = CASE WHEN EXISTS (
-                SELECT 1 FROM HC.HasherEventMap
-                WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1) THEN 1 ELSE 0 END;
+        -- Hare rights need an APPOINTED hare (E8.F5.S6, 2026-10-17): HC6.IsAppointedHare.
+        DECLARE @bulkIsHare SMALLINT = HC6.IsAppointedHare(@userId, @eventId);
         EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'manageAttendance', @isHareOfEvent = @bulkIsHare, @allowed = @bulkAttAllowed OUTPUT;
         IF (@bulkAttAllowed = 0)
         BEGIN
