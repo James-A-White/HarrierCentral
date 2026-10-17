@@ -5,14 +5,35 @@
 
 CREATE TABLE [HC].[EmailLog] (
 	[id] [uniqueidentifier] NOT NULL CONSTRAINT [DF_EmailLog_id] DEFAULT (newid()),
-	[EmailTemplaterId] [uniqueidentifier] NOT NULL,
-	[EventId] [uniqueidentifier] NOT NULL,
+	-- The HC.EmailTemplate used (legacy HC3 run emails); NULL for other kinds (since 2026-10-17).
+	[EmailTemplaterId] [uniqueidentifier] NULL,
+	-- The run, for a run email; NULL for other kinds (since 2026-10-17).
+	[EventId] [uniqueidentifier] NULL,
 	[DateSent] [datetimeoffset](7) NOT NULL,
+	-- Legacy rows: how many the send reached. Per-recipient rows: 1.
 	[NumberSent] [int] NOT NULL CONSTRAINT [DF_EmailLog_NumberSent] DEFAULT ((0)),
 	[ServerReply] [nvarchar](2500) NULL,
+	-- Client-minted id of one press of Send; with UserId unique, so a retried send never mails a person twice.
+	[SendId] [uniqueidentifier] NULL,
+	-- The recipient (one row per recipient). NULL on the legacy one-row-per-send HC3 rows.
+	[UserId] [uniqueidentifier] NULL,
+	-- What was sent: 2 = app version upgrade (E19.F3.S3). Each kind applies its own repeat rules in its queries, never here.
+	[EmailKind] [smallint] NULL,
+	-- 0 queued (recorded before the send), 1 sent, 2 failed (reason in ServerReply).
+	[Status] [smallint] NULL,
+	-- The subject as sent.
+	[Subject] [nvarchar](250) NULL,
+	-- The admin who pressed Send.
+	[SentByUserId] [uniqueidentifier] NULL,
+	-- Path of the full email (HTML, text, recipients) in the private email-audit blob container.
+	[AuditPath] [nvarchar](400) NULL,
 	CONSTRAINT [PK_EmailLog] PRIMARY KEY CLUSTERED ([id])
 );
 GO
+CREATE NONCLUSTERED INDEX [IX_EmailLog_Kind_User_Date] ON [HC].[EmailLog] ([EmailKind], [UserId], [DateSent]) INCLUDE ([Status]);
+CREATE UNIQUE NONCLUSTERED INDEX [UQ_EmailLog_Send_User] ON [HC].[EmailLog] ([SendId], [UserId]) WHERE ([SendId] IS NOT NULL AND [UserId] IS NOT NULL);
 ALTER TABLE [HC].[EmailLog] ADD CONSTRAINT [FK_EmailLog_EmailTemplate] FOREIGN KEY ([EmailTemplaterId]) REFERENCES [HC].[EmailTemplate] ([id]);
 ALTER TABLE [HC].[EmailLog] ADD CONSTRAINT [FK_EmailLog_Event] FOREIGN KEY ([EventId]) REFERENCES [HC].[Event] ([id]);
+ALTER TABLE [HC].[EmailLog] ADD CONSTRAINT [FK_EmailLog_Hasher] FOREIGN KEY ([UserId]) REFERENCES [HC].[Hasher] ([id]);
+ALTER TABLE [HC].[EmailLog] ADD CONSTRAINT [FK_EmailLog_SentBy] FOREIGN KEY ([SentByUserId]) REFERENCES [HC].[Hasher] ([id]);
 GO

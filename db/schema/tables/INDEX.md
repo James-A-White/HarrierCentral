@@ -34,7 +34,7 @@ legacy schemas, and TSA (defunct; its old files are left as they were).
 | [HC.Device](HC.Device.Table.sql) | 26 | 3 | 0 |
 | [HC.DownDownHashers](HC.DownDownHashers.Table.sql) | 4 | 2 | 0 |
 | [HC.DownDowns](HC.DownDowns.Table.sql) | 13 | 2 | 1 |
-| [HC.EmailLog](HC.EmailLog.Table.sql) | 6 | 1 | 0 |
+| [HC.EmailLog](HC.EmailLog.Table.sql) | 13 | 3 | 0 |
 | [HC.EmailTemplate](HC.EmailTemplate.Table.sql) | 17 | 1 | 0 |
 | [HC.ErrorLog](HC.ErrorLog.Table.sql) | 18 | 2 | 0 |
 | [HC.Event](HC.Event.Table.sql) | 146 | 21 | 3 |
