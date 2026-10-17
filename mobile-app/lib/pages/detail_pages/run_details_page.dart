@@ -105,13 +105,14 @@ class RunDetailsPageState extends State<RunDetailsPage> {
           // Show the admin gear only to users the server will actually let into
           // run admin (hcapp_syncEventAdminData) — the GM/VGM/RA/HashFlash/
           // HashCash/HashBank roles or the ManageRuns/ManageHashCash flags — OR a
-          // designated hare of this run (run-scoped admin for their own run).
+          // hare APPOINTED to this run by an admin (E8.F5.S6; run-scoped admin
+          // for their own run).
           // Mirrors the SP gate exactly; see /hc-authorizations.
           (!canEnterArea(
                 PermissionArea.runAdmin,
                 appAccessFlags: _futureRun.extensions.appAccessFlags,
                 mismanagementRoles: _futureRun.extensions.mismanagementRoles,
-                isHareOfEvent: _futureRun.extensions.isHare == 1,
+                isHareOfEvent: _futureRun.extensions.isAppointedHare == 1,
                 kennelOverrideJson: _futureRun.kennel.permissionOverrideJson,
               ))
               ? Container()
@@ -122,7 +123,7 @@ class RunDetailsPageState extends State<RunDetailsPage> {
                     await Get.to(
                       () => RunAdminPage(
                         eventId: eventId,
-                        isHare: _futureRun.extensions.isHare == 1,
+                        isHare: _futureRun.extensions.isAppointedHare == 1,
                       ),
                       binding: BindingsBuilder(() {
                         Get.put(

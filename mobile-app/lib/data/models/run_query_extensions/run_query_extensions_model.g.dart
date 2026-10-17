@@ -24,6 +24,7 @@ _RunQueryExtensionsModel _$RunQueryExtensionsModelFromJson(
   attendenceState: (json['attendenceState'] as num?)?.toInt() ?? 0,
   isPaid: (json['isPaid'] as num?)?.toInt() ?? 0,
   isHare: (json['isHare'] as num?)?.toInt() ?? 0,
+  isAppointedHare: (json['isAppointedHare'] as num?)?.toInt() ?? 0,
   isMember: (json['isMember'] as num?)?.toInt() ?? 0,
   following: (json['following'] as num?)?.toInt() ?? 0,
   notificationPreference:
@@ -59,6 +60,7 @@ Map<String, dynamic> _$RunQueryExtensionsModelToJson(
   'attendenceState': instance.attendenceState,
   'isPaid': instance.isPaid,
   'isHare': instance.isHare,
+  'isAppointedHare': instance.isAppointedHare,
   'isMember': instance.isMember,
   'following': instance.following,
   'notificationPreference': instance.notificationPreference,

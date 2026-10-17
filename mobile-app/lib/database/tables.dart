@@ -414,6 +414,26 @@ class Tables {
       appliedAtInt: 0,
     ),
 
+    // MIGRATION 545 — who appointed a hare (E8.F5.S6, James 2026-10-17):
+    // only an APPOINTED hare gets a run's hare rights. The column exists in
+    // all three domains' attendance tables (one CREATE TABLE). The UPDATE
+    // zeroes the user table's sync watermark (MAX(updatedAtValue)), as 533
+    // did for kennels: hares kept appointed on the server before this phone
+    // upgraded would otherwise never be re-sent, and the phone would hide the
+    // hare's buttons. Only the hasher's own rows, once; the kennel and run
+    // tables reload in full whenever admin is opened. The 3.2 train takes the
+    // same as its 564 (trains stay 20 apart, see DB_VERSION).
+    MigrationsModel(
+      dbVersion: 545,
+      migrationText: '''
+        ALTER TABLE ${EnumDataTables.hasherEventMap.commonTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colHareAppointedBy} TEXT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.kennelTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colHareAppointedBy} TEXT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.eventTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colHareAppointedBy} TEXT;
+        UPDATE ${EnumDataTables.hasherEventMap.commonTableName} SET ${tableModel.hasherEventMapTableHelper.colUpdatedAtValue} = 0;
+      ''',
+      appliedAtInt: 0,
+    ),
+
     // MIGRATION 544 — a run's pack-off time (E3.F1.S6): the kennel's default
     // minutes after the gather, and a run's own override. Kennels and events
     // are common-only tables (the admin syncs write the same common table),

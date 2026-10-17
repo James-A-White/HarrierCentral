@@ -151,7 +151,7 @@ class RunTabs extends StatelessWidget {
                 KennelFeature.createEditRuns,
                 appAccessFlags: futureRun.extensions.appAccessFlags,
                 mismanagementRoles: futureRun.extensions.mismanagementRoles,
-                isHareOfEvent: futureRun.extensions.isHare == 1,
+                isHareOfEvent: futureRun.extensions.isAppointedHare == 1,
                 kennelOverrideJson: futureRun.kennel.permissionOverrideJson,
               ))
             Padding(

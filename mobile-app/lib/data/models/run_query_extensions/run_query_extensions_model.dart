@@ -26,6 +26,9 @@ abstract class RunQueryExtensionsModel
     @Default(0) int attendenceState,
     @Default(0) int isPaid,
     @Default(0) int isHare,
+    // 1 when the user is an APPOINTED hare of the run (E8.F5.S6): what the
+    // hare-scoped permission checks use. isHare alone is "hared it" (history).
+    @Default(0) int isAppointedHare,
     @Default(0) int isMember,
     @Default(0) int following,
     @Default(0) int notificationPreference,

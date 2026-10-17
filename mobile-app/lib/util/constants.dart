@@ -216,9 +216,10 @@ const String GUID_9 = '99999999-9999-9999-9999-999999999999';
 const String GUID_MAX = 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF';
 
 const String DB_NAME = 'HcDb.db';
-// ⚠ THE TWO TRAINS MUST STAY 20 APART. dev (3.1.x) is 544, 3.2 is 563
+// ⚠ THE TWO TRAINS MUST STAY 20 APART. dev (3.1.x) is 545, 3.2 is 564
 // (both +10 on 2026-09-26 to force every phone to wipe and reload once;
-// both +1 on 2026-10-14 for the pack-off columns, E3.F1.S6).
+// both +1 on 2026-10-14 for the pack-off columns, E3.F1.S6; both +1 on
+// 2026-10-17 for HasherEventMap.hareAppointedBy, E8.F5.S6).
 //
 // A device upgrading from 3.0.x to 3.1 has to WIPE AND RELOAD rather than
 // migrate, because 3.1's local schema (the JSON product catalogue, the UNIQUE
@@ -231,7 +232,7 @@ const String DB_NAME = 'HcDb.db';
 // silently becomes an in-place migration onto a schema that does not exist,
 // which is the "Database Version Mismatch" that blocked 3.1.0+1350 and +1352
 // (James, 2026-09-15).
-const int DB_VERSION = 544;
+const int DB_VERSION = 545;
 
 const double CLEAR_LATLONG = -2.0;
 

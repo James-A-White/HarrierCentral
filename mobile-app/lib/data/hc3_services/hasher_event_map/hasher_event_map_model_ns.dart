@@ -34,6 +34,9 @@ abstract class HasherEventMapModel
     int? notesVisibility,
     // 1 when shared AND neither admin override hides it (server-computed).
     int? notesShared,
+    // The admin who appointed this hare (E8.F5.S6); null = not appointed
+    // (a hasher who marked themselves hare gets no hare rights).
+    String? hareAppointedBy,
     // The hasher's own archived PackTrack trail (user sync only; E5.F7.S1):
     // base64 of the server's gzipped delta-coded points, decoded on the
     // phone by TrackArchiveCodec. Null until the nightly archive has run.
