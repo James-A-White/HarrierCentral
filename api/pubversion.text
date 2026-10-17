@@ -1,3 +1,6 @@
+1.0.61+115
+    • Version email: {hashName} placeholder as well as {firstName} (each falls back to the other)
+
 1.0.61+114
     • VersionEmail route (E19.F3.S3): platform admins email everyone still on an app build — test to self, send queued in HC.EmailLog before anything goes and sent in claimed batches through the list route, App Store / Google Play buttons per phone, Reply-To noreply@; AI top-5 features since a build from the public app CHANGELOG
     • Beta Room assistant: on its last tool round it is asked to finish instead of a forced tool_choice (the model refused it with a 400)

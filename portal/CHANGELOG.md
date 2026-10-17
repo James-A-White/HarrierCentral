@@ -1,3 +1,7 @@
+## 2.0.87+780 (2026-10-17)
+### Improvements
+- **Version email**: a {hashName} placeholder as well as {firstName}; the draft now greets people by hash name.
+
 ## 2.0.87+779 (2026-10-17)
 ### New Features
 - **Version email** (HC Admin Tools, platform admins with Newsflash): pick an app version and how recently people signed in, see who is still on it (and who will not be sent it, and why), edit the draft — which fills in the five biggest new features since that version — send yourself a test, then send. Each person gets the App Store or Google Play button for the phone they use.

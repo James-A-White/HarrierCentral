@@ -148354,7 +148354,7 @@ A.b4y.prototype={
 $0(){var s,r=this.a,q=r.c.cw
 q=B.B7.aj(0,q.gi(0))?q.gi(0):2
 s=B.B7.gf7(B.B7)
-return A.k8(B.anf,null,q,!1,s.fZ(s,new A.b4w(),t.kZ).cY(0),null,new A.b4x(r),t.S)},
+return A.k8(B.ang,null,q,!1,s.fZ(s,new A.b4w(),t.kZ).cY(0),null,new A.b4x(r),t.S)},
 $S:201}
 A.b4w.prototype={
 $1(a){var s=null
@@ -149022,7 +149022,7 @@ return A.k8(B.an7,null,s,!0,B.bh4,null,new A.bX0(this),t.v)},
 aTT(){var s,r,q=this,p=null,o=q.a.c.a
 if(B.B8.aj(0,o)){s=B.B8.h(0,o)
 s.toString
-return A.rp(p,A.L(s,p,p,p,p,p,p,p,B.a0W,p,p,p,p),B.and,!1,!1,!1,!1,p,p)}s=q.y
+return A.rp(p,A.L(s,p,p,p,p,p,p,p,B.a0W,p,p,p,p),B.ane,!1,!1,!1,!1,p,p)}s=q.y
 s===$&&A.a()
 s=B.h.p(B.AA,s)?q.y:p
 r=A.b([B.ae_],t.oD)
@@ -149779,7 +149779,7 @@ q===$&&A.a()
 q=A.mi(!1,m,q,B.an9,!1,m,m,m,m,m,m,m,1,m,m,m,m,m,m,!1,m,m,B.ai,m,m,new A.bPM())
 o=n.f
 o===$&&A.a()
-o=A.b([r,B.av,q,B.af,A.mi(!1,m,o,B.ane,!1,m,m,m,m,m,m,m,3,m,m,m,m,m,m,!1,m,m,B.ai,m,m,m),n.a5R("Pricing")],p)
+o=A.b([r,B.av,q,B.af,A.mi(!1,m,o,B.anf,!1,m,m,m,m,m,m,m,3,m,m,m,m,m,m,!1,m,m,B.ai,m,m,m),n.a5R("Pricing")],p)
 if(l.length>1){s=n.z
 s===$&&A.a()
 r=A.a0(l).j("W<1,cg<jj>>")
@@ -150630,7 +150630,7 @@ f=e
 d=g
 j.push(new A.cg(d,new A.a2(f,b,b,b,b,b,b,b,B.ae,b,b,b,b,b,b,b),B.aR,b,q))}h=n!==0
 c=!h||m?new A.b4W(a,l):b
-c=A.k8(B.ang,b,k,!0,j,new A.cr("platform-"+l+"-"+k,p),c,r)
+c=A.k8(B.anh,b,k,!0,j,new A.cr("platform-"+l+"-"+k,p),c,r)
 k=a.gwt()[l]
 j=!h||m
 k=A.dV(b,B.aK,!1,b,!0,B.M,b,A.e1(),k,b,b,b,b,b,2,new A.e4(b,b,b,b,b,b,b,b,b,b,a1[l].a==="wechat"?"WeChat ID, or https:// link":"https://\u2026",b,b,b,b,b,!0,!0,!1,b,b,b,b,b,b,!0,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,B.ax,!0,b,b,b,b),B.J,!0,b,!0,j,!1,b,B.aV,b,b,b,b,b,b,b,b,1,b,b,!1,"\u2022",b,b,b,b,b,!1,b,b,!1,b,!0,b,B.aQ,b,b,b,b,b,b,b,b,b,b,b,b,!0,B.ai,b,B.ba,b,b,b,b)
@@ -151856,7 +151856,7 @@ $0(){var s,r=null,q=this.a,p=B.i.l(q.a.c.aT.gi(0)),o=q.d
 o===$&&A.a()
 s=o.a
 if(s.a!==p&&!s.b.gd2())o.sbM(0,p)
-return A.mi(!1,r,o,B.anc,!1,r,r,r,r,r,B.il,r,1,r,new A.bNz(q),r,r,r,r,!1,r,r,B.ai,r,r,r)},
+return A.mi(!1,r,o,B.and,!1,r,r,r,r,r,B.il,r,1,r,new A.bNz(q),r,r,r,r,!1,r,r,B.ai,r,r,r)},
 $S:916}
 A.bNz.prototype={
 $1(a){var s,r,q=A.cV(a,null)
@@ -152262,7 +152262,7 @@ case 5:case 3:return A.k(null,r)}})
 return A.l($async$Iq,r)}}
 A.bau.prototype={
 $1(a){var s=null,r=t.p,q=this.a
-return A.iX(A.j8(s,s,s,s,s,s,A.cd(s,B.di,B.J,!1,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,new A.ban(),s,s,s,s,s,s,s,!1,B.ar),B.bF2,s),s,A.ry(A.b([A.c8(new A.cX(B.EG,A.a7(A.b([B.bFC,B.af,A.aD(s,B.bFh,B.F,s,s,new A.b3(B.ac2,s,s,A.bk(8),s,s,B.a0),s,s,s,s,B.nb,s,s,s),B.h1,A.dV(s,B.aK,!1,s,!0,B.M,s,A.e1(),a.ax,s,s,s,s,s,2,B.ana,B.J,!0,s,!0,s,!1,s,B.aV,s,s,s,s,s,s,s,s,1,s,s,!1,"\u2022",s,s,s,new A.bao(a),s,!1,s,s,!1,s,!0,s,B.aQ,s,s,s,s,s,s,s,s,s,s,s,s,!0,B.ai,s,B.ba,s,s,s,s),B.af,new A.aB(new A.bap(a),s)],r),B.y,B.r,B.x,0,B.B),s),s,s),B.cP,new A.aB(new A.baq(q,a),s),new A.aB(new A.bar(q,a),s),new A.aB(new A.bas(q,a),s),new A.aB(new A.bat(a),s)],r),B.y9,s,B.Z,!1),s)},
+return A.iX(A.j8(s,s,s,s,s,s,A.cd(s,B.di,B.J,!1,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,new A.ban(),s,s,s,s,s,s,s,!1,B.ar),B.bF2,s),s,A.ry(A.b([A.c8(new A.cX(B.EG,A.a7(A.b([B.bFC,B.af,A.aD(s,B.bFh,B.F,s,s,new A.b3(B.ac2,s,s,A.bk(8),s,s,B.a0),s,s,s,s,B.nb,s,s,s),B.h1,A.dV(s,B.aK,!1,s,!0,B.M,s,A.e1(),a.ax,s,s,s,s,s,2,B.anb,B.J,!0,s,!0,s,!1,s,B.aV,s,s,s,s,s,s,s,s,1,s,s,!1,"\u2022",s,s,s,new A.bao(a),s,!1,s,s,!1,s,!0,s,B.aQ,s,s,s,s,s,s,s,s,s,s,s,s,!0,B.ai,s,B.ba,s,s,s,s),B.af,new A.aB(new A.bap(a),s)],r),B.y,B.r,B.x,0,B.B),s),s,s),B.cP,new A.aB(new A.baq(q,a),s),new A.aB(new A.bar(q,a),s),new A.aB(new A.bas(q,a),s),new A.aB(new A.bat(a),s)],r),B.y9,s,B.Z,!1),s)},
 $S:921}
 A.ban.prototype={
 $0(){return A.ch($.ag(),!0,!1,null,null)},
@@ -156860,7 +156860,7 @@ j=A.D(new A.am(l,new A.bkE(k),i),i.j("v.E"))}i=new A.bkM()
 h=t.fW
 g=t.S
 f=t.b
-g=A.b([A.c8(A.c69(new A.bkF(b),A.b([new A.no(0,B.al2,A.L("Will get it ("+A.e(i.$2(n.length-q,q))+")",e,e,e,e,e,e,e,e,e,e,e,e),h),new A.no(1,B.alA,A.L("Will not ("+A.e(i.$2(m.length-p,p))+")",e,e,e,e,e,e,e,e,e,e,e,e),h)],t.OV),A.cI([s.gi(0)],g),!1,A.pB(e,e,e,new A.bG(new A.bkG(),f),B.jh,e,e,e,new A.bG(new A.bkH(),f),e,new A.bG(new A.bkI(),f),e,e,B.bMq,e,e,B.bMn,e,new A.be(new A.dp(A.bk(8),B.T),t.dy),B.bMw,e,e,e,B.bMr,e),g),e,e),B.b8,A.dV(e,B.aK,!1,e,!0,B.M,e,A.e1(),b.dy,e,e,e,e,e,2,B.anb,B.J,!0,e,!0,e,!1,e,B.aV,e,e,e,e,e,e,e,e,1,e,e,!1,"\u2022",e,e,e,e,e,!1,e,e,!1,e,!0,e,B.aQ,e,e,e,e,e,e,e,e,e,e,e,e,!0,B.ai,e,B.ba,e,e,e,e)],t.p)
+g=A.b([A.c8(A.c69(new A.bkF(b),A.b([new A.no(0,B.al2,A.L("Will get it ("+A.e(i.$2(n.length-q,q))+")",e,e,e,e,e,e,e,e,e,e,e,e),h),new A.no(1,B.alA,A.L("Will not ("+A.e(i.$2(m.length-p,p))+")",e,e,e,e,e,e,e,e,e,e,e,e),h)],t.OV),A.cI([s.gi(0)],g),!1,A.pB(e,e,e,new A.bG(new A.bkG(),f),B.jh,e,e,e,new A.bG(new A.bkH(),f),e,new A.bG(new A.bkI(),f),e,e,B.bMq,e,e,B.bMn,e,new A.be(new A.dp(A.bk(8),B.T),t.dy),B.bMw,e,e,e,B.bMr,e),g),e,e),B.b8,A.dV(e,B.aK,!1,e,!0,B.M,e,A.e1(),b.dy,e,e,e,e,e,2,B.anc,B.J,!0,e,!0,e,!1,e,B.aV,e,e,e,e,e,e,e,e,1,e,e,!1,"\u2022",e,e,e,e,e,!1,e,e,!1,e,!0,e,B.aQ,e,e,e,e,e,e,e,e,e,e,e,e,!0,B.ai,e,B.ba,e,e,e,e)],t.p)
 if(q+p>0)g.push(new A.a6(B.y5,A.L("For this send only: "+q+" moved in, "+p+" moved out. Nobody's settings change.",e,e,e,e,e,e,e,B.jb,B.a4,e,e,e),e))
 s=b.cy
 if(s.gi(0).length!==0)g.push(A.L(s.gi(0),e,e,e,e,e,e,e,B.D7,B.a4,e,e,e))
@@ -161075,7 +161075,7 @@ return A.l($async$$1,r)},
 $S:218}
 A.ID.prototype={
 C(a){var s=null,r=$.X(),q=t.R
-q=new A.IC(new A.aJ(new A.ca("Please update Harrier Central \u2014 your version is retiring",B.b3,B.aN),r),new A.aJ(new A.ca("Hi {firstName},\n\nYou're using an older version of the Harrier Central app. We're retiring it to keep everyone's accounts and run payments safe, and after 1 December 2026 it will stop working.\n\nThe new version is free: update the app from the App Store or Google Play with the button below. Your runs, kennels and history are all still there.\n\nWhat's new since your version:\n\u2022 (finding the five biggest\u2026)\n\nIf anything doesn't work after updating, just reply to this email and we'll sort it out.\n\nOn-On,\nJames, Harrier Central",B.b3,B.aN),r),A.b([],t.Jv),A.b([],t.Tv),B.a2u,A.b([],t.F),A.dm(s,s,s,t.X,t.G),new A.cE(q),new A.cE(q),!1,!1)
+q=new A.IC(new A.aJ(new A.ca("Please update Harrier Central \u2014 your version is retiring",B.b3,B.aN),r),new A.aJ(new A.ca("Hi {hashName},\n\nYou're using an older version of the Harrier Central app. We're retiring it to keep everyone's accounts and run payments safe, and after 1 December 2026 it will stop working.\n\nThe new version is free: update the app from the App Store or Google Play with the button below. Your runs, kennels and history are all still there.\n\nWhat's new since your version:\n\u2022 (finding the five biggest\u2026)\n\nIf anything doesn't work after updating, just reply to this email and we'll sort it out.\n\nOn-On,\nJames, Harrier Central",B.b3,B.aN),r),A.b([],t.Jv),A.b([],t.Tv),B.a2u,A.b([],t.F),A.dm(s,s,s,t.X,t.G),new A.cE(q),new A.cE(q),!1,!1)
 q.h3()
 return A.jI(new A.bze(),s,!1,s,q,s,s,t.st)}}
 A.bze.prototype={
@@ -161110,7 +161110,7 @@ return null},
 $S:53}
 A.avn.prototype={
 C(a){var s=null,r=this.c
-return A.a7(A.b([A.dV(s,B.aK,!1,s,!0,B.M,s,A.e1(),r.ax,s,s,s,s,s,2,B.Jf,B.J,!0,s,!0,s,!1,s,B.aV,s,s,s,s,s,s,250,s,1,s,s,!1,"\u2022",s,s,s,s,s,!1,s,s,!1,s,!0,s,B.aQ,s,s,s,s,s,s,s,s,s,s,s,s,!0,B.ai,s,B.ba,s,s,s,s),B.b8,A.dV(s,B.aK,!1,s,!0,B.M,s,A.e1(),r.ay,s,s,s,s,s,2,B.anh,B.J,!0,s,!0,s,!1,s,B.aV,s,s,s,s,s,s,s,s,30,14,s,!1,"\u2022",s,s,s,s,s,!1,s,s,!1,s,!0,s,B.aQ,s,s,s,s,s,s,s,s,s,s,s,s,!0,B.ai,s,B.ba,s,s,s,s)],t.p),B.b4,B.r,B.x,0,B.B)}}
+return A.a7(A.b([A.dV(s,B.aK,!1,s,!0,B.M,s,A.e1(),r.ax,s,s,s,s,s,2,B.Jf,B.J,!0,s,!0,s,!1,s,B.aV,s,s,s,s,s,s,250,s,1,s,s,!1,"\u2022",s,s,s,s,s,!1,s,s,!1,s,!0,s,B.aQ,s,s,s,s,s,s,s,s,s,s,s,s,!0,B.ai,s,B.ba,s,s,s,s),B.b8,A.dV(s,B.aK,!1,s,!0,B.M,s,A.e1(),r.ay,s,s,s,s,s,2,B.ana,B.J,!0,s,!0,s,!1,s,B.aV,s,s,s,s,s,s,s,s,30,14,s,!1,"\u2022",s,s,s,s,s,!1,s,s,!1,s,!0,s,B.aQ,s,s,s,s,s,s,s,s,s,s,s,s,!0,B.ai,s,B.ba,s,s,s,s)],t.p),B.b4,B.r,B.x,0,B.B)}}
 A.arZ.prototype={
 C(a){var s,r,q,p,o=this,n=null,m=o.c,l=m.cx!=null,k=m.id,j=m.dy
 j=A.dt(B.aiD,"Suggest top 5 features",j,l&&!m.fx?new A.bA7(o):n)
@@ -209403,15 +209403,15 @@ B.an7=new A.e4(null,null,null,"Action",null,null,null,null,null,null,null,null,n
 B.an8=new A.e4(null,null,null,"Name",null,null,null,null,null,null,null,null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,!0,B.ci,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,null,null,null)
 B.Jg=new A.e4(null,null,null,"Role / flag",null,null,null,null,null,null,null,null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,null,B.fi,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,null,null,null)
 B.an9=new A.e4(null,null,null,"Name *",null,null,null,null,null,null,null,null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,null,null,null)
-B.ana=new A.e4(null,null,null,"Hash names or real names",null,null,null,"Separate several with commas, e.g. Smartarse, Smart Arse, Jane Smith. A first name, last name, email or hasher id works too.",null,null,null,null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,null,null,null)
-B.anb=new A.e4(null,null,null,null,null,null,null,null,null,null,"Enter Hash or mortal name",null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,!0,null,null,B.qD,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,null,null,null)
-B.anc=new A.e4(null,null,null,"Past runs shown on home page (1\u2013100)",null,null,null,null,null,null,null,null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,!0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,null,null,null)
-B.and=new A.e4(null,null,null,"Purpose",null,null,null,null,null,null,null,null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,!0,B.Hw,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,null,null,null)
-B.ane=new A.e4(null,null,null,"Description",null,null,null,null,null,null,null,null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,null,null,null)
-B.anf=new A.e4(null,null,null,"Status",null,null,null,null,null,null,null,null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,null,B.Hj,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,null,null,null)
-B.ang=new A.e4(null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,!0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,null,null,null)
+B.ana=new A.e4(null,null,null,"Email",null,null,null,"Plain text. A blank line starts a paragraph; links become clickable; {hashName} / {firstName} are each person's hash name / first name. The store buttons are added under the text.",null,2,null,null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,!0,null,null)
+B.anb=new A.e4(null,null,null,"Hash names or real names",null,null,null,"Separate several with commas, e.g. Smartarse, Smart Arse, Jane Smith. A first name, last name, email or hasher id works too.",null,null,null,null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,null,null,null)
+B.anc=new A.e4(null,null,null,null,null,null,null,null,null,null,"Enter Hash or mortal name",null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,!0,null,null,B.qD,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,null,null,null)
+B.and=new A.e4(null,null,null,"Past runs shown on home page (1\u2013100)",null,null,null,null,null,null,null,null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,!0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,null,null,null)
+B.ane=new A.e4(null,null,null,"Purpose",null,null,null,null,null,null,null,null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,!0,B.Hw,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,null,null,null)
+B.anf=new A.e4(null,null,null,"Description",null,null,null,null,null,null,null,null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,null,null,null)
+B.ang=new A.e4(null,null,null,"Status",null,null,null,null,null,null,null,null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,null,B.Hj,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,null,null,null)
+B.anh=new A.e4(null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,!0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,null,null,null)
 B.Jh=new A.e4(null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,!0,B.iI,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,null,null,null)
-B.anh=new A.e4(null,null,null,"Email",null,null,null,"Plain text. A blank line starts a paragraph; links become clickable; {firstName} is each person's first name. The store buttons are added under the text.",null,2,null,null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,!0,null,null)
 B.ani=new A.e4(null,null,null,"City (for timezone & address lookups)",null,null,null,null,null,null,null,null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,!0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,null,null,null)
 B.anj=new A.e4(null,null,null,"Supplier (JSON)",null,null,null,'Portal only, never sent to a phone. {"supplier":"\u2026","phone":"\u2026"}',null,null,null,null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,null,null,null)
 B.ank=new A.e4(null,null,null,"Platform",null,null,null,null,null,null,null,null,null,null,null,null,!0,!0,!1,null,null,null,null,null,null,!0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,B.ax,!0,null,null,null,null)
