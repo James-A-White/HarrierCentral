@@ -44,7 +44,7 @@ legacy schemas, and TSA (defunct; its old files are left as they were).
 | [HC.GoogleCalendarEvent](HC.GoogleCalendarEvent.Table.sql) | 10 | 2 | 1 |
 | [HC.Hasher](HC.Hasher.Table.sql) | 58 | 6 | 8 |
 | [HC.HasherBackup](HC.HasherBackup.Table.sql) | 44 | 0 | 0 |
-| [HC.HasherEventMap](HC.HasherEventMap.Table.sql) | 50 | 10 | 2 |
+| [HC.HasherEventMap](HC.HasherEventMap.Table.sql) | 51 | 10 | 2 |
 | [HC.HasherFriendMap](HC.HasherFriendMap.Table.sql) | 11 | 3 | 0 |
 | [HC.HasherKennelMap](HC.HasherKennelMap.Table.sql) | 43 | 4 | 2 |
 | [HC.HasherOwnEvent](HC.HasherOwnEvent.Table.sql) | 15 | 1 | 0 |

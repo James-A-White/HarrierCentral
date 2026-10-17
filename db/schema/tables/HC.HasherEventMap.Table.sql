@@ -54,6 +54,8 @@ CREATE TABLE [HC].[HasherEventMap] (
 	[TrackPaceSecPerKm] AS (case when [TrackDistanceM]>(0) AND [TrackMovingSeconds]>(0) then CONVERT([int],([TrackMovingSeconds]*(1000.0))/[TrackDistanceM])  end) PERSISTED,
 	[Pinned] [smallint] NOT NULL CONSTRAINT [DF_HasherEventMap_Pinned] DEFAULT ((0)),
 	[TrackSource] [nvarchar](40) NULL,
+	-- The run or kennel admin who marked this hasher hare (E8.F5.S6). NULL = not appointed: a hare who marked themselves still counts in history but gets no hare rights (payments, editing the run). Read through HC6.IsAppointedHare.
+	[HareAppointedBy] [uniqueidentifier] NULL,
 	CONSTRAINT [PK_HcHasherEventMap] PRIMARY KEY CLUSTERED ([id])
 );
 GO
@@ -67,6 +69,7 @@ CREATE NONCLUSTERED INDEX [IX_HasherEventMap_UserId_VVtype_Attend] ON [HC].[Hash
 CREATE NONCLUSTERED INDEX [IX_HemRunCount] ON [HC].[HasherEventMap] ([UserId], [KennelId], [IsHare]) INCLUDE ([id], [EventId]) WHERE ([AttendenceState]>=(20) AND [VirginVisitorType]=(0));
 CREATE UNIQUE NONCLUSTERED INDEX [IX_UserSyncHasherEventMap] ON [HC].[HasherEventMap] ([UserId], [updatedAt], [id]);
 ALTER TABLE [HC].[HasherEventMap] ADD CONSTRAINT [FK_HasherEventMap_Event] FOREIGN KEY ([EventId]) REFERENCES [HC].[Event] ([id]);
+ALTER TABLE [HC].[HasherEventMap] ADD CONSTRAINT [FK_HasherEventMap_HareAppointedBy] FOREIGN KEY ([HareAppointedBy]) REFERENCES [HC].[Hasher] ([id]);
 ALTER TABLE [HC].[HasherEventMap] ADD CONSTRAINT [FK_HasherEventMap_Hasher] FOREIGN KEY ([UserId]) REFERENCES [HC].[Hasher] ([id]);
 ALTER TABLE [HC].[HasherEventMap] ADD CONSTRAINT [FK_HasherEventMap_Kennel] FOREIGN KEY ([KennelId]) REFERENCES [HC].[Kennel] ([id]);
 GO
