@@ -1,0 +1,53 @@
+{
+  "schema": "HC6",
+  "name": "nonApi_updateEmailLog",
+  "version": "1.0.0",
+  "description": "The API records a per-recipient email's outcome (Status 1 sent / 2 failed, reason in ServerReply), or a send's audit path on all its rows. Internal (API only). Idempotency: set-state.",
+  "parameters": [
+    {
+      "name": "emailLogId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "EmailLog.id",
+      "description": "The row."
+    },
+    {
+      "name": "status",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": "EmailLog.Status",
+      "description": "1 sent, 2 failed."
+    },
+    {
+      "name": "reply",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "EmailLog.ServerReply",
+      "description": "Failure reason (cut to 2500)."
+    },
+    {
+      "name": "sendId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "EmailLog.SendId",
+      "description": "With @auditPath: the send."
+    },
+    {
+      "name": "auditPath",
+      "type": "NVARCHAR(400)",
+      "nullable": true,
+      "mapsToColumn": "EmailLog.AuditPath",
+      "description": "Path in the email-audit container."
+    }
+  ],
+  "rowsets": [],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
