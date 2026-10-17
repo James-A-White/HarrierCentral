@@ -168,7 +168,9 @@ void main() {
       expect(none, contains('💰 5.00'));
     });
 
-    test('a long description is cut with an ellipsis, a short one kept whole', () {
+    // The whole description goes out, however long (394b95d6: the app had cut
+    // it at 220 characters, the portal at 300).
+    test('the description is carried whole, short or long', () {
       final String short = RunAnnouncement(
         event: event(description: 'Bring a torch.'),
         kennel: kennel(),
@@ -179,8 +181,8 @@ void main() {
         event: event(description: 'x' * 400),
         kennel: kennel(),
       ).text;
-      expect(long, contains('…'));
-      expect(long, isNot(contains('x' * 300)));
+      expect(long, contains('x' * 400));
+      expect(long, isNot(contains('…')));
     });
 
     test('an uncounted run has no number in the title and uses the legacy link', () {
