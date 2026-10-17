@@ -12,6 +12,8 @@ import { parseSiteConfig, deriveNavItems, getDefaultLayout } from "@/lib/page-la
 import { getIsCustomDomain } from "@/lib/server-utils";
 import { RsvpPanel } from "@/components/member/RsvpPanel";
 import { RunPhotoStrip } from "@/components/kennel/RunPhotoStrip";
+import { AddToCalendar } from "@/components/kennel/AddToCalendar";
+import { kennelBaseUrl } from "@/lib/seo";
 
 interface PageProps {
   params: Promise<{ slug: string; runNumber: string }>;
@@ -54,6 +56,12 @@ export async function generateMetadata({ params }: PageProps) {
       openGraph: { images: [{ url: event.EventImage }] },
     }),
   };
+}
+
+/** True while a run is ahead or started within the last day (its instant, EventStartDatetimeGmt). */
+function isUpcomingOrToday(startGmt: string | null): boolean {
+  const start = startGmt ? Date.parse(startGmt) : NaN;
+  return !Number.isNaN(start) && start > Date.now() - 24 * 60 * 60 * 1000;
 }
 
 // ── Page ───────────────────────────────────────────────────────────────────────
@@ -127,6 +135,11 @@ export default async function RunDetailPage({ params, searchParams }: PageProps)
   // The app's Photos tab: approved photos of this run (E9.F7.S12).
   const photos = await getRunPhotos(event.PublicEventId).catch(() => []);
 
+  // Add to calendar (James, 2026-10-17, as the app): offered while the run is
+  // ahead (or started within the last day); a past run has nothing to add.
+  const calendarOffered = isUpcomingOrToday(event.EventStartDatetimeGmt);
+  const siteBase = kennelBaseUrl(slug, kennelData.CustomDomain);
+
   const backHref = back ?? `/${slug}`;
   const showKennelHomeBtn = !!back && back !== `/${slug}`;
   let backLabel = `Back to ${kennelData.KennelShortName}`;
@@ -197,6 +210,15 @@ export default async function RunDetailPage({ params, searchParams }: PageProps)
             mapHeight={480}
             indentMap
             packTrackHref={`/${slug}/${runNumber}/packtrack`}
+            extraButtons={calendarOffered ? (
+              <AddToCalendar
+                runIcsUrl={`${siteBase}/${runNumber}/run.ics`}
+                feedUrl={`${siteBase}/runs.ics`}
+                kennelShortName={kennelData.KennelShortName}
+                className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-opacity hover:opacity-85"
+                style={{ backgroundColor: "var(--kennel-primary)", color: "var(--kennel-primary-fg)" }}
+              />
+            ) : undefined}
             memberPanel={
               <RsvpPanel
                 slug={slug}

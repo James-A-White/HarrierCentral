@@ -110,7 +110,7 @@ function location(run: FeedRun): string | null {
   return parts.length ? parts.join(", ") : null;
 }
 
-function vevent(kennel: FeedKennel, run: FeedRun, stamp: string): string[] | null {
+function vevent(kennel: FeedKennel, run: FeedRun, stamp: string, note?: string): string[] | null {
   if (!run.EventStartDatetimeGmt) return null;
   const start = new Date(run.EventStartDatetimeGmt);
   if (Number.isNaN(start.getTime())) return null;
@@ -138,6 +138,7 @@ function vevent(kennel: FeedKennel, run: FeedRun, stamp: string): string[] | nul
     if (text.length > MAX_DESCRIPTION) text = text.slice(0, MAX_DESCRIPTION).trimEnd() + "…";
     lines.push(text);
   }
+  if (note) lines.push("", note);
 
   const out = [
     "BEGIN:VEVENT",
@@ -187,5 +188,28 @@ export function buildCalendar(kennel: FeedKennel, runs: FeedRun[], stamp: Date):
     if (ev) lines.push(...ev);
   }
   lines.push("END:VCALENDAR");
+  return lines.map(fold).join(CRLF) + CRLF;
+}
+
+/**
+ * ONE run as a calendar file, for "This run only" on a run page (James,
+ * 2026-10-17, as the app). It is a snapshot: the description says so and
+ * gives the kennel's feed for updates. Same event builder as the feed, so the
+ * entry reads the same; no refresh interval, as nothing re-reads it.
+ */
+export function buildSingleRun(kennel: FeedKennel, run: FeedRun, stamp: Date, feedUrl: string): string | null {
+  const ev = vevent(kennel, run, utcStamp(stamp),
+    `Added once from hashruns.org: later changes to this run will not update here. ` +
+    `For updates, subscribe to ${kennel.shortName}'s calendar: ${feedUrl}`);
+  if (!ev) return null;
+  const lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Harrier Central//hashruns.org single run//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    ...ev,
+    "END:VCALENDAR",
+  ];
   return lines.map(fold).join(CRLF) + CRLF;
 }
