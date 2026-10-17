@@ -1,0 +1,189 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_getVersionEmailRecipients",
+  "version": "1.0.0",
+  "description": "HC Admin Tools > Version email (E19.F3.S3): who the email would reach for the chosen builds and who is listed but not sent it, with why (HC6.VersionEmailAudience, the rule the send queue also reads); with @sendId, that send's progress. Public hasher ids only. Auth: HC6.ValidatePortalAuth; the caller must hold a live HC.PlatformAdmin row with CanManageNewsflash = 1. Idempotency: read-only.",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal device auth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal token; standard param string."
+    },
+    {
+      "name": "builds",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "'|'-delimited build numbers."
+    },
+    {
+      "name": "days",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Last sign-in within this many days (1..3650, default 90)."
+    },
+    {
+      "name": "sendId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Optional: a send whose progress to return in rowset 1."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Refusal",
+      "description": "{ Success = 0, ErrorMessage } when auth or the CanManageNewsflash platform-admin gate fails.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "0"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(255)",
+          "nullable": false,
+          "description": "Why"
+        }
+      ]
+    },
+    {
+      "index": 0,
+      "name": "Recipients",
+      "description": "One row per person, eligible first then by name.",
+      "columns": [
+        {
+          "name": "PublicHasherId",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": false,
+          "description": "HC.Hasher.PublicHasherId"
+        },
+        {
+          "name": "Name",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "DisplayName"
+        },
+        {
+          "name": "FirstName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "First name, else hash name"
+        },
+        {
+          "name": "Email",
+          "type": "NVARCHAR(250)",
+          "nullable": true,
+          "description": "Address (generated ones flagged)"
+        },
+        {
+          "name": "IsGeneratedEmail",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 = made-up address, shown dark red, never sent"
+        },
+        {
+          "name": "Version",
+          "type": "NVARCHAR(50)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "BuildNumber",
+          "type": "NVARCHAR(25)",
+          "nullable": false,
+          "description": ""
+        },
+        {
+          "name": "IsIos",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Uses an iPhone at this build"
+        },
+        {
+          "name": "IsAndroid",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "Uses an Android phone at this build"
+        },
+        {
+          "name": "LastLogin",
+          "type": "DATETIMEOFFSET",
+          "nullable": false,
+          "description": "Latest sign-in at this build"
+        },
+        {
+          "name": "LastVersionEmailAt",
+          "type": "DATETIMEOFFSET",
+          "nullable": true,
+          "description": "Last version email queued/sent to them"
+        },
+        {
+          "name": "Eligible",
+          "type": "SMALLINT",
+          "nullable": false,
+          "description": "1 = will be sent"
+        },
+        {
+          "name": "Reason",
+          "type": "NVARCHAR(40)",
+          "nullable": true,
+          "description": "Why not: Generated address / Blocked all email / Email bouncing / Emailed in the last 30 days"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Progress",
+      "description": "Counts for @sendId (all 0 without one).",
+      "columns": [
+        {
+          "name": "Queued",
+          "type": "INT",
+          "nullable": false,
+          "description": "Status 0"
+        },
+        {
+          "name": "Sending",
+          "type": "INT",
+          "nullable": false,
+          "description": "Status 3"
+        },
+        {
+          "name": "Sent",
+          "type": "INT",
+          "nullable": false,
+          "description": "Status 1"
+        },
+        {
+          "name": "Failed",
+          "type": "INT",
+          "nullable": false,
+          "description": "Status 2"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
