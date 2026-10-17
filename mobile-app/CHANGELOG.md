@@ -21,3 +21,4825 @@
 
 - **Kennel chat notifications**: the title no longer ends in a dangling " -".
 
+## 3.1.10+1481 (2026-10-16)
+
+### New Features
+
+- **Mismanagement chat**: every kennel now has a private chat for its
+  office-holders and admins beside its general chat — a shield button on the
+  kennel page, a "<kennel> Mismanagement" row in Chats with its own unread
+  count, pin and notifications. Harrier Central posts a weekly reminder there
+  of what is waiting (first: photos to review).
+- **Kennel trail map**: a search bar like the Runs page (run number, name or
+  date), and ‹ › on a selected trail to step to the next newer or older run.
+
+### Fixes
+
+- **Apple Watch**: the tracking screen fits on one screen on every watch, the
+  Ultra included — no scrolling — and shows your distance and checks so far.
+
+## 3.1.10+1480 (2026-10-16)
+
+### Fixes
+
+- **Past runs on the Runs page**: no longer vanish after pulling to refresh
+  the kennel list, which left the list opening on a pull-to-refresh with no
+  Past Runs section above it.
+
+### New Features
+
+- **Kennel trail map coloured by age**: newest trail green, round through
+  blue and purple to red for the oldest, newest drawn on top, with a key.
+
+## 3.1.10+1479 (2026-10-15)
+
+### New Features
+
+- **Add to calendar** on a run asks: this run only, or all of the kennel's
+  runs — connected to its calendar, so new runs and changes appear by
+  themselves, each linking back to the run.
+- **Add <kennel> runs to my calendar** on the kennel page.
+- A tapped kennel calendar-feed link opens the calendar's subscribe dialog.
+
+## 3.1.10+1478 (2026-10-15)
+
+### Fixes
+
+- **Error logs from a phone's first session**: kept until the phone has a
+  device id, then uploaded. They used to be refused and lost.
+
+### New Features
+
+- **Google Calendar as a social link**: a kennel's Google Calendar can be one
+  of its social links.
+
+## 3.1.10+1477 (2026-10-14)
+
+### New Features
+
+- **Send my logs** (Beta Testers room only): uploads this session's app log at
+  once and posts "📎 Logs sent", so James's assistant can look at a problem
+  while it is fresh.
+
+## 3.1.10+1476 (2026-10-14)
+
+### New Features
+
+- **Pack-off time**: a run can say when the pack actually leaves, not just when
+  it gathers ("Gather 12:00 · Pack off 12:30"). Kennels set a default; the run
+  editor's new **Pack off** choice overrides it for one run. Shown on run cards
+  and the run page. PackTrack's auto start now counts from the pack-off.
+- **Links QR codes**: "Show <kennel> Links" has a QR code for each of the
+  kennel's social and chat links.
+
+### Improvements
+
+- **Run editor**: Save shows it is working the moment it is tapped, before the
+  "another run at this time?" check, and ignores a second press.
+
+## 3.1.10+1475 (2026-10-14)
+
+Version 3.1.10 marks the 2026-10-14 work (James): safe repeats and immediate
+feedback across every client. It carries everything in 3.1.9+1472 to +1474:
+
+### New Features
+
+- **Kennel social links**: the kennel page shows a row of the club's social and
+  chat links; members also see the members-only chat groups.
+- **Another run at this time?** Saving a run whose start matches another of the
+  kennel's runs asks first and names it (weekend events are a "Save anyway" away).
+- **Runs on iOS 18 again**: the minimum is iOS 18.0 (was 26).
+
+### Improvements
+
+- **Every action answers at once and ignores a second press**: payments,
+  check-in, receipts, live run (start, end, help), RSVPs, emails, shares and more.
+- **No duplicates after a lost reply or a retry**: new runs, receipts, down-down
+  charges, membership extensions, sales, help messages and song shares are each
+  written once, however often they are sent.
+- **Run announcement carries the whole description.**
+
+### Fixes
+
+- **Cancel on Payment options no longer crashes a payment.**
+- **Clearer crash reports**: a repeating error is counted, not logged hundreds of times.
+
+## 3.1.9+1474 (2026-10-14)
+
+### Improvements
+
+- **Every action answers at once and ignores a second press**: payments, check-in,
+  receipts, live run (start, end, help), RSVPs, emails, shares and more.
+
+### Fixes
+
+- **No duplicates after a lost reply**: saving a receipt, a down-down charge, a
+  membership extension or a sale again no longer makes a second one.
+- **Help / I'm Lost / Back on trail**: trying again sends the same message, so the
+  pack is pushed once.
+- **Share song**: sharing twice in a row pushes the pack once.
+
+## 3.1.9+1473 (2026-10-14)
+
+### Improvements
+
+- **Saving a new run is safe to repeat**: if a save's reply is lost on a weak
+  connection, saving again edits the same run instead of creating a second copy.
+- **Another run at this time?** Saving a new run, or changing a run's start,
+  asks first when the kennel already has a run then, and names it. Weekend
+  events with several runs at once are a "Save anyway" away.
+- **Runs on iOS 18 again**: the minimum is now iOS 18.0 (was 26), so iPhones
+  that could not update past 2.1.2 can install it.
+- **Run announcement carries the whole description** (it was cut at 220 characters).
+
+### Fixes
+
+- **Cancel on Payment options no longer crashes a payment** (check-in and the
+  payment report).
+- **Clearer crash reports**: a repeating error is counted rather than logged
+  hundreds of times, and screens record what closed them.
+
+## 3.1.9+1472 (2026-10-13)
+
+### Fixes
+
+- **Membership**: the kennel list, kennel page and check-in member count work out
+  membership from the expiry date, so a lapsed membership shows as lapsed straight away.
+
+## 3.1.9+1471 (2026-10-13)
+
+### Fixes
+
+- **Apple Watch**: a run that starts automatically now appears on the watch,
+  not only one started from the Live Run screen (E5.F1.S7).
+- **Apple Watch**: the session log records whether the watch is paired,
+  installed and reachable, and why the phone could not update it, so a
+  blank watch can be diagnosed.
+
+## 3.1.9+1470 (2026-10-12)
+
+### New Features
+
+- **I was at this run**: on a past run, a hasher can mark their own
+  attendance where the kennel allows it (E4.F4.S3).
+
+### Fixes
+
+- **Chat badges after returning to the app**: a message that arrived while the
+  app was in the background now updates the bubble, the run cards and the
+  Chats pills on return, not only when a chat screen is opened.
+- **Android navigation bar**: readable on Android 15 and 16 — the system now
+  adds contrast behind the buttons and the window behind the app is dark.
+- **First sign-in record**: redeeming an invite code now records the app
+  version and the phone, so a new member's first sign-in no longer reads as a
+  web sign-in in the portal.
+
+### Improvements
+
+- **Direct-message bubble**: green for friends (solid once you have talked),
+  grey dashed for hashers you are not friends with yet; removed from the
+  leaderboards, where it was too small to hit.
+
+---
+
+## 3.1.9+1469 (2026-10-12)
+James, Tuna Melt and Kilty (private).
+### New Features
+- **Chats: Groups and Friends.** A pill at the top of Chats splits run, kennel and room chats (Groups) from the hashers you message (Friends), each with its own unread count — the two add up to the chat bubble. Friends lists everyone who has accepted a direct message, even before anything is said, with requests to message you on top and **Find a hasher** beside them. Chats opens on Friends when only Friends has something unread; a message request opens Friends. (E9.F1.S29)
+- **Message a hasher from any list.** A chat bubble on the run's RSVP list, the PackTrack runner list, the leaderboards, Find a hasher, Run Counts › By Hasher and kennel members: **solid** when you have talked, **outline** when you are friends but have not, **dashed** when you are not friends yet. A friend's bubble opens the chat; anyone else's asks them, or opens at once if they accept messages from anyone. (E9.F1.S32)
+
+## 3.1.9+1468 (2026-10-11)
+All beta testers (private first, then widened the same day).
+### Fixes
+- **iOS: a crash when a silent notification arrived.** The notification plugin grafted its handler onto the app and then read its own settings from the wrong place; now and then that crashed the app (twice on James's phone: 1446 and 1467). The app now owns that handler and passes each notification to the plugin properly.
+### Diagnostics
+- The session log records each notification that arrives while the app is open (`[PUSH] foreground silent|alert type=…`), so the fix can be confirmed from uploaded logs.
+
+## 3.1.9+1467 (2026-10-11)
+All beta testers (private first; widened 2026-10-11 as 1468).
+### New Features
+- **Street map on the radar**: the PackTrack radar shows the streets behind its face, clipped to the circle and darkened by a quarter, with the rings, dots, names and the Me-mode trail on top. It follows the radar's centre, range and heading-up turning. (E5.F4.S11)
+### Improvements
+- **Smoother zoom on the PackTrack map**: an automatic zoom change (Me mode keeping the other hasher on screen) glides into place instead of jumping, and pinching no longer stutters.
+### Fixes
+- **Me mode**: the highlighted trail between you and the other hasher now always reaches both dots — on the radar it stopped short of the centre when you were beside the hare's trail. (E5.F4.S10)
+
+## 3.1.9+1466 (2026-10-11)
+All beta testers (private first; widened 2026-10-11 as 1468).
+### New Features
+- **PackTrack Me mode**: a **Me** button in the playback panel keeps you in the centre of the map and the radar. Tap a hasher — their photo, pin or radar dot — to see only the two of you, the trail between you highlighted, how far ahead or behind you are on the trail ("69 m ahead of Tuna Melt") and how far apart as the crow flies. (E5.F4.S10)
+- **Kennel chat from the kennel page**: the chat bubble in the kennel page's app bar, with the unread count. Anyone can post in a kennel's chat; posting or opening it turns that kennel's notifications on if you had never chosen. (E9.F1.S30)
+- **Run chat in the app bar**: Run Details has five tabs; the chat is the bubble at the top right, as on the run cards. A chat notification opens the run, then its chat. (E9.F1.S31)
+### Improvements
+- **One auto-view button in PackTrack**: follow on the map, the automatic range on the radar. Dragging the map stops following; the floating Reset range button is gone. Radar dots can be tapped. (E5.F4.S9)
+### Fixes
+- **Auto start**: a vague GPS fix on the way in no longer starts the track before the pack sets off (LH3 #2854). (E5.F1.S17)
+- **Down downs › Manage** on a run page opened the charges with no app bar or back button, and editing a charge raised an error.
+
+## 3.1.9+1465 (2026-10-10)
+All beta testers (private first; widened 2026-10-11 as 1468).
+### Improvements
+- **Auto-generated email addresses are shown in dark red**, with a note that they will not be used for sending emails — on **Who gets the email** and **My profile**. Such addresses are never emailed.
+
+## 3.1.9+1464 (2026-10-10)
+All beta testers.
+### New Features
+- **Who gets the email** shows each hasher's email address between their name and the reason — for kennel admins and hare raisers; a hare who may edit only this run does not see addresses. Search matches addresses too.
+
+## 3.1.9+1463 (2026-10-10)
+All beta testers.
+### New Features
+- **Run Admin › Before On Out** on iPhone: **Post to WhatsApp** and **Email hashers** (1462 reached Android only — Apple never processed it).
+- **Promo decks by build**: a deck uploaded as `build_<N>_1.avif`… shows once to everyone who upgrades past build N, as well as the version deck when the version changes. (E9.F4.S5)
+- **Who gets the email**: a **Clear bounce** button on a hasher whose emails bounced — for when you have checked the address with them. (E19.F4.S5)
+### Fixes
+- **A phone with a wrong clock now corrects itself on the first refused request.** The retry that learns the server's time on an invalid-token reply never ran — it was looking for a field the server no longer sends. (E1.F1.S7)
+
+## 3.1.9+1462 (2026-10-10)
+All beta testers.
+### New Features
+- **Run Admin › Before On Out** has two new buttons: **Post to WhatsApp** (or the kennel's messenger) and **Email hashers** — the two halves of Save and send, without having to edit the run first.
+
+## 3.1.9+1461 (2026-10-10)
+All beta testers.
+### Fixes
+- A `hashruns.org/<kennel>` link opens the kennel's page in the app — so Safari's "Open in the Harrier Central app" banner on a kennel page now does something. Needs the site's updated app-link rules (web).
+
+## 3.1.9+1460 (2026-10-09)
+All beta testers.
+### Improvements
+- **Email the run** says *hashers*, not *members*: the audience is members, followers and anyone who RSVP'd, minus anyone who turned emails off.
+### Fixes
+- **Chats open at the bottom** — the newest message is on screen when a chat opens; no scrolling down first. (The list jumped to its end before the thread had loaded.) Pinned by `integration_test/chat_opens_at_bottom_test.dart`.
+- Boot no longer goes blank after the 1.x→2.x legacy re-registration path: the services it tore down are registered again before the app restarts.
+
+## 3.1.9+1459 (2026-10-09)
+All beta testers (private dance first, then widened the same day).
+### Improvements
+- **Email the run**: Preview to me, Who gets it and Send are disabled until both the subject and the message have text; the run title is bold with the date and venue on their own lines.
+
+## 3.1.9+1458 (2026-10-09)
+Private dance — James, Tuna Melt and Kilty.
+### Improvements
+- **Preview to me** confirms with a dialog once the preview has been sent.
+- **Email the run** opens empty with two ways to fill it: **Use run description** (the run's own words, no AI) or **Write with AI** (steered by the **Write with AI prompt** box, the kennel's usual one pre-filled).
+
+## 3.1.9+1457 (2026-10-09)
+Private dance — James, Tuna Melt and Kilty.
+### New Features
+- **Run emails link straight to your settings**: every run email now has "change your email preference for this run / for the kennel" links that open the app on that dialog. The run's image is in the email too.
+
+## 3.1.9+1456 (2026-10-09)
+Private dance — James, Tuna Melt and Kilty.
+### New Features
+- **Who gets the email, reworked**: the attendance roster's look — light background, search box, photo rows with hash and mortal names — and, in place of the home kennel, why each member is in the list (On for this run, On for the kennel, Run emails off, Kennel emails off, Never switched on, No email address, Blocked all emails, Email bouncing).
+- **Per-send override**: one button per row moves a member to the other list for this send only — nobody's settings change, and it is logged. Moved members show an Override tag with Undo; tab counts read "Will get it (12 + 3)". Members who blocked all email, or whose address bounces, cannot be moved in. A moved-in member's email opens with "<you> has requested that you receive this email" and a link to their email preferences.
+- **Bouncing addresses**: Harrier Central now hears back from the mail service about each run email; a hard bounce marks the address, three failures in a row flag it, and a delivery clears it. A member whose address bounces is asked in the app to update it, and shows "Email bouncing, ask for a new address" to admins.
+
+## 3.1.9+1455 (2026-10-09)
+Private dance — James, Tuna Melt and Kilty.
+### New Features
+- **Email the run › Preview to me**: sends the finished email — facts block, buttons, footer — to your own inbox only, without recording a send.
+- **Email the run › Who gets it**: two pills — the members who will get the email, and the kennel members who will not, with the reason (no email address, emails off for this run, kennel emails off, never switched on). Names as the check-in list shows them.
+
+## 3.1.9+1454 (2026-10-09)
+Dance baby! — all beta testers.
+### New Features
+- **Save and send** (since 1451, first time for most testers): the run editor has **Save** and **Save and send**. Save and send posts the notice to the kennel's WhatsApp and/or **emails the members who have run emails switched on** — drafted for you from the run's details, with an optional instruction ("make it a funny Halloween story", "write it in French"), a Rewrite button, and your edit before anything goes. The date, venue, hares, price and ✓ I'm in / ✗ Can't make it buttons are added automatically. Every email has a one-tap unsubscribe.
+- **Kennel house style**: the instruction can be saved as the kennel's default and is pre-filled for whoever emails the next run.
+### Improvements
+- **Email the run**: shows how many emails have already gone out for the run and when the last one did — on the page and again before you send; the subject box wraps instead of running off the edge.
+
+## 3.1.9+1453 (2026-10-09)
+Private dance — James, Tuna Melt and Kilty.
+### Fixes
+- **Email the run**: the subject, message and instruction boxes were white-on-white; the text is dark now, the labels sit above the boxes, and the instruction box grows as you type.
+
+## 3.1.9+1452 (2026-10-09)
+Private dance — James, Tuna Melt and Kilty.
+### Fixes
+- **Run editor**: the Save / Save and send bar had swallowed the whole screen on 1451; the editor is back.
+### Improvements
+- **Kennel house style for run emails**: the instruction box is pre-filled with the kennel's saved instruction, and **Save as <kennel>'s default** stores yours for whoever emails the next run — a kennel that wants its emails in French always gets them in French.
+- Every Harrier Central email now links to the app on the App Store and Google Play.
+
+## 3.1.9+1451 (2026-10-09)
+Private dance — James, Tuna Melt and Kilty.
+### New Features
+- **Save and send**: the run editor now has **Save** and **Save and send**. Save and send offers two tick boxes — post the notice to the kennel's WhatsApp (as before) and **email the members who have run emails switched on**, with the live count. If the run has already been emailed it says so and lets you send an update.
+- **Emails written for you**: the email is drafted from the run's details, with an optional instruction — "make it a funny Halloween story", "write it in French" — and a Rewrite button. You edit and approve before anything is sent. The date, venue, hares, price and ✅ I'm in / ❌ Can't make it buttons are added under your text automatically, so they are always right. Every email carries a one-tap unsubscribe.
+
+## 3.1.9+1450 (2026-10-09)
+Private dance — James, Tuna Melt and Kilty.
+### Fixes
+- **Auto start keeps its GPS on Android**: arming auto start and putting the phone away within 30 seconds could stop the location service, so the run never started by itself.
+### Improvements
+- **Run Counts › By Hasher**: the hashers you have run with most come first, then by name A–Z.
+
+## 3.1.9+1449 (2026-10-05)
+Dance baby! — all beta testers.
+### Fixes
+- **Photo review "Review all" works**: tapping it from a run's photos did nothing; it now opens every pending photo in the kennel, after saving the decisions made on the current run.
+### Improvements
+- **AI-imported runs warn before changes**: saving, changing the map or image, toggling visibility or deleting a run that was imported by AI from a kennel's website asks first — the change makes it a Harrier Central run and the AI stops updating it (a deleted one is not brought back).
+
+## 3.1.9+1448 (2026-10-05)
+Dance baby! — all beta testers.
+### Improvements
+- **AI badge in run lists**: runs imported from a kennel's own runs page by AI show a new icon — the Harrier Central foot with sparkles.
+
+## 3.1.9+1447 (2026-10-04)
+Dance baby! — all beta testers.
+### Improvements
+- **Runs imported from a kennel's own runs page** show "runs page" as their source.
+
+## 3.1.9+1446 (2026-10-04)
+Dance baby! — all beta testers (TestFlight Hash beta testers + Play internal). Builds 1436-1446 reach the wider beta for the first time: hasher search and By Hasher, official trails (scout, upload, promote, kennel trail map), track sources, the pre-run push, and the iPhone Always requirement.
+### Improvements
+- **Kennel trail map start points are clustered** like the other maps: a pink bubble says how many runs started in that area; tap to zoom in until it splits into single places.
+- **Runs date filter reaches any year fast**: From and To buttons open a date wheel, and the calendar's month header goes up to a year grid and back down to the days — no more scrolling month by month to 1983.
+### Server (no app change needed)
+- **Chichester's special events flagged**: 101 runs (Christmas, Hangover Hashes, milestones, BBQs, joint and away weekends, themed runs) now show under 🎉 Events.
+
+## 3.1.9+1445 (2026-10-04)
+Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally).
+### New Features
+- **Open any run from the kennel trail map**: a run that is not on your phone is fetched on its own and opened — no need to follow the kennel.
+- **Imported tracks say where they came from**: on the PackTrack map a selected runner reads "Hard On On · Garmin" when the track was uploaded from Garmin, Strava, Fitbit and so on.
+### Improvements
+- **iPhone PackTrack needs Location set to Always**: Start, Arm auto start and Scout this trail wait until it is, with a button that asks for it. On While Using the phone stopped recording when the screen locked.
+- **Android no longer warns about "Allow all the time"**, which it never needed and most phones do not offer.
+- **Start pins are pink**, deeper and bigger where the kennel starts most often.
+- **Search keyboards close** when you tap a row or scroll, and show the done (checkmark) key.
+
+## 3.1.9+1444 (2026-10-03)
+Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally).
+### Fixes
+- **Edit run › Map no longer greys out on imported runs**: the "Use external source" button broke the whole button row on runs imported from a calendar, covering the map with a grey box and hiding Set Location (TwH3 #2514).
+
+## 3.1.9+1443 (2026-10-03)
+Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally).
+### Improvements
+- **Kennel trail map opens where the kennel runs**: the view centres on the busiest start area (about 90% of the kennel's runs), instead of zooming out to take in a far-away away day.
+- **Start pins show how busy a place is**: blue dots with a black border, bigger and deeper blue the more runs started there; the selected pin has a white halo.
+### Server (no app change needed)
+- **Official trails for past runs**: 476 runs with a PackTrack now have an official trail, promoted from their best runner track.
+
+## 3.1.9+1442 (2026-10-03)
+Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally).
+### New Features
+- **Start points on the kennel trail map**: every run's start is a pin, one per place (bigger where the kennel starts often). Tap a pin to step through the runs that started there and open one. Works for kennels with no official trails too.
+
+## 3.1.9+1441 (2026-10-03)
+Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally). Same code as 1440. Apple refused 1440 (errors 90186/90062): App Store review approved 3.1.8 (build 1435), which closes the 3.1.8 train, so the version moves to 3.1.9 (James, 2026-10-03).
+
+## 3.1.8+1440 (2026-10-03)
+Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally). Supersedes 1439, which was bumped but never built. Held from the wider beta until the official-trail features (scout, upload, promote, map overlay, I'm-lost reveal) have been tried on a device; 1436-1440 then reach the wider beta together.
+### New Features
+- **Official trail** (hares and kennel admins): a run's details have an "Official trail" page. **Scout this trail** records the route ahead of the run on your phone only (it never appears on PackTrack), then saves it as the run's official trail for the trail type you choose. Or **upload a GPX, TCX or FIT file** — exports from Strava, Garmin Connect and Fitbit work. Remove a lane from the same page.
+- **Make official trail** on the PackTrack map: select a runner and promote their track to the run's official trail.
+- **The official trail on the PackTrack map**: drawn dashed under the pack. In replay a timed trail starts with the first runner, so the hare's pace runs alongside the pack; an untimed one is shown whole.
+- **I'm Lost shows the hare's trail**: the lost runner (only) sees the official trail on their map during the run.
+- **Get PackTrack ready**: about 10 minutes before a run you said Yes to (or are checked in to), a push opens Live Run, checks you in if you are at the start, and arms auto start. Replaces the generic check-in reminder for you.
+- **Kennel trail map**: a "Trail map" button on the kennel page opens a full-screen map of every run's official (hare's) trail; tap one to see and open its run.
+### Fixes
+- Cancelling a kennel's notification menu no longer logs an error.
+
+## 3.1.8+1438 (2026-10-02)
+Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally). Test data: 500 real hashers still carry seeded answers until the revert runs.
+### Improvements
+- **By Hasher looks like By Kennel**: square photos, big counts, and "(since Sep 2013 · mostly FILTH)" under each.
+- **A hasher's page looks like a kennel's run history**: your run and haring numbers on each shared run, the activity icons (PackTrack, photos, chat, down-downs), and tap the photo to see it full size.
+### Server (no app change needed)
+- **Fewer, better chat notifications**: with a kennel's bell on, only runs you said Yes to, attended or posted in buzz; other runs of kennels you belong to or follow update the badge silently. GMs and On-Secs still get every run.
+- **Chats lists only your kennels' runs**: a kennel you once visited no longer fills your Chats.
+
+## 3.1.8+1437 (2026-10-02)
+Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally). Test data: 500 real hashers carry seeded answers until the revert runs.
+### New Features
+- **Find a hasher**: a search button on Chats finds hashers by hash name or home kennel, and by real name where they allow it. Only hashers who chose to be found appear.
+- **Can other hashers find you?**: asked once, after launch (or during sign-up for new members); change it any time in Settings › Who can find me.
+- **Run Counts › By Hasher**: everyone you've run with, most runs together first, with a search box. Tap a hasher for your runs together and a Message button.
+
+## 3.1.8+1436 (2026-10-02)
+Private dance: James, Tuna Melt, Kilty (TestFlight, no group; Android AAB kept locally).
+### Improvements
+- **Android trails as fine as iPhone ones**: Android records a point every 5 seconds on every tracking setting (was every 15 seconds, about 40 m apart at running pace). The setting still decides only how often the trail is sent while the phone is in a pocket.
+- **The live map downloads only what changed**: no more full re-download of every runner's trail every 5 minutes. Deleted points (a resumed runner's On Inn, a cleared LOST mark) now arrive as changes, so a cleared LOST badge leaves the map on the next poll.
+
+## 3.1.8+1435 (2026-10-01)
+All beta testers (TestFlight Hash beta testers + Play internal), the production candidate.
+### Fixes
+- **iPhone trails keep every point again**: 1433-1434 kept at most one point per 15 seconds on iPhone too; the 15-second spacing is now Android-only, and iPhone records a point every 5 m of movement.
+### Improvements
+- The green point-count chip beside the chat bubble while tracking is gone — the Live Run page has the marks and the GPS signal light.
+
+## 3.1.8+1434 (2026-10-01)
+iOS (TestFlight, private dance: James, Tuna Melt, Kilty).
+### New Features
+- **Auto start knows when you set off on foot.** With auto start armed, the phone's own motion sensing starts your track as soon as you start running from the start (or walking once you are more than 100 m away), and never because you drove away. Asks for Motion & Fitness (iPhone) / Physical activity (Android) when you arm it; without it, auto start works as before.
+### Fixes
+- The clock notice appears again whenever your clock's error changes by two minutes or more, not only the first time.
+
+## 3.1.8+1433 (2026-10-01)
+iOS (TestFlight, private dance: James, Tuna Melt, Kilty).
+### Improvements
+- **Every tracking setting records the same detailed trail.** The setting now decides how often your position is sent while the phone is in your pocket — Best every minute, Balanced every 2, Power Saver every 3 — because sending, not the GPS, is what uses the battery. With the app open, your position is sent every 30 seconds, and taking the phone out sends it at once.
+- Power Saver no longer warns before a run, and its distance is no longer marked approximate.
+
+## 3.1.8+1432 (2026-10-01)
+iOS (TestFlight, private dance: James, Tuna Melt, Kilty).
+### New Features
+- **Read receipts in direct messages**: your messages show ✓✓ in green once the other person has read them, and update while you watch.
+- **Pin a direct message**: Pin / Unpin in a conversation's ⋮ menu keeps it at the top of Chats, as rooms and kennel chats already could.
+### Improvements
+- The clock-correction note in the diagnostic log is a trace line, not an error.
+
+## 3.1.8+1431 (2026-10-01)
+iOS (TestFlight, private dance: James, Tuna Melt, Kilty).
+### Fixes
+- **Chats opens every time**: after the first visit, the chat bubble did nothing on 1430.
+
+## 3.1.8+1430 (2026-10-01)
+iOS (TestFlight, James internal test only).
+### Improvements
+- **Chats is its own page**: the chat bubble opens Chats over whatever screen you are on, the bottom bar no longer jumps to Runs, and Back returns you to where you were. The Runs list no longer flashes Chats when you come back to it.
+- **Clock notice is a dialog**: it says how far out your phone's clock is, where to fix it (iPhone: Settings › General › Date & Time › Set Automatically; Android: a button straight to Date & time), and that Harrier Central has corrected for it.
+### Diagnostics
+- The session log records what the phone allows for notifications (permission, badges, alerts, sound), to find out why some phones show no app-icon badge.
+
+## 3.1.8+1429 (2026-10-01)
+iOS (TestFlight, James internal test only). Hotfix for 1428.
+### Fixes
+- **Chats open again**: every chat showed a grey screen on 1428 — the reply bar was placed in a way the chat page could not lay out; it now sits in the message box's own slot.
+- **The clock notice now appears**: it waits until the app's screen is ready, and says "behind Coordinated Universal Time" rather than "behind of".
+
+## 3.1.8+1428 (2026-10-01)
+iOS (TestFlight, James internal test only). Held from the beta testers.
+Build number only; same version.
+### New Features
+- **Reply to a message**: long-press → Reply puts a quote bar above the composer; the sent message carries a quote of the one it answers (a deleted original shows "Message deleted"). Every chat: runs, kennels, rooms and direct messages.
+- **React with an emoji**: the long-press sheet has 👍 ❤️ 😂 🍺 🏃 🔥 across the top; reactions show as counts under the message, and tapping your own takes it back.
+- **A wrong phone clock no longer breaks the app**: the app learns the server's time from its replies and mints its sign-in tokens at the corrected time; the first correction shows a one-time notice of how far the clock is out. PackTrack uses the correction only when the clock is over two minutes out, so ordinary latency cannot jitter a trail.
+
+## 3.1.8+1427 (2026-09-30)
+iOS (TestFlight, James internal test only). Held from the beta testers.
+Build number only; same version.
+### Improvements
+- **PackTrack photos**: photo markers cap at 150 px instead of growing to fill the screen, photos from one spot stack behind a count at every zoom (the cluster radius follows the marker size), and tapping the count fans them out wide enough that all of them fit on one screen.
+- **Device Health (portal)**: a session that tracked a run now records the tracking-quality setting it ran on, how many GPS fixes went onto the track, and their accuracy (average, worst, how many over 25 m), so a Power Saver trail and a bad-signal trail can be told apart.
+
+## 3.1.8+1426 (2026-09-30)
+iOS (TestFlight, James internal test only). Held from the beta testers.
+Build number only; same version.
+### Fixes
+- **Featured photos**: opening a photo from the Details tab's Featured strip now shows the photographer's avatar (it always showed the default) and offers the Map button for a located photo, as the Photos tab already did.
+
+## 3.1.8+1425 (2026-09-30)
+iOS (TestFlight, James internal test only). Held from the beta testers.
+Build number only; same version.
+### New Features
+- **Send Help rings the pack.** Every phone on the run gets three beeps and
+  three buzzes when someone presses Send Help — the app open or not — and a
+  second request inside two minutes asks "send another?" first.
+- **GPS health.** Before tracking starts the app checks what would spoil a
+  trail — Location set to While Using, Precise Location off, Low Power Mode,
+  Android battery optimisation, the Power Saver tier — and says so, with a
+  button to fix each. A signal light shows the age and accuracy of the last
+  fix while tracking; you're told if PackTrack lost you; the run summary
+  says how many fixes and the longest gap.
+- **Photo viewer → Map.** From the map's photo viewer, Map zooms this map
+  to where the photo was taken.
+- **Photo review** opened for one run now says how many photos wait in the
+  kennel's other runs, with Review all.
+### Fixes
+- **The Chats view closes when you change tab** — the earlier fix never
+  fired on a phone; reproduced on a simulator and corrected, with a test.
+- **Auto start: pressing Start while armed keeps the buffered fixes**, so
+  your track begins where you set off, not where you tapped.
+- **No photo pin lost** when two photos were taken from the same spot.
+- **Renumbering a run works again** (server fix; the app now also sends the
+  kennel on that edit).
+- **Chat opens on a spinner**, not "No messages yet", while it loads.
+- **Drink chug-a-lug** for a past run has the same header as a future one.
+
+## 3.1.8+1424 (2026-09-29)
+iOS (TestFlight, James internal test only). Held from the beta testers.
+Build number only; same version.
+### Fixes
+- **Accept and Decline match.** The two buttons on a message request share
+  one shape and type and differ only by colour.
+- **Message requests count.** A request waiting for your answer now shows
+  on the app icon, the Chats tab and the chat badge until you accept or
+  decline it.
+- **The send button turns purple** as soon as there is something to send.
+- **Pushes reach your phone again after a portal sign-in.** Signing into
+  the portal on the same device had been overwriting the phone's build
+  number, and every build-gated push then skipped that phone.
+
+## 3.1.8+1423 (2026-09-29)
+iOS (TestFlight, James internal test only). Held from the beta testers.
+Build number only; same version.
+### New Features
+- **Direct messages.** Long-press a message in any chat and choose
+  **Message <name>**. If you are friends, or they accept messages from
+  anyone, the conversation opens; otherwise they get a request to accept
+  or decline. Requests sit at the top of Chats. A conversation can be
+  muted, blocked or ended from its menu, and everything a chat can do —
+  photos, locations, copy, delete, report — works in it.
+- **Settings → Direct Messages:** Friends only (the default), Anyone, or
+  Nobody.
+
+## 3.1.8+1422 (2026-09-29)
+iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
+only; same version.
+### New Features
+- **Block a hasher.** Long-press any message and choose Block: you will not
+  see that hasher's messages in any chat, their pushes will not reach your
+  phone, and they are not told. Settings → Blocked hashers lists them, with
+  Unblock.
+- **Report a message.** Long-press → Report sends the message, with an
+  optional reason, to Harrier Central's reviewers. Nobody at Harrier Central
+  reads chats otherwise, and a report hides nothing — Block is your own
+  tool for that.
+
+## 3.1.8+1421 (2026-09-29)
+iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
+only; same version. First build to the beta testers since 1418, so it also
+carries 1419 and 1420.
+### New Features
+- **Photos in chat.** The 📎 button in any chat — run, kennel or room —
+  offers your photo library or the camera. Photos are shrunk before upload
+  and their location data removed; they show whole, at their own shape, and
+  tapping one opens every photo in the chat as a carousel.
+- **Send a location.** 📎 → Location sends where you are now, or a pin you
+  drop on a map. A location shows as a card; tapping it opens your map app,
+  as the run pin does.
+- **Copy and delete.** Long-press any message to copy it (a photo or location
+  copies its link). Delete your own messages and they vanish for everyone.
+- **Chat administrators.** GMs and Web Meisters — and anyone given the new
+  **Manage chat** flag in the app-access editor — can delete any message in
+  their kennel's run and kennel chats.
+### Fixes
+- **The Runs tab shows runs.** Tapping the Runs tab while in the Chats view,
+  or leaving for another tab and coming back, returns to the runs list
+  instead of staying on Chats.
+
+## 3.1.8+1420 (2026-09-28)
+iOS (TestFlight, James internal test only) and Android (internal app
+sharing link). Held from the beta testers. Build number only; same version.
+### Fixes
+- **Chat messages send again after leaving a run.** Every chat screen shared
+  one controller, and leaving a run page closed it under a chat still open —
+  sends then failed with "Cannot add new events after calling close". Each
+  chat screen now has its own.
+
+## 3.1.8+1419 (2026-09-28)
+iOS (TestFlight, James internal test only) and Android (internal app
+sharing link). Held from the beta testers. Build number only; same version.
+### New Features
+- **Running time and pace.** The run card shows your running time and pace
+  with the drink stops taken out.
+### Fixes
+- **Free run in one tap.** A hasher who owes nothing (a 100% discount) can be
+  marked paid as a free run, without inventing a special price.
+- **The keyboard goes away.** Tapping empty space puts the keyboard away on
+  every screen — number pads have no Done key.
+- **Coin logos show the kennel's short name again.**
+
+## 3.1.8+1418 (2026-09-28)
+iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
+only; same version.
+### New Features
+- **Unread chats on the app icon.** The number of unread chat messages —
+  runs, kennels and rooms — now shows on the app icon, and chat pushes keep
+  it right while the app is closed. Reading a chat lowers it, on your other
+  devices too. On Android the number shows where the launcher supports one
+  (Samsung and others); elsewhere it is the usual dot.
+
+## 3.1.8+1417 (2026-09-28)
+iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
+only; same version.
+### New Features
+- **Save photos.** Every photo viewer — the run carousel, single images, the
+  Hash Flash review — has a download button that saves the photo to your
+  camera roll.
+- **My run summary** on the run map brings back your end-of-run card for any
+  run you tracked.
+### Fixes
+- **Payment options:** the form no longer resets (and closes the top-up box)
+  when the keyboard opens; with nothing owed, a "payment options" button
+  still leads to special price and top-up credit.
+- **Auto start** survives an indoor start and a late pack (lenient arrival,
+  switch-off moved to 90 minutes).
+- **Offline Mode** no longer sticks while the app is online.
+- **Deleted runs** disappear from the map and kennel admin at once.
+- **Runs-within radius** no longer resets your other settings (log
+  collection among them).
+- The check-in prompt shows the kennel logo; the bank-transfer QR shows after
+  a payment-report reload.
+
+## 3.1.8+1416 (2026-09-27)
+iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
+only; same version.
+### New Features
+- **End-of-run summary.** Ending a run shows your distance and time, the
+  checks you went through ("3 of 4"), the drink stops you reached and the time
+  you spent at them.
+### Improvements
+- **Distances follow your units everywhere** — metres below 1 km then decimal
+  km, or yards below a mile then decimal miles — on the Live Run readout,
+  PackTrack, the rose, run locations, GPX import, the radius labels and the
+  Apple Watch.
+- **Run detail:** the hares wrap onto as many lines as they need.
+- **Runs-within radius** applies at once (it re-read every past run first,
+  ~45 s on Android).
+### Fixes
+- **Chat notifications open the chat again** for runs not already on screen.
+- **PackTrack shows you**, not another hasher, when you stop tracking.
+- Ids are lowercase everywhere (a one-time tidy of the phone's database runs
+  on first launch).
+
+## 3.1.8+1415 (2026-09-27)
+iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
+only; same version.
+### New Features
+- **PackTrack auto start.** From two hours before a run, Live Run offers
+  "Auto start when I set off". Arm it and put the phone away: once you have
+  reached the start and set off, tracking starts by itself, including the
+  minute before you left. A hare's tracking starts when they leave the start.
+  Auto start switches itself off if you never reach the start.
+### Improvements
+- **Down Downs:** edit sits on the same line as cancel and done, in the same
+  style.
+### Fixes
+- **Completed Down Downs** now load on a run from a kennel you have never
+  followed.
+
+## 3.1.8+1414 (2026-09-26)
+iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
+only; same version.
+### New Features
+- **Edit who a Down Down is against.** Edit Charge now lists the people
+  charged: names typed for people not in the app (fix a typo, remove, add) and
+  the run's hashers, ticked when charged. A charge keeps at least one person.
+- **Add a charge from the Down Downs list.** New "Add charge" button.
+### Improvements
+- **A run's cover photo shows on its card once the run has started**, in
+  place of the image used to advertise the run.
+
+## 3.1.8+1413 (2026-09-26)
+iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
+only; same version.
+### Fixes
+- **Syncs no longer skip silently.** A 3-second internet probe that missed
+  (easy while the radio wakes) made every sync step return without asking the
+  server, and the app still counted the sync as done — so a kennel's new run
+  price could stay unseen across several launches (LH3, £0.00 instead of £2).
+  Syncs now try the server, retry a failed step when the connection is back,
+  and only count as done when every step worked.
+- **Kennel changes arrive on refresh.** Pulling to refresh or reopening the app
+  now picks up changed kennel settings (prices, card payments), not only runs.
+### Improvements
+- **One full data reload after updating**, to replace anything a skipped sync
+  left stale. Expect "Filling Your Mug" once.
+- **No payment buttons when there is nothing to pay.** At check-in, the cash /
+  free / transfer / credit buttons appear only when the hasher owes a fee or
+  already has a payment to correct.
+- **Sync steps are recorded in the diagnostic log**, so a sync problem can be
+  seen from the server.
+
+## 3.1.8+1412 (2026-09-26)
+iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
+only; same version.
+### New Features
+- **Card payments through SumUp (built, switched off).** A Hash Cash at
+  check-in will be able to take a run fee by card: Harrier Central hands the
+  amount to the club's SumUp app, which takes the card with Tap to Pay or its
+  paired reader, and the result comes back to the ledger. Nothing shows yet —
+  it appears once the club is set to SumUp in the portal and the app's SumUp
+  key is in place.
+### Improvements
+- **Kennel settings re-sync once** after this update, so kennels changed
+  before you upgraded arrive in full.
+### Fixes
+- **iOS dropped some app links.** Any harriercentral:// link other than a
+  file import was swallowed; only imports are now handled natively and the
+  rest reach the app.
+
+## 3.1.8+1411 (2026-09-26)
+iOS (TestFlight, Hash beta testers) and Android (Play internal). Build number
+only; same version. First Android build since 1407, so Android also gets
+1408's RSVP fix and 1410's award list order.
+### New Features
+- **Get me there / Get Directions on the run map.** A button over the
+  bottom of the Map tab opens the run in your map app, as tapping its pin
+  does: "Get me there" on the day of the run, "Get Directions" before it.
+  No button the day after or later, and none once the run has PackTrack
+  data.
+### Fixes
+- **A map pin that did nothing.** Choosing "Ask me every time" in Settings
+  (since 3.1.0) stored an empty map app, and every map pin then did nothing
+  until an app was chosen again; so did a saved app that had been
+  uninstalled. Both now open the map-app chooser.
+
+## 3.1.8+1410 (2026-09-25)
+iOS only (TestFlight, Hash beta testers). Build number only; same version.
+Same code as 1409, whose upload reported success but never registered at
+Apple (like 1387); re-uploaded under the next build number.
+### Improvements
+- **Award list: most runs on top.** Checked-in and greyed-out hashers sort
+  together by run count, highest first, so the big milestones lead.
+
+## 3.1.8+1408 (2026-09-25)
+iOS only (TestFlight, Hash beta testers). Build number only; same version.
+### Fixes
+- **RSVP tab spun forever** (regression in 1407): the run page found its
+  tab by reading the label back, and the small-screen label change made that
+  empty. The RSVP list never loaded, the RSVP speed dial was missing and the
+  chat tab's header never faded. Tabs are now found by position.
+- **RSVP headings** (Going / Maybe / Not go / Hares) no longer break mid-word
+  on a small phone.
+### New Features
+- **Award list: who is due a milestone if they come.** "Drink chug-a-lug" has
+  an All | Coming | At Hash switch on today's and upcoming runs. All adds the
+  hashers not yet checked in who would earn an award if they came, greyed
+  out; Coming limits that to Yes/Maybe RSVPs and hares; At Hash is who is
+  checked in. Past runs show only who was there.
+
+## 3.1.8+1407 (2026-09-25)
+Built from dev. First beta for the Hash beta testers since 1401: it also
+carries everything in 3.1.7+1406 (James-only TestFlight), listed below.
+### Small screens and large text
+- **Text size capped at 1.5x.** Every screen was walked at that size on a
+  360 dp phone; labels that overflowed now shrink, wrap or scroll sideways.
+  Large phones and tablets look exactly as before.
+- **Wrapped button text is centred** everywhere.
+- **With the keyboard up**, the field being typed in and its buttons stay
+  on screen or can be scrolled to: My Account's Save Changes sits above the
+  keyboard, run chat hides the run header so the message box shows, the
+  "No runs" message scrolls.
+- **Run page**: tab labels fit; the run map's replay panel and controls fit
+  a small phone; the Events calendar's day list can be reached on a short
+  screen, and its format button is plum rather than stock blue.
+- **Side menu** scrolls; sign-in, kennel admin and run admin labels fit
+  without breaking mid-word.
+### Adding a run
+- A new run's description starts empty (it used to be '$^') and is optional.
+- The default start time is right when a day is tapped in the calendar.
+- Edit Run map buttons wrap, price labels fit, lookup rows don't repeat.
+### Fixes
+- **Run list sections**: a followed kennel's run no longer lands under
+  "All other upcoming runs" when a search leaves it last. Distance units
+  follow the Settings choice.
+- **Delete Account** restarts cleanly like Log Out (signing in again in the
+  same session used to red-screen).
+
+## 3.1.7+1406 (2026-09-25)
+Built from dev. 3.1.6+1405 was the Android-only hotfix branch; this train
+carries its manifest line too (ab51ff00).
+### Fixes
+- **Run page after a notification tap**: opening a run whose page was already
+  open no longer breaks the page underneath (map "add after close", tab-bar
+  crash). Each run page now owns its controllers.
+- **Kennel search**: "City Hash London" finds City Hash — every word must
+  match, in any order. Commas, + and "not" work as before, and now the same
+  way in the kennel list, the run list and the map (the run list's commas used
+  to widen the results). A kennel search that matches nothing says so.
+- **Kennels with a missing short name, city or region** can be found by search
+  again (one missing value blanked the kennel's whole search text).
+- **After signing up**, Back on the main screen no longer walks back into the
+  sign-up pages.
+- **Privacy policy link** points to harriercentral.com/index.php/privacy-policy/
+  (the old PDF address was a 404).
+- **Import Tracks** on the jungle background with readable text; **Privacy
+  Policy** button text white.
+- **Leaderboard**: long names wrap instead of running off the edge; the
+  Hasher column sorts A→Z first.
+- **My Account**: the Save Changes bar sits above Android's gesture bar and
+  the iPhone home indicator.
+
+## 3.1.6+1405 (2026-09-24) — Android production hotfix, branch `hotfix/3.1.6`
+Built from the 3.1.0+1394 production code plus one manifest line (ab51ff00);
+NOT from this train. Promoted straight to Play production. iOS unaffected.
+### Fixes
+- **Run links opened a black screen on Android** when the app was closed:
+  Flutter's own deep-link handling made the link's path the first route,
+  which GetX cannot resolve. `flutter_deeplinking_enabled=false`.
+
+## 3.1.5+1403 (2026-09-24)
+### Fixes
+- **Notification taps open the RSVP (or chat) tab every time.** If the run's
+  page was already open somewhere in the stack, a tapped reminder reused it
+  and landed on whatever tab it was last on; the requested tab is now applied
+  on every open. A reminder for a run outside the loaded list, or arriving
+  before the list had loaded, used to do nothing — it now looks the run up
+  directly. `[NOTIFY]` breadcrumbs record each tap in the session log.
+
+## 3.1.4+1401 (2026-09-24)
+### Fixes
+- **Add / Edit Down Down hung after saving** (1397, 1399): the charge was
+  saved but the page never closed and the spinner never stopped. GetX's
+  `Get.back()` closes an open toast instead of popping the page; the pages
+  now pop through the navigator first and toast after.
+- **Check-in QR page**: swiping Scan → Be Scanned → Scan stopped the camera
+  and threw on the restart. The scanner tab stays mounted across swipes.
+- **Run cards in the live-run window**: the reactive refresh ran inside the
+  list's build ("setState() called during build" in the log, live-run button
+  one rebuild late). It now waits for the frame.
+
+### Improvements
+- **On-device screen walk**: `integration_test/screens_test.dart` boots the
+  app on a simulator and opens every migrated screen, recording framework
+  errors per screen. Green on this build (29 screens, 4 minutes). The
+  `HC_UI_TEST` build define it needs is never set for a release.
+
+## 3.1.3+1399 (2026-09-24)
+### Fixes
+- **GetX "improper use" errors**: three `Obx` builders could finish without
+  reading anything reactive and threw on that path — another hasher's run
+  history (the title, hit on 1397), the live-run map for a run with no
+  location, and the chat bubble before the notification service is up. Each
+  now reads its Rx first or draws the non-reactive case outside the Obx.
+  Found by a scan of all 363 Obx sites (`tools/obx_scan.py`).
+- **Check-in**: the two swipe-to-pay gestures pass the tapped member (a
+  compile break on the 1397 tree, caught by the release's analyze step).
+
+### Server-side (no app update needed)
+- Setting a member's email to one another hasher already has now says whose
+  it is instead of a duplicate-key error (portal member grid).
+
+## 3.1.2+1397 (2026-09-23)
+### Fixes
+- **Chat**: a message longer than 4,000 characters is refused with a clear
+  message instead of being silently cut at 500 (the first Admins-room
+  announcement lost its second half). The composer stops at 4,000; the
+  server refuses anything longer as a backstop.
+- **Check-in payments**: paying for a hasher charges the row that was
+  tapped, not whoever holds its index after a refresh — a shorter list threw
+  (build 1327), a reordered one would have recorded the payment against the
+  wrong hasher.
+- **Snackbars**: closing all snackbars failed asynchronously on 1394 (the
+  failure escaped the try/catch); it now runs in a guarded zone.
+
+### Improvements
+- **GetX migration**: 16 pages moved from `StatefulWidget` to
+  `StatelessWidget` over a GetX controller — drinks list, photo gallery,
+  receipts, down downs, live-run charges, history list, the two run-history
+  pages (one shared controller), payment report, kennel members,
+  leaderboard, check-in QR page, invite code, support, add/edit down down
+  (one shared form controller), profile, and the run detail tabs. Pure rules
+  became unit-tested statics (143 tests on this train). **Beta track only until these are
+  device-tested** — the widget trees are unchanged but the state lives
+  elsewhere now.
+- Two latent faults fixed on the way: the historical-count form copied a
+  count into the first name (dead code, removed), and View Run History
+  indexed an empty history list.
+
+## 3.1.1+1396 (2026-09-23)
+### Fixes
+- **Boot**: an empty navigator no longer strands the app on the splash —
+  every route into the main page falls back to a fresh stack if replacing
+  the current one fails (one session in 5,516 over 60 days, on 3.0.12).
+- **Map tab**: a hidden error box at boot when the location service was not
+  yet up — an `Obx` that returned before observing anything (one session in
+  51 on 3.1.0). Fixed at the source; the same shape fixed on the run tabs.
+
+### Improvements
+- **Diagnostics**: 42 error handlers that used to swallow now write to the
+  session log. Expect more `[ERROR]` lines in the sweep — that is the point,
+  not a regression.
+
+## 3.1.0+1394 (2026-09-20)
+### Fixes
+- **Battery**: the precise-GPS boost is now suspended while the app is in the
+  background. Leaving the app on the map tab and pocketing the phone kept
+  navigation-grade GPS running indefinitely. Run tracking is unaffected — a
+  tracked run is meant to keep fine-grained GPS in the background.
+- **Kennel members**: tapping the email-alert envelope on a member row did
+  nothing and threw behind the scenes. Fixed.
+- **My trails**: trails were filtered by the run list's date view, so a hasher
+  with older trails saw an empty map on the default "Recent" mode.
+- **Map**: the "Track my run" button is gone from the map tab — it lives in the
+  run tools screen, and the map was offering it to people nowhere near the start.
+- **Diagnostics**: Reload Data now uploads the log before wiping it, so
+  reporting a problem no longer deletes the evidence for it.
+
+### Server-side (no app update needed)
+- 737 trails archived before 2026-09-12 sat behind every phone's sync watermark
+  and never arrived. They have been touched so they sync once and will appear
+  on their own.
+
+## 3.1.0+1393 (2026-09-20)
+### Improvements
+- **Devices** now show what each one was running when it last signed in, and the
+  time as well as the date — with several old installs listed, the version is
+  what tells them apart.
+- "Signed out" now means a device someone actually signed out.
+
+## 3.1.0+1392 (2026-09-20)
+### New Features
+- **Devices**, on My Account: everything that can reach your account, whether
+  it holds a passkey, and when it last signed in. Sign out anything you no
+  longer have — it loses access at once and stops receiving your notifications
+  — or remove just its passkey. A device that is signed out and holds no
+  passkey drops off the list, because it can no longer reach your account at
+  all.
+- **If your account signs this device out**, the app now says so and starts
+  again from scratch, showing runs the way it does for someone who has just
+  installed it, rather than failing with an error it cannot explain.
+
+## 3.1.0+1391 (2026-09-20)
+### Fixes
+- **Tapping a notification can no longer leave a black screen**, whatever the
+  timing. Returning to the run list stops at the bottom of the stack now, so
+  the app cannot be left with nothing on screen even if the tap arrives before
+  the app is ready. The 1389 fix works — this is a second lock on the same
+  door, plus one hole in it: a boot that hit an error released the app to the
+  run list but never opened the thread the notification came from.
+
+## 3.1.0+1390 (2026-09-20)
+### Improvements
+- **My Profile is now My Account**, and holds only account things: your
+  details, your run counts, your passkeys, third-party login and delete
+  account.
+- **Passkeys** are listed on My Account — what can sign you in without a code,
+  when each was last used, and a Remove on any you do not recognise. Removing
+  one here stops it signing you in; the passkey itself stays in that device's
+  own password manager until you delete it there too.
+- **Which map app opens an address is now a setting you can change.** It used
+  to appear only after you had chosen one, and the only button was Clear — so
+  switching from one map app to another meant clearing the setting, opening a
+  run and choosing again. Settings now says which app is set, and Change opens
+  the same list you saw the first time.
+- **"Automatically show runs within N" moved to Settings**, next to the miles
+  and kilometres setting it is labelled in.
+
+### Fixes
+- **Editing another hasher's profile no longer resets their settings.** Doing
+  so overwrote that hasher's preferences with a fixed value, changing their
+  distance units and switching their auto-show radius off.
+
+## 3.1.0+1389 (2026-09-19)
+### Fixes
+- **Tapping a notification no longer freezes the app.** Opening a chat push
+  while the app was closed could leave a black screen that only force-quitting
+  cleared — the tap was handled before the app had a screen to return to, and
+  it closed the only one there was. The tap is now held until the app is up,
+  and then takes you to the thread it came from, which it never did on a cold
+  start even before.
+- **Pressing send on an empty box** no longer shows an error. The message went
+  to the server, which refused it, and the refusal became an alert. A message
+  that is only emoji is not empty and still sends — that one was the server's
+  fault, and is fixed there.
+
+## 3.1.0+1388 (2026-09-19)
+### Fixes
+- **Chat badges now move while the app is open.** A message in a kennel chat
+  or a role room left every badge untouched until the app was closed and
+  reopened — the badge it arrived with names the run it belongs to, and these
+  two belong to no run, so the update was skipped. All three kinds of chat now
+  refresh the same way. A run chat, which did update its count, now updates
+  its row in the chat list at the same time instead of leaving it behind.
+- **The chat bubble above the run list** no longer shows a stale total after a
+  refresh: pulling the list down, opening the nav bar or tapping the bubble
+  recounted every chat but not the number on the bubble itself.
+
+## 3.1.0+1387 (2026-09-19)
+### Fixes
+- **Chat**: your messages show their tick again — one tick when the server
+  has taken the message, two when it has gone out to the thread. No message
+  has drawn one since 15 September, when the bubble was rebuilt to make
+  links tappable and the tick was left behind. A message you sent from
+  another device, or from the portal, now arrives with both ticks rather
+  than none.
+
+## 3.1.0+1386 (2026-09-19)
+
+The version everyone on the App Store and Play Store moves to. The last
+public release was 3.0.12, so this one carries everything from 3.0.13 to
+3.0.44 at once — 30 enhancements and 45 fixes — which is why it takes a
+new version number rather than another point release.
+
+The headlines: **kennel and role-room chat now reaches your phone**, with
+rooms for the roles you hold and a coin for each one; **sign in with your
+hashruns.org passkey**, or approve a computer's login by pointing your
+camera at its QR code; **share a run to WhatsApp** as a written notice
+whose links record an RSVP and open the app at check-in; **import your
+running history** from a GPX, TCX or FIT file or a whole Strava or Garmin
+archive; **your trails live on your phone**, so they draw without a
+signal; **Find my photos** picks the run's photos out of your camera roll;
+and **past-run cards show what a run has** — track, photos, chat and
+down-downs, with counts.
+
+The fixes that matter most: the runs-list crash that fired 61 times over
+one weekend, photos and admin marks no longer bending anyone's GPS trail,
+and a long run of weak-signal faults where the app reported a fact about
+your hash when it was really reporting a fact about your connection.
+
+### Fixes
+- **The chat bubble at the top of Hash Runs counts your kennel and role
+  rooms again.** A room message badged the room's own row in the chat list
+  but never the bubble, so unless you opened the list there was nothing to
+  tell you a message had arrived. Rooms have been in the app since
+  14 September and the bubble has never counted them.
+- **Mark all read now clears a room.** It cleared the badge on screen and
+  the next refresh brought it back. (Server-side; needs the SP deployed.)
+
+Otherwise the same code as 3.0.44+1385, which is on the beta tracks.
+
+## 3.0.44+1385 (2026-09-18)
+### Fixes
+- **Exporting a trail** no longer fails outright when it contains a marker
+  this version does not recognise. The unknown marker is skipped, as it was
+  always meant to be.
+- **Chat**: in a kennel chat or a role room, your own message now gets its
+  second tick, and new messages arrive while you are reading, the same as a
+  run chat always has.
+- **Run numbers**: setting a run number to something that is not a whole
+  number, like 729.5, now says so instead of silently doing nothing. The
+  field no longer accepts a decimal point.
+- **Chat**: leaving a chat while a photo was being picked, or as a
+  notification arrived, no longer throws in the background.
+- **Reconnecting**: the "experiencing connection issues" notice can no
+  longer fail in a way that reports itself as an app error.
+- **Checking in the pack**: setting someone's RSVP when the network dropped
+  left the row spinning for ever and did nothing. It now says it could not
+  save and stops. Copying RSVPs from the last run no longer fails on a
+  kennel's first ever run.
+- **Checking in the pack**: tapping a button on the payment bar could do
+  nothing at all — no RSVP, no membership charge, no sale — if the list had
+  refreshed underneath it since you tapped the hasher. It now works however
+  long the bar has been open.
+
+### New Features
+- **Kennel and room chat notifications**: a message in your kennel's chat or one
+  of your role rooms now reaches your phone. Tapping it opens that thread. Older
+  builds get the notification too, but land on the run list instead.
+
+## 3.0.43+1384 (2026-09-17)
+### Improvements
+- **Chat rooms**: every role room now has its own coin — a struck medallion
+  whose metal is the role. The art is sent by the server on the room's own
+  row, so a room added later arrives with its picture and needs no app
+  release. A room with no art still shows the old glyph.
+
+## 3.0.42+1382 (2026-09-17)
+### Improvements
+- **Run counts**: the overview at the top now says how many kennels in how many
+  countries you have hashed with, not only the totals.
+
+## 3.0.41+1381 (2026-09-17)
+### New Features
+- **Sign in with my passkey**: a fresh install signs in with the passkey made
+  on hashruns.org, one tap on the account pages, no invite code to type. The
+  web verifies the passkey and hands the app a code; the app takes its usual
+  authorisation path with it.
+
+## 3.0.40+1379 (2026-09-16)
+### New Features
+- Sign in to hashruns.org from a computer by pointing the phone's camera at
+  the QR code on the page: the app approves it and the browser is in. The
+  in-app scanner reads the same code.
+
+## 3.0.39+1377 (2026-09-16)
+### Improvements
+- The run notice puts a blank line between its links, a 🗺️ on the details
+  link, and says "I'll be there" rather than "I'm in".
+- The bottom tab is called "Map". The main map shows the phone as a blue dot
+  with a compass arrow, live, replacing the static marker at the boot-time
+  position; centre-on-me goes to the live fix. Android build included.
+
+## 3.0.38+1375 (2026-09-16)
+### New Features
+- "Share on WhatsApp" (or your kennel's messaging app) from the run page, the
+  run editor and the QR share sheet: the run notice — date, hares, venue,
+  price and the link — pre-filled, you pick the group and tap send.
+- The notice ends with an "I'm in" and a "Can't make it" link. Tapping one
+  opens the app, records your RSVP and lands on the check-in tab.
+- A hashruns.org run link opens the app straight to that run's check-in tab.
+- A "Join the group" button on the kennel page when the kennel has published
+  its group's invite link.
+### Improvements
+- The run page's share control is one rounded button with the app's own logo;
+  the chevron lists the other apps by their logos. The three action buttons
+  are one size, and read "Share my photos" and "<kennel> Links".
+- Chat text is larger. Links in a chat open inside the app.
+
+## 3.0.37+1362 (2026-09-15)
+### Fixes
+- Chat room notification buttons were grey text on a grey background. They are
+  now white on red when chosen and white on dark when not.
+- The pin is larger and clearer, and an unpinned chat shows a pin with a line
+  through it rather than a faint outline.
+- **Server fix (no app change needed)**: changing a chat room's notification
+  setting failed with "could not be saved".
+
+## 3.0.37+1360 (2026-09-15)
+### New Features
+- **Pinned chats**: Chats you pin stay at the top of the chat list. Your home
+  kennel's chat and your role chat rooms are pinned for you automatically, and
+  the pin icon in any chat's title bar turns it on or off.
+- **Chat rooms**: The rooms your roles give you — Harrier Central Admins,
+  Grand Masters, Hash Cash, Religious Advisors, Hare Raisers — appear in the
+  chat list, with their own settings for notifications and pinning.
+### Fixes
+- "Mark all read" now clears the badges and leaves the chats in the list.
+
+## 3.0.36+1356 (2026-09-13)
+
+### Fixes
+- **A crash on the runs list.** On the App Store build it fired 61 times over
+  one weekend across five phones, and once it started it repeated on every
+  frame until the screen was left. The list is rebuilt whenever runs are
+  filtered, searched or refreshed, and it was reusing the old list's layout
+  after the contents had changed underneath it.
+
+Not reproducible to order, so this is a fix by diagnosis rather than one
+watched failing and then passing. If anyone still sees the runs list
+misbehave after a sync lands, that is worth knowing.
+
+## 3.0.35+1354 (2026-09-13)
+
+For Barbados, and anyone else running on a weak signal.
+
+### Fixes
+- **The award list no longer says a run has no awards when it simply could
+  not load.** On a poor connection it skipped the refresh silently and then
+  showed "No awards yet for this Trail", which is a statement about the run
+  rather than about the phone. It now says it could not load, explains that
+  the run may well have awards, and offers a Try again button. There is also
+  a refresh button in the toolbar.
+- **Opening a run's admin screens no longer empties them when the refresh
+  fails.** The app cleared the previous run's data before fetching the new
+  run's, so a dropped connection left the screens blank until you backed out
+  and came in again. It now fetches first and only clears once the new data
+  is in hand.
+- **Attendee and RSVP lists are covered by the same fix**, which had the
+  identical problem.
+
+## 3.0.34+1351 (2026-09-13)
+
+### Fixes
+- **A button on the trail-trim panel was invisible.** "Stop everyone's
+  tracking" was drawn in the same red as the button it sat on, so it looked
+  like a blank red bar. It now reads "Stop tracking" in white, like every
+  other button.
+- **The trim panel's buttons no longer disagree with each other.** They were
+  built from two different kinds of button, so they had different corner
+  shapes and different text sizes side by side. They now match each other and
+  the rest of the app.
+- **Setting an official start or end could claim success when it had not
+  worked.** If the marker could not reach the server the panel still said it
+  was set, which looked like the start and end simply refusing to appear. It
+  now tells you the boundary was not set.
+
+### Improvements
+- **Close is now the top button on the full-screen map**, set apart from the
+  controls below it, rather than sitting second under the compass where it
+  was easy to miss.
+
+## 3.0.33+1348 (2026-09-13)
+
+### New Features
+- **Review photos for the whole kennel**, not one run at a time. A new
+  button on the kennel screen opens the same review queue you already know,
+  showing everything waiting from every run — which is what imported
+  photos need, since they arrive for past runs in no order.
+- **You can take your own photo back out of public view at any time**, even
+  after it has been approved. Open it full screen and choose Make private.
+  It comes off the run, the kennel gallery and the public website, and you
+  can send it again later.
+
+### Improvements
+- **Chats stay in the list after you read them**, newest conversation
+  first, with the badge simply gone. A chat you had just read used to
+  vanish, which made it the hardest one to find again.
+- **"Share my photos"** replaces "Photos on your phone", with a clearer
+  icon.
+- The sweep now shows each run's **date and location**, so you can tell
+  runs apart.
+- The photo screens **centre their controls**, use the usual Harrier
+  Central background, and their small text is easier to read.
+- A photo that has already been sent shows a **tick instead of a toggle**
+  that did nothing.
+- **Power Saver tracks every 3 minutes on Android** rather than every 15.
+  A quarter of an hour is not a track — a hash covers a couple of miles in
+  that time.
+
+## 3.0.32+1347 (2026-09-12)
+
+### Improvements
+- **"Find my photos" now has a Gallery / Carousel switch.** Tap a photo in
+  the gallery to select or unselect it; switch to Carousel to see them big,
+  swipe between them and pinch to zoom. Both views share one selection, and
+  switching back returns you to the photo you were looking at.
+- **Nothing is selected to start with**, with a Select all beside the
+  counts. These photos can end up on a public website, so sending them is
+  a choice you make rather than one you undo.
+- **The photo screens use the usual Harrier Central background** instead of
+  plain grey and black.
+- **"Photos on your phone" sits with Open website, Run art gallery and
+  Leaderboards** rather than inside Kennel Admin Functions, where most
+  members could not see it.
+
+### Fixes
+- The "Looking through your photos" message is centred on the screen.
+
+## 3.0.31+1346 (2026-09-12)
+
+### Improvements
+- **Tap a photo in "Find my photos" to open it full screen.** Swipe
+  between them and pinch to zoom, so you can pick the best of several
+  similar shots. You can select from there too.
+- **The selection marker is bigger and reads on any photo** — a black and
+  white ring that stays put, green with a white tick once chosen. It no
+  longer disappears against a dark pub or a bright sky.
+- **"Photos on your phone" has moved out of Kennel Admin Functions.** It
+  needs no admin rights, so every member can find it.
+- **A run's photo carries the kennel's logo and name above it**, so it is
+  obvious whose run you have opened.
+
+### Fixes
+- **Cancelling a run's "Set event details" menu no longer throws.**
+
+## 3.0.30+1345 (2026-09-12)
+
+### New Features
+- **Find my photos.** A button on a run finds the photos of it still
+  sitting in your camera roll — by when and where they were taken — and
+  lets you pick which to send. Approved photos reach the kennel's public
+  website, and the selector says so before anything leaves your phone.
+- **Photos on your phone.** A kennel-level view listing every run you were
+  at as "14 eligible · 6 added", so you can work through a backlog.
+- **The trails map totals what it is showing.** Distance, time and pace
+  for the trails on screen, in your units, following the run filter.
+
+### Fixes
+- **The Previous uploads list shows its buttons again.** In 3.0.29 the
+  Re-import and Remove buttons were pushed off screen and the file name
+  ran one character per line.
+
+## 3.0.29+1344 (2026-09-12)
+
+### Fixes
+- **Filtering the runs now filters the trails too.** Switching the run
+  filter or searching used to empty the map of pins but leave every trail
+  drawn.
+- **One Trim run button on the run map**, not two.
+- **The share sheet no longer hides its third option.** At a large text
+  size the Photos link — the run's web gallery — was cut off below the
+  fold with no way to scroll to it.
+- **Import distances follow your units.** The Strava import screen showed
+  miles whatever you had chosen in Settings.
+- **No file browser when the import page opens.** It waits for you to
+  choose.
+- **Waking the app no longer blames the server.** A request killed by the
+  phone waking is now sent again quietly, so the sync completes and the
+  "Request Timed Out" banner stays down.
+
+### Improvements
+- **Remove an upload** from the Previous uploads list on the import page.
+  The runs it already imported keep their tracks.
+- **An edited photo reaches the run card.** Cropping a photo that had
+  already been approved left the card showing the uncropped original.
+
+## 3.0.28+1343 (2026-09-12)
+
+### Improvements
+- **My trails are drawn in full detail as you zoom in.** Zoomed out they
+  stay light; zoomed in you see each trail as it was run.
+
+## 3.0.27+1342 (2026-09-12)
+
+### New Features
+- **Your trails on your phone.** Runs you tracked come down with your
+  sync, so your trail on a run and the new "Show my trails" layer on the
+  Run Locations map (kennel pin colour, tap opens the run) work without a
+  signal.
+- **Re-import a previous upload** from the import page. The file is kept,
+  so a run whose start point was fixed is found without a second transfer.
+
+### Improvements
+- **Run-card icons come from the run itself.** Runners, photos, chat and
+  down-downs are synced with the run, so the list looks the same offline
+  and the app no longer asks the server as you scroll.
+- **Imported run notes** carry the activity's private note and a stats
+  line (gear, moving and elapsed time, heart rate, climb, calories).
+- Indoor activities in an archive show "no GPS" instead of "unparseable".
+
+### Fixes
+- Strava TCX activities import; every one was reported unparseable.
+- Two crash guards on the import page.
+
+## 3.0.26+1341 (2026-09-11)
+
+### Improvements
+- **A real progress bar while an archive imports** — "x of y activities
+  checked, n imported" — and a percentage on the upload.
+- **Import results are easier to read.** Each run you can choose for a
+  track has its own row with a divider, and the activity heading shows
+  its date, distance and sport.
+
+### Fixes
+- **Prev and Next on the welcome pages** sit clear of the bottom of the
+  screen.
+
+## 3.0.25+1340 (2026-09-11)
+
+### Fixes
+- **A slow import no longer reports failure.** The app now waits for the
+  server and carries on from where it got to.
+
+## 3.0.24+1339 (2026-09-11)
+
+### Fixes
+- **My notes is readable.** Its helper text, share switch and counter were
+  dark on the dark run page; they now use the page's white text.
+
+## 3.0.23+1338 (2026-09-11)
+
+### New Features
+- **My notes.** Every run you are on now has a notes box on its detail
+  page — your own words, kept on your account and shown on all your
+  devices. Importing a Strava file fills it in from your title and
+  description when it is empty.
+- **Share your notes.** One switch shares a run's notes with your kennel;
+  kennel admins can hide a member's shared notes from the member menu.
+
+## 3.0.22+1337 (2026-09-11)
+
+### New Features
+- **Import your whole running history.** One button takes a GPX, TCX or
+  FIT file, or an entire Strava or Garmin archive. Harrier Central finds
+  the hash run each track belongs to and adds it as your PackTrack trail,
+  showing the results as they land. Runs you already have a track on are
+  left alone; when two runs could match, you choose.
+
+### Fixes
+- **Sharing a file into Harrier Central now opens the app**, and if iOS
+  declines to switch, the file is imported the next time you open the app.
+
+## 3.0.21+1336 (2026-09-10)
+
+### New Features
+- **Import a GPX track.** A run you recorded on your watch or in another
+  app can be your PackTrack trail. Tap the route icon on Hash Runs, or
+  open a .gpx from Files, Mail or the share sheet, and Harrier Central
+  finds the run from the track's first point and uploads it. Your own
+  exported files come back with their marks.
+
+### Fixes
+- **The pack no longer vanishes mid-run.** The live map now fetches only
+  what arrived since its last poll and merges it, instead of re-downloading
+  and redrawing every runner's whole trail every 15 seconds.
+
+## 3.0.20+1335 (2026-09-10)
+
+### Fixes
+- **No more broken profile pictures.** A photo that will not load now shows
+  the default avatar instead of a blank. If the photo file is actually gone
+  from storage, the app tells the server, which checks for itself and swaps
+  in an avatar for everyone.
+
+## 3.0.19+1334 (2026-09-10)
+
+### New Features
+- **How many ran it.** The PackTrack icon on a past run's card now says how
+  many runners recorded a track, so you can tell a pack replay from one lone
+  trail before opening the run.
+
+### Fixes
+- **A past run's down downs are all there.** The detail page used to show
+  only charges somebody had marked done — and on six of the eight runs with
+  charges, nobody had. Once a run is past, every charge that was not
+  cancelled is listed, the unmarked ones tagged "Not marked done", and
+  anyone who can manage down downs gets a Manage button into the charges
+  page from there, even when the run has none yet.
+
+# Harrier Central Mobile App — Changelog
+
+## 3.0.18+1333 (2026-09-10)
+
+### Fixes
+- **No mark can bend your trail.** The admin's official-start and end
+  markers are written at the run's venue, and every map drew a straight line
+  out to them — 507 m at the start of the GNH Hangover trail, 549 m at the
+  end. No mark of any kind is a point on the line or a term in the distance
+  any more; marks are drawn as markers only.
+
+## 3.0.17+1332 (2026-09-10)
+
+### Fixes
+- **Trimming a run you were not on no longer lists you as a runner.** The
+  trim's start and end marks are stored under your name; they no longer
+  count as a track anywhere.
+- **Review Photos counts as you decide.** The status chips and the Pending
+  and Reviewed tabs move with each choice instead of freezing until you
+  leave the page.
+- **Review Photos no longer refetches every photo.** The carousel, the grid
+  and the look-ahead now share one disk cache.
+- **Waking the phone no longer reports a server timeout.** A request that
+  was asleep with the app is retried quietly with a fresh token.
+
+### New Features
+- **Past runs show what they have.** A row of icons along the bottom of a
+  finished run's card: a PackTrack track, photos, trail chat and down-downs,
+  with counts.
+- **The trim control is on the run-detail map too**, and the compass joins
+  the control column on both maps, so the two columns now match.
+- **The RSVP icon is back on past runs** as the record of attending or
+  haring, with the same graphics as an upcoming run. It is not a control.
+
+### Improvements
+- **Featured photos keep their shape.** One strip height, each photo at its
+  own width, nothing cropped.
+- **Thumbnails are a tenth of the size.** Grids, strips and map markers are
+  served resized by the website; full-size photos still come from storage.
+
+## 3.0.16+1331 (2026-09-09)
+
+### Fixes
+- **A photo can no longer bend a trail.** A photo is now its own thing — where
+  it was taken, when, and by whom — and is no longer written into anybody's
+  GPS track. Uploading photos to a run you were not on records no track for
+  you, and a photo pin never draws an out-and-back spike on the map, in the
+  live distance, or in a GPX export.
+- **Marks land where you are.** A check, a label or a photo taken while
+  tracking now uses the live GPS fix instead of a one-shot that iOS could
+  answer with a stale cached location tens of metres away.
+
+## 3.0.15+1330 (2026-09-09)
+
+### Improvements
+- **Session logs count the switches.** How many times the app was sent to
+  the background and brought back, and how many times the phone went to
+  sleep and woke while the app was alive. Read together they tell a phone
+  in a pocket on a run from someone checking the app repeatedly.
+
+## 3.0.14+1329 (2026-09-09)
+
+### Improvements
+- **Every harvested session log now measures the phone as well as the app.**
+  A metrics line at start, on every background or foreground switch, and
+  every 15 minutes: CPU time and share, memory and headroom, disk footprint,
+  minutes the location stream spent in each cost tier, the app's own network
+  bytes and latency, and the device's battery and drain over the unplugged
+  stretch. On Android, the process's total network bytes too.
+- **The two hours before any kill are kept at one-minute resolution.** A
+  compact ring of the last 120 minutes and a timestamped record of each
+  gauge's worst value are uploaded with the next session, bounded so they
+  never displace the run breadcrumbs.
+
+## 3.0.13+1328 (2026-09-09)
+
+### Fixes
+- **Standing still on poor GPS no longer counts as running.** The stationary
+  radius now follows the fixes' own accuracy (25 to 60 m) instead of a flat
+  25 m. One hasher's twenty-minute check on 60 to 116 m fixes had become half
+  a kilometre of out-and-back that the raw track never contained.
+- **Photo pins land where the photo was taken.** The pin used a stale
+  idle-stream position — sometimes hundreds of metres off, sometimes (0,0).
+  An imported photo queued offline now keeps its own time and place too.
+- **New users no longer see the "Welcome to 3.0" upgrade deck.** It played in
+  full for brand-new accounts and for hashers reconnecting on a new phone;
+  it now requires a version to have upgraded from.
+- **The trim toolbar measures the playback panel instead of guessing,** so it
+  clears the panel on every phone rather than on the one it was tuned for.
+
+### New Features
+- **Share a run's photo gallery** from the share sheet, alongside the map and
+  Trail TV. The link opens the run's approved photos on the web.
+
+### Improvements
+- **Error reports name the build that produced them,** so a fixed crash can be
+  confirmed gone on the Usage Data dashboard rather than guessed at.
+
+## 3.0.12+1327 (2026-09-07)
+
+### Improvements
+- **Standing still no longer adds distance to your run.** GPS keeps wandering
+  inside its own error while you are at a beer stop or an On Inn, and every
+  wander was being counted. On the German Nash Hash Sunday trail that was 0.87
+  of the 15.58 km recorded — 5.6% of everyone's distance, and 11.4% for one
+  runner. Your dot now stays where you stopped, for as long as you stopped.
+
+## 3.0.11+1326 (2026-09-07)
+
+### Fixes
+- **Creating an account now finishes.** 3.0.10 fixed the button; this fixes what
+  happened after you pressed it. The app was reading the wrong part of the
+  server's reply, so the account was created and then the app just sat on the
+  form — no message, no next screen — and pressing the button again answered
+  "we have emailed you an invite code" to somebody who had in fact just signed
+  up. Walked end to end on a real device: form, account, profile photo, app.
+- **"Email me a new invite code" works again.** If your address was already
+  registered, the app always told you the code could not be sent — while
+  showing you the message that said it HAD been sent — and never took you to
+  the screen where you type it in. The code had gone out every time.
+- **A broken profile photo no longer shows you an error.** Where a photo failed
+  to upload, the setup screen displayed the raw technical error over your
+  avatar. It now falls back to the "add a photo" placeholder, and the accounts
+  that were affected have been repaired.
+- **"The access token is invalid" now tells you the actual cause.** It said
+  "please reinstall the app", which loses your data and fixes nothing — the
+  usual reason is a phone whose clock is wrong, so it now says so.
+- **Leaderboard run counts over 365 days were too low.** The count quietly
+  dropped your most recent runs — the ones you just did, which is exactly when
+  you look. Three runs at a weekend hash could show as one.
+
+### Improvements
+- **No RSVP buttons on a run that has already happened.** They took most of the
+  screen above the attendee list and could not do anything. The counts and the
+  list of who came stay.
+- **No GPX or trim buttons on a run nobody tracked.** They acted on a track, so
+  they now wait for one to exist, and the run map and the full-screen map offer
+  the same buttons under the same conditions.
+- **The trim toolbar fits on the screen.** Its last button used to run off the
+  right-hand edge; it now wraps onto a second row and sits clear of the
+  playback panel.
+
+## 3.0.10+1325 (2026-09-07)
+
+### Fixes
+- **You can create an account again.** Signing up from scratch was impossible:
+  the "Get Started!" button sat off-screen on Android, and if you ever got past
+  it the account creation failed and the button then vanished for good, leaving
+  a filled-in form with no way forward. Three separate faults behind that, all
+  now fixed here and in the API.
+- **Paying for your own run works again.** Checking in and paying with hash
+  credit (or bank transfer) had been refused since July for anyone who is not
+  hash cash — the run-start check-in prompt could not complete. Eleven hashers
+  hit this at German Nash Hash.
+- **A free run no longer talks about paying.** Where the fee is zero the
+  check-in button just says "Check In", and the payment-provider icons stay out
+  of the way.
+- **Fixed five crashes**, including one that took down the whole pack list when
+  a run had an attendee this phone had never synced, and two that fired when you
+  cancelled a run-options or email-options dialog.
+- **A photo that fails to upload no longer looks like it worked.** Profile
+  photos, receipts and run images used to record the picture's address even when
+  the upload had failed, leaving a permanently broken image. They now tell you.
+
+### Improvements
+- **Turning up is enough.** Live Run Tools now appears if you are at the start
+  in the run window, whether or not you RSVP'd — and starting tracking checks
+  you in, so there is no separate step.
+- **Your track survives the app being killed.** Points waiting to be sent are
+  now saved to the phone and picked up next time, instead of living only in
+  memory until something reclaims it mid-run.
+- **Less battery when you are not tracking.** The map's high-accuracy GPS is
+  released as soon as the map is out of sight rather than held until it closes,
+  Android no longer holds a wake lock for the ordinary background location
+  stream, and the connectivity check stops polling the network every 30 seconds
+  for the life of the app.
+
+## 3.0.9+1324 (2026-09-03)
+
+### Improvements
+- **Every button on the run map is now the same button.** One grey circle with
+  a white outline, in one column down the left-hand side — full screen, share,
+  centre on me, GPX export and (for run admins) trim. They used to be spread
+  across both top corners in three different shapes and sizes, with Export GPX
+  a red bar sitting below the map entirely.
+- **The column knows which view you are in.** North-lock disappears on the
+  list, which has no orientation to lock; centre-on-me disappears on the radar
+  and the list, which have no map camera to move. Share and GPX are about the
+  run, so they stay everywhere.
+- **Full screen opens on the view you were looking at.** From the radar it now
+  enlarges the radar instead of quietly switching you back to the map.
+- **GPX export is available full screen**, and is hidden on runs that have not
+  happened yet.
+- **Featured photos open as a swipeable carousel** — swipe left and right
+  through the whole collection instead of closing and reopening each one.
+
+### Fixes
+- **The background no longer changes when you switch views.** The list was
+  covering the jungle with a dark scrim the radar did not have, so switching
+  between them visibly dimmed and lifted the page. The rows carry their own
+  dark backing instead.
+- **"Closest to me" is now "Closest Hashers."** Distances are measured from
+  whoever is selected, so with Tuna Melt selected the sort ranks by closest to
+  Tuna — the old label named the wrong person. Spectators with no GPS fix are
+  no longer told to wait for one they do not need.
+- **The what's-new slides' Prev / Next / Done buttons sit clear of the bottom
+  of the screen** on both iPhone and Android, instead of under the home
+  indicator or the gesture bar.
+
+## 3.0.8+1323 (2026-09-02)
+
+### Fixes
+- **The runner list now says who it is measuring from.** Select Hard On On and
+  his row reads "0 m from Hard On On" and yours reads "153 m from Hard On On" —
+  it used to say "from you" whoever was selected, and your own row hid its
+  distance behind "that's you" even when somebody else was the centre.
+
+## 3.0.7+1322 (2026-09-02)
+
+### Fixes
+- **The Radar sits on the Harrier Central background** instead of a bare page
+  when opened full screen.
+- **Runners who have gone quiet fade on the Radar again.** A runner out of
+  coverage for a few minutes looked exactly as current as everyone else, on the
+  one view whose job is finding the pack.
+- **Replay distances are measured from where the focused runner was at that
+  moment**, not from wherever your phone happens to be now. Reviewing a London
+  run from Cologne reported ~496 km for everybody, which also made "nearest
+  first" rank nothing.
+- **"Tracks updated just now" no longer appears on runs nobody tracked.** The
+  poll succeeded, so an empty map claimed fresh tracks.
+- **The photo review button is hidden on runs that have not happened yet** — a
+  future run cannot have photos.
+- **The intro slider's Skip / Next / OK buttons sit clear of the gesture bar**
+  on Android models that under-report their bottom inset.
+- **A duplicated run in the list is much less likely.** Every local database
+  write from a sync now runs on one queue; an RSVP or attendance change landing
+  during a background sync could previously insert the same row twice.
+  (Existing duplicates need a Reload Data to clear.)
+
+## 3.0.6+1321 (2026-09-02) — final 3.0 feature release
+
+Closes out the 3.0 track. Payment work continues on 3.1.
+
+### Fixes
+- **Run tracking can no longer be started hours before a run.** The "Track my
+  run" button on a run's map now appears 5 minutes before the start, matching
+  the live run screen — it used to appear up to 15 hours early, which put
+  runners on the map for runs that had not begun.
+- **A queued payment no longer fails to send after the app is suspended.** It
+  waits and retries, which is what the payment queue is for, instead of
+  erroring.
+
+## 3.0.5+1320 (2026-08-31)
+
+### Fixes
+- **A device that can't sign itself in automatically now recovers.** If the
+  sign-in code saved on your device is no longer valid, the app clears it and
+  helps you find your account, instead of failing the same way on every launch
+  with no way out.
+- **Mistyped invite codes are far more forgiving.** Codes never contain digits,
+  so a typed 0, 1 or 5 is corrected to O, I or S automatically, and a pasted
+  code with extra spaces or a "URC:" prefix now works.
+- **An invite code that is no longer active no longer asks you to retype it** —
+  it takes you straight to finding your account.
+- Losing signal during an automatic sign-in no longer wipes your locally stored
+  data.
+
+## 3.0.4+1319 (2026-08-31)
+
+### Fixes
+- **Signing up with an email that already has an account now works.** It emails
+  you a fresh invite code straight away and tells you to check your email,
+  instead of dead-ending on "Account not created — please delete the app". The
+  recovery flow existed but a server error-code mismatch meant it never once
+  fired.
+- **A deleted account no longer blocks re-registering the same email**, and an
+  invite code can no longer be issued against a deleted account instead of the
+  live one.
+
+## 3.0.3+1318 (2026-08-30) — iOS + Android PRODUCTION
+
+First production release on both stores since 3.0 (App Store) and 3.0.1+1314
+(Play). Store copy for this one tells the 3.0 story rather than these patch
+notes, because that is the jump most users are actually making.
+
+### Fixes
+- **A phone with a weak GPS signal keeps far more of its trail.** Fixes worse
+  than 50 m used to be thrown away outright, which on a struggling phone deleted
+  the run instead of cleaning it — one runner lost 29.7 minutes of trail, drawn
+  as a single straight line, and his distance read 5.26 km against the 7.2–7.7 km
+  the pack ran. Uncertain fixes are now nudged back into line rather than
+  discarded; an accurate fix is left exactly where it is.
+- **The check-in speed dial no longer clashes with the payment report.** Both
+  screens used the same internal animation tag, so opening one straight after
+  the other could throw during the transition.
+
+## 3.0.2+1317 (2026-08-30) — iOS TestFlight + Android internal
+
+### Fixes
+- **A photo no longer bends your track or inflates your distance.** A photo
+  taken by someone else sits where THEY were standing, and the noise filter was
+  treating it as your last known position — so good GPS fixes just after it were
+  thrown away as impossibly fast and replaced with points strung out towards the
+  photo. On the run that exposed it this added 1.09 km of trail that was never
+  run.
+- **Trail marks no longer cover the track.** Marks are drawn beneath the trail
+  line on the run map, matching the big-screen Trail-TV wall.
+- **The live run list refreshes again on an incoming message.** A push arriving
+  while the app was open, without a message type, crashed the dispatcher before
+  it reached the run list. Badge counts still updated, which is why this looked
+  like it was working.
+
+### Changes
+- **Photo approval is its own permission.** Religious Advisors no longer approve
+  photos by default; the approval badge only appears for people who can actually
+  use it (GM, Vice GM, Hash Flash, Webmeister, or the Photo Approver grant).
+
+## 3.0.2+1316 (2026-08-30) — iOS TestFlight + Android internal
+
+### New Features
+- **Apple Watch shows your kennel's own marks.** The Check and False buttons on
+  the watch now display the symbols your kennel configured, instead of generic
+  icons. They already recorded the right mark — only the buttons looked wrong.
+- **Label and Hash View are permanent marks.** Every kennel now has a label
+  symbol and a hash view symbol as core marks, with six slots left for its own.
+
+## 3.0.2+1315 (2026-08-30) — iOS
+
+Same changes as 3.0.1+1314, which shipped to Android. The version NAME had to
+move because 3.0 went live on the App Store overnight and Apple closes a
+marketing-version train once it ships — "The train version '3.0.1' is closed
+for new build submissions" — so iOS could not take another 3.0.1 build.
+iOS and Android version names are deliberately out of step until Android's
+next build picks up 3.0.2.
+
+### Fixes
+- **Photos from other hashers no longer bend your track**: importing a
+  geotagged photo taken by someone ahead of you used to pull your recorded
+  route out to where they were standing and back, which also overstated your
+  distance. The photo still appears on the map where it was taken; your track
+  and distance are now your own. Existing runs are corrected too.
+
+### New Features
+- **Three new trail marks** — a plain Circle, a plain X, and Three Lines — for
+  kennels that mark those separately from the combined Check.
+- **Fish Hook redrawn** as the trail mark it represents: the trail doubling
+  back on itself.
+
+### Improvements
+- Trail marks added in future will appear on this version without an update.
+
+## 3.0.1+1314 (2026-08-30) — Android
+
+### Fixes
+- **Photos from other hashers no longer bend your track**: importing a
+  geotagged photo taken by someone ahead of you used to pull your recorded
+  route out to where they were standing and back, which also overstated your
+  distance. The photo still appears on the map where it was taken; your track
+  and distance are now your own. Existing runs are corrected too.
+
+### New Features
+- **Three new trail marks** — a plain Circle, a plain X, and Three Lines — for
+  kennels that mark those separately from the combined Check.
+- **Fish Hook redrawn** as the trail mark it represents: the trail doubling
+  back on itself.
+
+### Improvements
+- Choosing photos now uses the Android system photo picker, so the app no
+  longer needs permission to read your whole photo library.
+- Trail marks added in future will appear on this version without an update.
+
+## 3.0.1+1313 (2026-08-29) — iOS + Android
+
+### New Features
+- **Harrier Central on iPad**: the app is now a proper iPad app. It fills the
+  whole screen instead of running in a phone-sized window, and rotates freely
+  between portrait and landscape. Android tablets and unfolded foldables get
+  the same. Phones are unchanged — still portrait only.
+
+### Fixes
+- **Status bar no longer overlaps the app bar** when the app opens on iPad.
+- **Run images are never cropped**: a run's photo always shows in full, scaled
+  to the width of the card. Cropping stays your choice, in the photo editor.
+- **Welcome deck no longer replays**: creating a brand-new account and then
+  reopening the app showed the whole "What's new in 3.0" deck a second time.
+
+## 3.0.1+1312 (2026-08-28) — iOS + Android
+
+### New Features
+- **Chat bubbles on run and kennel cards**: a solid red bubble with an unread
+  count when there are messages you haven't seen, solid grey when you've
+  read them all, and a grey outline when the chat is still empty. Tap it to
+  open the chat. Run chats now show as unread before you've opened them, for
+  any run or kennel whose notifications aren't set to Off.
+- **Share the run map or Trail TV**: a share button on the run's map (under
+  the compass) offers the interactive map link for friends following on a
+  phone, or the Trail TV link for a big screen at the On-Inn. Run Tools'
+  "Share My Run" and the full-screen map share offer the same choice.
+
+### Improvements
+- **Easier to tap**: the RSVP icon on run cards and the follow checkbox on
+  kennel cards now respond to taps well outside the small icon.
+- **Loading spinner** back to its original look — centred on the screen,
+  rotating diamonds.
+- Kennel card chat bubble sits above the three-dots menu so it no longer
+  crowds the kennel details.
+
+## 3.0.1+1311 (2026-08-27) — iOS + Android
+
+### Improvements
+- **Offline check-in**: run admin now works without a connection for any
+  run previously opened online — check-in and payments run from saved
+  data and sync automatically when signal returns.
+- **Queued payments visible**: an amber banner on check-in, run admin and
+  the payment report shows how many payments are waiting to send, with a
+  viewer to inspect, send now, or discard them. A hasher charged offline
+  shows a semi-transparent payment icon with a clock badge on their row,
+  turning solid green the moment it reaches the server.
+- **Faster send-on-reconnect**: queued payments now send within seconds
+  of the connection returning (previously could require an app restart).
+
+## 3.0.1+1310 (2026-08-26) — iOS + Android
+
+### Improvements
+- **Reliable payments**: charges are now saved on the phone and sent with
+  a server-side duplicate guard — a payment can no longer be lost or
+  double-recorded on poor venue signal. Offline charges queue and send
+  automatically when the connection returns. (Requires processPayment
+  1.5.0 server-side, deployed with this release.)
+
+## 3.0.1+1309 (2026-08-26)
+
+### New Features
+- **PackTrack runner list**: third view on the PackTrack screen (Map /
+  Radar / List) — a sortable pack leaderboard showing each runner's trail
+  distance and separation from you, sortable by longest trail or closest
+  to me. Shares the replay timeline, so scrubbing reorders the list live.
+- **Radar colours**: radar blips now use each runner's track colour
+  (matching the map trails and the new list) instead of uniform yellow;
+  lost runners still flash orange.
+
+## 3.0.1+1308 (2026-08-25) — iOS + Android
+
+### Fixes / Improvements
+- **Welcome sequence timing**: new accounts now see the Welcome to 3.0
+  sequence immediately after signup (it previously appeared only on the
+  second launch, with the loading animation shown instead).
+- **Intro slides**: the Skip button now jumps to the last intro slide
+  instead of advancing one page.
+- **Storage**: preferences migrated to the platform-native store
+  (shared_preferences) with a seamless one-time migration — no visible
+  change, applies to all users including 2.1.2 upgraders.
+- **Leaner app**: 14th legacy package removed (get_storage).
+
+## 3.0.1+1307 (2026-08-25) — iOS
+
+### Improvements
+- All 1305/1306 improvements land on iOS: new in-house onboarding flow
+  (intro once per device, permission screens skip granted ones), instant
+  3.0 welcome sequence with parallel loading, wide-screen layout fixes,
+  and readability fixes.
+- **Leaner app**: 13 third-party packages removed — 7 unused, 6 replaced
+  with small in-house widgets (spinner, link text, photo zoom/gallery,
+  FAB menu, badges, grid).
+
+## 3.0.1+1306 (2026-08-25) — Android
+
+### Improvements
+- **Maintenance release**: no functional changes vs 1305; rebuilt to
+  verify Play review submission after the privacy-policy URL restoration.
+
+## 3.0.1+1305 (2026-08-25) — Android
+
+### Improvements
+- **New onboarding flow**: the intro and permission screens are rebuilt
+  in-house (third-party slider package removed). They now appear before
+  account creation/login, the intro shows only once per device, and
+  permission screens are skipped automatically when already granted.
+- **3.0 welcome sequence**: appears immediately on launch (first slide
+  ships with the app) with a loading indicator while the remaining
+  slides download — now in parallel, many times faster. Artwork is
+  never cropped on wide screens.
+- **Foldable / wide-screen fixes**: text sizing capped so buttons and
+  tabs render correctly on unfolded foldables and tablets; run photos
+  fill the card width in the free viewer; startup screen letterboxed
+  instead of cropped on wide displays.
+- **Readability**: white text on red buttons throughout; invite-code
+  "Please wait" message now legible.
+
+## 3.0.1+1304 (2026-08-24) — iOS + Android
+
+### Fixes
+- **Android 15/16 edge-to-edge**: buttons and tab bars no longer sit
+  under the system navigation area on newer Android devices. Fixed on
+  seven screens: the intro and permissions sliders (the OK/Next row),
+  the Live Run tab bar, the membership charge and haberdashery sale
+  sheets, the location lookup sheet, and the Hash Flash caption editor.
+
+## 3.0.1+1303 (2026-08-24) — Android
+
+### Improvements
+- **Play Store resubmission**: fresh internal-track build following the
+  privacy-policy restoration at harriercentral.com. No Android-facing
+  code changes since 1301 (the 1302 fixes were Apple Watch only).
+
+## 3.0.1+1302 (2026-08-23) — iOS
+
+### Fixes
+- **Apple Watch**: the end-of-run summary now stays on the wrist until
+  you tap Done or start a new run (it could previously vanish moments
+  after appearing).
+- **Apple Watch**: the idle screen shows the Harrier Central hash foot.
+
+## 3.0.1+1301 (2026-08-23) — iOS + Android
+
+### New Features
+- **Apple Watch companion (iOS)**: live distance and elapsed time on the
+  wrist while PackTrack runs on your phone, with Check, False Trail,
+  I'm Lost, and On Inn buttons — plus an end-of-run summary showing
+  distance, time, and mark counts. First build to embed the watch app.
+- **Instant marks on the map**: marks you place (phone, watch, or photos)
+  appear on the PackTrack map immediately instead of waiting for the next
+  server refresh.
+- **Viewer-local run times**: when your clock differs from the kennel's,
+  run times show the kennel zone ("2:45 PM BST") with "10:45 AM your
+  time" beneath, on list tiles and the run detail page.
+
+### Fixes
+- **Past/future boundary**: runs stay in Current/Future for six hours
+  after their start again (a previous fix had tightened this to three).
+- **Run editor**: the address Lookup button is a proper pill with visible
+  text (was red-on-red), enabled once the description has 4+ characters.
+
+## 3.0.1+1300 (2026-08-23) — Android
+
+- Identical content to 1298; end-to-end validation of the automated Play
+  upload after the foreground-service declaration (video) was completed.
+
+## 3.0.1+1299 (2026-08-23) — Android
+
+- Identical content to 1298; validates the automated Play Store upload
+  pipeline (tools/play_upload.py) end-to-end after the foreground-service
+  declaration.
+
+## 3.0.1+1298 (2026-08-23) — Android
+
+Everything from 1296-1297 (this is Android's first build since 1295):
+
+### New Features
+- **Multi Photo**: the photo tile is now two buttons — single shot, or a
+  Multi Photo session that reopens the camera after each save (max 6,
+  every shot still passes the review page).
+
+### Fixes
+- **Radar (unlocked) turns smoothly** with your compass instead of
+  sticking and jumping.
+- **Past Runs is personal now**: followed kennels and attended hashes
+  only — and runs you RSVP'd No to are no longer hidden.
+
+### Improvements
+- **Lost compass** front-of-pack message: "You're one of the front-most
+  hashers on PackTrack — check around for marks."
+
+## 3.0.1+1297 (2026-08-23) — iOS
+
+### New Features
+- **Multi Photo**: the photo tile is now two buttons — single shot, or a
+  Multi Photo session that reopens the camera after each save (max 6,
+  every shot still passes the review page).
+
+### Fixes
+- **Radar (unlocked) turns smoothly** with your compass instead of
+  sticking and jumping — it was following your GPS track, which doesn't
+  move when you turn on the spot.
+- **Past Runs shows runs you RSVP'd No to** — declining no longer hides
+  a run from your history.
+
+### Improvements
+- **Lost compass**: at the front of the tracked pack it now says so —
+  "You're one of the front-most hashers on PackTrack — check around for
+  marks."
+
+## 3.0.1+1296 (2026-08-22) — iOS
+
+### Improvements
+- **Past Runs is personal now**: the past list (and its count) shows only
+  kennels you follow or hashes you attended — no more stranger kennels'
+  recent runs. The future list stays global for discovery.
+
+## 3.0.1+1295 (2026-08-22)
+
+### New Features
+- **Android: PackTrack tracks in the background.** Run tracking now runs
+  as a notification-pinned foreground location service — screen locked
+  or another app in front, points keep recording (verified end-to-end
+  on emulator: backgrounded app uploaded points to the server). No
+  "background location" permission involved; sessions are user-started.
+
+### Fixes
+- **Runs no longer vanish 3-6h after start**: the future/past boundary
+  (3h) and the display flags (still 6h) disagreed, so a run aged 3-6h
+  was excluded from BOTH list tabs (caught live: LH3 #2848).
+- **Early-boot errors can no longer hang the splash**: an HTTP/SP error
+  during service init tried to show a dialog before the UI existed and
+  killed the boot (found on Android with stale credentials; same hazard
+  on iOS). Alerts now log-and-skip pre-UI; the boot badge fetch is
+  silent.
+
+## 3.0.1+1294 (2026-08-22)
+
+### Fixes
+- **Upgrade welcome actually fires**: the DB-upgrade rebuild erased its
+  own upgrade markers (and pre-2.2.9 upgraders never set them), so real
+  2.x→3.0 upgrades showed the generic dialog and no welcome splash.
+  Markers now write after the wipe; the "Welcome to Harrier Central 3.0"
+  dialog shows only when the MAJOR version changed — same-major rebuilds
+  keep the generic text, minor-version news stays with the splash system.
+
+## 3.0.1+1293 (2026-08-22)
+
+### Fixes
+- **3.0 welcome sequence shows on upgrade**: the upgrade boot wiped the
+  stored version before the splash check ran, so the welcome screens
+  (uploaded 2026-08-07) never fired; the version is now re-stamped
+  after the wipe.
+
+### Improvements
+- **Trail mark undo on the popup**: marking a slot shows only the
+  central card (no toast), which now carries the Undo button and stays
+  up 8s. The mark is captured at tap but only committed when the card
+  is dismissed without Undo — undo is instant and works offline.
+- **Power Saver distance is marked approximate**: the live-run distance
+  shows as "~4.76" on Power Saver, whose 20m sampling under-reads.
+- **Rebuild dialogs say why**: a DB-upgrade rebuild greets you with
+  "Welcome to Harrier Central 3.0"; the Reload Data button now confirms
+  with "Data Reload Complete".
+
+## 3.0.1+1292 (2026-08-18)
+
+### Fixes
+- **MetricKit diagnostics arrive intact**: crash/hang/memory reports were
+  being split line-by-line into hundreds of fragment rows on upload
+  (every payload since 2026-07-20); payloads are now compacted to a
+  single record before persisting.
+
+### Improvements
+- **Run editor lookup buttons**: the Details tab's magnifier is now a
+  labelled "Look up" button; the Address tab button quotes the one-line
+  description ("Look up \"...\"") so it's clear what will be searched.
+
+## 3.0.1+1291 (2026-08-17)
+
+### Improvements
+- **Address lookup made obvious**: the run editor's Address tab now has a
+  full-width "Look up address" button (same gazetteer search as before,
+  which remains available via the search icon on the Details tab's
+  one-line description field).
+
+## 3.0.1+1290 (2026-08-17)
+
+### New Features
+- **Membership + run in one tap.** The check-in membership sheet now offers
+  "Membership + run fee (£X)" (or "+ check in" when the run is free for
+  members): one atomic action charges both, records both transactions, and
+  checks the hasher in. "Charge membership only" behaves as before.
+- **Honest payment report.** The totals footer shows each product line — Run
+  fees, Memberships, Haberdashery — plus a "Card pending" line for
+  unconfirmed bank transfers; "Total collected" now means verified money.
+  The header count chips include all products, so they match the filtered
+  list. The stray "<null> paid" line on events without extras is gone.
+
+### Improvements
+- **Unconfirmed card payments** show in black with a small amber clock badge
+  on the card icon (instead of red text); the badge disappears once the
+  transfer is confirmed.
+- **Free-for-members runs are recorded as Free.** A £0 "cash" tap now logs a
+  free run tagged "member" (server-side), so cash totals only ever contain
+  real money.
+
+## 3.0.1+1289 (2026-08-16)
+
+### New Features
+- **"Are you On Inn?"** Ending a run now offers three choices: "I'm On Inn"
+  (drops the On Inn mark where you stand, then stops), "I stopped early"
+  (stops with no mark), or Keep Tracking.
+- **Forgot to stop tracking?** If you sit still near the pack's On Inn marks
+  with tracking on, the app asks "Are you On Inn?" and stops by itself a few
+  minutes later if you don't answer — no more recording the drive home. A
+  long drink stop never triggers it.
+- **Admins can end tracking for everyone.** A new action in the map's trim
+  panel stops every phone still sending points for a finished run (they can
+  restart if genuinely still out on trail).
+
+### Improvements
+- **A resumed track no longer truncates at its old On Inn.** An On Inn
+  followed by later trail is ignored on every map — mobile and web.
+- **Trail-mark guards.** Accidental double-taps on the same mark are
+  swallowed, every mark shows an 8-second UNDO, and "Tell the pack" moments
+  after a previous alert moves your lost marker instead of duplicating it.
+
+### Fixes
+- **Live map error loop fixed.** Closing the map at the wrong moment could
+  leave a hidden loop polling and failing every 15 seconds until app restart.
+- **Duplicate members list fixed.** Overlapping syncs could double-insert
+  rows (e.g. kennel members appearing twice); all syncs are now serialised.
+- **Map controls respect the Dynamic Island** on the fullscreen map, and the
+  replay clock now shows the selected runner's own elapsed time.
+- **Photo crop:** hidden the aspect-ratio button that iOS 26 renders as an
+  empty panel (restored once the cropper library catches up).
+
+## 3.0.1+1288 (2026-08-16)
+
+### New Features
+- **See your whole track, even with no signal.** The live map now draws your
+  own track in two parts: solid where the server has it, dotted for what
+  your phone has recorded but not yet uploaded — they join seamlessly, and
+  the dotted tail retracts as uploads land.
+- **"Tracks updated N min ago"** pill on the live map shows how fresh the
+  pack picture is; it turns amber when the feed falls 2+ minutes behind.
+
+### Improvements
+- **On Inn is no longer a trail mark.** Ending a run is the End Run button's
+  job (it asks first); the one-tap terminator tile that could accidentally
+  cut a live track is gone, including from kennel-configured mark sets.
+  Historical On Inn marks still show on old runs.
+- **Honest connection messages.** A request that dies or times out right
+  after the app wakes now says so ("Connection Hiccup" / "Request Timed
+  Out") instead of "Unknown Server Error —".
+
+### Fixes
+- **Radar hidden when a run has no tracks.** On future (or untracked) runs
+  the Radar button led to a blank screen; the Map/Radar switch now only
+  appears once at least one runner has live track points.
+
+## 3.0.1+1287 (2026-08-15)
+
+### Fixes
+- **Live blue dot and lost compass now update properly when not tracking.**
+  The shared GPS stream steps up to full precision whenever the PackTrack
+  map or the "Where is the trail?" dialog is open, and the map's blue dot
+  moves on every fix instead of waiting for the next map redraw.
+- **Mistaken On Inn recovery**: restarting tracking after an accidental
+  On Inn now reliably removes the mark server-side, even if it was still
+  uploading when you restarted.
+
+### Improvements
+- **On Inn asks first.** The On Inn trail mark now confirms before marking
+  the end of trail and stopping tracking — no more one-tap accidents.
+
+## 3.0.1+1286 (2026-08-16)
+
+### Fixes
+- **Duplicate members list**: overlapping data syncs could write every kennel
+  member (and check-in row) twice; all three sync paths are now serialised.
+- **"Where is the trail?" offline**: the lost compass now reads the locally
+  recorded track as well as the server's, so a solo runner with no signal is
+  still pointed back along their own trail; clearer messages before the pack
+  has been told.
+
+### Improvements
+- **Check-in popup**: membership and haberdashery actions are proper buttons;
+  the membership button only appears when a renewal is due and reads
+  "Renew membership" or "Purchase membership" as appropriate.
+- **Lifetime memberships**: any expiry of 2100 or later counts as lifetime —
+  green star, no renewal prompts, and the charge sheet refuses politely.
+
+## 3.0.1+1285 (2026-08-11)
+
+### Improvements
+- **Check-in list warns when a membership is nearly up — or just lapsed.**
+  The green member star becomes an amber triangle through the last 10% of
+  the kennel's membership period (~36 days on an annual plan). Once the
+  membership expires it switches to a red alert triangle for 20% of the
+  period (~73 days annual) — a "chase the renewal" flag for past members.
+  After that the badge disappears. Lifetime memberships never warn; people
+  who never had a membership never get a badge.
+
+## 3.0.1+1284 (2026-08-09)
+
+Re-versioned re-release of 1283 — same code. A 3.0.1 build was already on
+TestFlight, so Apple won't distribute a 3.0.0-named build (lower marketing
+version) no matter the build number. Version name is now held at 3.0.1
+through the beta; build number increments only, until production.
+
+## 3.0.0+1283 (2026-08-09)
+
+### Improvements
+- **Fixed-year memberships recur every year.** A kennel's membership year is
+  now a month/day that repeats — a payment runs to the next time that date
+  comes around, and charging is never blocked "because the year passed".
+- **Payment report shows every transaction as its own line.** Memberships and
+  haberdashery sales appear alongside run payments, each with an icon (run
+  fee, annual subscription, haberdashery) before the name; the detail popup
+  shows the product and, for haberdashery, what was sold.
+
+### Fixes
+- **Fixed invisible text** in the live-run chat preview strip (white-on-white).
+
+## 3.0.0+1282 (2026-08-08)
+
+Version name held at 3.0.0 through the beta; build number increments only.
+
+### Improvements
+- **Payment sheets restyled.** The membership and haberdashery sheets now
+  sit on a dark-green panel with white input fields — clearer to read and
+  visually distinct from the page behind them.
+
+## 3.0.1+1281 (2026-08-08)
+
+### New Features
+- **Sell haberdashery.** From the check-in payment card, "Sell
+  haberdashery" records a sale — an amount, a description of what was
+  sold, and the payment method. Like memberships, it's recorded without
+  touching Hash Credit (though credit can pay), and you can record several
+  sales per person.
+
+### Improvements
+- **Payment reports now separate non-run money.** Membership and
+  haberdashery payments no longer inflate the run's cash totals or make a
+  member look paid-up for the run. A new "Other sales" section on the
+  report lists those takings with per-product subtotals.
+
+## 3.0.0+1280 (2026-08-08)
+
+Harrier Central 3.0 — the official 3.0 beta. Upgrading from 2.x shows
+the new seven-screen welcome tour.
+
+### New Features
+- **Annual memberships.** Kennels can now charge membership through the
+  app — from the check-in page or the kennel members list. The payment is
+  recorded without touching Hash Credit (though credit CAN be used to
+  pay), and the member's expiration date advances by the kennel's rule:
+  rolling, fixed membership year, or lifetime. Fee is pre-filled from
+  kennel settings and adjustable per charge.
+
+### Fixes
+- **Session diagnostic logs survive a bad connection.** A failed upload
+  now requeues for the next launch instead of being silently lost.
+
+## 2.15.65+1279 (2026-08-05)
+
+### New Features
+- **The lost compass now steers you onto the trail.** Within 40 m, the trail
+  arrow slides toward whichever side of you the trail is on and glides back
+  to centre as you converge — walk toward the arrow and keep it centred to
+  stay on the line. Smoothed and eased so GPS jitter reads as a gentle
+  drift, never a jump; sits dead-still once you're on the trail. The
+  on-trail caption now reads "Follow the trail — it runs this way".
+
+### Fixes
+- **Run map no longer logs errors when two views of the same run are open.**
+  Having the run-detail map and the live-run map up at once made every
+  position poll throw internally (degrading camera-follow); both views now
+  coexist cleanly.
+
+## 2.15.64+1278 (2026-08-04)
+
+### Improvements
+- **The radar's centre arrow now shows which way you're facing.** With the
+  compass locked to North the radar used to keep its little blue arrow pinned
+  straight up, as if you were forever facing north. It now rotates with you —
+  turn on the spot and the arrow turns too, so "that blip is off to my left"
+  is readable at a glance. During replay it shows the focus runner's direction
+  of travel instead. Heading-up mode is unchanged (the arrow stays at the top
+  because the whole rose turns).
+- **Map and radar rotation now ease in and out.** On top of the existing
+  smoothing, turns build up speed and settle into place rather than starting
+  and stopping at full rate — and a direction reversal winds down through zero
+  instead of snapping. One easing drives both the map and the radar rose, so
+  they can never disagree about which way is ahead.
+
+### Fixes
+- **Adding a Down Down no longer risks a duplicate charge.** On a flaky
+  connection, a charge whose confirmation was lost in transit could be
+  silently re-sent and recorded twice. It now goes up exactly once; if the
+  connection genuinely fails you get told, rather than guessed at.
+- **Assistance broadcasts go to the people involved, not the whole kennel.**
+  Lost-hasher alerts and "back on trail" messages now release to
+  Mismanagement, RSVPs and Hares — the people actually on or running the
+  event — instead of every member the kennel has ever had.
+- **Locking the map to North mid-turn now stops the turn dead.** Previously a
+  rotation still in flight could keep nudging the freshly locked map away
+  from north.
+
+## 2.15.63+1277 (2026-08-02)
+
+### Improvements
+- **The lost compass now celebrates finding the trail.** The moment you step
+  onto the trail the arrow flashes, the phone chimes and gives a small buzz —
+  you don't have to be staring at the screen to know you've made it. The
+  arrow also changes shape at that moment: the wedge that pointed *at* the
+  trail becomes a straight shaft-and-arrowhead pointing *along* it, showing
+  which way the trail runs. The celebration only fires on a genuine arrival —
+  opening the compass while already standing on the trail stays quiet.
+
+## 2.15.62+1276 (2026-08-02)
+
+### Fixes
+- **Imported camera-roll photos now actually reach the Hash Flash.** "Add your
+  photos" was saving imports as private-forever, so despite the "sent to the
+  Hash Flash for review" message they never appeared in the review queue and
+  could never be approved or shared. Imports are now submitted as pending
+  review, exactly like an in-app "Save and share" photo — nothing is shared
+  until the Hash Flash (or another authorised reviewer) approves it.
+
+## 2.15.61+1275 (2026-08-02)
+
+### Fixes
+- **A slow request no longer ties the app up for three minutes.** When a request
+  took too long, the app was mislabelling it as a server error and retrying it
+  six times, thirty seconds apart, instead of giving up straight away as it was
+  meant to. It now stops on the first timeout and says so.
+- **Timeouts are no longer reported as server errors** in the diagnostic log,
+  which was sending investigations after server faults that never happened.
+
+## 2.15.60+1274 (2026-08-02)
+
+### Improvements
+- **Once you've told the pack you're lost, both buttons stay available.** "I've
+  found the trail" and "Tell the pack again" now sit side by side, so you can
+  send an updated position if you've moved instead of having to choose between
+  the two.
+
+### Fixes
+- **The all clear now removes every lost marker you dropped**, not just the last
+  one — so telling the pack twice can't leave an old marker on the map sending
+  people to where you used to be.
+
+## 2.15.59+1273 (2026-08-02)
+
+### New Features
+- **"Where is the trail?" knows when you've found it.** Get within 20 m of the
+  trail and the arrow stops sending you somewhere. Instead it turns green and
+  becomes a "this way" chevron pointing the direction the trail actually runs,
+  so you can carry on along it rather than standing on it wondering.
+- **If the pack hasn't gone any further yet**, there is no onward direction to
+  give — so you get a bullseye and "Look around", with how close you are.
+
+### Improvements
+- **Short distances read properly.** Standing 15 m from the trail said
+  ".01 miles", which is true and useless. Close in it now says metres or yards.
+
+## 2.15.58+1272 (2026-08-02)
+
+### Fixes
+- **The radar's scale is readable again.** "Ring = 100 m · centred on you" was
+  tucked under the playback panel at the bottom of the radar. It now sits just
+  below the Map / Radar switch at the top, on its own dark badge, so it stays
+  clear of the panel however tall the panel gets.
+
+## 2.15.57+1271 (2026-08-02)
+
+### New Features
+- **"Where is the trail?" now shows two arrows.** One points at the nearest bit
+  of trail, the other at the nearest hasher — where they are right now. These
+  are genuinely different places: someone doubling back can be much closer than
+  any part of the line they laid, and now you can see both and choose.
+
+### Fixes
+- **The distance over the arrow no longer disagrees with the distance under
+  it.** The arrow ignored GPS fixes accurate to worse than 15 m while the "they
+  were X away" line accepted up to 25 m, so a middling fix counted for one and
+  not the other — the arrow then aimed at an older, further point. Both now use
+  the same standard, and the arrow uses fresher positions as a result.
+- **It says when it has lost signal.** If the live feed stops, the arrow keeps
+  working from the last positions it has, but now tells you how old they are
+  instead of looking confident.
+
+### Improvements
+- **The Refresh button is gone.** It updates itself every few seconds, and the
+  distance and bearing recalculate with every GPS fix, so there was nothing to
+  refresh.
+
+## 2.15.56+1270 (2026-08-02)
+
+### Improvements
+- **Share your run from the full-screen map.** The link button now opens your
+  phone's share sheet with a message and the live-tracking link, instead of
+  quietly copying the link to the clipboard. Same wording as the share button
+  in Run Tools.
+
+### Fixes
+- **The "My location" button on the full-screen map is usable again.** The link
+  button sat exactly on top of it and hid it completely. Share has moved to the
+  left, under the close button.
+
+## 2.15.55+1269 (2026-08-02)
+
+### Improvements
+- **The run editor is faster to type in.** Every keystroke used to redraw the
+  whole editor — all five tabs and the map. Now typing only redraws the save
+  button, which is the only thing that needs to react.
+- **Tab switching does less work**, redrawing once when the tab changes rather
+  than on every frame of the slide.
+
+### Fixes
+- **The run editor no longer leaves anything behind when you close it.** Its
+  text fields, focus handling and tab state are now released when you leave the
+  page instead of accumulating with each run you open.
+
+## 2.15.54+1268 (2026-08-02)
+
+### Improvements
+- **One save button for the whole run editor.** Editing a run used to mean a
+  separate save on the Details, Address and Other tabs, each one hidden at the
+  bottom of a long scroll. Now there is a single button anchored to the bottom
+  of the screen that saves everything you have changed, wherever you changed it.
+- **The save button tells you when there is something to save.** It stays greyed
+  out until you change something and turns red the moment you do, so it is
+  obvious that a change is still pending.
+- **You are asked before leaving with unsaved changes.** Backing out of the run
+  editor with pending edits now offers to save them first. Moving between tabs
+  keeps your edits, so it no longer needs to interrupt you.
+- **Auto-locate is only offered when the address actually changed**, rather than
+  on every save of the Address tab.
+
+### Fixes
+- **Settings on the Other tab could be reset by a save made from another tab.**
+  "Show run", "Count this run", "Promote this run" and "Users can edit run
+  history" were only read from the screen when the Other tab was on display, so
+  a save from elsewhere could write the defaults over them.
+- **A toggle on the Other tab was forgotten if you switched tabs and came back**
+  before saving.
+- **"Users can edit run history" no longer turns an inherited setting into an
+  explicit "no"** when the run had never had the setting applied.
+
+## 2.15.53+1267 (2026-08-02)
+
+### Fixes
+- **History tab could break when refreshing your kennel stats.** Refreshing
+  briefly emptied the list while the screen was still drawing the old one,
+  which could throw an error over the stats. Found in a user's diagnostic log.
+- **History tab could also spin forever** for anyone with no qualifying
+  kennels — the loading indicator was only cleared while processing results,
+  so no results meant it never cleared.
+
+## 2.15.52+1266 (2026-08-02)
+
+### Improvements
+- **"I'm Lost" no longer tells everyone the moment you press it.** It now just
+  opens the compass and points you at the trail — usually that's the end of it
+  and nobody needs bothering. If you do want help there's a **"Tell the pack
+  I'm lost"** button in the dialog, and it only sends when you press it.
+- **New "I've found the trail" button.** Once you've told the pack, one tap
+  sends the all clear and removes your lost marker from the run map, so nobody
+  keeps looking for someone who's already back.
+
+## 2.15.51+1265 (2026-08-01)
+
+### Improvements
+- **Photo import also checks where the photo was taken.** Anything more than
+  30 miles from the run's start is skipped, so a picture from home that
+  happens to fall in the run's hours doesn't end up in the Hash Flash's queue
+  or on the run map.
+
+## 2.15.50+1264 (2026-08-01)
+
+### Fixes
+- **Photo import now works for runs in another time zone.** Photo times were
+  being read against your phone's *current* zone, so importing after flying
+  home from a hash abroad could reject every photo as "not taken during the
+  run" — and misplace the ones it accepted on the map. Times are now compared
+  in the run's own local time, wherever you happen to be when you import.
+
+## 2.15.49+1263 (2026-08-01)
+
+### New Features
+- **Add photos you took on your own camera.** A new "Add your photos" button
+  on a run's photo tab opens your normal photo picker; anything you choose that
+  was taken during the run, with a location recorded, is sent to the Hash Flash
+  for review exactly like a photo taken in the app — and appears on the run map
+  at the spot it was taken. Photos without a location, without a date, or taken
+  outside the run are skipped, and you're told how many and why.
+
+## 2.15.48+1262 (2026-08-01)
+
+### Improvements
+- **"I'm Lost" now also says where that hasher has got to since** — e.g.
+  "Tuna Melt was there 33 minutes ago" followed by "Tuna Melt was 1.2 km away
+  3 minutes ago". Together those tell you whether the trail ahead is worth
+  chasing or long cold.
+- **Distances in the compass use your own units** (miles/yards or metres/km),
+  following your preference — and the kennel's when yours is set to Auto.
+
+## 2.15.47+1261 (2026-08-01)
+
+### Improvements
+- **"I'm Lost" now tells you how old the trail you're heading for is** — for
+  example "Tuna Melt was there 33 minutes ago". Converging on the pack and
+  walking to a spot they left an hour ago look identical on a compass, and
+  this is the difference between the two.
+
+## 2.15.46+1260 (2026-08-01)
+
+### Improvements
+- **"I'm Lost" distance now counts down as you walk.** The arrow and distance
+  update with every GPS fix instead of once every five seconds, so you can see
+  straight away whether you're getting warmer. Which trail point you're aimed
+  at still only changes every five seconds, so the needle doesn't hop between
+  two equally-close bits of trail while you're trying to follow it.
+
+## 2.15.45+1259 (2026-08-01)
+
+### Fixes
+- **Map icons stay the right way up when the map rotates.** Trail marks, run
+  photos, runner pins and location pins used to tilt with the map once north
+  lock was off, so on a southbound leg they were upside down and labelled
+  marks were unreadable. They now stay upright. The blue dot's direction wedge
+  still turns, since pointing somewhere is its whole job.
+
+## 2.15.44+1258 (2026-08-01)
+
+### Fixes
+- **Map and radar rotation now keeps up.** Recent builds cured the jitter but
+  turned the view to treacle — worst during playback, where the run races past
+  far faster than real time while the rotation limit was still grinding through
+  the previous turn, so it never caught up. Turns now complete in well under a
+  second, and the heading is measured over 20 m of track instead of 70 m so
+  corners aren't rounded away.
+
+## 2.15.42+1256 (2026-08-01)
+
+### Fixes
+- **Much calmer map and radar rotation.** Three changes together: the heading
+  is now fitted through *every* GPS point in the window rather than just the
+  two on the ends (one bad fix nudges it instead of throwing it), the window
+  is far longer at 70 m, and the view is now limited to turning about 3.5° per
+  second so it eases round to a new direction instead of snapping. The radar
+  turns in step with the map, so the two can never disagree.
+
+## 2.15.41+1255 (2026-08-01)
+
+### Fixes
+- **The map and radar no longer jitter when rotation is unlocked.** Heading was
+  taken from the bearing between two neighbouring GPS fixes, which at walking
+  pace are a couple of metres apart — mostly noise, so the view twitched
+  constantly. It's now measured across about 18 m of track, and during replay
+  the window is centred on the moment being shown (using the points either
+  side), so the view is steady *and* still turns corners on time rather than
+  lagging behind them.
+
+## 2.15.40+1254 (2026-08-01)
+
+### Improvements
+- **Getting in and out of the radar view is now obvious.** A "Map | Radar"
+  switch sits at the top of the run map, showing which view you're in and the
+  other one you can go to — replacing an icon that looked like every other
+  button on the map.
+- **The back button now leaves the radar, not the run.** Previously pressing
+  back (or swiping back on iPhone) from the radar closed the whole live run.
+- The **Full screen** button is hidden while in radar view, where it would
+  have opened a full-screen map and read as a second, wrong way out. Reset
+  range moved to its own button.
+
+## 2.15.39+1253 (2026-08-01)
+
+### Improvements
+- **Map buttons no longer disappear into the map.** Every control floating over
+  the run map — full screen, north lock, my location and the new radar view —
+  is now dark with a white outline instead of translucent white, which was
+  invisible over pale streets and unreadable on the radar's dark canvas.
+- **The radar button has moved up into the button group** on the right, below
+  My Location, and stays in the same place when you switch views so it doesn't
+  jump out from under your thumb.
+
+## 2.15.38+1252 (2026-08-01)
+
+### New Features
+- **The radar view now works on replays too.** A radar button on the run map
+  swaps the map for the rose while keeping the timeline, play button and trail
+  filters exactly where they are — so you can scrub or play the run back and
+  watch the pack open up and close in around you. The rose centres on the
+  selected runner (or you), points the way that runner was travelling, and
+  shows everyone else at their bearing and distance *at that moment* in the
+  replay. Pinch to change range; long-press the button to reset it.
+
+## 2.15.37+1251 (2026-08-01)
+
+### New Features
+- **"Where is everyone?" radar** — new radar icon in the Live Run top bar. You
+  are the dot in the middle; every other hasher is a blip at their true bearing,
+  with distance as the radius, labelled with name and how far away they are.
+  The ring starts sized to hold the nearest 90% of the pack so one hasher miles
+  away can't squash everyone into the centre — anyone beyond it is pinned to
+  the rim as a chevron so you still know they're out there. **Pinch to zoom**
+  the range in or out; the icon in the top bar resets it.
+  Hashers who have called for help show in orange with a halo, and anyone whose
+  position has gone quiet for 5 minutes dims. Updates every 15 seconds, in step
+  with the map. *Experimental — tell us if it earns its place.*
+
+## 2.15.36+1250 (2026-08-01)
+
+### Improvements
+- **The lost compass now updates every 5 seconds** (was 20), polling the
+  server each tick for the pack's newest positions. If a trail comes closer
+  while you stand there, the arrow retargets to it and tells you it switched.
+- **It now names whose trail you're being pointed at** — "Towards Dart
+  Onion's trail" rather than just "the nearest runner's trail".
+- **Hashers who are themselves lost no longer count as trail.** Their track
+  after they called for help is where they wandered off, so pointing another
+  lost hasher at it would just put two people in the same wrong place. Their
+  earlier, on-trail portion is still used, and the dialog says how many were
+  left out.
+
+## 2.15.35+1249 (2026-08-01)
+
+### Improvements
+- **Share My Run now sends the full-screen PackTrack link**, so whoever you
+  send it to lands straight on the live map instead of the run page.
+
+## 2.15.34+1248 (2026-08-01)
+
+### Fixes
+- **Distress marks are now sent immediately, never queued**: while tracking,
+  an "I'm Lost" / "Send Help" mark could sit in the normal GPS batch queue
+  behind an upload already in progress — up to a minute on a weak signal.
+  It is now sent on its own, out of band, the moment you press the button.
+- **You are now told what actually got through**: the confirmation says
+  whether the chat message sent, whether your position was marked on the map,
+  or — if you have no signal at all — that nothing could be sent.
+
+## 2.15.33+1247 (2026-08-01)
+
+### New Features
+- **Distress marks now show on everyone's map**: pressing "I'm Lost" or
+  "Send Help" drops an unmistakable red/orange badge — with who called it and
+  when — onto the live map of every PackTrack user on the run. Previously the
+  call looked like an ordinary yellow note, the same as marking a nice pub.
+  The mark is now dropped even if that person never started tracking or had
+  already ended their run (the people most likely to need it), it is never
+  hidden by trail-type filters, and it draws on top of other marks.
+
+## 2.15.32+1246 (2026-08-01)
+
+### New Features
+- **"Which way is the trail?" compass**: after sending an "I'm Lost" message,
+  a dialog now shows an arrow pointing at the nearest point of the pack's live
+  GPS tracks, with the straight-line distance. The arrow turns as you turn
+  (device compass) and refreshes every 20 seconds. If nobody else is tracking,
+  it points back along your own earlier track instead — "backtrack to where
+  you left it". It is a bearing, not a route: no path, no turn-by-turn.
+- **Flashlight button** on Live Run Tools — toggles the phone's torch for
+  night trails, and always switches off when you leave the screen.
+- **Share My Run button** — opens the phone's normal share sheet with a link
+  to this run's public page, where friends can follow your dot live.
+
+## 2.15.31+1245 (2026-08-01)
+
+### New Features
+- **"I'm Lost" and "Send Help" buttons on the Live Run Tools screen**: both
+  post to the run chat (notifying the pack per their notification settings)
+  with your current location as a maps link, after a confirmation prompt.
+  While tracking, they also drop a labelled mark on the live map at your
+  position. They replace the cramped chat strip — the full Chat tab is one
+  tap away on the bottom bar.
+
+## 2.15.30+1244 (2026-08-01)
+
+### Fixes
+- **Fresh-token retry now covers every API call**: six call sites (photo
+  add/list/pending/caption, chat message fetch, find-account search) built
+  their access token once outside the retry closure, so the new stale-token
+  retry would have re-sent the same expired token. All now mint the token
+  inside the closure, per attempt, like the rest of the app.
+
+## 2.15.29+1243 (2026-08-01)
+
+### Fixes
+- **"Invalid access token" after a network dropout**: an action issued while
+  offline could transmit its original (now-expired) token once the network
+  returned, and the resulting error was never retried. The app now retries
+  exactly once with a freshly minted token — safe because the server rejects
+  stale tokens before doing any work, so nothing is ever repeated.
+
+## 2.15.28+1242 (2026-07-31)
+
+### Improvements
+- **App store links on the Kennel Links page are now server-driven**: sourced
+  from HC.ServerStatus via the login response (already stored to prefs on
+  every boot); the hardcoded URLs remain only as first-boot fallbacks. Also
+  corrected the server's Android link, which still pointed at the beta
+  testing track instead of the production Play Store listing.
+
+## 2.15.27+1241 (2026-07-31)
+
+### Improvements
+- **Kennel Links page: four global links added at the bottom** — Global Hash
+  List (hashruns.org), Harrier Central (harriercentral.com), and the iOS App
+  Store / Google Play download links for the app, each with the usual QR code
+  and copy/share/open buttons. Appears everywhere the links section is shown.
+
+## 2.15.26+1240 (2026-07-31)
+
+### Improvements
+- **New Settings page** (drawer menu, below My Profile): Distance Preference,
+  Camera Behaviour and GPS Tracking Quality moved out of My Profile. Distance
+  and camera changes now save immediately (with a progress spinner) instead of
+  waiting for Save Changes.
+- **Support page** gains Reload Data and Diagnostic Logs (moved from My
+  Profile; Diagnostic Logs still only appears for the log-harvest cohort).
+- My Profile keeps everything else: profile details, name preference, photo,
+  auto-show-runs distance, third-party login, log out, and delete account.
+
+## 2.15.25+1239 (2026-07-31)
+
+### Fixes
+- **Following a kennel for the first time now shows the green check
+  immediately**: the follow was recorded correctly, but the list row only
+  updated its in-memory copy of your kennel membership — which doesn't exist
+  yet on a first-ever follow — so the checkbox stayed clear until an app
+  restart. The row now re-reads the freshly-synced membership from the local
+  database. Same fix applied to the notification and email preference toggles.
+
+## 2.15.24+1238 (2026-07-31)
+
+### Improvements
+- **A run now counts as "current" for 6 hours after its start, everywhere**: the
+  runs list split was 3 hours, the map's internal flags used a buggy +4-hour
+  comparison (which also misclassified runs starting within the next 4 hours as
+  past), and map pins flipped to past styling at the exact start instant. All
+  three now share one rule: current/future until 6 hours after start.
+
+## 2.15.23+1237 (2026-07-31)
+
+### Improvements
+- **Removed the screenshot help system**: the (i) button in the app bar and the
+  flip-to-screenshots tutorial view are gone. The screenshots had drifted out of
+  date as the UI evolved, making them more misleading than helpful. (Also drops
+  the tutorial images and the `card_swiper` dependency.)
+
+## 2.15.22+1236 (2026-07-31)
+
+### Improvements
+- **Runs list count banner splits future and past**: the banner under the search
+  bar now reads "Showing X future runs, Y past runs", matching the inline past
+  section above the divider. Flat-list modes (chats, Past scope, date-range
+  filter) keep the single combined count, since those lists aren't future runs.
+
+## 2.15.21+1235 (2026-07-30)
+
+### Improvements
+- **Photo review buttons are now identical on both screens**: the single-photo and
+  grid views share one set of action buttons, so the labels, colours, icons and
+  order match everywhere. **Cover Photo** is now available on the grid too (it
+  needs exactly one photo selected — a run has only one cover).
+- **Filter photos by tag**: the count chips in the run header (Private, Members,
+  Public, Featured, Cover, Deleted) are now tappable and filter the photos below
+  to just that tag. Tap again — or tap either tab — to clear.
+
+### Fixes
+- **Featured photo showed the wrong badge**: a Featured photo displayed a "Public"
+  badge in the single-photo view while the buttons correctly showed Featured.
+- **Select all / Clear** looked like a single button — they're now visibly separate.
+
+## 2.15.20+1234 (2026-07-29)
+
+### New Features
+- **Cover photo for past runs**: a past run with no pre-run image now shows its
+  cover photo (a photo from the run itself) as the thumbnail in the runs list. On the
+  run details page, when both exist they're shown together — cover photo on top, then
+  the event image, then the rest of the content.
+- **Featured photos on the run page**: a run's Featured photos now appear as a strip
+  on the run's Details tab, in addition to the Photos tab.
+
+## 2.15.19+1233 (2026-07-28)
+
+### Fixes
+- **Photo tags are a single ladder**: a photo now holds only one tag at a time —
+  Private → Members → Public → Featured → Cover — where each level implies the
+  visibility of the ones below it. "Featured" is a rung on that ladder, not a
+  separate flag, so a photo can no longer be tagged e.g. "Members" and "Featured" at
+  once (the review buttons are now mutually exclusive). Existing photos were migrated;
+  any with conflicting tags kept their more-restrictive audience.
+
+## 2.15.18+1232 (2026-07-28)
+
+### Fixes
+- **Kennel detail viewable by everyone**: opening a kennel from the Kennels list,
+  the map, or a photo no longer errors ("You don't have admin access") for
+  non-admins. Regular users now see the kennel's logo, description, map and upcoming
+  runs; the admin-functions section is shown only to admins. Fixes a navigation gate
+  that wrongly blocked the whole page instead of just admin tools.
+- **Kennel admin tools use derived permissions**: the kennel detail admin section
+  (add/edit runs, print QR, manage members, …) and its data sync now appear based on
+  the kennel-admin capabilities a user actually holds, instead of the legacy "admin"
+  flag (which grants nothing under the new permissions system). Role-based kennel
+  admins now correctly see these tools. Add/edit runs is treated as a kennel-admin
+  function (moved out of run admin).
+
+## 2.15.17+1231 (2026-07-28)
+
+### Improvements
+- **Derived admin access**: the Run Admin gear and Kennel Tools entry now appear
+  based on the actual permissions a user holds — no separate "enter" gate. Roles
+  with real capabilities always get in; empty doorways disappear. Run hares still
+  get their own run's admin.
+- **Photos entry**: photo review now has its own doorway (a camera icon on the run
+  details screen), so photographers (Hash Flash) reach it without run-admin access.
+
+## 2.15.16+1230 (2026-07-27)
+
+### Improvements
+- **Per-kennel permissions**: the app now honours per-kennel permission overrides
+  (set in the portal) — a kennel can grant or revoke specific admin functions for
+  its roles without affecting other kennels. Completes the data-driven permissions
+  system; no change for kennels on the defaults.
+
+## 2.15.15+1229 (2026-07-27)
+
+### Improvements
+- **Permissions groundwork**: kennel-admin permissions are now delivered from the
+  server as a configurable matrix instead of being hardcoded in the app. No change
+  to what anyone can do today — this is the foundation for admin-managed permissions.
+
+## 2.15.14+1228 (2026-07-27)
+
+### New Features
+- **Kennels can disable credit**: a kennel can now turn its credit system off
+  (Portal → Hash Cash → "Allow credit payments"). When off, the Credit option no
+  longer appears on the payment screen for that kennel. On by default — no change
+  for kennels that use credit.
+
+### Fixes
+- **Account setup**: entering an invite code (or creating an account) now shows a
+  clear error if device authorization fails, instead of silently doing nothing.
+- **Payment report**: opening a hasher with no payment record now shows a proper
+  message and a Close button, and no longer risks marking them "not paid".
+
+### Improvements
+- **PackTrack**: a Label (custom-text) mark is always available to hares, even if a
+  kennel's trail-mark set leaves it out.
+- **Faster & fresher**: after the background start-up sync, all tabs (History,
+  Kennels, Songs, Map) now refresh with the latest data — previously only the Runs
+  tab did, so the others could show stale data until revisited.
+
+## 2.15.13+1227 (2026-07-26)
+
+### Improvements
+- **PackTrack photos**: the showcase photo now uses the app's shared disk-backed
+  image cache (CachedNetworkImage) and is preloaded on arming, so it shows from
+  the start of the zoom sweep instead of loading mid-animation.
+
+## 2.15.12+1226 (2026-07-26)
+
+### Improvements
+- **PackTrack photos**: arming the camera now preloads the selected runner's
+  photos, so during playback they appear from the start of the zoom sweep
+  instead of popping in at full size mid-animation.
+
+## 2.15.11+1225 (2026-07-26)
+
+### Fixes
+- **Live run map**: fixed the grey overlay that could cover the whole map — it was
+  a GetX reactive-scope error in the photo-showcase overlay that rendered as a
+  full-screen error box in release builds. PackTrack photo playback now animates
+  correctly again.
+
+### New Features
+- **PackTrack**: photos now also display while you manually scrub the timeline —
+  drag onto a photo to see it, drag away to dismiss.
+
+### Improvements
+- **PackTrack photo zoom** now runs on a vsync frame-callback driver for smoother
+  playback animation.
+
+## 2.15.10+1224 (2026-07-26)
+
+### Improvements
+- **Live run map (battery)**: re-applied the marker-list memoization — checkpoint
+  and photo markers are rebuilt only when the visible set actually changes, not
+  on every playback frame — plus isolated the tilt speed indicator into its own
+  reactive scope. Step 2 of 3 of the reverted 2.15.7 map performance work; the
+  cluster-caching change is still held back.
+
+## 2.15.9+1223 (2026-07-26)
+
+### Improvements
+- **Live run map (battery)**: re-applied the compass-heading optimization — the
+  map no longer rebuilds on every compass update (sub-2° rotations are ignored,
+  and a heading change now redraws only the viewer dot's wedge). First of the
+  reverted 2.15.7 map performance changes being re-introduced one at a time.
+
+## 2.15.8+1222 (2026-07-26)
+
+### Fixes
+- **Live run map**: fixed a grey overlay that dimmed the whole map and made it
+  hard to use. Reverted the 2.15.7 map performance changes to restore the known-
+  good map; they will be re-applied after on-device testing.
+
+## 2.15.7+1221 (2026-07-26)
+
+### New Features
+- **Charges**: record a charge against people who aren't in Harrier Central —
+  add any number of external names and mix them with in-app hashers on one charge.
+
+### Fixes
+- **PackTrack playback**: photos now show when navigating **backward** through a
+  run, and the photo zoom is smooth instead of jumpy.
+
+### Improvements (performance & battery)
+- **Live run map**: no longer rebuilds on every compass/heading update (an
+  always-on battery drain), and photo markers/clustering don't rebuild every
+  frame during playback.
+- **Location tracking**: lower per-GPS-point overhead during a run (throttled
+  disk writes and distance recomputation).
+- **Down Downs**: stops polling the network while the app is backgrounded.
+- **Search**: Guest Discovery and Songs searches are debounced and cached, so
+  typing stays smooth over large lists.
+- **Images**: list/grid thumbnails decode at display size instead of full
+  resolution (lower memory), and loading spinners are repaint-isolated.
+- **Run list & pack grid**: fewer rebuilds on the run list; the pack-members grid
+  now loads lazily for big runs.
+
+## 2.15.6+1220 (2026-07-25)
+
+### Fixes
+- **PackTrack HTTP reliability**: the GPS uploader and track reader now open a
+  fresh connection per request instead of reusing a keep-alive socket. Fixes the
+  "Bad file descriptor" errors after the app returns from the background during a
+  run, and prevents GPS batches being abandoned (dropped track points).
+- **RSVP**: tapping an RSVP when the network call fails no longer throws — the
+  chip restores its previous state and shows "Couldn't save RSVP — please try again."
+
+### Improvements
+- **PackTrack playback**: photo zoom is now rock-controlled — tilt with the run to
+  zoom in, against it to zoom out; the neutral zone freezes it. The speed chip turns
+  **orange** when tracking backward (red = paused, blue = forward).
+
+## 2.15.5+1219 (2026-07-25)
+
+### Fixes
+- PackTrack photo playback: photos now show again when navigating **backward**
+  through a run (they sweep in the mirrored direction). Regression from 2.15.4.
+
+## 2.15.4+1218 (2026-07-25)
+
+### Improvements
+- PackTrack photo playback: photos now sweep in from the right and out to the
+  left (mirrored when navigating in reverse) so the direction you're moving
+  through the run is obvious.
+
+### Fixes
+- Songs screen: the search keyboard now dismisses — drag the song list, or tap
+  a song to view it.
+
+## 2.15.3+1217 (2026-07-25)
+
+### New Features
+- **Share PackTrack link**: the full-screen PackTrack map has a new button
+  (top-right) that copies the run's public live-tracking link to your clipboard.
+
+### Improvements
+- Photos saved to your camera roll now keep their location (GPS) and capture date.
+
+## 2.15.2+1216 (2026-07-25)
+
+### Improvements
+- "Your trail" buttons now centre on the screen.
+- Trail-mark buttons are shown but disabled (dimmed) until a run is being tracked.
+- PackTrack photo playback: the photo zoom now follows the phone tilt (or the
+  playback speed when tilt is off) — tilt to the stop-point to lock the zoom.
+
+### Fixes
+- Reworded the disabled tracking button to "Tracking available at …".
+
+## 2.15.1+1215 (2026-07-25)
+
+### Fixes
+- **Defunct kennels hidden**: kennels marked Defunct or Inactive-Hidden no longer
+  appear in the Kennel list or on the run/kennel map. They still sync and remain in
+  your run history and reachable directly.
+
+## 2.15.0+1214 (2026-07-25)
+
+### New Features
+- **Trail marks — glyph or text**: trail markers are now either a glyph (from a fixed
+  library) or a short text of up to 7 characters (a space starts a new line), replacing
+  the fixed circular badges. Marks render as square tiles on the control grid and on the
+  live map. A mark's presentation now rides self-describing on the GPS track, so the map
+  and public-web spectator draw it without the kennel config.
+
+### Improvements
+- **"Your trail" buttons** are now horizontally centred.
+- Monochrome glyphs support light/dark inversion (groundwork; not yet switched on); the
+  Caution glyph stays full-colour red.
+
+## 2.14.3+1213 (2026-07-21)
+
+### Fixes
+- **Check-in pack list crash (RangeError)**: fixed a `RangeError` that fired repeatedly
+  while filtering the pack on the Check In screen — the hasher list's cached item count
+  went stale as the live-filtered list shrank, so rows were built against out-of-range
+  indices. The list is now rebuilt reactively (wrapped in `Obx`) so its count always
+  matches the filtered list, with a defensive bounds guard as backup. Surfaced by the new
+  PackTrack device diagnostics from a live run.
+
+## 2.14.2+1212 (2026-07-20)
+
+### Fixes
+- **Run start check-in prompt**: the "you're at the run start — check in?" prompt now
+  reliably appears on arrival. It was being missed when the app was opened from the
+  background (only cold-start and screen-unlock triggered it), and when standing still at
+  the start with a stale GPS fix. The check now also runs on app resume and forces a fresh
+  location read instead of passively waiting for the idle location stream.
+- **Check-in "No" is no longer permanent**: declining the prompt once no longer suppresses
+  it forever for that run — a later successful check-in clears the block.
+
+## 2.14.1+1211 (2026-07-19)
+
+### Fixes
+- **Check-In Pack crash**: fixed a `RangeError` crash that could occur when a search
+  filtered the pack list down (a row rebuilt against the old, longer list).
+- **Avatars**: hardened photo loading so a legacy `bundle://` value can never fail to
+  render — bundled/no-photo avatars now always resolve to a real image.
+- **Notifications**: fixed a rare crash reading the run-notification badge when the
+  notification service wasn't registered yet.
+- **Live-run tracking**: fixed a background error storm where GPS location updates could
+  fail after the app had been suspended during a run.
+- **Leaderboard crash**: fixed a crash that could occur when a hasher's home kennel wasn't
+  in the leaderboard's kennel list.
+
+### Improvements
+- **Admin gating**: kennel admin, run admin, photo review, and the live-run **Charges**
+  tab now only appear/act for users with the matching permission — so you no longer tap
+  in and hit a "not authorised" rejection.
+- **Quieter diagnostics**: offline connection-check failures no longer clutter the
+  on-device log.
+- **PackTrack diagnostics** (enabled testers only): added lifecycle breadcrumbs plus a
+  ~60s memory-footprint (RSS) heartbeat to live run tracking, so tracking-related crashes
+  — including out-of-memory kills — leave a diagnosable trail.
+- **Crash/OOM reporting** (iOS, enabled testers only): subscribed to Apple MetricKit and
+  wired its crash, hang, and app-exit (memory-pressure / OOM) diagnostics into the server
+  harvest — capturing terminations that Xcode Organizer does not surface.
+
+## 2.14.0+1210 (2026-07-19)
+
+### New Features
+- **Hares get their own run-admin screen**: a designated hare can open Run Admin for
+  the run they're haring to edit run details, submit receipts, check people in, print
+  QR codes, and take payment — even without other admin roles.
+
+### Improvements
+- **Permissions overhaul**: admin functions (Hash Cash, run editing, members, photos,
+  Down Downs, Hash Trash, attendance) are now consistently gated by BOTH your
+  mismanagement role and your app-access permission, matching the server — so granting
+  a permission reliably enables its buttons. Added a dedicated Photos permission.
+- **Consistent card corners** across the run and kennel lists.
+- Check-in dialog now offers clearer **"Pay with credit" / "Don't check in"** choices
+  when you have Hash Credit.
+- Run Admin: **Edit run details** moved to the far left; buttons centered.
+- The Down Downs history is simply hidden for non-members (no more error pop-up).
+
+### Fixes
+- No more **"No runs available"** flash on a slow cold start.
+- Kennel run cards now show your correct **RSVP status**.
+- The error dialog button now says **"Close"** (it never quit the app).
+
+## 2.13.8+1209 (2026-07-18)
+
+### Improvements
+- **Consistent avatars everywhere**: the last screens still drawing the built-in
+  avatars from the app bundle (find-a-hasher, check-in pack, down-downs, member
+  lists, the pack list) now use the same web-served avatars as the rest of the
+  app — so avatars render consistently and keep working as the app moves off
+  bundled images.
+
+## 2.13.7+1208 (2026-07-18)
+
+### Improvements
+- **Photo "View on map"** now opens zoomed right in on the photo's location, so it's easy to pick out even when several photos were taken close together.
+- **Avatars are now web-friendly**: the built-in avatars are served from the web, so they also show up on the public website (e.g. runner avatars on the live map). Avatars created by older app versions are translated automatically.
+
+## 2.13.6+1207 (2026-07-18)
+
+### Fixes
+- **Photo "View on map" now opens on the right spot**: it used to jump to the end of the run (the On-Inn point); it now centres on where the photo was actually taken.
+
+### Improvements
+- **Photo viewer tidy-up**: removed the edit (crop) button from the photo view — photo editing stays in the Hash Flash approval screen. The top-left back arrow returns you to the photo gallery.
+- **View on map button** is now red, matching the app's other buttons.
+
+## 2.13.5+1206 (2026-07-18)
+
+### Improvements
+- **Photo viewer redesign**: the full-screen run photo now shows a cleaner title (just the run name, trimmed) and a new info bar with the photographer's name + avatar, the "n of m photos" count, the local time the photo was taken, and — when the photo has a location — a **View on map** button that jumps to where it was taken. Any photo comment is shown as before.
+- **Photo viewer navigation**: added left/right arrows to move between photos (in addition to swiping), plus a clearer back button.
+
+## 2.13.4+1205 (2026-07-18)
+
+### Fixes
+- **Clearing a run search returns you to "now"**: hitting the search X (or deleting the text) used to leave you stranded deep in past runs; the list now jumps back to the boundary between past and upcoming runs.
+- **Chat badge clears when you read a chat**: the unread chat count on the top chat bubble (and the Unseen Chats list) now updates the instant you open a chat, instead of sometimes staying stuck on an old count.
+- **"Clear all chats" no longer errors**: marking every chat read could fail with a connection error when you had kennel-level chat threads; it now clears cleanly.
+
+### Improvements
+- **Mark-all-read feedback**: the "clear all chats" button now flashes and shows a spinner while it works, so the tap is clearly acknowledged.
+- **Events filter icon**: the Events filter chip now uses a party-popper 🎉 instead of a star, to better signal "special events."
+
+## 2.13.3+1204 (2026-07-17)
+
+### Fixes
+- **"No runs available" no longer flashes**: a background refresh that briefly returned nothing could blank your cached runs list; it now keeps your runs and only shows the empty message when you genuinely have none.
+
+### Improvements
+- **PackTrack map controls**: the timeline scrubber is now a full-width bar along the bottom, the buttons are spread out with more room, and the readout shows elapsed run time (h:mm:ss) instead of the absolute clock time.
+- **Runner avatars** on the map carousel are now rounded squares to match the pins.
+
+## 2.13.2+1203 (2026-07-16)
+
+### Fixes
+- **Run photos no longer cropped**: photos in the map showcase now show the full image (rounded corners kept), instead of being cropped to a square.
+- **Avatars for photo-less runners**: a runner with no uploaded photo now shows their bundled avatar on the map and in the runner carousel, instead of a blank pin (or being missing).
+
+### Improvements
+- **Tilt playback — easier to pause**: a wider "hold to pause" zone makes it easier to freeze playback.
+- **Speed indicator colours**: the playback speed shows blue for forward and orange for reverse (and red when paused).
+
+## 2.13.1+1202 (2026-07-15)
+
+### New Features
+- **Full-screen map**: a full-screen button on the run map (both the live-tracking map and a run's Map tab) opens the PackTrack map edge-to-edge, with a close button to return.
+
+### Improvements
+- **Trim a run after it finishes**: the official start/end (trim) tools now live in the full-screen map, so you can trim a run any time from its Map tab — not just during the live tracking window. Set start / set end / clear are spread along the bottom in full-screen. (Admins only.)
+
+## 2.13.0+1201 (2026-07-15)
+
+### New Features
+- **PackTrack map refreshed to match the website**: the live-run map now shares the website's look and controls — a swipeable **runner carousel**, a tap-to-cycle **playback speed button** (0.5×–4×), a location dot with a **compass direction wedge**, a **"my location"** button, and a GPS-accuracy halo.
+- **Photos pop out on the map**: turn on the camera toggle and, as playback reaches one of your photos, it grows out of its pin to centre-screen and back.
+- **Official run start & end (admins)**: set the official start/end of a PackTrack recording so anything tracked before the start or after the end is ignored — for when someone starts early or forgets to stop. *(Requires the matching server update to take full effect.)*
+
+### Improvements
+- **Tilt playback — easier to pause**: holding the phone near neutral now reliably freezes playback across a comfortable range (wider hold-to-pause zone) with a red paused indicator.
+- **Playback speed re-tuned** to match the website (slower and more watchable when zoomed in).
+- **Consistent runner colours** between the app and the website.
+
+### Fixes
+- **Resuming a run keeps your distance & time**: if the app closed or stopped mid-run, tapping Start again now continues your tracked distance and elapsed time instead of restarting at zero, and stitches the resumed track back into one continuous line.
+- **Past runs no longer disappear** from the Runs list after opening the map and coming back.
+
+## 2.12.4+1200 (2026-07-12)
+
+### Fixes
+- **Run-count awards (Drink chug-a-lug) fixed**: milestone counts were dropping every hasher's HC-era runs on the day of a run — the current run isn't stamped with its cumulative count until an overnight job, so counts collapsed to the historical-only baseline and the wrong people (and wrong numbers) got badges. Counts are now inclusive of today's run whether or not the overnight job has run, so run/haring milestones are correct live at the circle.
+
+## 2.12.3+1199 (2026-07-11)
+
+### New Features
+- **Follow runner toggle**: on the run tracking map, the new follow button (next to tilt) lets you turn off camera tracking and pan the map freely — tap it again to snap back to the selected runner.
+
+## 2.12.2+1198 (2026-07-11)
+
+### Fixes
+- **Runs no longer show twice**: runs starting within a few hours of now could appear in both "My past Runs" and "My upcoming runs". A run now stays upcoming until 3 hours after its start time, then moves to past — never both.
+
+## 2.12.1+1197 (2026-07-10)
+
+### New Features
+- **Tilt to control playback**: on the run tracking map, enable the tilt toggle next to play — tilt your phone away to speed the replay up (to x4), toward you to slow it down and even reverse. A live speed indicator shows the current rate.
+
+## 2.12.0+1196 (2026-07-10)
+
+### Improvements
+- **Past runs at a glance**: past-run cards in the runs list now carry a purple tint so it's obvious when you've scrolled into history.
+
+### Fixes
+- **Trail marks**: symbols on the live run map no longer show a spurious integer tag (leftover diagnostics removed; existing marks render clean).
+
+## 2.12.0+1195 (2026-07-06)
+
+### New Features
+- **Kennel chat**: every kennel you follow now has its own chat, not tied to any run — open it from the chat icon on the kennel list, and unread kennel chats appear in Unseen Chats.
+- **Photo audiences**: photo review now uses audiences — **Private / Members / Public** — plus a **Featured** flag for the kennel home page and a one-per-run **Cover**. Members-only photos are visible only to current members and alumni.
+- **Alumni access**: kennel admins can grant (or revoke) alumni access from the member menu — alumni keep members-only content access even after paid membership lapses.
+
+## 2.11.14+1194 (2026-07-06)
+
+### Fixes
+- **New runs get the right start time**: creating a run in the app now uses the kennel's default run start time on the day you picked (previously new runs were created at midnight).
+- **Unseen Chats**: the list refreshes from the server when you open it via the chat badge, and runs that were deleted or hidden no longer appear.
+
+## 2.11.13+1193 (2026-07-02)
+
+### Fixes
+- **Hash Flash grid**: selection check marks now toggle when tapping photos; the bulk action buttons stay visible (greyed) when nothing is selected; and the jungle background extends to the bottom of the page.
+
+## 2.11.12+1192 (2026-07-02)
+
+### Improvements
+- **Hash Flash grid polish**: tap now selects a photo (green check, photo stays fully visible); long-press opens it for detailed review. The bulk action buttons are always visible in grid view, the grid/carousel toggle moved next to the Pending/Reviewed pills, and leaving the grid with photos still selected warns you first.
+
+### Fixes
+- **Hash Flash**: switching between Pending and Reviewed no longer carries a hidden photo selection across tabs.
+
+## 2.11.11+1191 (2026-07-02)
+
+### New Features / Improvements
+- **Hash Flash — grid & bulk review**: the photo reviewer now has a grid/carousel toggle. In grid view you see thumbnails (with a status tag on each); tap one to open it, or long-press to multi-select and bulk **Delete / Keep Private / Share / Add to Gallery / Home Gallery** many photos at once.
+
+### Fixes
+- **"My" filter**: past runs you RSVP'd No/Maybe to but didn't attend no longer appear under "My" (the "attended" check was too loose).
+
+## 2.11.10+1190 (2026-07-01)
+
+### Fixes
+- **Chat opened from Unseen Chats**: added a back button and fixed the message box being hidden behind the keyboard (the chat now has its own screen with an app bar and resizes for the keyboard).
+
+## 2.11.9+1189 (2026-07-01)
+
+### Fixes
+- **Unseen Chats now always shows the runs behind the badge**: if the chat badge has a number, the run appears in the Unseen Chats list — even for a run you don't follow and haven't attended (previously the list could be empty while the badge showed unread messages). These rows come straight from the server and tap directly into the chat.
+
+## 2.11.8+1188 (2026-07-01)
+
+### Fixes
+- **New members appear immediately**: adding a member (or a new person on a run) now syncs the Hasher record into the local database right away, so they show up in member/user lists without needing a full resync.
+- **Reload Data**: fixed the false "No Connection" dialog (and skewed online/offline detection) — the connection ping response wasn't being parsed correctly.
+- **Past runs**: runs you RSVP'd No or Maybe to (and didn't attend) are no longer shown in your past runs.
+
+## 2.11.7+1187 (2026-07-01)
+
+### Improvements
+- **Filter bar polish**: all filter buttons are now one uniform size; the Map filter uses a map icon (word removed); the heading no longer includes "past"/"future" wording (more room). The date-filter button keeps its calendar icon and just highlights while a range is active. The "View Map" button moved out of the bar to float over the top-right of the list when the Map filter is on.
+
+## 2.11.6+1186 (2026-07-01)
+
+### New Features / Improvements
+- **Filter chips**: the runs list view-switcher is replaced by three stackable filter buttons — **My**, **Events** (★), and **Map** — that can be combined in any way. The heading describes the current selection (e.g. "My Events on Map"); tap it for help.
+- **Past runs**: the list now shows all past runs for kennels you follow; turning on **My** narrows both past (attended) and upcoming (RSVP'd) to your own runs.
+- Switching filters re-anchors the list on the "My past runs" divider.
+
+## 2.11.5+1185 (2026-07-01)
+
+### New Features / Improvements
+- **Runs list — inline past runs everywhere**: the Events and Runs-on-Map views now show your attended past runs above a "My past runs" divider with upcoming runs below, matching the main Runs list. The page title tracks which section you're scrolled into.
+- **Map opens on all runs**: the Explore map now opens showing every run — including runs you've attended in the past — instead of only the recent/upcoming window.
+- **Unseen Chats across all your runs**: the Unseen Chats view now surfaces unread chats for your full run history (past and future), not just recent/upcoming.
+- **Simpler view switcher**: removed the separate "My Runs" view (now covered by the main list + inline past runs).
+
+### Fixes
+- **Runs list**: fixed a false "N new runs" indicator that was counting your past runs each time the app came to the foreground.
+
+## 2.11.4+1184 (2026-06-30)
+
+### Fixes
+- **Runs list**: fixed the future runs below the "My past runs" divider rendering as a blank grey area. The run-list header cells were indexing the wrong list after the past/future merge and threw while building (which paints blank in a release build); all rows now render correctly.
+
+## 2.11.3+1183 (2026-06-30)
+
+### Fixes
+- **Runs list**: fixed the future runs below the "My past runs" divider showing as an empty grey area — the list now fills the screen and renders all runs.
+
+## 2.11.2+1182 (2026-06-30)
+
+### New Features
+- **Runs list — My past runs**: the runs list now opens at your next run with a "My past runs" divider just above it; scroll up to browse the runs you've attended. The old future/past toggle is replaced by an always-available date-range filter.
+
+## 2.11.1+1181 (2026-06-28)
+
+### Improvements
+- **Admin Portal**: moved to the bottom of the side menu.
+
+### Security
+- **Same-device portal login**: the one-time login code is now passed in the URL fragment (never sent to or logged by a server) instead of the query string.
+
+## 2.11.0+1180 (2026-06-27)
+
+### New Features
+- **Admin Portal**: admins get an "Admin Portal" item in the menu that opens the web portal already logged in (no QR scan needed).
+
+## 2.11.0+1179 (2026-06-27)
+
+### New Features
+- **PackTrack trail types**: pick which trail you're running (Walkers / Short / Normal / Long / Ballbreaker, or your kennel's own) when you start tracking, and filter the run-map playback by trail type.
+
+### Improvements
+- Run-map playback speed now scales with the trail's length — 1 s/km zoomed out (a 28 km run plays in 28 s), slowing toward 8 s/km as you zoom in.
+
+## 2.11.0+1178 (2026-06-21)
+
+### Security & Reliability
+
+- **Sensitive credentials moved to secure storage**: the device **reset code** and
+  **qrSecretCode** now live in the iOS Keychain / Android encrypted storage instead
+  of plain app storage. Existing installs are promoted automatically on first boot
+  (the imprint "Storage" line now reads *encrypted*). _Non-sensitive configuration
+  stays in standard storage for speed; the device secret follows in a 2.11.x update._
+- **Self-healing recovery**: a reset keeps only the reset code (the recovery key)
+  in the keychain; on reboot the app re-authorises itself automatically — fresh
+  device registration and a clean data reload — with no user input. A full reload
+  is now a reliable way to recover from data corruption.
+- **One unified reset flow**: *Reload data*, *Log out* and the major-DB-upgrade path
+  now share a single wipe-and-reboot routine.
+- **Wipe guard**: a full reload is blocked unless the backend is reachable all the
+  way to the database, so the app can never wipe itself into an unrecoverable state.
+  Re-authorisation failures always fall back to a manual login — the app can't brick.
+
+## 2.10.7+1177 (2026-06-20)
+
+### Improvements
+
+- **Live run map — overlapping check markers merged**: when several runners mark
+  the same point (e.g. a check), the duplicate markers now collapse into one
+  instead of stacking.
+- **Live run map — tap a mark to see who reached it**: tapping a trail mark lists
+  every runner whose track passed within range of that point and when they got
+  there. Runners who "checked" — ran ≥50 m out from the mark and back — are
+  flagged with a 🔍 badge and sorted to the top.
+
+## 2.10.6+1176 (2026-06-20)
+
+### Fixes
+
+- **Offline pull-to-refresh no longer empties the runs list**: refreshing with no
+  connection now shows a "No Connection" message and keeps your runs. A refresh
+  that reaches the network but fails partway also rolls the list back, so it is
+  never left empty.
+- **Runs-list jitter on update**: stable list keys plus a per-run controller
+  cache stop rows rebuilding/flickering each time the data refreshes.
+- **"Run changed" flash on background updates**: a run whose data changes via a
+  notification or the cold-start background sync now flashes its card, not just
+  on a tab switch.
+
+## 2.10.5+1175 (2026-06-20)
+
+### Improvements
+
+- **Faster cold launch**: Returning users go straight to the runs list on app
+  start — the "Filling Your Mug" loading screen is now skipped entirely when
+  cached runs exist, with the full data sync running in the background. (First
+  launch with no cached data still shows the loading screen during initial sync.)
+- **Live-run GPS tiers retuned**: Power Saver is now 20 m / 15-min updates (was
+  30 m), Balanced is 10 m / 1-min updates (was 15 m / 15 s) — a clearer
+  battery-vs-accuracy progression across Best, Balanced and Power Saver on Android.
+
+### Fixes
+
+- **TestFlight export compliance**: Set `ITSAppUsesNonExemptEncryption` so new
+  builds skip the manual encryption-compliance prompt on upload.
+
+## 2.10.4+1174 (2026-06-19)
+
+### New Features
+
+- **Background sync UX**: Runs list now shows cached data immediately on launch (no loading screen if data exists). A banner slides in from the top when a background sync is in progress and slides away when complete. If new runs arrived above the current scroll position, a pill appears ("↑ N new runs") to scroll back to the top. Cards that change while on screen flash briefly with a tint overlay. Syncs trigger automatically when switching to the runs tab (1-min debounce) or when the app returns from the background.
+
+## 2.10.3+1173 (2026-06-18)
+
+### New Features
+
+- **Location lookup in edit run screen**: Search button on the location description field opens a gazetteer (place search) bottom sheet. Pick a result to auto-fill street, city, region, postcode, and country fields, and re-centre the map.
+
+### Fixes / Improvements
+
+- **Multi-run check-in dialog**: Added save/cancel buttons; RSVP-No responses no longer shown in the list
+- **Service registrations**: Guarded against duplicate GetX service registrations on hot-restart
+- **Cleanup**: Removed dead Facebook visit-event asset
+
+---
+
+## 2.10.2+1172 (2026-06-11)
+
+### Improvements
+
+- **Connectivity**: Complete rewrite of offline/server detection. The app now
+  polls the HC backend at boot to wake the server; a 30-second background
+  watchdog detects mid-session outages (e.g. entering a tunnel); a fast
+  recovery watcher (~5s) detects when connectivity is restored without
+  polling the backend; API failures trigger an immediate backend check with
+  appropriate ribbon feedback (Offline vs Server Unavailable).
+- **Run Admin**: Buttons arranged in rows of 3 with category headings
+  (On the Day, Before On Out, The Write-Up); partial rows and icons centred.
+
+## 2.10.1+1171 (2026-06-10)
+
+### Fixes
+
+- **Startup crash on iOS 26.2 beta**: Fixed crash caused by an `objective_c`
+  package path-join bug (9.3.0 → 9.4.1 via dependency_overrides).
+- **Notifications not working after fresh install**: Firebase was never
+  initialised before `initServices()` ran, so `NotificationService` never
+  registered. Firebase is now initialised in `main()` before any services start.
+- **PackTrack: distance underestimated on Low Power Mode**: GPS accuracy
+  threshold raised from 15m to 50m. iOS Low Power Mode reports 30–50m accuracy
+  — the old threshold filtered out those points and replaced them with straight
+  lines, causing the track to miss turns and undercount distance by ~50%.
+  The velocity filter (5 m/s) still catches genuine GPS jumps.
+- **Song sync: most users silently throttled**: iOS throttles silent (data-only)
+  pushes to ~3/hour. Users with default notification settings were getting
+  data-only pushes and missing most song selections. All song notifications are
+  now visible pushes (banner suppressed while the app is in the foreground).
+  Muted users are excluded unless physically checked in at the run
+  (attendanceState 20–39).
+- **Song sync: tapping notification didn't enter listening mode**: Tapping a
+  "🎵 Song Time!" banner while the app was backgrounded opened the songbook
+  but didn't highlight the song or enter interactive mode. Fixed.
+- **Song sync: reliability improvements**: Prevented double-registration of
+  NotificationService at boot; fixed subscription leak across logout/login cycles.
+
+### Improvements
+
+- **Edit Charge: photo support**: Charges can now have a photo attached.
+  Photo capture UI added to the charge editor; label and layout fixes.
+
+---
+
+## 2.9.8+1163 (2026-06-07)
+
+### New Features
+
+- **Full-screen photo viewer**: Tapping a photo in the Photos tab now opens a swipeable full-screen viewer. Swipe left/right to move between photos. The page title shows the run name and photo position (e.g. "Away Weekend Hash Olympics (3 of 21)"). Long captions can be dragged upward over the photo; the image darkens progressively with a 50% black overlay as the caption expands. Photographer name and avatar appear in the top-right corner for photos taken by other members.
+- **Photographer credit**: When viewing a photo taken by another member, their display name and avatar appear in a rounded chip (8px corner radius) at the top-right of the full-screen viewer.
+
+### Improvements
+
+- **Run tracker: combined runner + timeline panel**: The two-tab carousel on the run tracking map has been replaced with a single panel. A slot-machine scroll picker (runner's colour dot, avatar, and name) sits above the timeline controls, so you can select a runner and see their stats in one view without switching tabs.
+- **Photo separation**: Photos in the full-screen viewer are visually separated — a gap is visible between pages when swiping.
+- **Tab bar**: The run detail tab bar (Details / RSVP / Map / Stats / Chat / Photos) is now evenly distributed across the full width of the screen instead of left-aligned.
+- **Removed duplicate Songbook shortcut**: The music note icon in the Hash Runs app bar has been removed — the Songbook is accessible via the bottom navigation bar.
+
+### Fixes
+
+- **Photo caption Clear button**: The Clear button in the Hash Flash approval caption editor now correctly shows white text on a red background.
+
+---
+
+## 2.9.7+1162 (2026-06-06)
+
+### New Features
+
+- **Run photo gallery**: A new "Photos" tab appears on the run detail screen
+  (both the guest view and the authenticated user view). Approved photos appear
+  as a 3-column grid. Pull down to refresh for the latest photos. Guests see
+  Hash-Flash-approved photos; authenticated users also see their own private
+  photos with a lock badge.
+- **Photos tab on guest run detail**: The guest run detail screen now has three
+  tabs — Details, Map, and Photos.
+
+---
+
+## 2.9.6+1161 (2026-06-06)
+
+### Fixes
+
+- **RSVP state lost on scroll**: After RSVPing for a run, scrolling it off
+  screen and back again no longer reverts the RSVP icon to unselected. The
+  underlying model is now kept in sync with the controller so the widget
+  re-initialises correctly when recycled by the list.
+- **Guest filter chips**: Removed purple background behind the pinned filter
+  chips on the Hashes Around the World screen.
+
+### Improvements
+
+- **Guest filter chips 30% larger**: Chip padding, icon sizes, and font size
+  all scaled up for easier readability and tapping.
+
+---
+
+## 2.9.5+1160 (2026-06-05)
+
+### Fixes
+
+- **Stats tab no longer hangs on empty kennel**: When a kennel has no run
+  history the Stats tab now shows "No history" instead of an infinite spinner.
+- **Find My Account keyboard**: The keyboard no longer opens automatically
+  when the page loads, so all buttons are visible on arrival.
+- **Find My Account — removed redundant text**: "Already have an invite code?"
+  label removed; the button label is self-explanatory.
+
+### Improvements
+
+- **Guest action bar — single button**: The two-button "Create account / Log In"
+  layout is replaced with one green "Create your free account or Log In" button
+  that takes guests straight to the account search screen.
+- **Guest discovery title**: Renamed "Runs Around the World" to "Hashes Around
+  the World".
+- **Multiple pinned guest filters (up to 5)**: Guests can pin multiple search
+  terms; each appears as its own chip with an individual × to remove it.
+- **Larger pin icon and chip text**: Pin icon in the search bar is now 28px;
+  chip labels are 15px.
+
+---
+
+## 2.9.4+1159 (2026-06-05)
+
+### Improvements
+
+- **Multiple pinned filters (up to 5)**: Guests can now pin multiple search
+  terms (e.g. "London" and "Paris", or "BMPH3" and "CityH3"). Each pinned
+  term appears as its own chip with an individual × to remove it. A run is
+  promoted to the top section if it matches any saved term. The pin icon in
+  the search bar dims when all 5 slots are used.
+- **Larger chip text**: The pinned-filter chips now use 15px text for easier
+  readability.
+
+---
+
+## 2.9.3+1158 (2026-06-05)
+
+### New features
+
+- **Guest saved home search**: Guests can pin a search term (e.g. "London") from the
+  search bar. Pinned runs appear first in the list under the active kennel; a divider
+  and "Other runs" section follow. The saved term persists across app restarts and can
+  be cleared with the × chip in the header.
+
+### Improvements
+
+- **Guest run detail — Details / Map tab bar**: The run detail screen for guests now
+  has two tabs. "Details" shows the existing label/value layout; "Map" shows the run
+  location on an interactive map with a "Get Directions" button that opens the device's
+  preferred maps app.
+- **Guest action bar — "Log In" text now visible**: The "Already have an account? Log
+  In" row was nearly invisible on some devices because the container was transparent
+  against the system background. The bar now uses a solid app-bar colour.
+- **Use Invite Code layout**: The "Get Started!" button has moved inside the yellow
+  invite-code box. The "Email me a new invite code" and "I didn't receive an email"
+  actions have moved below the box as full-width elevated buttons, matching the overall
+  button style.
+- **Event images on guest run cards**: Reverted the previous cap — event images now
+  render at their natural height as intended.
+
+---
+
+## 2.9.2+1156 (2026-06-05)
+
+### Fixes
+
+- **Guest run cards — event images now constrained**: Event images on the discovery
+  screen were rendering at full native height, causing some cards (especially those with
+  map or photo images) to take up the entire screen. Images are now capped at 160px tall
+  and cropped to fill the width.
+
+---
+
+## 2.9.1+1155 (2026-06-05)
+
+### Improvements
+
+- **Guest run cards match the main app**: Run cards on the "Runs Around the World"
+  discovery screen now use the same white card style as the main app — kennel logo,
+  dark-blue kennel name, run number and day offset, date/time, hares, and location,
+  all with identical typography and layout.
+- **Guest run detail page redesigned**: The run detail screen for unregistered users
+  now matches the main app's layout exactly — large event image (or kennel logo
+  fallback), centred event name, two-column label/value rows with golden labels and
+  white values, FancyDivider section separators, and a "Share Runs" button at the
+  bottom.
+- **Guest action bar redesigned**: The two-button "Log In / Create Account" bar is
+  replaced with a single full-width green promotional button ("Create your free account
+  now") with an "or" / "Log In" text link underneath, making the primary CTA more
+  prominent.
+- **Find My Account button polish**: The secondary action buttons ("I have an invite
+  code", "I definitely don't have an account") are now solid elevated buttons using the
+  app-bar colour rather than transparent outlined buttons.
+- **Use Invite Code button polish**: The "Email me a new invite code" and "I didn't
+  receive an email" actions are now elevated buttons (red primary, grey secondary)
+  replacing the previous flat text buttons.
+
+---
+
+## 2.8.2+1153 (2026-06-05)
+
+### New Features
+
+- **Find My Account — new onboarding flow for users who don't have (or aren't sure
+  if they have) an account**: Both the "No" and "I don't know" paths on the account
+  question screen now lead to a dedicated search page. The user enters their hash name
+  or last name; the server searches for matching hashers within 500 miles (using GPS
+  first, IP geolocation as fallback, or no filter if neither is available). Matches are
+  grouped by hasher and shown as cards displaying name, photo, and kennel run history so
+  the user can identify themselves. Selecting their card sends their invite code to the
+  email address on file — no email address is ever returned to the client.
+- **Find My Account — single result auto-selected**: When the search returns exactly one
+  matching account the card is pre-selected automatically so the user can proceed without
+  an extra tap.
+- **"I didn't receive an email" help page**: A new link on the Enter Invite Code screen
+  takes users who never received their code to a guidance page covering spam-folder
+  checks, the wrong-email-on-file scenario, and a pre-filled Contact Us email.
+
+### Improvements
+
+- **Song share recipient count**: The "Song shared" snackbar now shows the number of
+  pack members who will receive the notification (e.g. "Song shared with 14 pack
+  members") instead of generic text.
+- **Find My Account UI polish**: The success snackbar is now teal to distinguish it from
+  the green confirm button. The "None of these are me" escape hatch is now a full-width
+  outlined button matching the styling of other secondary actions.
+
+---
+
+## 2.8.1+1152 (2026-06-03)
+
+### Fixes
+
+- **Interactive Songbook — re-selecting the same song now triggers a live update**: The
+  `SongSessionNotifier` persists across songbook sessions within an app run. GetX only
+  fires `ever()` when a value changes, so selecting the same song twice in a row left
+  `pendingSongId` unchanged and the update was silently swallowed. A null-bounce before
+  assigning the new song ID forces the worker to fire every time, regardless of history.
+- **Foreground notification banner suppression**: Added
+  `setForegroundNotificationPresentationOptions(alert: false, badge: false, sound: false)`
+  so that when visible song pushes are re-enabled (currently disabled in the API during
+  development), iOS will not show a system banner while the user is already in the app.
+  `onMessage` still fires and the songbook updates via the in-app listening mode banner.
+
+---
+
+## 2.8.0+1151 (2026-06-03)
+
+### Fixes
+
+- **Interactive Songbook — real-time update now works**: Five bugs identified
+  and fixed that were preventing the song from switching live when the
+  songmeister taps Share Now:
+  - The notification handler was awaiting an unnecessary badge-count HTTP
+    round-trip before dispatching song messages, delaying or blocking the
+    update entirely. Song notifications now bypass this and dispatch
+    immediately.
+  - The FCM listener worker (`ever()`) was registered asynchronously after an
+    `await`, leaving a brief window where a push could be missed. It is now
+    registered synchronously in `onInit` and properly stored and disposed.
+  - The controller tag was using the raw (possibly uppercase) event ID from
+    the database; the notification service always uses lowercase. The mismatch
+    caused a spurious "Go to song" toast to appear even when the user was
+    already on the correct Songbook page, and tapping it pushed a duplicate
+    page. Tag is now always normalised to lowercase.
+  - The songmeister's display name was being read before it was written,
+    showing "Someone" instead of their hash name. Assignment order corrected.
+  - Stale FCM tokens were not being cleaned up when Firebase returned
+    `UNREGISTERED` or `NOT_FOUND` errors (the FCM v1 API codes). These are
+    now caught alongside the existing checks.
+
+---
+
+## 2.7.9+1150 (2026-06-02)
+
+### Improvements
+
+- **Interactive Songbook — real-time fix**: Song now switches immediately when
+  the songmeister taps Share Now. The previous build was missing the EventId
+  and SongId from the FCM payload, so the live update never fired. Fixed
+  server-side; no app code change required, but this build picks up the
+  companion Flutter changes below.
+
+- **Interactive Songbook — in-app toast**: When a song is shared and you are
+  not currently on the Songbook screen, a green banner appears at the top of
+  the screen: "X is leading Y — Go to song". Tapping Go to song opens the
+  Songbook directly for that event.
+
+- **Interactive Songbook — notification tap**: Tapping a visible song push
+  notification opens the app directly to the Songbook for the relevant event.
+
+- **Interactive Songbook — proximity on boot**: If you open the app within
+  500m of a run where a song has been shared in the last 5 minutes, the app
+  navigates directly to the Songbook on first load — even if you haven't
+  RSVP'd to the event.
+
+- **Interactive Songbook — checked-in users**: Hashers who are checked in to
+  a run (not just RSVP'd) now receive song push notifications.
+
+---
+
+## 2.7.8+1149 (2026-06-02)
+
+### Features
+
+- **Interactive Songbook**: Any RSVP'd attendee can share the current song
+  with the whole pack in real time. Tap the music note icon on the Future Runs
+  page (or use the new Songs tab in Live Run Tools) to open the songbook in
+  event mode. Select a song, tap **Share Now**, and all other RSVP'd devices
+  receive a silent push that instantly switches them to that song in listening
+  mode. Devices that open the songbook within 2 minutes of a share
+  automatically jump to the active song (pull-on-open). A green listening
+  banner shows who is leading, with a **Stop** button to return to free browse.
+
+- **Onboarding: "Do you already have an account?" screen**: New first-run
+  screen after permissions asks whether the user has an existing Harrier
+  Central account. **Yes** goes straight to the invite code page, **No** goes
+  straight to create account, and **I don't know** opens a guidance page
+  explaining how to find out and providing both forward paths.
+
+---
+
+## 2.7.7+1148 (2026-06-02)
+
+### Fixes
+
+- **Kennel page: "not authorised to access kennel" for non-admin members**:
+  `KennelAdminController` was unconditionally calling the kennel admin sync SP
+  and the auto-follow guard on every kennel page open, regardless of whether
+  the user held admin rights. Non-admin users now skip the admin sync entirely.
+  The upcoming runs list is read from the common domain for non-admins, and
+  from the kennel domain for admins — the displayed content is the same either
+  way.
+
+---
+
+## 2.7.6+1147 (2026-06-02)
+
+### Improvements
+
+- **RSVP tab offline behaviour**: The RSVP pack list is now visible when the
+  device is offline, showing the last-synced attendee data from the local
+  cache. The RSVP action buttons (Going / Maybe / Not going) and the speed
+  dial FAB desaturate when offline to signal they require a connection, but
+  the list of who else is going remains readable at all times.
+
+- **RSVP table cleanup on navigate-away**: The local event RSVP table is now
+  cleared when leaving a run's detail page, preventing stale attendee data
+  from a previous run from briefly appearing when opening a different run.
+
+---
+
+## 2.7.5+1146 (2026-06-02)
+
+### Fixes
+
+- **RSVP tab: "not authorised to sync admin data" for non-admin members**: The RSVP
+  tab was unconditionally calling the admin event sync SP, which requires kennel
+  admin rights. Non-admin members now use a new dedicated SP (`hcapp_getEventRsvps`)
+  that returns the full RSVP pack list without requiring admin access. Contact
+  information (email, phone) and admin-only data (payments, kennel roles, receipts)
+  are not included in this response. Admin users continue to use the full admin sync
+  as before.
+
+---
+
+## 2.7.4+1145 (2026-06-01)
+
+### Fixes
+
+- **Boot crash: `DeviceInfo not found`** (`[ERROR][ASYNC]`): `AppLifecycleController`
+  is registered before `DeviceInfo` in `initServices()`. Its `onResumed()` callback
+  can fire between `await` points and register `LocationService` before `DeviceInfo`
+  is ready. Added a `Get.isRegistered<DeviceInfo>()` guard in
+  `LocationService.subscribeToGeoLocationStream` and a duplicate-registration guard
+  in `AppBootService._prepareDeviceContext`.
+
+- **`approveLogin` errorType:11 cascade** (7 × errorType:3 sync failures on boot):
+  `checkHttpPostResponse` checked HTTP status before checking for `"errorId"` in the
+  body. `AppApiHC6` returns 400 for all SP errors, so the status check short-circuited
+  before `errorCallback` was called. `_isReauthorizationError` was never reached,
+  `_handleDeviceNoLongerRegistered` was never triggered, and the boot fell through to
+  `_handleNoConnection` — navigating to `MainNavigationPage` with stale credentials,
+  which immediately fired all sync calls. Fixed by checking `"errorId"` first; also
+  handles the flat JSON error shape that `AppApiHC6` returns for detected SP errors.
+
+- **Device re-registration dialog**: replaced `Utilities.showAlert` with a custom
+  dialog that includes a "Copy device credentials" button (copies `deviceId` +
+  `deviceSecret` to clipboard) to aid server-side diagnosis when the error recurs.
+
+- **Device-not-registered telemetry**: `_handleDeviceNoLongerRegistered` now fires
+  an immediate `recordClientErrorLog` before clearing prefs, capturing the stale
+  `deviceId`, `userId`, and `hcVersion` in `HC.ClientErrorLog` for pattern analysis.
+  `hcapp_logClientErrors` updated to accept unregistered devices (previously rejected
+  them, making it useless for exactly this failure mode).
+
+---
+
+## 2.7.3+1144 (2026-06-01)
+
+### Features
+
+- **Configurable trail marking symbols**: The 12 trail map buttons in the live
+  run screen are now configured per kennel, editable by admins via the new Trail
+  Symbols tab in the portal Edit Kennel page. Each slot can have any of the
+  available symbol images, a kennel-specific name (shown in the confirmation
+  flash), and an optional action (Add Text, End Run). Empty slots are not
+  rendered. Kennels with no saved configuration use the existing 12 defaults.
+
+- **Symbol image library**: Trail marker PNGs are now published under a numbered
+  scheme (`I-001.png` through `I-012.png`) to allow future expansion up to 999
+  symbols without app updates.
+
+### Fixes
+
+- **Kennel admin sync crash** (`type 'Null' is not a subtype of type 'num'`):
+  `hcapp_syncKennelAdminData` was missing `disseminateAllowWebLinks` from its
+  kennel rowset. The field was always absent; the crash only surfaced now because
+  editing trail symbols via the portal updated the kennel's `updatedAt`, causing
+  the admin sync to re-fetch that record for the first time.
+
+- **Sync `FormatException: Unterminated string`**: The base sync library used a
+  regex (`\[(\{(.*?)\})\]`) to split multi-result-set API responses. The
+  non-greedy `.*?` stopped at the first `}]` sequence — which appears literally
+  inside JSON-typed column values like `trailSymbolsConfigJson`. Replaced with
+  `jsonDecode` on the full `[[...]]` response; handles embedded JSON arrays
+  correctly. Fixed in `ive_flutter_core_mobile`.
+
+### Internal
+
+- SQLite migration 522: `ADD COLUMN trailSymbolsConfigJson TEXT` on `common_kennels`
+- `DB_VERSION` bumped to 522
+- `ive_flutter_core_mobile` bumped to `eefbbc1` (JSON result-set parser fix)
+- `hcapp_syncUserData` and `hcapp_syncKennelAdminData` kennel rowsets include `trailSymbolsConfigJson` and `disseminateAllowWebLinks`
+
+## 2.7.2+1143 (2026-05-31)
+
+### Fixes
+
+- **Logout now reliably restarts the app**: Replaced `Get.offAll()` with
+  `restartKey.currentState?.restartApp()` in the logout handler.
+  `Get.offAll()` ran a route transition animation during which
+  `MainNavigationPage.build()` fired and recreated a permanent
+  `MainNavigationController` — causing `onInitAsync()` to run with cleared
+  credentials and then be reused by the next session, skipping the initial
+  data sync. `restartApp()` tears down the widget tree via `dispose()` (no
+  build pass) so no stale controller is ever created.
+
+- **`database_closed` after logout**: `setupDatabase()` called
+  `Get.delete<Database>()` to evict the old DB handle before opening a fresh
+  one, but the handle was registered as `permanent: true`, so GetX silently
+  ignored the deletion and `Get.putAsync<Database>()` returned the existing
+  closed handle. Changed the call to `Get.delete<Database>(force: true)` so
+  the permanent flag is bypassed and a genuinely fresh connection is always
+  opened.
+
+## 2.7.1+1142 (2026-05-30)
+
+### Fixes
+
+- **Logout now clears keychain**: "Log out of Harrier Central" and "Delete
+  Account" now wipe the device reset code from the iOS keychain in addition to
+  GetStorage. Previously the reset code survived logout; on the next boot
+  `_handleDbUpgrade` found the old user's code in the keychain and silently
+  re-authorised as them, causing the previous profile to reappear after restart.
+
+- **Run tabs — badge null-guard and tab indicator**: Replaced the
+  `TextScaleFactorClamper`/`GetBuilder` wrapper on the chat tab with a plain
+  `Container`. The unread-message badge now guards against `NotificationService`
+  not being registered (was a potential crash) and simplifies the count check.
+  Added `indicatorPadding` to the tab bar for tighter visual fit.
+
+### Internal
+
+- **Session A test infrastructure**: Added `mockito`, `sqflite_common_ffi`, and
+  `fake_async` dev dependencies. Added `parseBitField()` utility
+  (`lib/util/bit_utils.dart`). Added `test/helpers/mock_http_client.dart` and
+  `test/helpers/sqflite_ffi_setup.dart` as scaffolding for Session B widget
+  tests. Fixed `setupTestEnvironment()` to initialise the default GetStorage
+  container and the Flutter test binding for plain `test()` functions.
+  Added 27 unit tests: UUID normalisation (13), BIT field parsing (7),
+  `currentUserId` safe fallback (5), `isAtRunStart` throttle (2).
+
+## 2.7.0+1141 (2026-05-30)
+
+### Features
+
+- **Hash Flash caption editing**: The photo review screen now lets the Hash
+  Flash add, edit, or clear captions on any photo — not just those the uploader
+  already captioned. A pencil icon and tap target are always visible at the
+  bottom of each photo. Tapping opens an editor with a live 200-word counter
+  and a Clear button. Any queued status decisions are flushed before the caption
+  is saved so no review work is lost.
+
+- **Caption on map photo view**: Tapping a photo marker on the run map now
+  shows the caption (if one exists) below the full-screen image. Long captions
+  scroll within a capped area; safe-area padding ensures the text clears the
+  home indicator on all devices.
+
+- **Photo review — smart tab**: The review screen now opens directly on the
+  Reviewed tab when all photos for a run have already been actioned, so the
+  Hash Flash lands on useful content rather than an empty pending state. The
+  same logic applies on every refresh.
+
+- **Status badge always colored**: The per-photo badge in the review screen
+  now shows the current status in its action color at all times — grey for Keep
+  Private, red for Deleted, green for Share/Gallery, teal for Home/Cover. The
+  previous grey styling for already-committed statuses was confusing because
+  it looked unsaved; the color now matches the action buttons directly below.
+
+### Fixes
+
+- **PackTrack live positions**: GetPositions requests now include the required
+  `X-Api-Key` header. The live position feed was silently failing for all
+  viewers since the API was secured, making PackTrack appear broken even when
+  running correctly.
+
+- **Map FAB restored**: The floating action button on the global map (Explore
+  tab) had gone missing after a navigation refactor. Restored.
+
+- **DB version mismatch**: A version mismatch between the local database and
+  the expected schema now shows an explanatory dialog and triggers a clean warm
+  reload rather than leaving the app in a silent inconsistent state.
+
+- **Notification guard**: Notification handlers now check whether their target
+  controllers are registered before calling `Get.find`. Previously a
+  notification arriving on a cold launch could throw if the destination screen
+  had never been opened.
+
+---
+
+## 2.6.8+1140 (2026-05-29)
+
+### Security
+
+- **Secure storage migration**: Device reset code is now stored in the iOS
+  Keychain / Android Keystore (hardware-backed encrypted storage) instead of
+  plain local storage. All existing users are migrated automatically on first
+  launch — the app re-stages itself from the server with no manual action
+  required.
+
+- **API key protection**: IP geolocation lookup now proxied through the HC
+  API — the IPInfo token no longer appears in the app binary.
+
+- **Token redaction**: Device tokens and IDs are now redacted from any
+  diagnostic logs before they are persisted or sent to the server.
+
+- **HTTPS enforcement**: Payment provider links now require HTTPS — plain HTTP
+  payment URLs are rejected.
+
+- **GPS log guard**: Last-known device coordinates are no longer written to the
+  on-device debug log in release builds.
+
+## 2.6.7+1139 (2026-05-28)
+
+### Improvements
+
+- **Permissions — Manage Songs**: The "Manage Songs" permission (`authCanManageSongs`)
+  is now available in the HC permissions popup, allowing it to be granted or
+  revoked per member.
+
+### Fixes
+
+- **UUID comparisons**: Three kennel/event UUID comparisons now normalise both
+  sides to lowercase before comparing. SQL Server returns UUIDs in uppercase;
+  comparing without normalisation silently returned false, causing kennel
+  matching and event lookups to fail intermittently.
+
+- **Photo upload — domain validation**: The SAS token URL returned by the API
+  is now validated against `harriercentral.blob.core.windows.net` before any
+  upload is attempted. An invalid or tampered URL shows an error instead of
+  uploading to an unintended destination.
+
+- **Auth — device secret guard**: The device secret is now checked for null/empty
+  before building an auth token in the login approval flow. Previously a missing
+  secret would silently produce a token built from the sentinel value `'<none>'`.
+
+---
+
+## 2.6.6+1138 (2026-05-28)
+
+### Features
+
+- **Photo captions**: Users can now add an optional caption (up to 200 words)
+  when capturing a run photo. The caption is stored in the DB and displayed as
+  an overlay at the bottom of the photo in the Hash Flash review screen. A live
+  word counter is shown beneath the caption field; text is trimmed to 200 words
+  on save if the limit is exceeded.
+
+---
+
+## 2.6.5+1137 (2026-05-27)
+
+### Features
+
+- **Kennel screen — status filter**: Defunct and Inactive-Hidden kennels are
+  now hidden from the Kennel list. Run history is unaffected — all runs remain
+  visible regardless of kennel status.
+
+### Improvements
+
+- **PackTrack — spiderfy overlapping markers**: Co-located trail markers on the
+  live run map are now fanned out so each is individually tappable.
+
+- **PackTrack — background flush timer restored**: The GPS point upload buffer
+  now correctly flushes on a 60-second background timer. HTTP timeout and
+  Android position interval were also corrected.
+
+### Bug fixes
+
+- **Chat — fix double-tick race**: `chatController.updateMessage` in
+  `handleSendPressed` is now awaited, so the message reaches `sent` status
+  before any FCM echo arrives and tries to upgrade it to `delivered`.
+
+- **Boot — device no longer registered**: When `hcapp_approveLogin` returns
+  an auth error for a deleted device, the app now shows a friendly dialog
+  and silently re-registers using the stored reset code rather than
+  displaying a toast and freezing on the splash screen.
+
+- **Run details — stale controller reuse**: `RunDetailsController` is now
+  tagged by `eventId`, preventing a cached instance for a previous run from
+  being served when navigating to a different run.
+
+## 2.6.4+1136 (2026-05-26)
+
+### Improvements
+
+- **Chat — FCM-only delivery**: Chat updates are driven exclusively by FCM
+  triggers. Removed the background polling timer that was previously running
+  while the chat page was open.
+
+- **Chat — pending fetch queue**: If an FCM arrives while a delta-fetch is
+  already in flight, a follow-up fetch is queued rather than dropped.
+
+## 2.6.3+1135 (2026-05-26)
+
+### Improvements
+
+- **Chat — FCM-only delta-fetch**: Polling timer disabled; chat message updates
+  are now triggered exclusively by incoming FCM pushes, reducing unnecessary
+  background network activity.
+
+- **Chat — pending fetch queue**: If a delta-fetch is already in flight when an
+  FCM message arrives, the request is queued rather than dropped, ensuring no
+  update is missed during rapid message sequences.
+
+### Bug fixes
+
+- **Profile — camera behavior switch**: Fixed UX issues with the camera behavior
+  toggle control.
+
+## 2.6.2+1134 (2026-05-24)
+
+### Features
+
+- **Chat — unread tracking**: Opening event chat now marks all messages as read
+  server-side and fans out a silent `read_sync` FCM push to the user's other
+  devices, zeroing badge counts immediately.
+
+### Improvements
+
+- **Chat — 2.x UI framework**: Migrated from `flutter_chat_ui` 1.x to 2.x
+  (`flutter_chat_ui ^2.11.1` + `flutter_chat_core ^2.9.0`). Chat messages are
+  now managed via `InMemoryChatController`; group avatars and sender names are
+  rendered using the 2.x custom builder API matching the portal's chat UI.
+
+- **Chat — FCM subscription moved to controller**: Incoming FCM chat messages
+  are now handled directly by `ChatPageController` via its own subscription
+  rather than being routed through `NotificationService`.
+
+- **Chat — UUID normalisation**: Author and message IDs are now normalised to
+  lowercase via `.asUuid` (was `.toUpperCase()`), consistent with project
+  conventions.
+
+- **Chat — named constant for releasability flags**: `messageReleasabilityFlags`
+  value replaced with `kChatReleasabilityAll` constant.
+
+- **Chat strip — decoupled from chat package**: `ChatStripWidget` no longer
+  depends on `flutter_chat_types`; uses a lightweight internal model for the
+  summary display.
+
+- **Dead code removed**: `LiveRunChatController` stub class removed (was an
+  empty wrapper around `LiveRunChatPage`). `visibility_detector` dependency
+  removed.
+
+## 2.6.1+1133 (2026-05-24)
+
+### Bug fixes
+
+- **Chat — message load crash**: `ChatPageController.onInit` no longer
+  force-unwraps `publicHasherId` and `profilePhotoUrl`. If `publicHasherId`
+  is absent the chat screen exits cleanly instead of crashing.
+
+- **Chat — permanent loading spinner on server error**: An `HC_ERROR_` response
+  no longer reaches `jsonDecode`, which would throw and leave `messagesLoading`
+  stuck at true permanently.
+
+- **Chat strip — permanent loading spinner on exception**: `ChatStripController`
+  now wraps the load path in try/catch/finally, ensuring `isLoading` clears
+  on any error path.
+
+- **Chat — message status stuck at sending**: Sent messages now correctly
+  update to `sent` (or `error` on failure) after the API call completes.
+
+- **Chat — soft-deleted messages excluded**: Messages and authors marked as
+  removed are now filtered from event chat results (HC6 SP).
+
+- **Chat — send atomicity**: The message INSERT and badge-count MERGE are now
+  wrapped in an explicit transaction; a partial-write state on badge failure is
+  no longer possible (HC6 SP).
+
+- **Chat — data-only push notifications now silent on iOS**: In-app chat
+  messages no longer play a notification sound. APNS priority was incorrectly
+  set to 10 for all FCM messages; data-only messages now use priority 5 with
+  content-available (HC6 API).
+
+- **Chat — releasability flags value in push**: `MessageReleasabilityFlags` was
+  silently deserialising to 0 in the HC6 send path due to an HC5/HC6 column
+  name mismatch; push notifications now carry the correct value (HC6 API).
+
+- **Chat — SP errors now surfaced to caller**: HC6 error envelopes are detected
+  before notification side-effects run; previously swallowed silently (HC6 API).
+
+- **Chat — stale FCM token cleanup**: Removing a stale token no longer calls an
+  HC5 internal SP; replaced with a direct UPDATE HC.Device (HC6 API).
+
+## 2.6.0+1132 (2026-05-24)
+
+### New features
+
+- **QR codes — kennel website tab**: The QR code sheet now includes a dedicated
+  "Website" tab when the kennel has a website URL configured. Scan to open the
+  kennel's hashruns.org page directly. Available from both the run admin QR
+  sheet and the kennel admin QR sheet.
+
+### Improvements
+
+- **Live run page — "Share Runs" button promoted**: The QR code button is now
+  permanently visible in the right-hand column alongside "Take Photo", replacing
+  the previous smaller outlined button below the marker grid. Makes the action
+  easier to reach mid-run.
+
+- **Live run page — consistent corner radii**: All interactive elements on the
+  live run general tab (buttons, stat cards, photo button, chat strip) now share
+  a uniform 12px corner radius.
+
+- **Live run page — chat strip alignment**: The chat strip card now aligns its
+  left and right edges with the rest of the page content, matching the Auto Pause
+  and End Run buttons above it.
+
+- **My Profile — "Camera Behavior" section**: The camera roll setting is now
+  presented under a clear "Camera Behavior" heading with a descriptive subtitle,
+  and the Switch has been restyled to match the page's existing layout pattern
+  rather than using a highlighted SwitchListTile.
+
+- **Error logging — BootLogger rollout**: `BootLogger.logError` now covers 25+
+  previously silent catch blocks across services, database queries, admin pages,
+  and the live run flow. Errors from these paths will appear in the diagnostic
+  harvest log. Includes Apple sign-in exceptions, kennel photo upload failures,
+  common query errors, and notification dispatch failures.
+
+- **Boot logger — session start marker**: Each new session writes a `[STARTUP]`
+  timestamp into the error log at the moment persistence begins, making it easy
+  to identify session boundaries in harvested logs.
+
+- **Boot logger — await previous session flush**: The previous session's error
+  log is now awaited before starting the new session, ensuring clean hand-off
+  between session logs.
+
+- **Boot logger — global export**: `boot_logger.dart` is now re-exported from
+  `imports.dart`, removing the need for individual imports across files.
+
+## 2.5.4+1131 (2026-05-24)
+
+### Bug fixes
+
+- **Hash Flash — review flow rework**: Tapping an action button now records
+  the decision and highlights the button without navigating away from the
+  current photo. Swipe left/right (or the auto-advance after a tap) is now
+  the only mechanism that moves between photos. This fixes two bugs: an
+  instant photo-jump followed by a slide animation on the pending tab, and
+  no-advance on the reviewed tab. Both were caused by the optimistic status
+  update mutating the `allPhotos` list mid-flight, which rebuilt the
+  `PageView` before `nextPage()` fired.
+
+- **Hash Flash — save on exit only**: Removed the 5-second debounce
+  auto-save. All decisions are now written as a single batch when the user
+  leaves the page. Eliminates mid-session saves that were disrupting the
+  `PageView` with a full reload at unpredictable moments.
+
+- **Hash Flash — reviewed tab re-tag highlighting**: Tapping a different
+  action on an already-reviewed photo now immediately highlights the new
+  button. Previously the panel derived `selected` from the committed status
+  only; it now checks the queued decision first.
+
+- **UUID case fix — boot log flag**: The developer-only boot log flag in
+  the drawer menu now compares against a lowercase UUID, consistent with the
+  project-wide UUID normalisation convention. Fixes the flag never activating
+  after `UuidValue` normalisation was rolled out.
+
+### Improvements
+
+- **Geocoding — "Pin location needed" dialog**: When auto-locate cannot
+  find a specific enough location for an address, a dialog now appears
+  explaining why and offering a direct "Go to Map" button to jump to the
+  Map tab for manual pinning. Previously the flow failed silently.
+
+- **Run admin button spacing**: Added horizontal spacing between action
+  buttons in the run admin Wrap layout to prevent them from touching on
+  narrow screens.
+
+- **Migration archived**: `add_AssetId_to_KennelPhotos.sql` moved to
+  `db/hc6/app/archive/` after having been run against the database.
+
+## 2.5.2+1129 (2026-05-24)
+
+### Bug fixes
+
+- **Run admin button layout**: Restored the run admin menu to its correct
+  appearance — buttons are fixed 110×110 tiles spaced evenly across the row,
+  rather than expanding to fill the full column width.
+
+- **Boot hang — isAtRunStart deferred**: `isAtRunStart` (which performs a GPS
+  poll on run day) is now initialised after the app content is rendered,
+  preventing it from blocking the boot sequence. GPS wait is also capped at
+  30 seconds to avoid an indefinite hang on devices where location is slow
+  to resolve.
+
+### Improvements
+
+- **Geocoding country fallback**: When the country field is blank in the run
+  address form, the geocoder now looks up the kennel's registered country from
+  the local database and uses it automatically. Prevents geocoding failures for
+  kennels where no country has been typed in.
+
+- **Auto-locate dialog after address save**: After saving an address in the run
+  editor, a dialog now prompts "Would you like me to try to automatically find
+  the map pin for the new address?" with "Not now" and "Auto-locate" options,
+  replacing the previous snackbar action. Only shown when there is enough
+  address data to attempt geocoding (postcode, or street + city).
+
+- **Styled confirm dialogs**: The "Delete image" and address-save confirmation
+  dialogs now use ElevatedButton widgets (teal for cancel/not-now, red for
+  destructive actions) for clearer visual affordance.
+
+- **[BOOT] instrumentation extended**: Boot timing markers now extend through
+  to the point where app content is visible, giving a complete picture of the
+  full startup sequence in the diagnostic log.
+
+## 2.5.1+1128 (2026-05-24)
+
+### New features
+
+- **Copy boot log from My Profile**: A "Diagnostic Logs" section is now shown at
+  the bottom of the My Profile page (accessible via the drawer menu). It contains
+  a "Copy log to clipboard" button that captures the same `BootLogger` startup
+  output as the boot-screen overlay, allowing the log to be retrieved after the
+  app has fully loaded without needing to reproduce the boot sequence. The button
+  is disabled if no log lines have been captured yet, and shows "Copied!" for two
+  seconds after a successful copy.
+
+## 2.5.0+1127 (2026-05-24)
+
+### New features
+
+- **Address-to-pin geocoding in run editor**: Addresses and map pins can now be
+  kept in sync with one tap. In edit-run mode the address-saved confirmation
+  snackbar includes a "Locate pin" action — tapping it calls the Nominatim
+  (OpenStreetMap) geocoding API with the saved address fields and, if a match is
+  found, jumps to the Map tab with the pin pre-positioned at the geocoded
+  location. In new-run mode an "Auto-locate" button has been added to the Map
+  tab's button row, so the user can position the pin from the address they just
+  entered before confirming with "Set Location". A loading spinner shows during
+  the geocoding call; a fallback snackbar is shown if the address cannot be
+  located. No API key required.
+
+- **Live run tracking — timing gate**: The "Start Run Tracking" button is now
+  disabled until five minutes before the run's scheduled start time. When
+  outside this window the button displays "Tracking opens at [time]" and is
+  greyed out. A background timer polls every 30 seconds and enables the button
+  automatically when the window opens, without requiring the user to leave and
+  re-enter the screen.
+
+- **Boot hang diagnostic — BootLogger overlay**: Added a temporary `BootLogger`
+  utility that intercepts all `debugPrint` output from the moment `main()`
+  starts. A scrolling overlay panel is shown on the splash screen and on the
+  "Filling Your Mug" loading screen during boot, with a "Copy log to clipboard"
+  button for capturing the sequence of startup events. This tool will be removed
+  once the reported boot hang is diagnosed.
+
+### Bug fixes
+
+- **Delete event image — SP + service layer**: The "Delete image" button in the
+  run image editor previously sent no instruction to the server, leaving the
+  existing image URL in place. `hcapp_addEditEvent` now accepts a
+  `@deleteEventImage BIT` parameter; when set, `EventImage` is explicitly
+  cleared to `NULL` rather than left unchanged by the `COALESCE` fallback. The
+  Flutter service layer passes `deleteEventImage: '1'` in the request body when
+  the user confirms deletion.
+
+## 2.5.0+1126 (2026-05-24)
+
+### Bug fixes
+
+- **Edit mismanagement roles / HC App permissions — silent failure**: Saving
+  either of these fields called `hcapp_joinKennel`, which (when editing another
+  user) delegates to `hcapp_syncKennelAdminData`. That SP updates `HC.Kennel`
+  when roles change, which bumps the kennel's `updatedAt`. The subsequent sync
+  returned a kennel row, and the ingestion engine matched it to
+  `KennelsTableHelper` — but `KennelsTableHelper.getTableName(AppDomainType.kennel)`
+  threw an exception because it only handled `AppDomainType.user`. The exception
+  was caught in `_setUserProperties`, so the app didn't crash, but the save
+  appeared to fail ("Could not save — check your connection") and kennel data
+  was not written to the local DB. Fixed by making `KennelsTableHelper.getTableName`
+  return `commonTableName` for all domain types — kennels are stored in a single
+  shared table regardless of which sync domain is writing to them.
+
+- **Success envelope printed as unrecognised data**: Write SPs (including
+  `hcapp_joinKennel`) return a `[{"success":1,...}]` envelope at rowset 0
+  before the sync data. The base ingestion engine (`updateSqlTablesFromJsonWithAdHocData`)
+  did not recognise this as a known pattern, so it printed debug warnings for
+  every write operation and the `adHocData` return value was lost (causing the
+  wrong snackbar message even when the save succeeded). Fixed by adding
+  `ServiceCommon.stripSuccessEnvelope()`, which removes rowset 0 when it is a
+  success envelope before handing the response to the ingestion engine. Applied
+  in all three sync service adapters: `SyncKennelAdminService`,
+  `SyncUserDataService`, and `SyncEventAdminService`.
+
+## 2.5.0+1125 (2026-05-23)
+
+### Bug fixes
+
+- **Future runs list — pull-to-refresh clears all runs**: Pulling to refresh
+  called `refreshFromBackend(clearLocalTables: true)`, which wiped the local
+  SQLite events/HEM/payments tables before fetching fresh data. The subsequent
+  `syncUserDataService.updateFromBackend` call had a debounce guard that
+  silently returned early when a sync had run recently — leaving the DB empty.
+  `refreshFromTable` then queried that empty DB and rendered a "no runs" state.
+  Fixed by making the debounce respect the `forceRefresh` flag. Additionally,
+  the debounce has been removed entirely for now while the right threshold is
+  determined.
+
+- **Sync debounce — `forceRefresh` parameter ignored**: `forceRefresh: true`
+  was accepted by `SyncUserDataService.updateFromBackend` but never consulted
+  in the debounce check. All callers passing `true` (kennel admin, kennel list,
+  hasher profile, future run list) were silently hitting the debounce anyway.
+  The debounce now gates on `!forceRefresh`.
+
+- **Sync debounce — reduced from 120 s to 30 s**: The 120-second guard was
+  too aggressive; a normal user interaction can easily trigger a sync within
+  that window. Reduced to 30 seconds to match actual quick-restart scenarios.
+
+- **Manual check-in — stale hasher data on exit**: Navigating away from the
+  manual check-in page now fires a background `syncUserData` against the
+  hashers table, picking up any member profile changes (hash names, photos,
+  membership state) that occurred during the check-in session.
+
+---
+
+## 2.5.0+1124 (2026-05-23)
+
+### Bug fixes
+
+- **Check-in popup — silent failure**: `setEventAttendence` returning an empty
+  list (connectivity guard triggered, or SP error) was silently swallowed. The
+  caller now shows a "Check-in failed" snackbar when the response is empty and
+  a "Checked in!" confirmation when it succeeds, so the user always gets
+  actionable feedback.
+
+- **Mismanagement roles — no confirmation and silent save**: `updateHasherKennelStatus`
+  was a mutation without `noRetries: true`, risking duplicate writes on retry.
+  Added `noRetries: true`. After saving a mismanagement role or app-access
+  change, a snackbar now confirms success or reports failure so the user knows
+  the outcome without guessing.
+
+- **Photo review — batch save error**: `updates` was sent as a JSON array in
+  the HTTP body (`"updates":[...]`). The API shim passes this directly to the
+  SP's `@updates NVARCHAR(MAX)` parameter, which expects a JSON *string*. Fixed
+  by serialising to `jsonEncode(updates)` before including in the body so the
+  SP receives a parseable JSON string.
+
+- **Photo review — immediate save on last pending photo**: Previously the 5-second
+  debounce always fired after every action. When the last pending photo is
+  actioned and no pending photos remain, the queue now flushes immediately
+  without waiting for the debounce. Actions are also blocked while a save is
+  in progress.
+
+- **KennelPhotos map — empty camera icon shown for private/unapproved photos**:
+  Returning an empty camera-frame marker for photos that have no resolved URL
+  (not yet approved for this viewer, or private) was confusing. The marker is
+  now completely hidden (`SizedBox.shrink()`) when the URL cannot be resolved,
+  so only photos the user is permitted to see appear on the map.
+
+- **KennelPhotos map — zoomable photo page has black background**: Tapping a
+  photo marker opened `ZoomableImagePage2` without a background, so
+  `photo_view` defaulted to black. Now passes `Backgrounds.defaultHcBackground()`
+  so the jungle theme is shown consistently.
+
+---
+
+## 2.5.0+1123 (2026-05-23)
+
+### Stability
+
+- **Boot hang — infinite sync paging loop**: `SyncUserDataService` uses a
+  `while (tablesToSync != 0)` paging loop. If the base-service bitmask logic
+  fails to clear a table bit when the SP returns 0 updated rows, the loop
+  retries the same request forever, leaving the app stuck on the "Filling Your
+  Mug" loading screen. Added a 100-iteration guard with a diagnostic log; the
+  break covers both this scenario and any future edge case where the paging
+  token is not correctly zeroed.
+
+### Memory leaks — StatefulWidget disposal
+
+Added `dispose()` to 12 State classes that were creating `TextEditingController`
+and `FocusNode` instances without ever calling `.dispose()`. Each popup or page
+shown and dismissed leaks one or more native text engine objects. Fixed:
+
+- `widgets/multiple_choice_popup.dart` — FocusNode + TextEditingController
+- `widgets/add_virgin_visitor_popup.dart` — FocusNode + 3× TextEditingController
+- `widgets/email_popup.dart` — FocusNode + TextEditingController
+- `widgets/confirm_auto_checkin_popup.dart` — FocusNode + TextEditingController
+- `pages/init/third_party_login.dart` — 2× FocusNode + 2× TextEditingController
+- `pages/init/create_new_account.dart` — FocusNode
+- `pages/run_admin/create_new_event_popup.dart` — FocusNode + TextEditingController
+- `pages/kennel_admin/run_number_popup.dart` — FocusNode + TextEditingController
+- `pages/kennel_admin/kennel_members.dart` — AnimationController + FocusNode + TextEditingController
+- `pages/run_admin/find_hasher_page.dart` — FocusNode + TextEditingController
+- `pages/menu_pages/hasher_profile_page.dart` — 6× TextEditingController
+- `pages/menu_pages/get_reset_code_popup.dart` — FocusNode + TextEditingController
+
+All 25 GetX controllers were audited and confirmed clean.
+
+---
+
+## 2.5.0+1122 (2026-05-23)
+
+### Security
+
+- **KennelPhotos — photo URLs no longer stored in GPS track**: Previously the
+  full Azure Blob Storage URL was embedded in every PHO GPS marker label,
+  meaning anyone who could read the GPS track data could access photos directly
+  and bypass status-based access control (private, deleted). The label now
+  stores only the photoId UUID. The map controller fetches authorised URLs via
+  `hcapp_getRunPhotos` on load and every 15-second auto-update tick, so only
+  photos the caller is permitted to see resolve to a URL — private and
+  soft-deleted photos show as empty camera frames.
+
+### Bug fixes
+
+- **KennelPhotos — map photos not loading after security fix**: The photo URL
+  cache was reading rowsets at the wrong indices (`[1, 2]` instead of `[0, 1]`)
+  because `hcapp_getRunPhotos` returns data as rowset 0 on success with no
+  envelope. All six photos now load correctly.
+
+- **KennelPhotos — map photo cache never populated**: `KennelPhotoService` is
+  instantiated directly throughout the app and is not registered with GetX.
+  `Get.find<KennelPhotoService>()` was throwing silently, leaving the cache
+  empty. Fixed to use `KennelPhotoService()` directly, consistent with all
+  other call sites.
+
+- **KennelPhotos — soft-deleted photos visible on others' maps**: Photos with
+  `Status ≥ 2` but a non-null `DeletedAt` were still returned to other users
+  by `hcapp_getRunPhotos`. Added `DeletedAt IS NULL` filter to the others'
+  public photos rowset.
+
+---
+
+## 2.5.0+1121 (2026-05-23)
+
+### Improvements
+
+- **KennelPhotos — instant review with queued batch upload**: Actions in the
+  photo review screen now apply immediately to the UI with no network wait.
+  Changes are queued locally and flushed to the server in a single batch call
+  after a 5-second pause in activity. Navigating away triggers an immediate
+  flush with a "Saving…" progress indicator in the app bar.
+
+- **KennelPhotos — batch failure handling**: If the batch upload fails, all
+  optimistically-applied changes are reverted to their previous statuses and a
+  dismissable error dialog is shown. If a partial failure occurs (some photos
+  not found or from a different kennel), the successful updates are kept and a
+  warning is shown with the failure count.
+
+- **KennelPhotos — delete confirmation pauses debounce timer**: The 5-second
+  debounce timer is paused while the delete confirmation dialog is visible so
+  the batch does not flush mid-dialog.
+
+---
+
+## 2.5.0+1120 (2026-05-23)
+
+### New features
+
+- **KennelPhotos — full photo review redesign**: Review Photos is now
+  event-scoped (run admin only; removed from kennel admin). The screen
+  shows a persistent header with the kennel logo, event name, and a
+  colour-coded count chip for every status (Pending, Private, Shared,
+  Run Gallery, Home Gallery, Event Cover, Deleted). Pending and Reviewed
+  tabs let the Hash Flash switch between unactioned and already-actioned
+  photos. The same action buttons work on both tabs — any action
+  overwrites the existing status.
+
+- **KennelPhotos — soft delete**: Deleting a photo now sets a `DeletedAt`
+  timestamp instead of removing the row. Deleted photos appear in the
+  Reviewed tab with a dimmed overlay. Any other action (Keep Private,
+  Share, etc.) restores the photo and applies the new status.
+
+- **KennelPhotos — re-review**: Previously approved photos can be
+  re-actioned at any time from the Reviewed tab, overwriting the
+  existing status in the database.
+
+---
+
+## 2.5.0+1119 (2026-05-22)
+
+### Bug fixes
+
+- **Run History — empty list when viewing another member's history**: Tapping
+  "View Run History" on a kennel member's profile showed no runs. The sync
+  wrote the selected user's HEM data to the kennel-domain table, but the page
+  was querying the user-domain table. Fixed by deriving `AppDomainType` from
+  `dataContext` so the query always hits the same table the sync wrote to.
+
+---
+
+## 2.5.0+1118 (2026-05-22)
+
+### Improvements
+
+- **KennelPhotos — photo fills camera frame**: The thumbnail now bleeds
+  slightly beyond the transparent cutout so no background pixel is visible
+  between the photo and the camera frame edge.
+
+- **KennelPhotos — marker size scaling**: Minimum photo marker size raised
+  from 25 px to 50 px. Markers now shrink on a quadratic curve as you zoom
+  out, so they reduce in size faster while still reaching full screen width
+  at maximum zoom.
+
+- **KennelPhotos — tap to view full image**: Tapping a photo marker on the
+  map opens the photo full-screen in the zoomable image viewer, with the
+  event name shown in the app bar.
+
+---
+
+## 2.5.0+1117 (2026-05-22)
+
+### New features
+
+- **KennelPhotos — photo markers on the live run map**: PHO track points
+  now render as camera-shaped map pin markers with the actual photo
+  thumbnail displayed inside the camera LCD frame. Landscape photos use
+  a wide camera frame; portrait photos use a tall frame — orientation is
+  detected automatically from the image dimensions.
+
+- **KennelPhotos — count-up loading indicator**: While a photo marker is
+  loading its thumbnail (0–9 seconds), a counter is shown inside the
+  camera frame so it is clear the image is in progress rather than
+  broken.
+
+- **KennelPhotos — zoom-responsive marker size**: Photo markers scale from
+  a minimal 25 px at full-run view to approximately screen width at
+  maximum zoom, making them easy to spot at a distance and large enough
+  to inspect up close.
+
+### Bug fixes
+
+- **KennelPhotos — photo markers silently dropped by GPS filter**: Typed
+  track points (PHO and all other marker types) were being removed by the
+  GPS accuracy and velocity filter if their GPS fix was poor or their
+  timestamp was within 1 second of the preceding point. Typed points now
+  bypass all quality checks — they are intentional user actions and must
+  always survive the filter.
+
+- **KennelPhotos — PHO GPS label truncated at 54 characters**: The
+  `StorePositions` API endpoint was silently dropping any `Type` field
+  longer than 54 characters. PHO labels (which embed the full blob URL)
+  are up to ~165 characters. Limit raised to 200.
+
+- **KennelPhotos — photo URL correctly sourced from API response**: The
+  full blob URL returned by `GetPhotoUploadToken` is now stored verbatim
+  in the GPS track label, eliminating a storage-account-name assumption
+  that could have broken thumbnail loading after an infrastructure change.
+
+### Stability (pre-3.0 hardening — Session 1)
+
+- **`isAtRunStart` throttle re-enabled**: The 2-minute rate-limit was
+  accidentally left disabled by a `TODO: Re-enable before next release`
+  comment. Without it, every screen unlock, boot, and 5 other call sites
+  fired an unthrottled network + DB call.
+
+- **GetX resource leaks — 8 controllers**: Added or completed `onClose()`
+  in `OtherPaymentPopupController`, `CheckInPackController`,
+  `KennelsListPageController`, `FutureRunListPageController`,
+  `LiveRunGeneralController`, `LocationService`, `KennelAdminController`,
+  and `MainNavigationPageController`. Resources leaked: `Worker` objects
+  from `debounce()`/`ever()`, `TextEditingController`, `FocusNode`,
+  `ScrollController`, `AnimationController`, `MapController`.
+
+- **Sync service crash on first install**: All three sync services called
+  `table.first['maxDate']` without an `isEmpty` guard. On a fresh install
+  the table is empty, causing a `RangeError` that could hang the boot.
+
+- **Email report HTTP calls had no timeout**: Four fire-and-forget email
+  endpoints (`SendKennelRunStatsReport`, `SendRunCountsReport`,
+  `SendPaymentReport`, `EmailInviteCode`) could hang indefinitely. Each
+  now has a 30-second timeout.
+
+### Stability (pre-3.0 hardening — Session 2)
+
+- **59× `userId` force-unwraps replaced**: All `getStringPref(userId)!`
+  force-unwraps across services, pages, and widgets have been replaced
+  with a new `currentUserId` getter that returns `''` instead of throwing.
+  This eliminates a class of crashes on first boot and after a credential
+  wipe.
+
+- **Mutations now use `noRetries: true`**: Payment, RSVP, attendance,
+  event, receipt, and user-edit calls were retrying up to 6 times on
+  network failure. This risked creating duplicate records in the database.
+  All 10 mutation call sites now pass `noRetries: true`.
+
+- **3× empty catch blocks**: Silent `catch (_) {}` blocks in
+  `KennelsListPageController`, `HashFlashApprovalPage`, and
+  `MainNavigationPageController` now log the error with `debugPrint`.
+
+- **4× `DateTime.parse()` crash risk**: Unguarded parses on DB-sourced
+  strings in `HashRunArtGalleryPage`, `RunLocationsController`,
+  `RunTabs`, and `RunListItem` replaced with `DateTime.tryParse()` +
+  safe fallbacks.
+
+- **Unguarded array access hardened**: COUNT query results in
+  `common_queries.dart`, double-nested JSON decode in
+  `utilities_null_safe.dart`, `result[1][0]` in
+  `authorize_device_service.dart`, and barcode scan `.barcodes.first`
+  in three scanner pages now all have proper guards.
+
+- **Photo upload token fields null-checked**: `sasUrl` and `blobUrl` are
+  now validated before use in `kennel_photo_service.dart`; a clear
+  snackbar is shown if either field is missing.
+
+- **`recordError()` timeout added**: The error-logging HTTP call had no
+  timeout and could block the app if the reporting endpoint was slow.
+  Now capped at 30 seconds.
+
+## 2.4.10+1116 (2026-05-21)
+
+### Enhancements
+
+- **KennelPhotos — post-crop sharing sheet**: After cropping a photo,
+  a bottom sheet now asks what to do with it:
+  - **Discard** — removes the photo, nothing is uploaded
+  - **Save privately** — uploads and stores for the taker only
+  - **Save and share** — uploads and forwards to the Hash Flash for review
+
+  Previously the sharing preference was inherited from the user's saved
+  setting. It is now always an explicit per-photo decision.
+
+## 2.4.9+1115 (2026-05-21)
+
+### Enhancements
+
+- **KennelPhotos — run-scoped storage path**: Photos are now stored under
+  `trail-photos/{kennelSlug}/{kennelSlug}-{runNumber}/{filename}` for
+  numbered runs (e.g. `shhh/shhh-456/…`), or `trail-photos/{kennelSlug}/other/{filename}`
+  when the run has no number. All photos from the same run land in the same
+  Azure Blob Storage subfolder, making manual browsing and future bulk
+  operations straightforward.
+
+- **KennelPhotos — enriched PHO GPS marker**: The PHO track-point label now
+  encodes the run folder and full blob filename
+  (`<runFolder>/<userId>-<photoGuid>.jpg`) so the map renderer can locate
+  the photo directly without a separate cache lookup.
+
+## 2.4.8+1114 (2026-05-21)
+
+### Developer experience
+
+- **KennelPhotos — simulator support**: Running on the iOS or Android
+  simulator no longer blocks at the camera step. When `isPhysicalDevice`
+  is false the app loads the bundled splash-screen JPEG as a placeholder,
+  then runs the full token → blob upload → database record flow as normal.
+  No user-visible change on physical devices.
+
+## 2.4.7+1113 (2026-05-21)
+
+### Code quality
+
+- **Sync services — dead code removal**: Removed a long-standing `if (true)`
+  dead-code wrapper from all three sync services (`SyncUserDataService`,
+  `SyncKennelAdminService`, `SyncEventAdminService`). The original cache-expiry
+  condition was commented out years ago and replaced with an unconditional
+  `if (true)` placeholder, leaving the entire method body unnecessarily
+  nested. No behaviour change.
+
+## 2.4.6+1112 (2026-05-21)
+
+### Bug fixes
+
+- **Boot hang — permanent loading screen**: Added try/catch to `onInitAsync()`
+  and `setupDatabase()`. Previously, any unhandled exception inside the boot
+  sync chain (malformed server data, SQLite error, network failure) was silently
+  swallowed by `unawaited()`, leaving the loading screen displayed permanently
+  until the app was force-killed. The app now falls through to offline mode
+  with cached data instead.
+
+- **Boot hang — `Ipify.ipv4()` timeout**: The IP-lookup call at login had no
+  timeout. A slow or unreachable `api.ipify.org` response could block the
+  entire login request indefinitely. Now capped at 4 seconds with a `0.0.0.0`
+  fallback.
+
+- **Photo upload — follower-only restriction removed**: Any authenticated
+  Harrier Central user on a live run can now take and upload photos. The
+  previous `Following = 1` check in `hcapp_getPhotoUploadToken` and
+  `hcapp_addKennelPhoto` has been removed.
+
+### Performance
+
+- **Boot sync — O(N) SQLite reads eliminated**: The sync engine previously
+  issued one `SELECT` per incoming record to check local existence (up to 2 500
+  reads for the Hashers table). This has been replaced with a single batched
+  `SELECT … IN (…)` query, chunked at 900 PKs per call. On a physical device
+  with NAND flash storage, Hashers sync time drops from ~30–60 s to ~1–2 s.
+  (Change is in the `ive_flutter_core_mobile` helper package v1.2.16.)
+
+### Other
+
+- **Sync debounce**: Raised from 5 s to 120 s. A 5-second window was
+  effectively zero — every app relaunch re-synced all tables. Quick restarts
+  (e.g. from Settings → Reload Data) now skip the expensive full sync while
+  normal relaunches (minutes apart) still fetch fresh data.
+
+## 2.4.5+1111 (2026-05-21)
+
+### Enhancements
+
+- **Photo review — 6-level approval scale**: The Hash Flash approval screen is
+  replaced by a full **Photo Review** screen with two rejection options (Keep
+  Private, Delete) and four escalating approval levels, each implying all
+  levels below it:
+  - **Share with Hash** — visible to all Harrier Central users on run maps
+  - **Run Gallery** — also appears in the run's photo gallery
+  - **Home Gallery** — also featured on the kennel home page
+  - **Event Cover** — also set as the run's cover photo (`HC.Event.EventCoverPhotoUrl`)
+
+- **Photo review — expanded reviewer roles**: The Review Photos button in the
+  kennel admin page is now visible to Hash Flash, Grand Master, Vice-GM, and RA
+  (previously Hash Flash only).
+
+- **Photo upload — kennel slug folder**: Photos now upload into
+  `trail-photos/{kennelSlug}/` in Azure Blob Storage rather than a UUID-named
+  folder. The slug is resolved server-side so no app rebuild was required for
+  the initial fix.
+
+### Bug fixes
+
+- **Photo upload — upload token error**: Fixed a 403 auth failure caused by the
+  SP checking `IsMember = 1` (defaults to 0); relaxed to `Following = 1` so any
+  kennel follower can take photos during a run.
+
+## 2.4.4+1110 (2026-05-20)
+
+### New features
+
+- **KennelPhotos — photo capture during a live run**: Hashers can now take photos
+  mid-run using the new **Take Photo** button on the Live Run Tools tab. Photos are
+  uploaded directly to Azure Blob Storage via a short-lived SAS token, then recorded
+  against the run. A `PHO` marker is enqueued into the GPS track feed so the photo
+  location appears on the map.
+
+- **KennelPhotos — sharing preference**: Sharing is controlled by a three-level
+  preference (per-run → per-kennel → global). Photos default to private; members
+  can opt in to share with the Hash Flash for review.
+
+- **Hash Flash approval screen**: Committee members with the Hash Flash role can
+  now review shared photos from the kennel admin page. Each photo can be approved
+  (made public), kept private, or deleted. Accessible via the **Review Photos**
+  button in the kennel admin functions section (visible only to Hash Flash role
+  holders).
+
+- **Live Run Tools — chat strip**: The embedded full chat UI on the Tools tab is
+  replaced with a compact read-only strip showing the last 3 messages, a total
+  message count badge, and an **Open Chat** button that jumps to the Chat tab.
+
+- **Live Run Tools — QR codes button**: The QR code carousel is removed from the
+  Tools tab. A slim **QR Codes** outline button now navigates directly to the
+  existing QR tab.
+
+### Bug fixes
+
+- **Live Run nav bar — selected icon invisible**: The active tab icon was
+  `Colors.black54` regardless of state, making it invisible against the red
+  button background. Selected icons are now white.
+
+- **Live Run Tools — page crash on load**: Two layout assertion failures fixed:
+  `Expanded` was incorrectly nested inside an `Obx` wrapper (must be a direct
+  `Row` child), and `CrossAxisAlignment.stretch` was applied to a `Row` inside
+  an unbounded-height `Column` (resolved with `IntrinsicHeight`).
+
+## 2.4.3+1109 (2026-05-19)
+
+### Code quality
+
+- **`setStateIfMounted` utility**: Added `safe_set_state.dart` — a `State<T>`
+  extension that wraps `setState` with a mounted guard. Exported globally via
+  `imports.dart`.
+- **Codebase-wide `setState` → `setStateIfMounted` migration**: Replaced all
+  bare `setState` calls across ~80 files (pages, widgets, controllers) with
+  the guarded variant, eliminating a class of "setState called after dispose"
+  crashes that can surface when async callbacks complete after a widget unmounts.
+- **`buildMapLocation()` utility**: Added to `Utilities` in
+  `utilities_null_safe.dart` — resolves an `EventModel` to a map-resolvable
+  location string (structured address → coordinates → one-line description).
+- **`dart format`**: Applied formatter across the codebase to normalise line
+  lengths and indentation.
+
+## 2.4.2+1108 (2026-05-16)
+
+### Enhancements
+
+- **Profile — distance preference auto-saves on selection**: Selecting a distance
+  unit (Auto / Kilometers / Miles) in the profile settings now immediately saves the
+  preference to the server without requiring the "Save Changes" button. A spinner
+  appears next to the "Distance Preference" heading while the call is in-flight, and
+  the radio group is non-interactive until the save completes.
+
+### Bug fixes
+
+- **Hash History — wrong table domain in hasher profile view**: Run history launched
+  from a hasher's profile was reading from the kennel-domain tables instead of the
+  common-domain tables, causing empty or incorrect history. Fixed to always use the
+  common domain for all history views.
+- **Hash History — missing table prefix in country history query**: The UNION branch
+  of the country history query referenced `kennels` instead of `common_kennels`,
+  causing a SQLite "no such table" error. Fixed.
+- **Hash History — missing table alias in run history UNION query**: JOIN conditions
+  in the UNION branch were missing the `hem.` alias, causing ambiguous column errors.
+  Fixed.
+- **Hash History — UUID not normalised in country stats**: `CountryStats.fromMap` was
+  not normalising the `countryId` UUID, causing country drill-down navigation to fail
+  silently when the server returned uppercase UUIDs. Fixed.
+- **Kennel admin — past runs not loading**: Kennel admins who were not following a
+  kennel saw an empty past runs calendar because `common_events` only holds 10 days
+  of history for unfollowed kennels. The app now automatically follows the kennel and
+  force-replicates all event history before entering admin screens.
+- **Kennel admin — filter events GetX crash**: The `publishedRunCount` field was a
+  plain `List`, causing the `Obx` widget that reads it to throw a GetX "improper use"
+  error on load. Made it reactive (`RxList`).
+- **Kennel admin — manual refresh skipped kennel domain sync**: Pull-to-refresh on
+  the filter events page only re-synced events, leaving kennel-domain membership data
+  stale. Now also refreshes `hasherKennelMap` via `syncKennelAdminService`.
+- **Chat — access token always rejected**: `hcapp_getEventMessages` and
+  `hcapp_sendEventMessage` were generating compound tokens (`deviceSecret + eventId`)
+  but the SPs validated against `eventId` only. Token generation and SPs now both use
+  the standard device-secret token.
+
+## 2.4.1+1107 (2026-05-13)
+
+7 bug fixes — see git log for details.
+
+## 2.4.0+1106 (2026-05-10)
+
+State management overhaul, 4 new GetX migrations, boot fix.
