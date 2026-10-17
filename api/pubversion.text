@@ -1,3 +1,8 @@
+1.0.61+113
+    • Replies never carry other people's device push tokens (chat sends, songs, mark-read; app and portal routes) — push code works from its own copy
+    • API-only query types (getRunEmailContext) refused on the general app and portal routes
+    • Firebase credentials from FIREBASE_CREDENTIALS_JSON (Key Vault reference) when set, else the private blob — inert until the setting exists
+
 1.0.61+112
     • Push credentials read through the storage SDK with the connection string (one FirebaseCredentials helper, five push paths) instead of an HTTP URL
 
