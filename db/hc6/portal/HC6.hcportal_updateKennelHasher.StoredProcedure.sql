@@ -150,6 +150,16 @@ BEGIN TRY
     -- of that cell must not write the placeholder into HC.Hasher.
     IF (@eMail = '<hidden>') SET @eMail = NULL;
 
+    -- A field sent with the value it already has is not a change
+    -- (2026-10-17), so the lock below refuses only a real edit — a save
+    -- that carries the unchanged name with a membership change goes
+    -- through. Byte-for-byte (BIN2): a change of case is still a change.
+    SELECT @eMail     = CASE WHEN @eMail     COLLATE Latin1_General_BIN2 = h.Email     COLLATE Latin1_General_BIN2 THEN NULL ELSE @eMail     END,
+           @firstName = CASE WHEN @firstName COLLATE Latin1_General_BIN2 = h.FirstName COLLATE Latin1_General_BIN2 THEN NULL ELSE @firstName END,
+           @lastName  = CASE WHEN @lastName  COLLATE Latin1_General_BIN2 = h.LastName  COLLATE Latin1_General_BIN2 THEN NULL ELSE @lastName  END,
+           @hashName  = CASE WHEN @hashName  COLLATE Latin1_General_BIN2 = h.HashName  COLLATE Latin1_General_BIN2 THEN NULL ELSE @hashName  END
+    FROM HC.Hasher h WHERE h.id = @hasherBeingEditedId;
+
     -- Personal details (name, hash name, email) belong to the PERSON once
     -- they have signed in anywhere: the app stamps LastLoginDateTime, and the
     -- web and portal sign-ins create an HC.Device row. Before that first
