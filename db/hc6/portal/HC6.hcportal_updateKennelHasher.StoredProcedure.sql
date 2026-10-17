@@ -86,6 +86,14 @@ BEGIN TRY
         RETURN;
     END
 
+    -- A service account never edits a hasher (2026-10-16, permissions audit):
+    -- it used to skip both the permission check and the email lock below.
+    IF @callerType <> 0
+    BEGIN
+        SELECT 0 AS Success, 'Not allowed' AS ErrorMessage;
+        RETURN;
+    END
+
     -- Permission check: caller must be a member manager, kennel manager, or super-admin
     -- (canManageMembers=0x10, canManageKennel=0x02, superAdmin=0x40000001)
     IF @callerType = 0  -- regular portal user (not service account)
@@ -152,10 +160,14 @@ BEGIN TRY
     -- invite code sent to an address they control and take the account
     -- (James, 2026-09-23). Kennel-scoped fields (membership, discounts,
     -- alerts, historical counts) are the kennel's and stay admin-editable.
-    -- SuperAdmin keeps the platform-support bypass.
+    -- Platform support (HC.PlatformAdmin) keeps a bypass. A kennel's
+    -- SuperAdmin flag does NOT (2026-10-16, permissions audit): 0x40000000 is
+    -- the kennel FOUNDER grant (~290 hashers), and it let any founder rewrite
+    -- the email of a hasher whose home kennel is elsewhere.
     IF (@eMail IS NOT NULL OR @firstName IS NOT NULL OR @lastName IS NOT NULL OR @hashName IS NOT NULL)
        AND @callerType = 0
-       AND (@appAccessFlags & 0x40000000) = 0
+       AND NOT EXISTS (SELECT 1 FROM HC.PlatformAdmin pa
+                       WHERE pa.UserId = @hasherId AND pa.removed = 0)
        AND @hasherBeingEditedId <> @hasherId
     BEGIN
         DECLARE @targetName NVARCHAR(250), @targetHomeKennelId UNIQUEIDENTIFIER, @targetSignedIn SMALLINT;
