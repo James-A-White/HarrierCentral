@@ -52,8 +52,10 @@ DECLARE @kennelId UNIQUEIDENTIFIER = (SELECT KennelId FROM HC.Event WHERE id = @
 DECLARE @isHare SMALLINT = HC6.IsAppointedHare(@userId, @eventId);
 DECLARE @allowed SMALLINT = 0;
 IF (@kennelId IS NOT NULL)
+    -- Its own permission (James, 2026-10-17): the appointed hare, Hare Raiser,
+    -- GM, VGM and Super Admin — not everyone who may edit runs.
     EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId,
-         @functionKey = 'createEditRuns', @isHareOfEvent = @isHare, @allowed = @allowed OUTPUT;
+         @functionKey = 'manageOfficialTrail', @isHareOfEvent = @isHare, @allowed = @allowed OUTPUT;
 
 IF (@allowed = 0)
 BEGIN
