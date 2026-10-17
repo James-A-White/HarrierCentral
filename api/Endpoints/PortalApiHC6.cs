@@ -86,55 +86,78 @@ namespace HcWebApi.Endpoints
             {
                 List<List<Dictionary<string, object?>>> multipleResults = [];
 
-                using (SqlConnection conn = new(connectionString))
+                // A DEADLOCK VICTIM (SQL error 1205) is rolled back whole, so
+                // running it again is safe (every write SP must be safe to
+                // arrive twice — CLAUDE.md). Retried twice after a short random
+                // pause, as AppApiHC6 does (2026-10-17).
+                for (int dbAttempt = 1; ; dbAttempt++)
                 {
-                    await conn.OpenAsync();
-
-                    string procedureName = $"[HC6].[hcportal_{queryType}]";
-
-                    using SqlCommand cmd = new(procedureName, conn);
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    JObject jsonData = JObject.Parse(requestBody);
-
-                    foreach (var property in jsonData.Properties())
-                    {
-                        if (property.Name == "queryType" || property.Name == "includeNulls") continue;
-
-                        string parameterName = "@" + property.Name;
-                        object? parameterValue = (property.Value == null || property.Value.Type == JTokenType.Null)
-                            ? DBNull.Value
-                            : property.Value.ToObject<object>();
-
-                        if (parameterName != null && parameterValue != null)
-                            cmd.Parameters.AddWithValue(parameterName, parameterValue);
-                    }
-
-                    using SqlDataReader reader = await cmd.ExecuteReaderAsync();
+                    multipleResults.Clear();
                     try
                     {
-                        do
+                        using (SqlConnection conn = new(connectionString))
                         {
-                            List<Dictionary<string, object?>> resultSet = [];
-                            while (await reader.ReadAsync())
+                            await conn.OpenAsync();
+
+                            string procedureName = $"[HC6].[hcportal_{queryType}]";
+
+                            using SqlCommand cmd = new(procedureName, conn);
+                            cmd.CommandType = CommandType.StoredProcedure;
+
+                            JObject jsonData = JObject.Parse(requestBody);
+
+                            foreach (var property in jsonData.Properties())
                             {
-                                Dictionary<string, object?> row = [];
-                                for (int i = 0; i < reader.FieldCount; i++)
-                                {
-                                    string? name = reader.GetName(i);
-                                    object? value = reader.IsDBNull(i) ? null : reader.GetValue(i);
-                                    if (name != null && (value != null || includeNulls))
-                                        row[name] = value;
-                                }
-                                resultSet.Add(row);
+                                if (property.Name == "queryType" || property.Name == "includeNulls") continue;
+
+                                string parameterName = "@" + property.Name;
+                                object? parameterValue = (property.Value == null || property.Value.Type == JTokenType.Null)
+                                    ? DBNull.Value
+                                    : property.Value.ToObject<object>();
+
+                                if (parameterName != null && parameterValue != null)
+                                    cmd.Parameters.AddWithValue(parameterName, parameterValue);
                             }
-                            multipleResults.Add(resultSet);
+
+                            using SqlDataReader reader = await cmd.ExecuteReaderAsync();
+                            try
+                            {
+                                do
+                                {
+                                    List<Dictionary<string, object?>> resultSet = [];
+                                    while (await reader.ReadAsync())
+                                    {
+                                        Dictionary<string, object?> row = [];
+                                        for (int i = 0; i < reader.FieldCount; i++)
+                                        {
+                                            string? name = reader.GetName(i);
+                                            object? value = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                                            if (name != null && (value != null || includeNulls))
+                                                row[name] = value;
+                                        }
+                                        resultSet.Add(row);
+                                    }
+                                    multipleResults.Add(resultSet);
+                                }
+                                while (await reader.NextResultAsync());
+                            }
+                            // A deadlock while reading must not come back as a
+                            // half-read success: let it reach the retry below.
+                            catch (SqlException sx) when (sx.Number == 1205)
+                            {
+                                throw;
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.Print(ex.ToString());
+                            }
                         }
-                        while (await reader.NextResultAsync());
+                        break;
                     }
-                    catch (Exception ex)
+                    catch (SqlException sx) when (sx.Number == 1205 && dbAttempt < 3)
                     {
-                        Debug.Print(ex.ToString());
+                        log.LogWarning("PortalApiHC6 deadlock on {QueryType}, attempt {Attempt}; retrying", queryType, dbAttempt);
+                        await Task.Delay(Random.Shared.Next(80, 250) * dbAttempt);
                     }
                 }
 

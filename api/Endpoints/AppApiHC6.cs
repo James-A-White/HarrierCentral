@@ -153,81 +153,107 @@ namespace HcWebApi.Endpoints
                 // Initialize a list to hold the result sets
                 List<List<Dictionary<string, object?>>> multipleResults = new List<List<Dictionary<string, object?>>>();
 
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                // A call SQL Server picks as a DEADLOCK VICTIM (error 1205) is
+                // rolled back whole, so running it again is safe — and every
+                // write SP must be safe to arrive twice anyway (CLAUDE.md,
+                // idempotent writes). Retried here, twice, after a short random
+                // pause, so the phone never sees it: an RSVP at a busy run start
+                // showed "Connection Issue" (2026-10-17; RSVP calls do not retry
+                // on the phone).
+                for (int dbAttempt = 1; ; dbAttempt++)
                 {
-                    await conn.OpenAsync();
-
-                    String procedureName = $"[HC6].[hcapp_{data.queryType}]";
-
-                    using (SqlCommand cmd = new SqlCommand(procedureName, conn))
+                    multipleResults.Clear();
+                    try
                     {
-                        cmd.CommandType = CommandType.StoredProcedure;
-
-                        // Parse the request body into a JObject
-                        JObject jsonData = JObject.Parse(requestBody);
-
-                        // Iterate over each property and add it as a parameter to the SQL command
-                        foreach (var property in jsonData.Properties())
+                        using (SqlConnection conn = new SqlConnection(connectionString))
                         {
-                            if ((property.Name == "queryType") || (property.Name == "includeNulls"))
+                            await conn.OpenAsync();
+
+                            String procedureName = $"[HC6].[hcapp_{data.queryType}]";
+
+                            using (SqlCommand cmd = new SqlCommand(procedureName, conn))
                             {
-                                continue;
-                            }
+                                cmd.CommandType = CommandType.StoredProcedure;
 
-                            // Construct the parameter name (e.g., "@publicHasherId")
-                            string parameterName = "@" + property.Name;
+                                // Parse the request body into a JObject
+                                JObject jsonData = JObject.Parse(requestBody);
 
-                            // Use DBNull.Value if the JSON value is null; otherwise, convert to a .NET object
-                            object? parameterValue = ((property.Value == null) || (property.Value.Type == JTokenType.Null))
-                                                    ? DBNull.Value
-                                                    : property.Value.ToObject<object>();
-
-                            if ((parameterName != null) && (parameterValue != null))
-                            {
-                                // Add the parameter to your SQL command
-                                cmd.Parameters.AddWithValue(parameterName, parameterValue);
-                                //log.LogInformation($"Param = {parameterName}, Value = {parameterValue}");
-                            }
-                        }
-
-                        // Execute the stored procedure and retrieve multiple result sets
-                        using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
-                        {
-                            try
-                            {
-                                // Process each result set
-                                do
+                                // Iterate over each property and add it as a parameter to the SQL command
+                                foreach (var property in jsonData.Properties())
                                 {
-                                    List<Dictionary<string, object?>> resultSet = new List<Dictionary<string, object?>>();
-
-                                    while (await reader.ReadAsync())
+                                    if ((property.Name == "queryType") || (property.Name == "includeNulls"))
                                     {
-                                        var row = new Dictionary<string, object?>();
-                                        for (int i = 0; i < reader.FieldCount; i++)
-                                        {
-                                            string? name = reader.GetName(i);
-                                            object? value = reader.IsDBNull(i) ? null : reader.GetValue(i);
-
-                                            if ((name != null) && ((value != null) || includeNulls))
-                                            {
-                                                row[name] = value;
-                                            }
-
-                                        }
-                                        resultSet.Add(row);
+                                        continue;
                                     }
 
-                                    // Add the result set to the list of result sets
-                                    multipleResults.Add(resultSet);
+                                    // Construct the parameter name (e.g., "@publicHasherId")
+                                    string parameterName = "@" + property.Name;
 
-                                } while (await reader.NextResultAsync()); // Move to the next result set
-                            }
+                                    // Use DBNull.Value if the JSON value is null; otherwise, convert to a .NET object
+                                    object? parameterValue = ((property.Value == null) || (property.Value.Type == JTokenType.Null))
+                                                            ? DBNull.Value
+                                                            : property.Value.ToObject<object>();
 
-                            catch (System.Exception ex)
-                            {
-                                Debug.Print(ex.ToString());
+                                    if ((parameterName != null) && (parameterValue != null))
+                                    {
+                                        // Add the parameter to your SQL command
+                                        cmd.Parameters.AddWithValue(parameterName, parameterValue);
+                                        //log.LogInformation($"Param = {parameterName}, Value = {parameterValue}");
+                                    }
+                                }
+
+                                // Execute the stored procedure and retrieve multiple result sets
+                                using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                                {
+                                    try
+                                    {
+                                        // Process each result set
+                                        do
+                                        {
+                                            List<Dictionary<string, object?>> resultSet = new List<Dictionary<string, object?>>();
+
+                                            while (await reader.ReadAsync())
+                                            {
+                                                var row = new Dictionary<string, object?>();
+                                                for (int i = 0; i < reader.FieldCount; i++)
+                                                {
+                                                    string? name = reader.GetName(i);
+                                                    object? value = reader.IsDBNull(i) ? null : reader.GetValue(i);
+
+                                                    if ((name != null) && ((value != null) || includeNulls))
+                                                    {
+                                                        row[name] = value;
+                                                    }
+
+                                                }
+                                                resultSet.Add(row);
+                                            }
+
+                                            // Add the result set to the list of result sets
+                                            multipleResults.Add(resultSet);
+
+                                        } while (await reader.NextResultAsync()); // Move to the next result set
+                                    }
+
+                                    // A deadlock while reading must not come back as a
+                                    // half-read success: let it reach the retry below.
+                                    catch (SqlException sx) when (sx.Number == 1205)
+                                    {
+                                        throw;
+                                    }
+                                    catch (System.Exception ex)
+                                    {
+                                        Debug.Print(ex.ToString());
+                                    }
+                                }
                             }
                         }
+                        break;
+                    }
+                    catch (SqlException sx) when (sx.Number == 1205 && dbAttempt < 3)
+                    {
+                        log.LogWarning("AppApiHC6 deadlock on {QueryType}, attempt {Attempt}; retrying", (string?)data.queryType, dbAttempt);
+                        await Task.Delay(Random.Shared.Next(80, 250) * dbAttempt);
                     }
                 }
 
