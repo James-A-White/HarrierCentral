@@ -1,3 +1,6 @@
+1.0.61+120
+    • ProcessTrackImport returns the job after a slice without re-checking the token (a 40 s slice left it too old: 'Invalid access token', and the phone read the error as a job)
+
 1.0.61+119
     • A deadlocked SP call (SQL 1205) is retried on the server (app and portal routes), so the phone no longer shows 'Connection Issue' for it; a deadlock while reading results is no longer swallowed as a half-read success
 

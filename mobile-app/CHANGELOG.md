@@ -1,3 +1,14 @@
+## 3.1.10+1487 (2026-10-17)
+
+### Fixes
+
+- **Kennel list**: a kennel no longer drops out of the list when its position
+  is a whole number (seen on many phones since 14 October).
+- **Background syncs** are no longer sent while the phone's registration is
+  being replaced, so they cannot fail and retry five times.
+- **Track import**: a large archive import no longer reports a failure
+  between steps when the server's answer is late.
+
 ## 3.1.10+1486 (2026-10-17)
 
 ### Fixes
