@@ -494,6 +494,7 @@ BEGIN
         hem.RsvpState                                                       AS rsvpState,
         hem.AttendenceState                                                 AS attendenceState,
         hem.IsHare                                                          AS isHare,
+        hem.HareAppointedBy                                                 AS hareAppointedBy,  -- E8.F5.S6
         hem.EventNotificationPreference                                     AS eventNotificationPreference,
         hem.EventEmailAlertPreference                                       AS eventEmailAlertPreference,
         hem.EventCountOverride                                              AS eventCountOverride,
