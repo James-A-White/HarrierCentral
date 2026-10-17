@@ -5,7 +5,10 @@ import 'package:harrier_central/util/kennel_calendar_feed.dart';
 /// The run page's **Add to calendar** (E3.F6.S8, James 2026-10-15): asks
 /// whether to add THIS run once, or to subscribe to the kennel's calendar so
 /// every run — and every change to one — arrives by itself, each entry
-/// linking back to its run in the app.
+/// linking back to its run in the app. The single run is a snapshot: the
+/// sheet and the confirmation say later changes will not follow (James,
+/// 2026-10-17); the subscription is refreshed by the calendar app on its own
+/// schedule.
 ///
 /// The sheet opens in the same frame as the tap, so it is the tap's feedback,
 /// and being modal it refuses a second press.
@@ -45,7 +48,10 @@ Future<void> showRunCalendarChoice(
               context,
               icon: Icons.event,
               title: 'This run only',
-              subtitle: '${futureRun.event.eventName}, added once.',
+              // A snapshot (James, 2026-10-17): say so before they choose.
+              subtitle:
+                  'A snapshot of the run as it is now. If the time, place or '
+                  "hares change later, your calendar won't be updated.",
               choice: _CalendarChoice.thisRun,
             ),
             if (canSubscribe)
@@ -54,8 +60,9 @@ Future<void> showRunCalendarChoice(
                 icon: Icons.event_repeat,
                 title: 'All $kennel runs',
                 subtitle:
-                    "Connect to $kennel's calendar: new runs and changes "
-                    'appear by themselves, each with a link back to the run.',
+                    "Subscribe to $kennel's calendar: new runs and changes "
+                    'arrive by themselves whenever your calendar app checks '
+                    'for updates, each with a link back to the run.',
                 choice: _CalendarChoice.allRuns,
               ),
             const SizedBox(height: 8),
@@ -126,7 +133,8 @@ Future<void> _addThisRun(
     SnackBar(
       backgroundColor: Colors.blue,
       content: Text(
-        '${futureRun.event.eventName}$oneLineLocForTitle has been added to your calendar',
+        '${futureRun.event.eventName}$oneLineLocForTitle has been added to '
+        'your calendar. Later changes to the run will not be updated there.',
       ),
     ),
   );
