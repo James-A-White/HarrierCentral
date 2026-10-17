@@ -339,6 +339,35 @@ BEGIN TRY
                     RETURN;
                 END
 
+                -- The permission above is for @ctxKennelId, which the CALLER
+                -- chooses (@kennelId / @eventId). The hasher being edited must
+                -- belong to it (2026-10-16, permissions audit): their home
+                -- kennel, a live membership row there, or attendance at the
+                -- run named. Before this, managing members in ANY kennel let a
+                -- caller change any hasher's photo, preferences and directory
+                -- settings by naming their own kennel.
+                IF NOT (EXISTS (SELECT 1 FROM HC.Hasher h WHERE h.id = @targetUserId AND h.HomeKennelId = @ctxKennelId)
+                        OR EXISTS (SELECT 1 FROM HC.HasherKennelMap m
+                                   WHERE m.UserId = @targetUserId AND m.KennelId = @ctxKennelId AND m.removed = 0)
+                        OR (@eventId IS NOT NULL AND EXISTS (SELECT 1 FROM HC.HasherEventMap hem
+                                   INNER JOIN HC.Event e ON e.id = hem.EventId
+                                   WHERE hem.UserId = @targetUserId AND hem.EventId = @eventId
+                                     AND e.KennelId = @ctxKennelId)))
+                BEGIN
+                    ROLLBACK TRANSACTION;
+                    SET @errorCode = 1343; SET @errorType = 13; SET @errorId = NEWID();
+                    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, string_1)
+                    VALUES (@errorId, @hcVersion, 'Not this kennel''s hasher',
+                            'Target is not in the kennel the permission was checked on.', @procName, @userId,
+                            CAST(@targetUserId AS NVARCHAR(40)));
+                    SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+                    SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+                           'Not authorised' AS errorTitle,
+                           'This hasher is not part of your kennel, so you cannot change their details.' AS errorUserMessage,
+                           @procName AS errorProc;
+                    RETURN;
+                END
+
                 IF (@firstName IS NOT NULL OR @lastName IS NOT NULL OR @hashName IS NOT NULL OR @email IS NOT NULL)
                 BEGIN
                     DECLARE @tName NVARCHAR(250), @tHome UNIQUEIDENTIFIER, @tSignedIn SMALLINT, @callerIsSuper SMALLINT;
@@ -348,8 +377,12 @@ BEGIN TRY
                                                OR EXISTS (SELECT 1 FROM HC.Device d WHERE d.UserId = h.id)
                                              THEN 1 ELSE 0 END
                     FROM HC.Hasher h WHERE h.id = @targetUserId;
-                    SET @callerIsSuper = CASE WHEN EXISTS (SELECT 1 FROM HC.HasherKennelMap m
-                                                           WHERE m.UserId = @userId AND (m.AppAccessFlags & 0x40000000) <> 0)
+                    -- Platform support only (2026-10-16): the kennel SuperAdmin
+                    -- flag is the FOUNDER grant (~290 hashers) and, tested on
+                    -- ANY row, let any founder rewrite any signed-in hasher's
+                    -- email — an account takeover.
+                    SET @callerIsSuper = CASE WHEN EXISTS (SELECT 1 FROM HC.PlatformAdmin pa
+                                                           WHERE pa.UserId = @userId AND pa.removed = 0)
                                               THEN 1 ELSE 0 END;
 
                     IF (@callerIsSuper = 0 AND @tSignedIn = 1)
