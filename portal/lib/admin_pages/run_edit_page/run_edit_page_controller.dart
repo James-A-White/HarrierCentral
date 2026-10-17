@@ -1111,6 +1111,17 @@ class RunEditPageController extends TabUiController
       );
       return;
     }
+    // A time that matches the kennel's default IS the kennel's default: keep
+    // following the kennel, so a later change to its default still applies.
+    // An OK on the picker without changing it otherwise saved this run's own
+    // 0 and hid the kennel's default when one was set (SWH3 #1814, 2026-10-17).
+    // A NEW run does not load the kennel's default (E3.F1.S6 known gap), so
+    // there the picked time is kept as it is.
+    if (!isAddMode &&
+        minutes == (editedData.value.kennelPackOffMinutes ?? 0)) {
+      usePackOffKennelDefault();
+      return;
+    }
     editedData.value = editedData.value.copyWith(packOffMinutes: minutes);
     checkIfFormIsDirty();
   }
