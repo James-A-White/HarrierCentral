@@ -676,7 +676,7 @@ namespace HcWebApi.Endpoints
         /// <summary>Query types only the API's own endpoints run (they filter the
         /// reply); refused on the general app route.</summary>
         internal static readonly HashSet<string> ApiOnlyQueryTypes =
-            new(StringComparer.OrdinalIgnoreCase) { "getRunEmailContext" };
+            new(StringComparer.OrdinalIgnoreCase) { "getRunEmailContext", "queueVersionEmail" };
 
         /// <summary>
         /// Removes every rowset that carries device push tokens (an FcmToken

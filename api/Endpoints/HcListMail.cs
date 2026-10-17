@@ -47,7 +47,7 @@ namespace HcWebApi.Endpoints
         /// <param name="ct">Cancels the send, including the SDK's own wait on a 429:
         /// it honours the quota's Retry-After, which can be most of an hour, so a
         /// caller with someone waiting passes a short deadline (InviteEmails).</param>
-        public static async Task SendAsync(string to, string subject, string html, string plainText, string? unsubscribeUrl, string? kennelSlug = null, string? kennelShortName = null, CancellationToken ct = default)
+        public static async Task SendAsync(string to, string subject, string html, string plainText, string? unsubscribeUrl, string? kennelSlug = null, string? kennelShortName = null, CancellationToken ct = default, string? replyTo = null)
         {
             // A made-up address reaches nobody (GeneratedEmail): never sent to. The
             // senders' lists already leave these out; this is the backstop.
@@ -66,7 +66,7 @@ namespace HcWebApi.Endpoints
             {
                 if (kennelFrom != null)
                 {
-                    await client.Value.SendAsync(WaitUntil.Started, Build(kennelFrom, to, content, unsubscribeUrl), ct);
+                    await client.Value.SendAsync(WaitUntil.Started, Build(kennelFrom, to, content, unsubscribeUrl, replyTo), ct);
                     return;
                 }
             }
@@ -76,7 +76,7 @@ namespace HcWebApi.Endpoints
                 // email, and make the username now so the next one is the kennel's.
                 _ = EnsureKennelSenderAsync(kennelSlug!, kennelShortName);
             }
-            await client.Value.SendAsync(WaitUntil.Started, Build(From, to, content, unsubscribeUrl), ct);
+            await client.Value.SendAsync(WaitUntil.Started, Build(From, to, content, unsubscribeUrl, replyTo), ct);
         }
 
         /// <summary>
@@ -130,9 +130,12 @@ namespace HcWebApi.Endpoints
             return local.Length == 0 || at < 0 ? null : $"runs-{local}{From[at..]}";
         }
 
-        private static EmailMessage Build(string from, string to, EmailContent content, string? unsubscribeUrl)
+        private static EmailMessage Build(string from, string to, EmailContent content, string? unsubscribeUrl, string? replyTo = null)
         {
             var message = new EmailMessage(from, new EmailRecipients(new[] { new EmailAddress(to) }), content);
+            // runs@ has no mailbox: an email that invites a reply names one that is read
+            // (noreply@, the shared mailbox James reads — E19.F2.S1).
+            if (replyTo != null) message.ReplyTo.Add(new EmailAddress(replyTo));
             if (unsubscribeUrl != null)
             {
                 message.Headers["List-Unsubscribe"] = $"<{unsubscribeUrl}>";

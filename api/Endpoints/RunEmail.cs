@@ -498,7 +498,7 @@ namespace HcWebApi.Endpoints
             return (subject.Length > MaxSubject ? subject[..MaxSubject] : subject, prose.Length > MaxBody ? prose[..MaxBody] : prose);
         }
 
-        private static async Task LogAiUsageAsync(string cs, Guid kennelId, string model, string outcome, int pt, int ct, long ms)
+        internal static async Task LogAiUsageAsync(string cs, Guid kennelId, string model, string outcome, int pt, int ct, long ms, string feature = "run-email")
         {
             // Same table and prices as the runs-page import, so the AI monitor sees it.
             decimal perMIn = decimal.TryParse(Environment.GetEnvironmentVariable("AZURE_OPENAI_USD_PER_M_IN"), NumberStyles.Number, CultureInfo.InvariantCulture, out decimal pi) ? pi : 0.15m;
@@ -509,7 +509,7 @@ namespace HcWebApi.Endpoints
                 await conn.OpenAsync();
                 using var cmd = new SqlCommand("HC6.nonApi_logAiUsage", conn) { CommandType = CommandType.StoredProcedure };
                 cmd.Parameters.Add("@sessionId", SqlDbType.UniqueIdentifier).Value = Guid.NewGuid();
-                cmd.Parameters.Add("@feature", SqlDbType.NVarChar, -1).Value = "run-email";
+                cmd.Parameters.Add("@feature", SqlDbType.NVarChar, -1).Value = feature;
                 cmd.Parameters.Add("@kennelId", SqlDbType.UniqueIdentifier).Value = kennelId;
                 cmd.Parameters.Add("@model", SqlDbType.NVarChar, -1).Value = model;
                 cmd.Parameters.Add("@promptTokens", SqlDbType.Int).Value = pt;
