@@ -1,0 +1,124 @@
+{
+  "schema": "HC6",
+  "name": "hcportal_queueVersionEmail",
+  "version": "1.0.0",
+  "description": "HC Admin Tools > Version email (E19.F3.S3): records who a send goes to BEFORE anything is sent — one HC.EmailLog row per eligible person (HC6.VersionEmailAudience), EmailKind 2, Status 0 — under the portal-minted @sendId. API-ONLY: called by the VersionEmail route with the portal's token; refused on the general portal route (ApiOnlyQueryTypes). @test = 1 queues nothing and returns the caller's own address. Auth: HC6.ValidatePortalAuth; the caller must hold a live HC.PlatformAdmin row with CanManageNewsflash = 1. Idempotency: client-id (@sendId; a repeat queues nothing new; an app lock serialises sends so the 30-day rule cannot be passed twice).",
+  "parameters": [
+    {
+      "name": "deviceId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal device auth."
+    },
+    {
+      "name": "accessToken",
+      "type": "NVARCHAR(1000)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Portal token; standard param string."
+    },
+    {
+      "name": "sendId",
+      "type": "UNIQUEIDENTIFIER",
+      "nullable": true,
+      "mapsToColumn": "EmailLog.SendId",
+      "description": "Minted by the portal once per press of Send; required unless @test."
+    },
+    {
+      "name": "builds",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "'|'-delimited build numbers."
+    },
+    {
+      "name": "days",
+      "type": "INT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "Last sign-in within this many days."
+    },
+    {
+      "name": "subject",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "mapsToColumn": "EmailLog.Subject",
+      "description": "1..250 characters."
+    },
+    {
+      "name": "test",
+      "type": "SMALLINT",
+      "nullable": true,
+      "mapsToColumn": null,
+      "description": "1 = Send test: nothing queued."
+    }
+  ],
+  "rowsets": [
+    {
+      "index": 0,
+      "name": "Envelope",
+      "description": "{ Success, ErrorMessage }.",
+      "columns": [
+        {
+          "name": "Success",
+          "type": "INT",
+          "nullable": false,
+          "description": "1 or 0"
+        },
+        {
+          "name": "ErrorMessage",
+          "type": "NVARCHAR(255)",
+          "nullable": true,
+          "description": "Why, on 0"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Queue",
+      "description": "On success.",
+      "columns": [
+        {
+          "name": "Queued",
+          "type": "INT",
+          "nullable": false,
+          "description": "Rows for this send"
+        },
+        {
+          "name": "NewlyQueued",
+          "type": "INT",
+          "nullable": false,
+          "description": "0 on a repeat"
+        },
+        {
+          "name": "Email",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "The caller's, for a test"
+        },
+        {
+          "name": "FirstName",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "The caller's"
+        },
+        {
+          "name": "Name",
+          "type": "NVARCHAR(250)",
+          "nullable": false,
+          "description": "The caller's DisplayName"
+        }
+      ]
+    }
+  ],
+  "sideEffects": [],
+  "codeSmells": [],
+  "breakingChangeRules": [
+    "Never remove a column from any rowset",
+    "Never rename a parameter",
+    "Never change a parameter type",
+    "Never change a sentinel value meaning",
+    "Never change errorType integer codes without updating all callers"
+  ]
+}
