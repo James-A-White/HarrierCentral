@@ -417,7 +417,14 @@ class TrackImportService {
       } catch (_) {}
       throw TrackImportException(msg);
     }
-    return TrackImportJob.fromJson(jsonDecode(r.body) as Map<String, dynamic>);
+    final dynamic body = jsonDecode(r.body);
+    // A reply without a job id is not a job (an error envelope reached the
+    // phone as 200 before API +120 and failed the cast with "Null is not a
+    // subtype of String"): say so plainly and keep polling.
+    if (body is! Map<String, dynamic> || body['jobId'] == null) {
+      throw const TrackImportException('The import is still being processed.');
+    }
+    return TrackImportJob.fromJson(body);
   }
 
   /// Position only — the list form, which carries no result JSON, so it is
