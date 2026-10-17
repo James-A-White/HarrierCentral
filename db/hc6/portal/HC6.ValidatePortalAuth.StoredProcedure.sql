@@ -33,6 +33,9 @@ AS
 -- Returns: Nothing. Caller checks @errorMessage OUTPUT parameter.
 -- Author: Harrier Central
 -- Created: 2026-03-15
+-- 2026-10-16: a device with an empty DeviceSecret (service accounts) is
+--   refused for every SP except hcportal_confirmAuthentication with a
+--   non-empty @callerParamString (the sign-in poll's authCode).
 -- Breaking Changes vs original (single-SP inline auth):
 --   - @publicHasherId replaced with @deviceId (device-bound auth)
 --   - @hasherId OUTPUT added: callers no longer resolve hasher from publicHasherId
@@ -75,6 +78,21 @@ WHERE d.id = @deviceId;
 IF @hasherId IS NULL
 BEGIN
     SET @errorMessage = 'Authentication failed';
+    RETURN;
+END
+
+-- A device with NO secret (the two service accounts) may do exactly one
+-- thing: complete a portal sign-in, whose real proof is the single-use
+-- authCode it carries (2026-10-16, permissions audit). Everything else is
+-- refused — without this, a token for ANY portal SP could be built from the
+-- service account's public device id alone, and the callerType bypasses
+-- below opened every kennel.
+IF (LEN(ISNULL(@deviceSecret, '')) = 0
+    AND NOT (@callerProcName = 'hcportal_confirmAuthentication'
+             AND LEN(ISNULL(CAST(@callerParamString AS NVARCHAR(500)), '')) > 0))
+BEGIN
+    SET @errorMessage = 'Authentication failed';
+    SET @hasherId = NULL;
     RETURN;
 END
 
