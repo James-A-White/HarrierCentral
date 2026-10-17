@@ -20,7 +20,7 @@ const String _kDraftSubject = 'Please update Harrier Central — your version is
 
 const String _kDraftBody = '''Hi {hashName},
 
-You're using an older version of the Harrier Central app. We're retiring it to keep everyone's accounts and run payments safe, and after 1 December 2026 it will stop working.
+You're using an older version of the Harrier Central app. We're retiring it, and after 1 December 2026 it will stop working.
 
 The new version is free: update the app from the App Store or Google Play with the button below. Your runs, kennels and history are all still there.
 
@@ -30,7 +30,7 @@ $_kFeaturesHeading
 If anything doesn't work after updating, just reply to this email and we'll sort it out.
 
 On-On,
-James, Harrier Central''';
+{senderHashName}''';
 
 class VersionEmailController extends GetxController {
   final TextEditingController subject = TextEditingController(text: _kDraftSubject);
@@ -386,7 +386,8 @@ class _Editor extends StatelessWidget {
           decoration: const InputDecoration(
             labelText: 'Email',
             helperText: 'Plain text. A blank line starts a paragraph; links become clickable; '
-                '{hashName} / {firstName} are each person\'s hash name / first name. The store buttons are added under the text.',
+                '{hashName} / {firstName}: each person\'s hash name / first name. {senderHashName}: yours. '
+                'The store buttons are added under the text.',
             helperMaxLines: 2,
             alignLabelWithHint: true,
             border: OutlineInputBorder(),
