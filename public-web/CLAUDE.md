@@ -272,6 +272,10 @@ Based on Brighton Hash's information depth as the target.
 | About | Club history, mis-management contacts, what is hashing? |
 | Join | New runner guide |
 
+> **Kennel stats are public (James, 2026-10-17).** `/<slug>/stats` — the
+> roster with hash names and run counts — is public kennel information, not a
+> member page. Real names are not secret either (root CLAUDE.md data rule).
+
 ### Member Pages (login required)
 
 | Page | Key Content |
