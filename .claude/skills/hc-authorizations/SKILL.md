@@ -95,6 +95,48 @@ SuperAdmin** (roles).
 
 ---
 
+## Who owns a hasher's record (James, 2026-09-23 and 2026-10-17)
+
+A permission says what a role may do in a kennel. **Ownership** says whose
+data a hasher record is, and it overrides permissions:
+
+1. **A kennel adds a hasher → that kennel's admins own the record.** They may
+   edit its email, names, hash name and the rest, because most hashers added
+   by a kennel will never sign in, and the kennel still has to keep their
+   records and run counts correct.
+2. **The moment that hasher accesses their own account — app OR web (or the
+   portal) — they own their data, and only they may change it.** From then on
+   no kennel admin, of any kennel, edits their personal record. Kennel-scoped
+   facts stay the kennel's: membership dates, discounts, roles, attendance,
+   payments and run counts belong to the kennel's records, not the person's.
+
+Why it matters: whoever can set a hasher's email can have that hasher's
+sign-in code sent to themselves — editing someone else's email is an account
+takeover. The rule is what keeps "fix a placeholder email" from becoming that.
+
+**As the code applies it today** (`hcportal_updateKennelHasher`,
+`hcapp_addEditUser`, `hcapp_getInviteCode`, `hcportal_matchImportRows`):
+
+| Question | Today's test |
+|---|---|
+| Has the hasher accessed their account? | `HC.Hasher.LastLoginDateTime IS NOT NULL` **or** any `HC.Device` row for them (web and portal sign-ins create a Device but do not stamp the date; the app does both) |
+| Which kennel owns a never-signed-in record? | Their `HomeKennelId`; when that is NULL, a kennel that holds their `HC.HasherKennelMap` row (121 of BMPH3's 199 added hashers had no home kennel) |
+| Which fields are "personal"? | `FirstName`, `LastName`, `HashName`, `Email` |
+| Who may still override? | Platform support only — `HC.PlatformAdmin` (2026-10-16). NOT the kennel Super Admin flag: it is per kennel and ~290 hashers hold it |
+
+**Rules for new code:**
+- Any SP, endpoint or screen that lets one user write ANOTHER user's
+  `HC.Hasher` personal columns applies both tests: the target has never
+  accessed their account, AND the caller manages members of the kennel that
+  owns the record. Mirror the refusal message in the UI ("X has signed in to
+  Harrier Central, so only they can change their name, hash name or email").
+- The caller's own record is always theirs (`target = caller`).
+- Never let a client choose the kennel the ownership test runs against
+  without checking the target belongs to it (the 2026-10-16 audit found this).
+- Anything that creates an `HC.Device` for a hasher hands their record to
+  whoever holds that device — device registration must prove it is the person
+  (invite/sign-in code, QR approval, passkey), never accept a bare user id.
+
 ## Where gates live
 
 - **Server (authoritative):** every `HC6.hcapp_*` SP. `EXEC HC6.ValidateAppAuth` proves

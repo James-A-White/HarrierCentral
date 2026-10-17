@@ -162,6 +162,18 @@ These are firm decisions that must not be revisited or worked around:
   a cost review or a "what is deployed" answer. TSA's own deploy
   (`reference_tsaeats_deploy`) is never run.
 
+- **A hasher's record belongs to the kennel that added them until the hasher
+  accesses their own account (app or web) — then it is theirs alone (James,
+  2026-09-23, restated 2026-10-17).** Kennel admins may edit a never-signed-in
+  hasher's email, names and hash name, because many will never sign in and the
+  kennel must keep their records and run counts. After the first sign-in no
+  admin of any kennel changes their personal record; kennel-scoped facts
+  (membership, discounts, roles, attendance, payments, run counts) stay the
+  kennel's. Any code that writes ANOTHER user's `HC.Hasher` personal columns
+  must apply this — editing someone's email is an account takeover. The exact
+  tests and the SPs that apply them: `hc-authorizations` skill, "Who owns a
+  hasher's record".
+
 - **Never convert a `StatelessWidget` to `StatefulWidget` without consulting
   James first.** The preferred direction is the opposite — migrate
   `StatefulWidget` toward `StatelessWidget` + GetX controller wherever the
