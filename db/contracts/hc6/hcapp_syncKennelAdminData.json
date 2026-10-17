@@ -1165,6 +1165,12 @@
           "description": "Whether the hasher was a hare for this event."
         },
         {
+          "name": "hareAppointedBy",
+          "type": "UNIQUEIDENTIFIER",
+          "nullable": true,
+          "description": "The admin who appointed this hare (E8.F5.S6); NULL = not appointed (self-declared hares get no hare rights)."
+        },
+        {
           "name": "eventNotificationPreference",
           "type": "SMALLINT",
           "nullable": true,
