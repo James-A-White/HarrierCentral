@@ -44,16 +44,19 @@ class KennelListQueryExtenstions {
   String? originalDisplayName;
 
   static KennelListQueryExtenstions fromMap(Map<String, dynamic> map) {
+    // Numbers from SQLite arrive as int when whole (a stored 51 is an int,
+    // not 51.0): cast through num, or the row fails to parse and the kennel
+    // drops out of the list (83 sessions on 1392-1471 since 2026-10-14).
     final KennelListQueryExtenstions item = KennelListQueryExtenstions(
       location: map['location'],
-      distToKennel: map['distToKennel'],
+      distToKennel: (map['distToKennel'] as num?)?.toDouble(),
       nextRunDate: map['nextRunDate'],
       lastRunDate: map['lastRunDate'],
       digitsAfterDecimal: map['digitsAfterDecimal'],
       currencySymbol: map['currencySymbol'],
       distanceUnitsPref: map['distanceUnitsPref'],
-      cityLat: map['cityLat'],
-      cityLon: map['cityLon'],
+      cityLat: (map['cityLat'] as num?)?.toDouble(),
+      cityLon: (map['cityLon'] as num?)?.toDouble(),
       cityName: map['cityName'],
       regionName: map['regionName'],
       regionAbbreviation: map['regionAbbreviation'],
