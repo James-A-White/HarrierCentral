@@ -119,6 +119,8 @@ BEGIN TRY
         RsvpState         = CASE WHEN COALESCE(k.RsvpState, 0) = 0 THEN m.RsvpState ELSE k.RsvpState END,
         Rsvp              = COALESCE(k.Rsvp, m.Rsvp),
         IsHare            = CASE WHEN m.IsHare = 1 THEN 1 ELSE k.IsHare END,
+        -- An appointment on either twin carries over (E8.F5.S6).
+        HareAppointedBy   = COALESCE(k.HareAppointedBy, m.HareAppointedBy),
         UserStartEvent    = COALESCE(k.UserStartEvent, m.UserStartEvent),
         UserEndEvent      = COALESCE(k.UserEndEvent, m.UserEndEvent),
         EventCountOverride = COALESCE(NULLIF(k.EventCountOverride, 0), m.EventCountOverride),
