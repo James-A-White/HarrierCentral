@@ -76,6 +76,11 @@ const String BASE_GET_PORTAL_UPLOAD_SAS_URL =
 const String BASE_RUN_EMAIL_URL =
     'https://harriercentralpublicapi.azurewebsites.net/api/RunEmail';
 
+// HC Admin Tools › Version email (E19.F3.S3): test, send and the AI feature
+// list. Token proc name: hcportal_queueVersionEmail, standard token.
+const String BASE_VERSION_EMAIL_URL =
+    'https://harriercentralpublicapi.azurewebsites.net/api/VersionEmail';
+
 // Members › Import from file and Email invite codes (E2.F2.S6, 2026-10-10).
 // Tokens: hcportal_authorizeRosterImport / hcportal_getInviteEmailList, with
 // the kennel-scoped paramString '<deviceSecret>:<publicKennelId>'.

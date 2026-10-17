@@ -54,6 +54,13 @@ class HcAdminToolsPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
+                _ToolCard(
+                  title: 'Version email',
+                  subtitle: 'Email everyone still on an app version, with store buttons',
+                  icon: MaterialCommunityIcons.cellphone_arrow_down,
+                  onTap: () => Get.to<VersionEmailPage>(VersionEmailPage.new),
+                ),
+                const SizedBox(height: 16),
               ],
               if (canEditKennel) ...[
                 _ToolCard(
