@@ -58,6 +58,17 @@ AS
 -- =====================================================================
 SET NOCOUNT ON;
 
+-- @procName and @param are for the SPs that hand off to this one (a write
+-- SP passes its own name and token context). From a client — the API runs
+-- this at nesting level 1 — they are ignored (2026-10-16, permissions
+-- audit): a caller could otherwise name any procedure to skip the
+-- permission check below, or supply @param to sign without the device secret.
+IF (@@NESTLEVEL <= 1)
+BEGIN
+    SET @procName = NULL;
+    SET @param    = NULL;
+END
+
 DECLARE @procName_self NVARCHAR(128) = OBJECT_NAME(@@PROCID);
 DECLARE @effectiveProcName NVARCHAR(128) = COALESCE(@procName, @procName_self);
 
