@@ -1,3 +1,8 @@
+1.0.61+114
+    • VersionEmail route (E19.F3.S3): platform admins email everyone still on an app build — test to self, send queued in HC.EmailLog before anything goes and sent in claimed batches through the list route, App Store / Google Play buttons per phone, Reply-To noreply@; AI top-5 features since a build from the public app CHANGELOG
+    • Beta Room assistant: on its last tool round it is asked to finish instead of a forced tool_choice (the model refused it with a 400)
+    • Runs-page import: 'X for Y' is gather X; a page's start / set-off time is read back to the gather with the kennel's pack-off (which the model now gets)
+
 1.0.61+113
     • Replies never carry other people's device push tokens (chat sends, songs, mark-read; app and portal routes) — push code works from its own copy
     • API-only query types (getRunEmailContext) refused on the general app and portal routes
