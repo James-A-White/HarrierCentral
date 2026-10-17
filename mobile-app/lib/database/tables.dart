@@ -414,6 +414,21 @@ class Tables {
       appliedAtInt: 0,
     ),
 
+    // MIGRATION 564 — who appointed a hare (E8.F5.S6, James 2026-10-17) =
+    // dev's 545: hasherEventMap.hareAppointedBy in all three domains, and the
+    // user table's sync watermark zeroed so rows kept appointed on the server
+    // are re-sent. The model and UI arrive with the next dev merge.
+    MigrationsModel(
+      dbVersion: 564,
+      migrationText: '''
+        ALTER TABLE ${EnumDataTables.hasherEventMap.commonTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colHareAppointedBy} TEXT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.kennelTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colHareAppointedBy} TEXT;
+        ALTER TABLE ${EnumDataTables.hasherEventMap.eventTableName} ADD COLUMN ${tableModel.hasherEventMapTableHelper.colHareAppointedBy} TEXT;
+        UPDATE ${EnumDataTables.hasherEventMap.commonTableName} SET ${tableModel.hasherEventMapTableHelper.colUpdatedAtValue} = 0;
+      ''',
+      appliedAtInt: 0,
+    ),
+
     // MIGRATION 563 — a run's pack-off time (E3.F1.S6, James 2026-10-14):
     // HC.Kennel.PackOffMinutes (the kennel's default) and
     // HC.Event.PackOffMinutes (a run's override), both minutes after the
