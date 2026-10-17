@@ -230,9 +230,8 @@ BEGIN
     -- Authorization: feature "Manage attendance" (see /hc-authorizations).
     -- Run-scoped: a hare for THIS event may set attendance for it.
     DECLARE @setAttAllowed SMALLINT;
-    DECLARE @setAttIsHare SMALLINT = CASE WHEN EXISTS (
-            SELECT 1 FROM HC.HasherEventMap
-            WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1) THEN 1 ELSE 0 END;
+    -- Hare rights need an APPOINTED hare (E8.F5.S6, 2026-10-17): HC6.IsAppointedHare.
+    DECLARE @setAttIsHare SMALLINT = HC6.IsAppointedHare(@userId, @eventId);
     EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @setAttKennelId, @functionKey = 'manageAttendance', @isHareOfEvent = @setAttIsHare, @allowed = @setAttAllowed OUTPUT;
     IF (@setAttAllowed = 0)
     BEGIN
@@ -259,6 +258,22 @@ SELECT
     @kennelId  = evt.KennelId,
     @eventName = CASE WHEN evt.UseFbRunDetails = 0 THEN evt.EventName ELSE evt.FbEventName END
 FROM HC.Event evt WHERE evt.id = @eventId;
+
+-- ---------------------------------------------------------------
+-- Who appoints a hare (E8.F5.S6, James 2026-10-17)
+-- ---------------------------------------------------------------
+-- Marking someone hare APPOINTS them (HareAppointedBy, which carries the
+-- run's hare rights) only when the caller manages attendance by role or
+-- flag — not by being a hare of the run themselves. A hasher marking
+-- themselves hare is recorded as haring (history) but not appointed.
+DECLARE @appointer UNIQUEIDENTIFIER = NULL;
+IF (@isHare = 1)
+BEGIN
+    DECLARE @apptAllowed SMALLINT = 0;
+    EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId, @functionKey = 'manageAttendance',
+         @isHareOfEvent = 0, @allowed = @apptAllowed OUTPUT;
+    IF (@apptAllowed = 1) SET @appointer = @userId;
+END
 
 -- ---------------------------------------------------------------
 -- Write HEM (transacted)
@@ -295,6 +310,12 @@ BEGIN TRY
                 AttendenceState = @attendenceState,
                 RsvpState       = 3,
                 IsHare          = COALESCE(@isHare, IsHare),
+                -- Un-marked: no longer appointed. Marked by an admin:
+                -- appointed (the first appointer is kept). Self-marked:
+                -- unchanged — never appoints, never un-appoints.
+                HareAppointedBy = CASE WHEN @isHare = 0 THEN NULL
+                                       WHEN @isHare = 1 AND @appointer IS NOT NULL THEN COALESCE(HareAppointedBy, @appointer)
+                                       ELSE HareAppointedBy END,
                 updatedAt       = GETDATE()
             WHERE id = @hemId;
 
@@ -306,13 +327,14 @@ BEGIN TRY
 
             INSERT INTO HC.HasherEventMap
                 ([id], [EventId], [KennelId], [UserId],
-                 [AttendenceState], [RsvpState], [IsHare], [VirginVisitorType], [updatedAt])
+                 [AttendenceState], [RsvpState], [IsHare], [HareAppointedBy], [VirginVisitorType], [updatedAt])
             -- IsHare honours @isHare on a new row too (2026-10-13); it was
             -- written 0 regardless, so the Event.Hares rebuild below missed
             -- the new hare. NULL (keep existing) means not a hare here.
             VALUES
                 (@hemId, @eventId, @kennelId, @hasherId,
-                 @attendenceState, 3, COALESCE(@isHare, 0), 0, GETDATE());
+                 @attendenceState, 3, COALESCE(@isHare, 0),
+                 CASE WHEN @isHare = 1 THEN @appointer END, 0, GETDATE());
 
             SET @recalculateRunNumbers = 1;
         END
