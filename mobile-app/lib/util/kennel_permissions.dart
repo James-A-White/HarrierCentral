@@ -39,6 +39,10 @@ enum KennelFeature {
   // calendar), not per-run admin. Lives in the kennelTools area.
   createEditRuns(0x00080346, authCanManageRuns, true, PermissionArea.kennelTools),
   printQrCodes(0x00080306, authCanManageRuns, true, PermissionArea.runAdmin),
+  // Add or set a run's official trail (E5.F6.S6; James 2026-10-17): GM (0x02) |
+  // VGM (0x04) | Hare Raiser (0x200) and the run's APPOINTED hare — no flag.
+  // Mirrors the HC.RolePermission rows for manageOfficialTrail.
+  manageOfficialTrail(0x00000206, 0, true, PermissionArea.kennelTools),
   manageAttendance(0x0008014E, authCanManageRuns, true, PermissionArea.runAdmin),
   copyRsvps(0x00080146, authCanManageRuns, false, PermissionArea.runAdmin),
   packTrackTrim(0x00000106, authCanManageRuns, false, PermissionArea.runAdmin),

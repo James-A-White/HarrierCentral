@@ -11,6 +11,9 @@ abstract class CheckInPackModel with _$CheckInPackModel implements BaseModel {
     @Default(0) int isMember,
     String? membershipExpirationDate,
     @Default(0) int isHare,
+    // 1 = an admin appointed this hare (E8.F5.S6); a hare who marked
+    // themselves is 0 until an admin taps Will hare for them.
+    @Default(0) int isAppointedHare,
     int? isPaid,
     @Default('') String nameForDisplay,
     @Default('') String nameForSort,

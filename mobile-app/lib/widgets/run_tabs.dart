@@ -144,11 +144,12 @@ class RunTabs extends StatelessWidget {
               ),
             ),
           // The run's official trail (E5.F6.S6): scout it, upload a file,
-          // remove a lane. Mirrors hcapp_setOfficialTrail's createEditRuns
-          // gate, hare-scoped.
+          // remove a lane. Mirrors hcapp_setOfficialTrail's own permission,
+          // manageOfficialTrail (James 2026-10-17: appointed hare, Hare
+          // Raiser, GM, VGM, Super Admin), hare-scoped.
           if (isLoggedIn &&
               canAccessFeature(
-                KennelFeature.createEditRuns,
+                KennelFeature.manageOfficialTrail,
                 appAccessFlags: futureRun.extensions.appAccessFlags,
                 mismanagementRoles: futureRun.extensions.mismanagementRoles,
                 isHareOfEvent: futureRun.extensions.isAppointedHare == 1,

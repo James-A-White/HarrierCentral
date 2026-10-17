@@ -158,6 +158,7 @@ class CheckInPackController extends GetxController
           hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate} AS membershipExpirationDate,
           COALESCE(hkm.${tableModel.hasherKennelMapTableHelper.colFollowing},0) AS isFollowing,
           COALESCE(hem.${tableModel.hasherEventMapTableHelper.colIsHare}, 0) AS isHare,
+          CASE WHEN COALESCE(hem.${tableModel.hasherEventMapTableHelper.colIsHare}, 0) = 1 AND hem.${tableModel.hasherEventMapTableHelper.colHareAppointedBy} IS NOT NULL THEN 1 ELSE 0 END AS isAppointedHare,
           CASE 
               WHEN pay.${tableModel.paymentsTableHelper.colHemId} IS NULL 
               THEN NULL
@@ -339,6 +340,7 @@ class CheckInPackController extends GetxController
           hkm.${tableModel.hasherKennelMapTableHelper.colMembershipExpirationDate} AS membershipExpirationDate,
           hkm.${tableModel.hasherKennelMapTableHelper.colFollowing} AS isFollowing,
           COALESCE(hem.${tableModel.hasherEventMapTableHelper.colIsHare}, 0) AS isHare,
+          CASE WHEN COALESCE(hem.${tableModel.hasherEventMapTableHelper.colIsHare}, 0) = 1 AND hem.${tableModel.hasherEventMapTableHelper.colHareAppointedBy} IS NOT NULL THEN 1 ELSE 0 END AS isAppointedHare,
           CASE 
               WHEN pay.${tableModel.paymentsTableHelper.colHemId} IS NULL 
               THEN NULL

@@ -247,10 +247,16 @@ class PaymentSnackBar extends SnackBar {
                               'images/icons/hare_icon.png',
                               height: 30.0,
                               width: 30.0,
+                              // Yellow: an appointed hare. Orange: a hasher who
+                              // marked themselves hare — haring, but without the
+                              // run's hare rights until an admin taps this to
+                              // appoint them (E8.F5.S6).
                               color:
                                   (((packMember.rsvpState == rsvpYes.value)) &&
                                       ((packMember.isHare == isHareYes.value)))
-                                  ? Colors.yellow
+                                  ? (packMember.isAppointedHare == 1
+                                        ? Colors.yellow
+                                        : Colors.orange)
                                   : Colors.white,
                             ),
 
@@ -267,7 +273,10 @@ class PaymentSnackBar extends SnackBar {
                             },
                           ),
                           Text(
-                            'Will hare',
+                            (packMember.isHare == isHareYes.value &&
+                                    packMember.isAppointedHare != 1)
+                                ? 'Tap to appoint'
+                                : 'Will hare',
                             textAlign: TextAlign.center,
                             style: ts_titleSmallCondensedBold,
                           ),
