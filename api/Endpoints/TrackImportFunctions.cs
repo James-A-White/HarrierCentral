@@ -256,7 +256,10 @@ namespace HcWebApi.Endpoints
                     await TrackImportProcessor.RunSliceAsync(_log, _tables, _blobs, conn, job, SliceBudget);
                 }
 
-                return new OkObjectResult(await ReadJobAsync(conn, deviceId, accessToken, jobId));
+                // Read back WITHOUT re-checking the token: the caller was
+                // authenticated at the start, and after a slice of up to 40 s
+                // the same token can be too old (2026-10-17).
+                return new OkObjectResult(await ReadJobAsync(conn, job.HasherId, jobId));
             }
             catch (Exception ex)
             {
@@ -344,12 +347,11 @@ namespace HcWebApi.Endpoints
         }
 
         /// The job as the app reads it, so one response shape serves polling and processing.
-        private static async Task<object> ReadJobAsync(SqlConnection conn, string deviceId, string accessToken, Guid jobId)
+        private static async Task<object> ReadJobAsync(SqlConnection conn, Guid hasherId, Guid jobId)
         {
-            using SqlCommand cmd = new("[HC6].[hcapp_getTrackImports]", conn) { CommandType = CommandType.StoredProcedure, CommandTimeout = 15 };
-            cmd.Parameters.AddWithValue("@deviceId", deviceId);
-            cmd.Parameters.AddWithValue("@accessToken", accessToken);
+            using SqlCommand cmd = new("[HC6].[nonApi_getTrackImportJob]", conn) { CommandType = CommandType.StoredProcedure, CommandTimeout = 15 };
             cmd.Parameters.AddWithValue("@jobId", jobId);
+            cmd.Parameters.AddWithValue("@hasherId", hasherId);
             using SqlDataReader r = await cmd.ExecuteReaderAsync();
             var row = new Dictionary<string, object?>();
             if (await r.ReadAsync())
