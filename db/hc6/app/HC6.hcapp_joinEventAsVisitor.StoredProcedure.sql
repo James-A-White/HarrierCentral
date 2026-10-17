@@ -83,6 +83,28 @@ BEGIN
     RETURN;
 END
 
+-- Gate (2026-10-16, permissions audit): adding an attendee is managing the
+-- run's attendance — the check-in screen's own feature — and this SP had no
+-- check at all, so any signed-in hasher could add visitors to any run.
+DECLARE @visKennelId UNIQUEIDENTIFIER = (SELECT e.KennelId FROM HC.Event e WHERE e.id = @eventId);
+DECLARE @visIsHare SMALLINT = CASE WHEN EXISTS (SELECT 1 FROM HC.HasherEventMap
+        WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1) THEN 1 ELSE 0 END;
+DECLARE @visAllowed SMALLINT = 0;
+IF (@visKennelId IS NOT NULL)
+    EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @visKennelId, @functionKey = 'manageAttendance',
+         @isHareOfEvent = @visIsHare, @allowed = @visAllowed OUTPUT;
+IF (@visAllowed = 0)
+BEGIN
+    SET @errorId = NEWID();
+    INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+    VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Not authorised',
+            CONCAT('joinEventAsVisitor event=', COALESCE(CAST(@eventId AS NVARCHAR(40)), 'null')), @procName, @userId);
+    SELECT 0 AS success, 1340 AS errorCode, 13 AS errorType;
+    SELECT @errorId AS errorId, 13 AS errorType, 1340 AS errorCode, 'Not authorised' AS errorTitle,
+           'You cannot add attendees to this run.' AS errorUserMessage, @procName AS errorProc;
+    RETURN;
+END
+
 -- ---------------------------------------------------------------
 -- Validate parameters
 -- ---------------------------------------------------------------
