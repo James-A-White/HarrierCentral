@@ -368,6 +368,22 @@ BEGIN TRY
                     RETURN;
                 END
 
+                -- A field sent with the value it already has is not a change
+                -- (2026-10-17). The app's admin profile page sends every name
+                -- field on every save, so without this the lock below refused
+                -- an admin fixing a signed-in hasher's run counts. Compared
+                -- byte for byte (BIN2), so a change of case or accent is
+                -- still a change.
+                SELECT @firstName = CASE WHEN @firstName COLLATE Latin1_General_BIN2 = h.FirstName COLLATE Latin1_General_BIN2 THEN NULL ELSE @firstName END,
+                       @lastName  = CASE WHEN @lastName  COLLATE Latin1_General_BIN2 = h.LastName  COLLATE Latin1_General_BIN2 THEN NULL ELSE @lastName  END,
+                       @hashName  = CASE WHEN @hashName  COLLATE Latin1_General_BIN2 = h.HashName  COLLATE Latin1_General_BIN2 THEN NULL ELSE @hashName  END,
+                       @email     = CASE WHEN @email     COLLATE Latin1_General_BIN2 = h.Email     COLLATE Latin1_General_BIN2 THEN NULL ELSE @email     END,
+                       @photo     = CASE WHEN @photo     COLLATE Latin1_General_BIN2 = h.Photo     COLLATE Latin1_General_BIN2 THEN NULL ELSE @photo     END,
+                       @preferences = CASE WHEN @preferences = h.Preferences THEN NULL ELSE @preferences END,
+                       @nameDisplayPreference = CASE WHEN @nameDisplayPreference = h.NameDisplayPreference THEN NULL ELSE @nameDisplayPreference END,
+                       @includeInGlobalHashDirectory = CASE WHEN @includeInGlobalHashDirectory = h.IncludeInGlobalHashDirectory THEN NULL ELSE @includeInGlobalHashDirectory END
+                FROM HC.Hasher h WHERE h.id = @targetUserId;
+
                 -- The hasher's OWN record once they have signed in (James,
                 -- 2026-10-17): names, email, photo and their settings —
                 -- not just the identity fields. Kennel-scoped facts (the
