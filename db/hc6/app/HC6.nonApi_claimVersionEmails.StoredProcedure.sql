@@ -10,7 +10,7 @@ AS
 --   same send — a retried press of Send, a restarted instance — split the
 --   rows and never mail one person twice. Returns what the email needs.
 -- Parameters: @sendId; @take (1..50).
--- Returns: rowset 0 — { EmailLogId, Email, FirstName, Subject, IsIos,
+-- Returns: rowset 0 — { EmailLogId, Email, FirstName, HashName, Subject, IsIos,
 --   IsAndroid } — IsIos / IsAndroid: the person has an iPhone / Android
 --   phone on record (which store buttons the email shows).
 -- Author: Harrier Central
@@ -35,6 +35,8 @@ BEGIN TRY
     SELECT c.id AS EmailLogId,
            h.Email,
            COALESCE(NULLIF(LTRIM(RTRIM(h.FirstName)), ''), NULLIF(LTRIM(RTRIM(h.HashName)), ''), '') AS FirstName,
+           -- {hashName}: the hash name, else the first name (2026-10-17).
+           COALESCE(NULLIF(LTRIM(RTRIM(h.HashName)), ''), NULLIF(LTRIM(RTRIM(h.FirstName)), ''), '') AS HashName,
            c.subject AS Subject,
            CAST(CASE WHEN EXISTS (SELECT 1 FROM HC.Device d WHERE d.UserId = c.userId AND d.IsMobile = 1
                                   AND d.removed = 0 AND d.OperatingSystem IN ('iOS', 'iPadOS'))
