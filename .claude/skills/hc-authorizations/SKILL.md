@@ -120,9 +120,9 @@ takeover. The rule is what keeps "fix a placeholder email" from becoming that.
 | Question | Today's test |
 |---|---|
 | Has the hasher accessed their account? | `HC.Hasher.LastLoginDateTime IS NOT NULL` **or** any `HC.Device` row for them (web and portal sign-ins create a Device but do not stamp the date; the app does both) |
-| Which kennel owns a never-signed-in record? | Their `HomeKennelId`; when that is NULL, a kennel that holds their `HC.HasherKennelMap` row (121 of BMPH3's 199 added hashers had no home kennel) |
-| Which fields are "personal"? | `FirstName`, `LastName`, `HashName`, `Email` |
-| Who may still override? | Platform support only — `HC.PlatformAdmin` (2026-10-16). NOT the kennel Super Admin flag: it is per kennel and ~290 hashers hold it |
+| Which kennel owns a never-signed-in record? | Their `HomeKennelId`; when that is NULL, ANY kennel that holds their `HC.HasherKennelMap` row (121 of BMPH3's 199 added hashers had no home kennel) — confirmed by James 2026-10-17 |
+| Which fields are "personal"? | `FirstName`, `LastName`, `HashName`, `Email`, `Photo`, `Preferences` (their notification and other settings), `NameDisplayPreference`, `DirectoryVisibility` (who can look them up — its own SP, self-only) — James, 2026-10-17: after sign-in ALL of these are the hasher's alone |
+| Who may still override? | Platform support only — `HC.PlatformAdmin` (2026-10-16; kept for support by James 2026-10-17, e.g. a hasher locked out of an old email). NOT the kennel Super Admin flag: it is per kennel and ~290 hashers hold it |
 
 **Rules for new code:**
 - Any SP, endpoint or screen that lets one user write ANOTHER user's
@@ -131,6 +131,9 @@ takeover. The rule is what keeps "fix a placeholder email" from becoming that.
   owns the record. Mirror the refusal message in the UI ("X has signed in to
   Harrier Central, so only they can change their name, hash name or email").
 - The caller's own record is always theirs (`target = caller`).
+- Deliberate exceptions, not personal edits: `nonApi_replaceBrokenPhoto` (a
+  system repair of a photo whose blob is gone) and
+  `hcportal_setHasherNotesSuppression` (a moderation switch).
 - Never let a client choose the kennel the ownership test runs against
   without checking the target belongs to it (the 2026-10-16 audit found this).
 - Anything that creates an `HC.Device` for a hasher hands their record to

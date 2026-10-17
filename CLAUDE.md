@@ -165,9 +165,10 @@ These are firm decisions that must not be revisited or worked around:
 - **A hasher's record belongs to the kennel that added them until the hasher
   accesses their own account (app or web) — then it is theirs alone (James,
   2026-09-23, restated 2026-10-17).** Kennel admins may edit a never-signed-in
-  hasher's email, names and hash name, because many will never sign in and the
+  hasher's email, names, hash name, photo and settings, because many will never sign in and the
   kennel must keep their records and run counts. After the first sign-in no
-  admin of any kennel changes their personal record; kennel-scoped facts
+  admin of any kennel changes their personal record (names, email, photo,
+  settings, who can look them up — platform admins keep a support override); kennel-scoped facts
   (membership, discounts, roles, attendance, payments, run counts) stay the
   kennel's. Any code that writes ANOTHER user's `HC.Hasher` personal columns
   must apply this — editing someone's email is an account takeover. The exact

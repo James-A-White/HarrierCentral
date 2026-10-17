@@ -368,7 +368,13 @@ BEGIN TRY
                     RETURN;
                 END
 
-                IF (@firstName IS NOT NULL OR @lastName IS NOT NULL OR @hashName IS NOT NULL OR @email IS NOT NULL)
+                -- The hasher's OWN record once they have signed in (James,
+                -- 2026-10-17): names, email, photo and their settings —
+                -- not just the identity fields. Kennel-scoped facts (the
+                -- historical run counts below) stay the kennel's.
+                IF (@firstName IS NOT NULL OR @lastName IS NOT NULL OR @hashName IS NOT NULL OR @email IS NOT NULL
+                    OR @photo IS NOT NULL OR @preferences IS NOT NULL OR @nameDisplayPreference IS NOT NULL
+                    OR @includeInGlobalHashDirectory IS NOT NULL)
                 BEGIN
                     DECLARE @tName NVARCHAR(250), @tHome UNIQUEIDENTIFIER, @tSignedIn SMALLINT, @callerIsSuper SMALLINT;
                     SELECT @tName     = COALESCE(NULLIF(h.HashName, ''), NULLIF(LTRIM(RTRIM(CONCAT(h.FirstName, ' ', h.LastName))), ''), 'This hasher'),
@@ -396,7 +402,7 @@ BEGIN TRY
                         SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
                         SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
                                'Only they can change this' AS errorTitle,
-                               @tName + ' has signed in to Harrier Central, so only they can change their name, hash name or email (My Account in the app).' AS errorUserMessage,
+                               @tName + ' has signed in to Harrier Central, so only they can change their details (My Account in the app).' AS errorUserMessage,
                                @procName AS errorProc;
                         RETURN;
                     END
