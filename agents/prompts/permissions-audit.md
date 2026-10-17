@@ -75,7 +75,13 @@ Ignore anything TSA-related entirely and do not mention it.
    removed / GDPR-deleted hashers.
 8. **Real names are not a leak** (James, 2026-10-17): first and last names may
    reach any signed-in user by design. Emails, phones, tokens and secrets are.
-9. **Writes by design open to all** are NOT findings when the product says so:
+9. **Money: see vs change** (James, 2026-10-17): any admin of the kennel may
+   SEE who paid for a run (and how much) — not a finding. Recording,
+   confirming, cancelling or editing a payment, or spending credit, must need
+   the Hash Cash permission; a money write gated on anything weaker (RA,
+   ManageRuns, a hare) IS a finding. A hasher settling their OWN fee is the
+   one self-service exemption.
+10. **Writes by design open to all** are NOT findings when the product says so:
    anyone may post in a kennel's general chat; a hasher's own RSVP,
    preferences and attendance are theirs; public run and kennel details are
    public (the website shows them).

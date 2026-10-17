@@ -140,6 +140,27 @@ takeover. The rule is what keeps "fix a placeholder email" from becoming that.
   whoever holds that device — device registration must prove it is the person
   (invite/sign-in code, QR approval, passkey), never accept a bare user id.
 
+## Money: see vs change (James, 2026-10-17)
+
+- **See:** any admin of the kennel may see who paid for a run (payment
+  reports, run payment lists, run-stats amounts — run editors included,
+  James 2026-10-17).
+- **Change:** recording, confirming, cancelling, editing a payment, and
+  spending a hasher's credit, need the **Hash Cash** permission only.
+  The self-service exemption stays: a hasher may settle their OWN run fee by
+  credit or bank-transfer claim (`hcapp_processPayment`).
+- **Where it stands (live grants, 2026-10-17):** `viewPaymentReport`,
+  `takePayment` and `bulkPayment` all go to the same seven grantors: GM,
+  VGM, RA, Hash Cash, Hash Bank, the Manage hash cash flag, and the run's
+  hare. So seeing is narrower than the rule (other admins cannot see who
+  paid). Whether changing is wider than the rule depends on whether "Hash
+  Cash permissions" means the takePayment grant (as set in the matrix) or
+  only the Hash Cash role and flag. Not yet decided, and nothing has been changed:
+  - what "kennel admin" means for seeing (any office-holder? any
+    AppAccessFlags bit?);
+  - whether GM / VGM / RA / Hash Bank / hares keep the money writes
+    (hares: E8.F5.S6, admin-appointed hares only).
+
 ## Where gates live
 
 - **Server (authoritative):** every `HC6.hcapp_*` SP. `EXEC HC6.ValidateAppAuth` proves
