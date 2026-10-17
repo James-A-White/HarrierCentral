@@ -15,7 +15,7 @@ AS
 --   Reads whichever bitfield the catalog names for that room, across ANY
 --   kennel: a room is global, so holding the role anywhere qualifies. A
 --   'platform' room reads HC.PlatformAdmin instead (2026-09-30) — the
---   0x40000000 flag is the kennel-founder grant held by 294 hashers, so it
+--   0x40000000 flag is the kennel Super Admin flag held by 294 hashers, so it
 --   cannot stand for platform staff. A 'beta' room reads the beta cohort
 --   column on the hasher's own row (HC.Hasher.BetaFeaturesEnabled
 --   non-empty; 2026-10-13, E18.F9) — a hand-kept list, no bitfield.

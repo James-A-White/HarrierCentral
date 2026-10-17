@@ -8,7 +8,7 @@ AS
 --   admins (E12.F7.S1, James 2026-09-30): every live HC.PlatformAdmin row
 --   with the person behind it and the four capabilities the row grants.
 --   HC.PlatformAdmin is the ONLY platform-wide grant — AppAccessFlags
---   0x40000000 is the kennel-founder bit (see /hc-authorizations) — so this
+--   0x40000000 is the kennel Super Admin flag (see /hc-authorizations) — so this
 --   list is who can moderate rooms and DMs, merge accounts, run the
 --   monitor, and shape permissions.
 --   Requires an HC.PlatformAdmin row with CanManagePermissions: the person

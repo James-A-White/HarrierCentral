@@ -71,7 +71,7 @@ SuperAdmin (0x40000000)                                            -- the ONLY a
 ```
 
 ⚠️ **`0x40000000` is kennel-scoped, not platform staff (found 2026-09-30).** It is the
-kennel-FOUNDER grant: `hcportal_approveKennelRequest` gives every new kennel's creator
+kennel's **Super Admin** flag (never call it "founder" — James, 2026-10-17): `hcportal_approveKennelRequest` gives the person who requested a new kennel
 `0x4000003F`, and **294 hashers** hold it on some row. `CheckKennelPermission` reads it on
 THAT kennel's row, so it means "super admin of this kennel". Anything platform-wide —
 who moderates rooms and DMs, who is in the Platform Admins room, who may merge accounts

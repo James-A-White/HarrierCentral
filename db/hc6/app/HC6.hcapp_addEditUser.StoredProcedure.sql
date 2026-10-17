@@ -378,8 +378,8 @@ BEGIN TRY
                                              THEN 1 ELSE 0 END
                     FROM HC.Hasher h WHERE h.id = @targetUserId;
                     -- Platform support only (2026-10-16): the kennel SuperAdmin
-                    -- flag is the FOUNDER grant (~290 hashers) and, tested on
-                    -- ANY row, let any founder rewrite any signed-in hasher's
+                    -- flag is scoped to ONE kennel (~290 hashers hold it) and, tested on
+                    -- ANY row, let any kennel's Super Admin rewrite any signed-in hasher's
                     -- email — an account takeover.
                     SET @callerIsSuper = CASE WHEN EXISTS (SELECT 1 FROM HC.PlatformAdmin pa
                                                            WHERE pa.UserId = @userId AND pa.removed = 0)

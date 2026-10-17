@@ -35,7 +35,7 @@ SET @allowed = 0;
 IF (@userId IS NULL) RETURN;
 
 -- Platform staff moderate everything. This read AppAccessFlags 0x40000000
--- on any kennel row until 2026-09-30 — the kennel-FOUNDER grant, held by
+-- on any kennel row until 2026-09-30 — the KENNEL Super Admin flag, held by
 -- 294 hashers, every one of whom could delete any room or DM message.
 IF EXISTS (SELECT 1 FROM HC.PlatformAdmin pa
            WHERE pa.UserId = @userId AND pa.removed = 0)

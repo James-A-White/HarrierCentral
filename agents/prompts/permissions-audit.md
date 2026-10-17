@@ -25,7 +25,7 @@ Ignore anything TSA-related entirely and do not mention it.
 ### Load first
 - `.claude/skills/hc-authorizations/SKILL.md` — the two bitfields
   (AppAccessFlags, MismanagementRoles), the 0x08 collision, SuperAdmin
-  0x40000000 = kennel-scoped founder grant (NOT platform staff — that is
+  0x40000000 = the kennel's Super Admin flag, scoped to that kennel (NOT platform staff — that is
   `HC.PlatformAdmin`), the stray `0x40000081` mask (should be 0x40000001).
   NOTE: the skill's description of `HC6.CheckKennelPermission` is out of date:
   it now takes `@functionKey` and reads `HC.PermissionFunction` /

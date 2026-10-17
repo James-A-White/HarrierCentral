@@ -347,6 +347,15 @@ or edit at the symbol level.
 
 ## Cross-Cutting Conventions
 
+**Use Harrier Central's own words for roles — never invent one (James,
+2026-10-17).** `AppAccessFlags 0x40000000` is the kennel's **Super Admin**
+flag, scoped to that one kennel. There is no "founder" in Harrier Central:
+never call the bit, or the people who hold it, founders — in replies, code
+comments, contracts, backlog or memory. (Earlier sessions coined it and it
+spread through comments and notes until James stopped it.) If a role or
+concept is not in the code, the matrix (`docs/permissions_matrix.xlsx`) or
+the `hc-authorizations` skill, ask what James calls it rather than naming it.
+
 **Delimited list parameters (SP and Dart):**
 
 When passing a list of values as a delimited string parameter, always use `|` as

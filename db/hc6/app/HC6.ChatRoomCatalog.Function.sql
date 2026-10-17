@@ -19,7 +19,7 @@ AS
 --
 -- GrantColumn is which bitfield on HC.HasherKennelMap decides membership,
 --   and it genuinely differs per room — this is not over-engineering:
---     'flags'    → AppAccessFlags      (0x40000000 = kennel founder/admin)
+--     'flags'    → AppAccessFlags      (0x40000000 = the kennel's Super Admin flag)
 --     'mm'       → MismanagementRoles  (club offices)
 --     'platform' → HC.PlatformAdmin    (no bitfield; GrantMask is only the
 --                  pin-mirror bit, stored in UnpinnedAppAccessRooms)
@@ -27,7 +27,7 @@ AS
 --                  cohort James keeps by hand (2026-10-13). No bitfield;
 --                  GrantMask is again only the pin-mirror bit in
 --                  UnpinnedAppAccessRooms, disjoint from 'platform' (0x1)
---                  and the founder flag (0x40000000).
+--                  and the Super Admin flag (0x40000000).
 --   ⚠ The two collide: 0x08 is ManageHashCash in AppAccessFlags but RA in
 --   MismanagementRoles. A room must say which column it reads, never just
 --   which bit. See /hc-authorizations.
@@ -72,11 +72,11 @@ RETURN
     SELECT c.RoomType, c.RoomName, c.GrantColumn, c.GrantMask, c.SortOrder, c.IconUrl
     FROM (VALUES
         --  Type  Name                       Column   Mask          Sort  Icon
-            -- 0x40000000 is the KENNEL-founder grant (hcportal_approveKennelRequest
+            -- 0x40000000 is a KENNEL's Super Admin flag (hcportal_approveKennelRequest
             -- hands 0x4000003F to every new kennel's creator; 294 hashers hold
             -- it), not platform staff — so this room is the kennel admins'
             -- room and is named so (James, 2026-09-30; it read "Harrier
-            -- Central Admins" until then, and a founder asking how to become
+            -- Central Admins" until then, and a kennel Super Admin asking how to become
             -- super admin of his own kennel was posting to the right room).
             (1,  N'Kennel Admins',           'flags', 0x40000000,   10,
                  N'https://harriercentral.blob.core.windows.net/chat-room-icons/kennel-admins.png'),

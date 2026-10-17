@@ -162,7 +162,7 @@ BEGIN TRY
     -- alerts, historical counts) are the kennel's and stay admin-editable.
     -- Platform support (HC.PlatformAdmin) keeps a bypass. A kennel's
     -- SuperAdmin flag does NOT (2026-10-16, permissions audit): 0x40000000 is
-    -- the kennel FOUNDER grant (~290 hashers), and it let any founder rewrite
+    -- a KENNEL-scoped flag (~290 hashers hold it), and it let any kennel's Super Admin rewrite
     -- the email of a hasher whose home kennel is elsewhere.
     IF (@eMail IS NOT NULL OR @firstName IS NOT NULL OR @lastName IS NOT NULL OR @hashName IS NOT NULL)
        AND @callerType = 0
