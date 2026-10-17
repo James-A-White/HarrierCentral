@@ -1,3 +1,13 @@
+## 3.1.10+1483 (2026-10-17)
+
+### Fixes
+
+- **Editing another hasher's profile**: an admin saving a member's profile
+  (run counts, membership) no longer fails with "only they can change their
+  details" when that member has signed in. The app now sends only the
+  details you changed; a signed-in hasher's name, email and photo stay
+  theirs to change.
+
 ## 3.1.10+1482 (2026-10-16)
 
 ### New Features
