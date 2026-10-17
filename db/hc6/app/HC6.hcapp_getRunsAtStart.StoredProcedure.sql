@@ -78,9 +78,8 @@ BEGIN TRY
 
     -- The same gate as hcapp_addEditEvent: hidden runs are listed, so only
     -- someone who may edit the kennel's runs is told about them.
-    DECLARE @isHare SMALLINT = CASE WHEN @eventId IS NOT NULL AND EXISTS (
-            SELECT 1 FROM HC.HasherEventMap
-            WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1) THEN 1 ELSE 0 END;
+    -- Hare rights need an APPOINTED hare (E8.F5.S6, 2026-10-17): HC6.IsAppointedHare.
+    DECLARE @isHare SMALLINT = HC6.IsAppointedHare(@userId, @eventId);
     DECLARE @allowed SMALLINT = 0;
     EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId,
          @functionKey = 'createEditRuns', @isHareOfEvent = @isHare, @allowed = @allowed OUTPUT;
