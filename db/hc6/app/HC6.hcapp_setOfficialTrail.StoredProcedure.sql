@@ -48,10 +48,8 @@ BEGIN
 END
 
 DECLARE @kennelId UNIQUEIDENTIFIER = (SELECT KennelId FROM HC.Event WHERE id = @eventId AND deleted = 0);
-DECLARE @isHare SMALLINT = CASE WHEN EXISTS (
-    SELECT 1 FROM HC.HasherEventMap h
-    WHERE h.EventId = @eventId AND h.UserId = @userId AND ISNULL(h.IsHare, 0) <> 0
-      AND ISNULL(h.removed, 0) = 0) THEN 1 ELSE 0 END;
+-- Hare rights need an APPOINTED hare (E8.F5.S6, 2026-10-17): HC6.IsAppointedHare.
+DECLARE @isHare SMALLINT = HC6.IsAppointedHare(@userId, @eventId);
 DECLARE @allowed SMALLINT = 0;
 IF (@kennelId IS NOT NULL)
     EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @kennelId,
