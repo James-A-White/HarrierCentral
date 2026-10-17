@@ -58,7 +58,7 @@ Future<void> showRunCalendarChoice(
               _row(
                 context,
                 icon: Icons.event_repeat,
-                title: 'All $kennel runs',
+                title: 'All $kennel runs (recommended)',
                 subtitle:
                     "Subscribe to $kennel's calendar: new runs and changes "
                     'arrive by themselves whenever your calendar app checks '
