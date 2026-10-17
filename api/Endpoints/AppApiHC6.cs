@@ -131,6 +131,17 @@ namespace HcWebApi.Endpoints
 
             bool includeNulls = data.includeNulls != null && (bool)data.includeNulls;
 
+            // Procedures that only the API's own endpoints may run: they return
+            // data those endpoints filter before a client sees it. Through this
+            // general route a caller would get it unfiltered (2026-10-16,
+            // permissions audit: getRunEmailContext returned every member's
+            // address to a hare; RunEmail masks it).
+            if (ApiOnlyQueryTypes.Contains((string?)data.queryType ?? ""))
+            {
+                log.LogWarning("Blocked direct call to API-only query type {QueryType}.", (string?)data.queryType);
+                return new BadRequestObjectResult("Invalid query type.");
+            }
+
             log.LogInformation($"App API HC6 Called: QueryType = {data.queryType}, UserID = {data.publicHasherId}");
 
             // Initialize a list to hold the stored procedure results
@@ -257,7 +268,9 @@ namespace HcWebApi.Endpoints
                         await UpdateGoogleCalendar(log);
                         break;
                     case "sendEventMessage":
-                        _ = SendNotifications(multipleResults, log, includeNulls);
+                        // A copy: SendNotifications reads it after its first
+                        // await, and the reply's token rowsets go below.
+                        _ = SendNotifications(new List<List<Dictionary<string, object?>>>(multipleResults), log, includeNulls);
                         break;
                     // Kennel chat and the role rooms computed a push audience that
                     // nothing delivered — the switch only knew about run chat, so a
@@ -317,9 +330,13 @@ namespace HcWebApi.Endpoints
                             _ = AbuseReportEmails.SendAsync(abuse.report, abuse.reviewers, log);
                         break;
                     case "selectSong":
-                        _ = SendSongToAttendeesAsync(multipleResults, log);
+                        _ = SendSongToAttendeesAsync(new List<List<Dictionary<string, object?>>>(multipleResults), log);
                         break;
                 }
+
+                // Never hand a client other people's device tokens (2026-10-16,
+                // permissions audit): the push code above has what it needs.
+                DropTokenRowsets(multipleResults);
 
                 // Return compressed JSON (Brotli preferred, Gzip fallback, plain if unsupported)
                 return CompressedJson(req, multipleResults);
@@ -655,6 +672,22 @@ namespace HcWebApi.Endpoints
         // backward compat with HC5 paths. This local class is used only in the HC6
         // sendEventMessage notification path.
         public enum ChatPushKind { Kennel, Room, Dm }
+
+        /// <summary>Query types only the API's own endpoints run (they filter the
+        /// reply); refused on the general app route.</summary>
+        internal static readonly HashSet<string> ApiOnlyQueryTypes =
+            new(StringComparer.OrdinalIgnoreCase) { "getRunEmailContext" };
+
+        /// <summary>
+        /// Removes every rowset that carries device push tokens (an FcmToken
+        /// column) from a reply. Recipient rowsets come LAST in every reply that
+        /// has them, so nothing a client parses moves. Senders must already hold
+        /// their own copy of the list (or have read it before their first await).
+        /// </summary>
+        internal static void DropTokenRowsets(List<List<Dictionary<string, object?>>> results)
+        {
+            results.RemoveAll(rs => rs.Count > 0 && rs[0].Keys.Any(k => k.Equals("FcmToken", StringComparison.OrdinalIgnoreCase)));
+        }
 
         /// <summary>
         /// Push for the two thread kinds that are not a run: kennel chat and the

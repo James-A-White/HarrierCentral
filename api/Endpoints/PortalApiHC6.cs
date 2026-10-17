@@ -72,6 +72,13 @@ namespace HcWebApi.Endpoints
                 log.LogWarning("Blocked direct call to internal SP: ValidatePortalAuth.");
                 return new BadRequestObjectResult("Invalid query type.");
             }
+            // The portal twin of the app route's API-only list (2026-10-16): the
+            // RunEmail endpoint runs hcportal_getRunEmailContext and masks it.
+            if (AppApiHC6.ApiOnlyQueryTypes.Contains(queryType ?? ""))
+            {
+                log.LogWarning("Blocked direct call to API-only query type {QueryType}.", queryType);
+                return new BadRequestObjectResult("Invalid query type.");
+            }
 
             log.LogInformation($"HC6 Portal API Called: QueryType = {queryType}, DeviceId = {deviceId}");
 
@@ -158,7 +165,8 @@ namespace HcWebApi.Endpoints
                         await UpdateGoogleCalendar(log);
                         break;
                     case "sendEventMessage":
-                        _ = SendNotifications(multipleResults, log);
+                        // A copy: the reply's token rowsets are dropped below.
+                        _ = SendNotifications(new List<List<Dictionary<string, object?>>>(multipleResults), log);
                         break;
                     case "markEventChatRead":
                         await SendReadSyncAsync(multipleResults, (string)data.publicEventId, log);
@@ -169,7 +177,7 @@ namespace HcWebApi.Endpoints
                     // through the app shim's code, so there is one kennel push.
                     case "sendKennelMessage":
                         _ = new AppApiHC6(NullLogger<AppApiHC6>.Instance)
-                                .SendChatNotifications(multipleResults, AppApiHC6.ChatPushKind.Kennel, log);
+                                .SendChatNotifications(new List<List<Dictionary<string, object?>>>(multipleResults), AppApiHC6.ChatPushKind.Kennel, log);
                         break;
                     case "approveKennelRequest":
                         // The welcome carries the new admin's sign-in code: send
@@ -187,6 +195,8 @@ namespace HcWebApi.Endpoints
                         break;
                 }
 
+                // Never hand a browser other people's device tokens (2026-10-16).
+                AppApiHC6.DropTokenRowsets(multipleResults);
                 return CompressedJson(req, multipleResults);
             }
             catch (Exception ex)
