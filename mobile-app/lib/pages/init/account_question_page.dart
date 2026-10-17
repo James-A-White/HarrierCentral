@@ -1,4 +1,6 @@
 import 'package:harrier_central/imports.dart';
+import 'package:harrier_central/services/sign_in/apple_sign_in_service.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class AccountQuestionPage extends StatelessWidget {
   const AccountQuestionPage({super.key});
@@ -82,6 +84,13 @@ class AccountQuestionPage extends StatelessWidget {
                           ),
                         ),
                       ),
+                      // Sign in with Apple, verified on the server (E1.F1.S8).
+                      // iPhone only for now: Apple sign-in on Android needs the
+                      // web flow.
+                      if (Platform.isIOS) ...<Widget>[
+                        const SizedBox(height: 28),
+                        const _AppleSignInButton(),
+                      ],
                       const Spacer(),
                     ],
                   ),
@@ -136,6 +145,54 @@ class _AnswerButton extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Sign in with Apple (E1.F1.S8): busy from the first tap, a second tap is
+/// refused, cancelling says nothing. A verified Apple identity gives the
+/// account's reset code, and the invite-code page signs the phone in with it.
+class AppleSignInController extends GetxController {
+  final RxBool busy = false.obs;
+
+  Future<void> signIn(BuildContext context) async {
+    if (busy.value) return;
+    busy.value = true;
+    final NavigatorState nav = Navigator.of(context);
+    try {
+      final String? code = await AppleSignInService.signInForCode();
+      if (isClosed || code == null) return;
+      await nav.push<void>(
+        MaterialPageRoute<void>(builder: (_) => UseInviteCodePage(initialCode: code)),
+      );
+    } on AppleSignInException catch (e) {
+      await Utilities.showAlert('Sign in with Apple', e.message, 'OK');
+    } finally {
+      if (!isClosed) busy.value = false;
+    }
+  }
+}
+
+class _AppleSignInButton extends StatelessWidget {
+  const _AppleSignInButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return GetBuilder<AppleSignInController>(
+      init: AppleSignInController(),
+      global: false,
+      builder: (AppleSignInController c) => Obx(
+        () => c.busy.value
+            ? const SizedBox(
+                height: 50,
+                child: Center(child: CircularProgressIndicator(color: Colors.white)),
+              )
+            : SignInWithAppleButton(
+                height: 50,
+                style: SignInWithAppleButtonStyle.white,
+                onPressed: () => unawaited(c.signIn(context)),
+              ),
       ),
     );
   }
