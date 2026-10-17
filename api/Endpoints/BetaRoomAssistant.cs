@@ -612,8 +612,14 @@ FINISH every turn by calling the finish tool exactly once.
                     ["tools"] = tools,
                     ["messages"] = messages,
                 };
-                // Out of rounds: make it finish with what it has.
-                if (round == MaxToolRounds) body["tool_choice"] = new JObject { ["type"] = "tool", ["name"] = "finish" };
+                // Out of rounds: tell it to finish with what it has. Asked, not
+                // forced — this model refuses tool_choice "tool"/"any" with a
+                // 400, which failed every turn that reached the last round
+                // (2026-10-16). The nudge rides on the tool results it is
+                // answering; text after tool_result blocks is allowed.
+                if (round == MaxToolRounds && messages.Last?["content"] is JArray last)
+                    last.Add(new JObject { ["type"] = "text", ["text"] =
+                        "You are out of tool calls. Call the finish tool now with your best answer from what you have." });
 
                 var resp = await CallClaudeAsync(body, rec);
                 var content = resp["content"] as JArray ?? new JArray();
