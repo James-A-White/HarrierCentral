@@ -33,7 +33,8 @@ namespace HcWebApi.Endpoints
     ///     queued — e.g. after an instance restart — so nobody is mailed twice.
     /// The body is plain text: blank lines make paragraphs, URLs become links,
     /// {firstName} / {hashName} are the person's first name / hash name (each
-    /// falls back to the other, then "there").
+    /// falls back to the other, then "there"); {senderHashName} is the platform
+    /// admin who pressed Send (their hash name, else first name).
     /// </summary>
     public class VersionEmail
     {
@@ -93,8 +94,8 @@ namespace HcWebApi.Endpoints
                     return Fail(400, "Your own account has no real email address to send the test to.");
                 try
                 {
-                    await HcListMail.SendAsync(q.Email, "[Test] " + subject, Html(subject, text, q.FirstName, q.HashName, true, true),
-                        Plain(text, q.FirstName, q.HashName, true, true), null, replyTo: ReplyTo);
+                    await HcListMail.SendAsync(q.Email, "[Test] " + subject, Html(subject, text, q.FirstName, q.HashName, q.HashName, true, true),
+                        Plain(text, q.FirstName, q.HashName, q.HashName, true, true), null, replyTo: ReplyTo);
                 }
                 catch (Exception ex)
                 {
@@ -111,12 +112,13 @@ namespace HcWebApi.Endpoints
                 {
                     Kind = "version", Subject = subject, Sender = q.Name,
                     Instruction = "builds " + (body.Value<string>("builds") ?? "") + ", last sign-in within " + (body.Value<int?>("days") ?? 90) + " days",
-                    Html = Html(subject, text, "{firstName}", "{hashName}", true, true), PlainText = Plain(text, "{firstName}", "{hashName}", true, true),
+                    Html = Html(subject, text, "{firstName}", "{hashName}", q.HashName, true, true), PlainText = Plain(text, "{firstName}", "{hashName}", q.HashName, true, true),
                 });
                 if (audit != null) await UpdateAsync(cs, null, null, null, sendId, audit);
             }
 
             Guid send = sendId!.Value;
+            string senderName = q.HashName;
             _ = Task.Run(async () =>
             {
                 int ok = 0, failed = 0;
@@ -135,8 +137,8 @@ namespace HcWebApi.Endpoints
                         try
                         {
                             string first = r.Value<string>("FirstName") ?? "", hash = r.Value<string>("HashName") ?? "";
-                            await HcListMail.SendAsync(to, subject, Html(subject, text, first, hash, ios, android),
-                                Plain(text, first, hash, ios, android), null, replyTo: ReplyTo);
+                            await HcListMail.SendAsync(to, subject, Html(subject, text, first, hash, senderName, ios, android),
+                                Plain(text, first, hash, senderName, ios, android), null, replyTo: ReplyTo);
                             await UpdateAsync(cs, id, 1, null, null, null);
                             ok++;
                         }
@@ -216,7 +218,8 @@ namespace HcWebApi.Endpoints
             "app's changelog lines added since their version, newest first. Choose what an ordinary hasher would notice " +
             "and value — big, visible things — not admin-only tools, fixes or technical changes. Group related entries " +
             "into one feature. Each feature: a short name, an em dash, then one plain sentence. No build numbers, no " +
-            "code or table names, no hype. Return JSON {\"features\": [five strings]}.";
+            "code or table names, no hype. Never mention security, safety fixes or weaknesses of the old version — " +
+            "this goes to the public. Return JSON {\"features\": [five strings]}.";
 
         private static async Task<string[]> TopFeaturesAsync(string cs, string changelog)
         {
@@ -262,17 +265,19 @@ namespace HcWebApi.Endpoints
 
         // {firstName} and {hashName}: each falls back to the other, then "there"
         // (the SPs already fall back between the two; this covers an empty pair).
-        private static string Fill(string text, string firstName, string hashName)
+        // {senderHashName}: the platform admin pressing Send ("On-On, Opee").
+        private static string Fill(string text, string firstName, string hashName, string sender)
         {
             string first = string.IsNullOrWhiteSpace(firstName) ? (string.IsNullOrWhiteSpace(hashName) ? "there" : hashName.Trim()) : firstName.Trim();
             string hash = string.IsNullOrWhiteSpace(hashName) ? first : hashName.Trim();
-            return text.Replace("{firstName}", first).Replace("{hashName}", hash);
+            return text.Replace("{firstName}", first).Replace("{hashName}", hash)
+                       .Replace("{senderHashName}", string.IsNullOrWhiteSpace(sender) ? "Harrier Central" : sender.Trim());
         }
 
-        internal static string Html(string subject, string text, string firstName, string hashName, bool ios, bool android)
+        internal static string Html(string subject, string text, string firstName, string hashName, string sender, bool ios, bool android)
         {
             var sb = new StringBuilder();
-            foreach (string para in Regex.Split(Fill(text, firstName, hashName).Replace("\r\n", "\n").Trim(), @"\n\s*\n"))
+            foreach (string para in Regex.Split(Fill(text, firstName, hashName, sender).Replace("\r\n", "\n").Trim(), @"\n\s*\n"))
             {
                 string enc = WebUtility.HtmlEncode(para.Trim());
                 enc = Url.Replace(enc, m => $"<a href=\"{m.Value}\" style=\"color:#2b6cb0\">{m.Value}</a>");
@@ -289,8 +294,8 @@ namespace HcWebApi.Endpoints
             return HcEmail.Layout(subject, sb.ToString());
         }
 
-        internal static string Plain(string text, string firstName, string hashName, bool ios, bool android) =>
-            Fill(text, firstName, hashName).Trim() + "\n\n" +
+        internal static string Plain(string text, string firstName, string hashName, string sender, bool ios, bool android) =>
+            Fill(text, firstName, hashName, sender).Trim() + "\n\n" +
             (ios ? $"App Store: {AppStoreUrl}\n" : "") + (android ? $"Google Play: {PlayUrl}\n" : "");
 
         // ── Database ───────────────────────────────────────────────────────
