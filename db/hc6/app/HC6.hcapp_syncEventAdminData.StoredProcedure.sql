@@ -135,9 +135,8 @@ BEGIN
     DECLARE @syncEvtAllowed SMALLINT;
     -- Run-scoped: a designated hare of THIS event may load its admin data (when
     -- the hare grantor grants a run-admin capability).
-    DECLARE @syncEvtIsHare SMALLINT = CASE WHEN EXISTS (
-            SELECT 1 FROM HC.HasherEventMap
-            WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1) THEN 1 ELSE 0 END;
+    -- Hare rights need an APPOINTED hare (E8.F5.S6, 2026-10-17): HC6.IsAppointedHare.
+    DECLARE @syncEvtIsHare SMALLINT = HC6.IsAppointedHare(@userId, @eventId);
     EXEC HC6.CheckAreaEntry @userId = @userId, @kennelId = @kennelId, @areaKey = 'runAdmin', @surface = 1, @isHareOfEvent = @syncEvtIsHare, @allowed = @syncEvtAllowed OUTPUT;
     IF (@syncEvtAllowed = 0)
     BEGIN
@@ -212,6 +211,7 @@ BEGIN
         hem.RsvpState                                                       AS rsvpState,
         hem.AttendenceState                                                 AS attendenceState,
         hem.IsHare                                                          AS isHare,
+        hem.HareAppointedBy                                                 AS hareAppointedBy,  -- E8.F5.S6
         hem.EventNotificationPreference                                     AS eventNotificationPreference,
         hem.EventEmailAlertPreference                                       AS eventEmailAlertPreference,
         hem.EventCountOverride                                              AS eventCountOverride,
