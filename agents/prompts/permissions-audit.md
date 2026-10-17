@@ -73,7 +73,9 @@ Ignore anything TSA-related entirely and do not mention it.
    device secrets, FCM tokens, reset/invite codes, internal ids to a browser,
    data of hashers who chose not to be found (DirectoryVisibility NULL/0),
    removed / GDPR-deleted hashers.
-8. **Writes by design open to all** are NOT findings when the product says so:
+8. **Real names are not a leak** (James, 2026-10-17): first and last names may
+   reach any signed-in user by design. Emails, phones, tokens and secrets are.
+9. **Writes by design open to all** are NOT findings when the product says so:
    anyone may post in a kennel's general chat; a hasher's own RSVP,
    preferences and attendance are theirs; public run and kennel details are
    public (the website shows them).

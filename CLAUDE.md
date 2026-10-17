@@ -175,6 +175,14 @@ These are firm decisions that must not be revisited or worked around:
   tests and the SPs that apply them: `hc-authorizations` skill, "Who owns a
   hasher's record".
 
+- **Real names are not secret (James, 2026-10-17).** A hasher's first and
+  last name may reach any signed-in user — the user sync sends them to every
+  phone, and that is fine. People who do not want their name in the system
+  sign up with initials or a made-up name. Do not treat a real name as a leak
+  in audits or design. (Email addresses, phone numbers, device tokens,
+  secrets and money stay protected; who can LOOK someone up is still their
+  `DirectoryVisibility` choice.)
+
 - **Never convert a `StatelessWidget` to `StatefulWidget` without consulting
   James first.** The preferred direction is the opposite — migrate
   `StatefulWidget` toward `StatelessWidget` + GetX controller wherever the
