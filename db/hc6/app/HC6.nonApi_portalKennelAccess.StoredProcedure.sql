@@ -18,7 +18,8 @@ AS
 --
 --   Allowed when ANY of these holds (a union, so no admin who could use
 --   the screen yesterday is locked out today):
---     1. @callerType <> 0 -- Harrier Central's own service accounts.
+--     1. (REMOVED 2026-10-16) service accounts no longer pass — they are
+--        refused here and can reach only confirmAuthentication.
 --     2. @platformCap names an HC.PlatformAdmin right the caller holds
 --        ('CanViewMonitor', 'CanManageNewsflash', 'CanEditKennel',
 --        'CanManagePermissions'). For platform-only SPs pass @kennelId
@@ -43,11 +44,11 @@ SET NOCOUNT ON;
 
 SET @allowed = 0;
 
-IF (@callerType IS NOT NULL AND @callerType <> 0)
-BEGIN
-    SET @allowed = 1;
-    RETURN;
-END
+-- Service accounts get NOTHING here (2026-10-16, permissions audit): they
+-- used to pass every gate, and their token could be built from public values.
+-- HC6.ValidatePortalAuth now lets them reach only
+-- hcportal_confirmAuthentication; this is the second lock on the same door.
+IF (@callerType IS NOT NULL AND @callerType <> 0) RETURN;
 
 IF (@hasherId IS NULL) RETURN;
 
