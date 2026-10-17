@@ -1212,10 +1212,9 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
             child: StyleForConnected(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.only(
-                    left: 12.0,
-                    top: 8.0,
-                    bottom: 8.0,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12.0,
+                    vertical: 8.0,
                   ),
                 ),
                 child: Row(
@@ -1230,7 +1229,7 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                     ),
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.only(left: 12, right: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
                         // The kennel's name is already the page title.
                         child: Text(
                           'Add runs to my calendar',
@@ -1241,6 +1240,9 @@ class KennelAdminMainPageState extends State<KennelAdminMainPage> {
                         ),
                       ),
                     ),
+                    // As wide as the icon, so the label is centred on the
+                    // button rather than in the space beside the icon.
+                    const SizedBox(width: 45.0),
                   ],
                 ),
                 onPressed: () async {
