@@ -62,6 +62,7 @@ AS
 --   Standard HC6 error format replaces HC5 Pascal-cased auth error.
 --   Token validated against DeviceSecret + UPPER(userId) compound.
 --   Success envelope added. TRY/CATCH added.
+-- Idempotency: exempt — refused until the verified rebuild (E1.F1.S8); writes only an error log row
 -- =====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -70,6 +71,26 @@ DECLARE @procName NVARCHAR(128) = OBJECT_NAME(@@PROCID);
 DECLARE @errorId  UNIQUEIDENTIFIER;
 DECLARE @errorCode INT;
 DECLARE @errorType INT;
+
+-- ---------------------------------------------------------------
+-- REFUSED until the rebuild (James, 2026-10-17; E1.F1.S8). This sign-in
+-- trusted the provider ids and email the caller SENT, with no server-side
+-- check of the provider's token. It is closed until Apple / Google sign-in
+-- is rebuilt with server-side verification. The current app does not offer
+-- it (onboarding is invite code / find my account); a call is logged and
+-- pointed at the emailed code. Nothing below runs.
+-- ---------------------------------------------------------------
+SET @errorCode = 1306; SET @errorType = 13; SET @errorId = NEWID();
+INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, deviceId)
+VALUES (@errorId, @hcVersion, 'Third-party sign-in refused',
+        CONCAT('until the verified rebuild (E1.F1.S8); type=', LEFT(ISNULL(@thirdPartyLoginType, '?'), 40)),
+        @procName, NULL, @deviceId);
+SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+       'Sign in with your email' AS errorTitle,
+       'Apple and Google sign-in are not available at the moment. Please sign in with the code we email you instead.' AS errorUserMessage,
+       @procName AS errorProc;
+RETURN;
 
 -- Normalise empty strings to NULL
 IF (LEN(@hashName) = 0) SET @hashName = NULL;

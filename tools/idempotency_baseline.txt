@@ -21,13 +21,11 @@ NO-DECLARATION hcapp_getEventMessages
 NO-DECLARATION hcapp_getRoomMessages
 NO-DECLARATION hcapp_getRunEmailContext
 NO-DECLARATION hcapp_joinEventAsVisitor
-NO-DECLARATION hcapp_logAppError
 NO-DECLARATION hcapp_logClientErrors
 NO-DECLARATION hcapp_markDownDownDone
 NO-DECLARATION hcapp_markEventChatRead
 NO-DECLARATION hcapp_processBulkPayment
 NO-DECLARATION hcapp_processPayment
-NO-DECLARATION hcapp_processThirdPartyLogin
 NO-DECLARATION hcapp_reactToChatMessage
 NO-DECLARATION hcapp_respondDirectMessageRequest
 NO-DECLARATION hcapp_rptKennelRunStats
