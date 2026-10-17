@@ -79,9 +79,8 @@ DECLARE @rptKennelId     UNIQUEIDENTIFIER;
 SELECT @rptKennelId = KennelId FROM HC.Event WHERE id = @eventId;
 
 DECLARE @rptAllowed SMALLINT;
-DECLARE @rptIsHare SMALLINT = CASE WHEN EXISTS (
-        SELECT 1 FROM HC.HasherEventMap
-        WHERE UserId = @userId AND EventId = @eventId AND IsHare = 1) THEN 1 ELSE 0 END;
+-- Hare rights need an APPOINTED hare (E8.F5.S6, 2026-10-17): HC6.IsAppointedHare.
+DECLARE @rptIsHare SMALLINT = HC6.IsAppointedHare(@userId, @eventId);
 EXEC HC6.CheckKennelPermission @userId = @userId, @kennelId = @rptKennelId, @functionKey = 'viewPaymentReport', @isHareOfEvent = @rptIsHare, @allowed = @rptAllowed OUTPUT;
 
 IF (@rptAllowed = 0)
