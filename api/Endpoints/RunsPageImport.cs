@@ -524,7 +524,9 @@ namespace HcWebApi.Endpoints
             + "local today (given), preferring upcoming dates; runs on such pages are almost always within a few months of today.\n"
             + "- time: 24-hour HH:mm when the pack GATHERS, or null if the page does not give one. 'X for Y' "
             + "(e.g. '12 Noon for 12:30', '7pm for 7:15') means gather at X and set off at Y: time is X (12:00, 19:00), "
-            + "never Y — the club's pack-off setting adds Y.\n"
+            + "never Y — the club's pack-off setting adds Y. When the club sets off N minutes after the gather (given) "
+            + "and the page gives only the time the run STARTS or sets off ('start at 19.15', '12.15 start time'), "
+            + "time is that minus N (19:00, 12:00). A time the page calls a meet or gather is used as it is.\n"
             + "- title: a short theme or note only (e.g. 'Joint run', 'Christmas run', 'Summer run - Yippee Bush'); null for an ordinary run. Never the location.\n"
             + "- hares: as written; null if none, and null when the page only says a hare is needed or wanted, TBA or TBC.\n"
             + "- start: the start location as written; null if blank or 'TBC'.\n"
@@ -576,7 +578,9 @@ namespace HcWebApi.Endpoints
                 // page that omits years, and every run was rejected (2026-10-05).
                 + (k.LatestRunNumber.HasValue && IsRecent(k.LatestRunDate, k.LocalToday)
                     ? $"Latest run already known: #{k.LatestRunNumber} on {k.LatestRunDate}\n" : "")
-                + (string.IsNullOrEmpty(k.DefaultStart) ? "" : $"Usual start time: {k.DefaultStart}\n")
+                + (string.IsNullOrEmpty(k.DefaultStart) ? "" : $"Usual gather time: {k.DefaultStart}\n")
+                + (k.PackOffMinutes is > 0
+                    ? $"The pack sets off {k.PackOffMinutes} minutes after the gather.\n" : "")
                 + "\nPAGE TEXT:\n" + text;
 
             var payload = new JObject
@@ -891,6 +895,7 @@ namespace HcWebApi.Endpoints
 
         private sealed record KennelRow(Guid KennelId, string Name, string ShortName, string Url, string? Hash,
             string LocalToday, int? LatestRunNumber, string? LatestRunDate, string? DefaultStart,
+            int? PackOffMinutes,
             string? City = null, string? Country = null, double? AnchorLat = null, double? AnchorLon = null);
 
         private static async Task<List<KennelRow>> LoadKennelsAsync(string cs, Guid? onlyKennel)
@@ -909,6 +914,7 @@ namespace HcWebApi.Endpoints
                     S("RunsPageHash")?.Trim(), S("LocalToday") ?? DateTime.UtcNow.ToString("yyyy-MM-dd"),
                     r["LatestRunNumber"] is DBNull ? null : Convert.ToInt32(r["LatestRunNumber"]),
                     S("LatestRunDate"), S("DefaultStartTime"),
+                    r["PackOffMinutes"] is DBNull ? null : Convert.ToInt32(r["PackOffMinutes"]),
                     S("CityName"), S("CountryName"),
                     r["AnchorLat"] is DBNull ? null : Convert.ToDouble(r["AnchorLat"]),
                     r["AnchorLon"] is DBNull ? null : Convert.ToDouble(r["AnchorLon"])));
