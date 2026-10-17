@@ -32,7 +32,8 @@ namespace HcWebApi.Endpoints
     ///     repeat of the same sendId queues nothing new and only resumes rows still
     ///     queued — e.g. after an instance restart — so nobody is mailed twice.
     /// The body is plain text: blank lines make paragraphs, URLs become links,
-    /// {firstName} is the person's first name (else hash name, else "there").
+    /// {firstName} / {hashName} are the person's first name / hash name (each
+    /// falls back to the other, then "there").
     /// </summary>
     public class VersionEmail
     {
@@ -48,7 +49,7 @@ namespace HcWebApi.Endpoints
         private const string AppStoreBadge = "https://harriercentral.blob.core.windows.net/harrier/email/app-store-badge.png";
         private const string PlayBadge = "https://harriercentral.blob.core.windows.net/harrier/email/google-play-badge.png";
 
-        private sealed record Queue(int Queued, int NewlyQueued, string Email, string FirstName, string Name);
+        private sealed record Queue(int Queued, int NewlyQueued, string Email, string FirstName, string HashName, string Name);
 
         [Function("VersionEmail")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
@@ -92,8 +93,8 @@ namespace HcWebApi.Endpoints
                     return Fail(400, "Your own account has no real email address to send the test to.");
                 try
                 {
-                    await HcListMail.SendAsync(q.Email, "[Test] " + subject, Html(subject, text, q.FirstName, true, true),
-                        Plain(text, q.FirstName, true, true), null, replyTo: ReplyTo);
+                    await HcListMail.SendAsync(q.Email, "[Test] " + subject, Html(subject, text, q.FirstName, q.HashName, true, true),
+                        Plain(text, q.FirstName, q.HashName, true, true), null, replyTo: ReplyTo);
                 }
                 catch (Exception ex)
                 {
@@ -110,7 +111,7 @@ namespace HcWebApi.Endpoints
                 {
                     Kind = "version", Subject = subject, Sender = q.Name,
                     Instruction = "builds " + (body.Value<string>("builds") ?? "") + ", last sign-in within " + (body.Value<int?>("days") ?? 90) + " days",
-                    Html = Html(subject, text, "{firstName}", true, true), PlainText = Plain(text, "{firstName}", true, true),
+                    Html = Html(subject, text, "{firstName}", "{hashName}", true, true), PlainText = Plain(text, "{firstName}", "{hashName}", true, true),
                 });
                 if (audit != null) await UpdateAsync(cs, null, null, null, sendId, audit);
             }
@@ -133,8 +134,9 @@ namespace HcWebApi.Endpoints
                         if (!ios && !android) { ios = true; android = true; }
                         try
                         {
-                            await HcListMail.SendAsync(to, subject, Html(subject, text, r.Value<string>("FirstName") ?? "", ios, android),
-                                Plain(text, r.Value<string>("FirstName") ?? "", ios, android), null, replyTo: ReplyTo);
+                            string first = r.Value<string>("FirstName") ?? "", hash = r.Value<string>("HashName") ?? "";
+                            await HcListMail.SendAsync(to, subject, Html(subject, text, first, hash, ios, android),
+                                Plain(text, first, hash, ios, android), null, replyTo: ReplyTo);
                             await UpdateAsync(cs, id, 1, null, null, null);
                             ok++;
                         }
@@ -258,13 +260,19 @@ namespace HcWebApi.Endpoints
 
         private static readonly Regex Url = new(@"https?://[^\s<>""]+", RegexOptions.Compiled);
 
-        private static string Fill(string text, string firstName) =>
-            text.Replace("{firstName}", string.IsNullOrWhiteSpace(firstName) ? "there" : firstName.Trim());
+        // {firstName} and {hashName}: each falls back to the other, then "there"
+        // (the SPs already fall back between the two; this covers an empty pair).
+        private static string Fill(string text, string firstName, string hashName)
+        {
+            string first = string.IsNullOrWhiteSpace(firstName) ? (string.IsNullOrWhiteSpace(hashName) ? "there" : hashName.Trim()) : firstName.Trim();
+            string hash = string.IsNullOrWhiteSpace(hashName) ? first : hashName.Trim();
+            return text.Replace("{firstName}", first).Replace("{hashName}", hash);
+        }
 
-        internal static string Html(string subject, string text, string firstName, bool ios, bool android)
+        internal static string Html(string subject, string text, string firstName, string hashName, bool ios, bool android)
         {
             var sb = new StringBuilder();
-            foreach (string para in Regex.Split(Fill(text, firstName).Replace("\r\n", "\n").Trim(), @"\n\s*\n"))
+            foreach (string para in Regex.Split(Fill(text, firstName, hashName).Replace("\r\n", "\n").Trim(), @"\n\s*\n"))
             {
                 string enc = WebUtility.HtmlEncode(para.Trim());
                 enc = Url.Replace(enc, m => $"<a href=\"{m.Value}\" style=\"color:#2b6cb0\">{m.Value}</a>");
@@ -281,8 +289,8 @@ namespace HcWebApi.Endpoints
             return HcEmail.Layout(subject, sb.ToString());
         }
 
-        internal static string Plain(string text, string firstName, bool ios, bool android) =>
-            Fill(text, firstName).Trim() + "\n\n" +
+        internal static string Plain(string text, string firstName, string hashName, bool ios, bool android) =>
+            Fill(text, firstName, hashName).Trim() + "\n\n" +
             (ios ? $"App Store: {AppStoreUrl}\n" : "") + (android ? $"Google Play: {PlayUrl}\n" : "");
 
         // ── Database ───────────────────────────────────────────────────────
@@ -305,7 +313,7 @@ namespace HcWebApi.Endpoints
             if (Convert.ToInt32(r["Success"]) != 1) return (null, r["ErrorMessage"] as string);
             if (!await r.NextResultAsync() || !await r.ReadAsync()) return (null, "No reply.");
             return (new Queue(Convert.ToInt32(r["Queued"]), Convert.ToInt32(r["NewlyQueued"]),
-                r["Email"] as string ?? "", r["FirstName"] as string ?? "", r["Name"] as string ?? ""), null);
+                r["Email"] as string ?? "", r["FirstName"] as string ?? "", r["HashName"] as string ?? "", r["Name"] as string ?? ""), null);
         }
 
         private static async Task<List<JObject>> ClaimAsync(string cs, Guid sendId, int take)
@@ -321,7 +329,7 @@ namespace HcWebApi.Endpoints
                 list.Add(new JObject
                 {
                     ["EmailLogId"] = r["EmailLogId"].ToString(), ["Email"] = r["Email"] as string,
-                    ["FirstName"] = r["FirstName"] as string, ["IsIos"] = Convert.ToInt32(r["IsIos"]),
+                    ["FirstName"] = r["FirstName"] as string, ["HashName"] = r["HashName"] as string, ["IsIos"] = Convert.ToInt32(r["IsIos"]),
                     ["IsAndroid"] = Convert.ToInt32(r["IsAndroid"]),
                 });
             return list;
