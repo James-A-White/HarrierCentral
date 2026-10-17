@@ -23,7 +23,7 @@ AS
 -- =====================================================================
 -- Procedure: HC6.hcapp_authorizeDevice
 -- Description: First-time device registration. Resolves a user by
---   invite code (@scanText URC: prefix) or directly by @userId, writes
+--   invite / reset code (@scanText URC: prefix) ONLY, writes
 --   a Device record with a cryptographic secret, logs the login, and
 --   returns the hasher profile plus the device credentials needed for
 --   all subsequent token generation.
@@ -31,15 +31,15 @@ AS
 --   @deviceId    - Client-generated device UUID (PK for HC.Device)
 --   @accessToken - Global shared access token (validated against null UUID)
 --   @hcVersion   - App version string e.g. '3.0.0'
---   @scanText    - Invite code in 'URC:XXXXXX' format. Mutually exclusive
---                  with @userId — one must be provided.
+--   @scanText    - Invite code in 'URC:XXXXXX' format. Required.
 --   @isMobile    - 1 (default) = the phone app; 0 = a browser signing in
 --                  with an emailed invite code (E9.F7, 2026-09-16). Only
 --                  the HC.Device.IsMobile flag differs — a browser must not
 --                  be offered push tokens or counted as a phone in Device
 --                  Health.
---   @userId      - Direct user lookup by HC.Hasher.id. When provided,
---                  @scanText is ignored for lookup.
+--   @userId      - REFUSED since 2026-10-17 (errorCode 1303, logged): a bare
+--                  account id is not proof of anything. Kept as a parameter
+--                  so an old caller gets a clear refusal, not a 500.
 --   @deviceData  - JSON blob of device metadata stored in HC.Device
 --   @apnsToken   - Apple Push Notification token (NULL for Android)
 --   @fcmToken    - Firebase Cloud Messaging token
@@ -111,22 +111,33 @@ BEGIN TRY
     END
 
     -- ---------------------------------------------------------------
-    -- Resolve user by @userId or @scanText (URC: invite code)
+    -- Resolve the user by invite / reset code ONLY (URC:)
     -- ---------------------------------------------------------------
+    -- A device is registered only with proof: the code emailed to the
+    -- person or kept on their phone. The old @userId path (the 1.x -> 2.x
+    -- upgrade) accepted a bare account id under the public sign-in token,
+    -- and account ids are not secret, so it is refused and every attempt
+    -- logged (2026-10-17, permissions audit; no current app, web or SP
+    -- caller uses it; no 1.x device has signed in for a year).
     DECLARE @hasherName NVARCHAR(250);
     DECLARE @removed    INT;
 
     IF (@userId IS NOT NULL)
     BEGIN
-        SELECT TOP 1
-            @scanText   = h.ResetCode,
-            @hasherName = h.DisplayName,
-            @removed    = h.Removed
-        FROM HC.Hasher h
-        WHERE h.id = @userId;
+        SET @errorCode = 1303; SET @errorType = 13; SET @errorId = NEWID();
+        INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId, deviceId)
+        VALUES (@errorId, @hcVersion, 'Sign-in by account id refused',
+                'authorizeDevice called with @userId; only an invite/reset code is accepted',
+                @procName, @userId, @deviceId);
+        SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+        SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+               'Please sign in again' AS errorTitle,
+               'Please sign in with the invite code emailed to you.' AS errorUserMessage,
+               @procName AS errorProc;
+        RETURN;
     END
 
-    IF (@userId IS NULL AND @scanText LIKE 'URC:%')
+    IF (@scanText LIKE 'URC:%')
     BEGIN
         SELECT TOP 1
             @userId     = h.id,

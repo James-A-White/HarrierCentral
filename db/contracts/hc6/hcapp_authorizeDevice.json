@@ -1,8 +1,8 @@
 {
   "schema": "HC6",
   "name": "hcapp_authorizeDevice",
-  "version": "1.3.0",
-  "description": "First-time device registration (sign-in with an invite code, or by @userId from a flow that already knows the hasher). Pre-auth endpoint: the token is validated with HC.CHECK_ACCESS_TOKEN_V2 against the null user UUID and a fixed 30 s window (1102 / errorType 11). Resolves the hasher by @userId, else by @scanText = Hasher.ResetCode ('URC:…') → 1302 not found (13); a removed hasher → 1402 (14). Generates a 75-character uppercase base64 DeviceSecret (CRYPT_GEN_RANDOM) and a TimeWindow of 30-44 s, then in one transaction: Hasher.LastLoginDateTime/HcVersion/updatedAt; a LaunchAndLogin row carrying DeviceId and the five device fields (from the optional parameters, else from @deviceData JSON, 2026-10-12); DELETE + INSERT of the HC.Device row (idempotent re-registration) with IsMobile, Version, BuildNumber and Locale. Returns the hasher profile joined to the new device row, including deviceSecret and timeWindow — the credentials every later token is generated from. The whole body, including the auth check, is inside TRY/CATCH (1902 / 19). @isMobile = 0 marks a browser (E9.F7): no push tokens, not counted as a phone. Idempotent writes (2026-10-14, audit W4), row 'creates a row': a BROWSER repeat — @isMobile = 0 and an HC.Device row with the same @deviceId already exists for the SAME user, IsMobile = 0, removed = 0, SignedOutAt NULL and updatedAt within the last 2 minutes (checked WITH (UPDLOCK, HOLDLOCK) inside the transaction) — writes nothing (no Hasher update, no LaunchAndLogin row, no DELETE/INSERT) and returns the existing deviceSecret and timeWindow as success. The web mints its deviceId once per sign-in flow (signed hc_signin cookie) so a double submit or a retry after a lost reply is that repeat. Every other case, including every @isMobile = 1 (app) call, which neither takes the lock nor the branch, is unchanged: DELETE + INSERT with a freshly rotated secret.",
+  "version": "2.0.0",
+  "description": "First-time device registration (sign-in with an invite code, or by @userId from a flow that already knows the hasher). Pre-auth endpoint: the token is validated with HC.CHECK_ACCESS_TOKEN_V2 against the null user UUID and a fixed 30 s window (1102 / errorType 11). Resolves the hasher by @userId, else by @scanText = Hasher.ResetCode ('URC:…') → 1302 not found (13); a removed hasher → 1402 (14). Generates a 75-character uppercase base64 DeviceSecret (CRYPT_GEN_RANDOM) and a TimeWindow of 30-44 s, then in one transaction: Hasher.LastLoginDateTime/HcVersion/updatedAt; a LaunchAndLogin row carrying DeviceId and the five device fields (from the optional parameters, else from @deviceData JSON, 2026-10-12); DELETE + INSERT of the HC.Device row (idempotent re-registration) with IsMobile, Version, BuildNumber and Locale. Returns the hasher profile joined to the new device row, including deviceSecret and timeWindow — the credentials every later token is generated from. The whole body, including the auth check, is inside TRY/CATCH (1902 / 19). @isMobile = 0 marks a browser (E9.F7): no push tokens, not counted as a phone. Idempotent writes (2026-10-14, audit W4), row 'creates a row': a BROWSER repeat — @isMobile = 0 and an HC.Device row with the same @deviceId already exists for the SAME user, IsMobile = 0, removed = 0, SignedOutAt NULL and updatedAt within the last 2 minutes (checked WITH (UPDLOCK, HOLDLOCK) inside the transaction) — writes nothing (no Hasher update, no LaunchAndLogin row, no DELETE/INSERT) and returns the existing deviceSecret and timeWindow as success. The web mints its deviceId once per sign-in flow (signed hc_signin cookie) so a double submit or a retry after a lost reply is that repeat. Every other case, including every @isMobile = 1 (app) call, which neither takes the lock nor the branch, is unchanged: DELETE + INSERT with a freshly rotated secret. Since 2026-10-17 the user is resolved by invite/reset code ONLY; @userId is refused (1303) and logged.",
   "parameters": [
     {
       "name": "deviceId",
@@ -30,14 +30,14 @@
       "type": "NVARCHAR(250)",
       "nullable": true,
       "mapsToColumn": "Hasher.ResetCode",
-      "description": "User invite code in 'URC:XXXXXX' format. Used to look up the hasher when @userId is not provided. Mutually exclusive with @userId — one must be supplied. When @userId is provided, this parameter is overwritten internally with the user's actual ResetCode (used only for error log context)."
+      "description": "Invite / reset code 'URC:XXXXXX'. Required."
     },
     {
       "name": "userId",
       "type": "UNIQUEIDENTIFIER",
       "nullable": true,
       "mapsToColumn": "Hasher.id",
-      "description": "Direct user lookup by Hasher.id. When provided, @scanText is ignored for the lookup."
+      "description": "REFUSED since 2026-10-17 (errorCode 1303, errorType 13, logged): only an invite/reset code in @scanText registers a device."
     },
     {
       "name": "deviceData",
