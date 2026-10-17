@@ -77,6 +77,9 @@ AS
 --   @userIdWhoPaid          - The hasher who owes the payment
 --   @eventId                - The event being paid for
 --   @hasherEventMapId       - HEM row; resolved from userIdWhoPaid if NULL
+--                             When given it must exist and match @eventId and
+--                             @userIdWhoPaid (errorCode 1341); the payer is
+--                             taken from the row (2026-10-16).
 --   @paymentType            - See codes above
 --   @productType            - 1=event, 2=membership, 3=haberdashery
 --   @paymentAmount          - Amount paid/owed; required when paymentType < 100
@@ -277,6 +280,43 @@ BEGIN TRY
         -- over. 'Other amount' (7/8), mark-not-paid (1) and confirm-transfer
         -- (100) stay admin-only too.
         -- ---------------------------------------------------------------
+        -- The attendance row decides (2026-10-16, permissions audit). The
+        -- permission below is checked on a kennel, and the money is written to
+        -- @hasherEventMapId — so when a row is named it must exist, belong to
+        -- the run named (@eventId) and to the payer named (@userIdWhoPaid), and
+        -- the payer is taken FROM the row. Before this the gate could pass on
+        -- one kennel's run while the write landed on another kennel's row, and
+        -- the self-service exemption trusted @userIdWhoPaid while charging the
+        -- row's owner (another hasher's credit).
+        IF (@hasherEventMapId IS NOT NULL)
+        BEGIN
+            DECLARE @hemUserId UNIQUEIDENTIFIER, @hemEventId UNIQUEIDENTIFIER;
+            SELECT @hemUserId = hem.UserId, @hemEventId = hem.EventId
+            FROM HC.HasherEventMap hem
+            WHERE hem.id = @hasherEventMapId AND hem.removed = 0;
+
+            IF (@hemUserId IS NULL
+                OR (@eventId IS NOT NULL AND @hemEventId <> @eventId)
+                OR (@userIdWhoPaid IS NOT NULL AND @hemUserId <> @userIdWhoPaid))
+            BEGIN
+                SET @errorCode = 1341; SET @errorType = 2; SET @errorId = NEWID();
+                ROLLBACK TRANSACTION;
+                INSERT HC.ErrorLog (id, HcVersion, ErrorName, ErrorDescription, ProcName, userId)
+                VALUES (@errorId, HC6.DeviceHcVersion(@deviceId), 'Payment row mismatch',
+                        CONCAT('hem=', CAST(@hasherEventMapId AS NVARCHAR(40)),
+                               ' event=', COALESCE(CAST(@eventId AS NVARCHAR(40)), 'null'),
+                               ' payer=', COALESCE(CAST(@userIdWhoPaid AS NVARCHAR(40)), 'null')),
+                        @procName, @userId);
+                SELECT 0 AS success, @errorCode AS errorCode, @errorType AS errorType;
+                SELECT @errorId AS errorId, @errorType AS errorType, @errorCode AS errorCode,
+                       'Payment not recorded' AS errorTitle,
+                       'That payment does not match this run. Please refresh and try again.' AS errorUserMessage,
+                       @procName AS errorProc;
+                RETURN;
+            END
+            SET @userIdWhoPaid = @hemUserId;
+        END
+
         DECLARE @payKennelId UNIQUEIDENTIFIER;
         IF (@eventId IS NOT NULL)
             SELECT @payKennelId = KennelId FROM HC.Event WHERE id = @eventId;
